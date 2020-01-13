@@ -9,7 +9,7 @@ The project's UI is developed using PyQt
 - Download and install Anaconda: https://www.anaconda.com/distribution/#download-section
 - Download and install PyCharm: https://www.jetbrains.com/pycharm/download/
 
-# Using Anaconda
+## Using Anaconda
 - Launch Anaconda Navigator (Anaconda GUI)
 - Go to Environments on the left pane
 - Search for and ensure that pyqt and requests packages are installed
