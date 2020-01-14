@@ -16,8 +16,6 @@ from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
 
-# TODO get Data from exceptions
-
 SHOW_DEBUG_MESSAGES = False
 TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
@@ -159,18 +157,20 @@ class NameValueModel(JsonModel):
 
 
 class ExceptionModel(JsonModel):
-    def __init__(self, code: int = None, message: str = None, severity: str = None):
+    def __init__(self, code: int = None, message: str = None, severity: str = None, data: str = None):
         self.code = code
         self.message = message
         self.severity = severity
+        self.data = data
 
     @classmethod
     def from_json(cls, json_dict: dict):
         code = int(json_dict["Code"]) if "Code" in json_dict else None
         message = json_dict["Message"] if "Message" in json_dict else None
         severity = json_dict["Severity"] if "Severity" in json_dict else None
+        data = json_dict["Data"] if "Data" in json_dict else None
 
-        return cls(code, message, severity)
+        return cls(code, message, severity, data)
 
 
 class ReportHeaderModel(JsonModel):
@@ -288,24 +288,35 @@ class ReportModel(JsonModel):
         if "Exception" in json_dict:
             exception = ExceptionModel.from_json(json_dict["Exception"])
             if exception.code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {exception.code}, Message: {exception.message}")
-
+                raise RetryLaterException(f"Code: {exception.code}"
+                                          f"\nMessage: {exception.message}"
+                                          f"\nData: {exception.data}")
             if count == 0:
-                exception_messages += f"Code: {exception.code}, Message: {exception.message}"
+                exception_messages += f"Code: {exception.code}" \
+                                      f"\nMessage: {exception.message}" \
+                                      f"\nData: {exception.data}"
             else:
-                exception_messages += "\n" + f"Code: {exception.code}, Message: {exception.message}"
+                exception_messages += f"\nCode: {exception.code}" \
+                                      f"\nMessage: {exception.message}" \
+                                      f"\nData: {exception.data}"
             count += 1
 
         code = int(json_dict["Code"]) if "Code" in json_dict else None
         message = json_dict["Message"] if "Message" in json_dict else None
+        data = json_dict["Data"] if "Data" in json_dict else None
         if code is not None:
             if code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {code}, Message: {message}")
-
+                raise RetryLaterException(f"Code: {code}"
+                                          f"\nMessage: {message}"
+                                          f"\nData: {data}")
             if count == 0:
-                exception_messages += f"Code: {code}, Message: {message}"
+                exception_messages += f"Code: {code}" \
+                                      f"\nMessage: {message}" \
+                                      f"\nData: {data}"
             else:
-                exception_messages += "\n" + f"Code: {code}, Message: {message}"
+                exception_messages += f"\nCode: {code}" \
+                                      f"\nMessage: {message}" \
+                                      f"\nData: {data}"
             count += 1
 
         if "Report_Header" in json_dict:
@@ -315,12 +326,17 @@ class ReportModel(JsonModel):
                     exception: ExceptionModel
                     for exception in report_header.exceptions:
                         if exception.code == 1011:  # Report Queued for Processing
-                            raise RetryLaterException(f"Code: {exception.code}, Message: {exception.message}")
-
+                            raise RetryLaterException(f"Code: {exception.code}"
+                                                      f"\nMessage: {exception.message}"
+                                                      f"\nData: {exception.data}")
                         if count == 0:
-                            exception_messages += f"Code: {exception.code}, Message: {exception.message}"
+                            exception_messages += f"Code: {exception.code}" \
+                                                  f"\nMessage: {exception.message}" \
+                                                  f"\nData: {exception.data}"
                         else:
-                            exception_messages += "\n" + f"Code: {exception.code}, Message: {exception.message}"
+                            exception_messages += f"\nCode: {exception.code}" \
+                                                  f"\nMessage: {exception.message}" \
+                                                  f"\nData: {exception.data}"
                         count += 1
         else:
             if count == 0:
