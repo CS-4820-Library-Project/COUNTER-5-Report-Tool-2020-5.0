@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QSize
 from JsonUtils import JsonModel
-import ui.MessageDialog
+from ui import MainWindow, MessageDialog
 import DataStorage
 import json
 
@@ -106,24 +106,19 @@ class SearchResultTableModel(QAbstractTableModel):
 
 
 class SearchController:
-    def __init__(self, search_term_edit: QLineEdit,
-                 title_checkbox: QCheckBox,
-                 issn_checkbox: QCheckBox,
-                 isbn_checkbox: QCheckBox,
-                 search_button: QPushButton,
-                 search_table_view: QTableView):
+    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         self.search_dict = {}
         self.populate_search_dict()
         self.search_results_model = SearchResultTableModel(headers=["Title", "Vendor", "Year", "File Name"])
 
-        self.search_term_edit = search_term_edit
-        self.title_checkbox = title_checkbox
-        self.issn_checkbox = issn_checkbox
-        self.isbn_checkbox = isbn_checkbox
-        self.search_button = search_button
+        self.search_term_edit = main_window_ui.search_term_edit
+        self.title_checkbox = main_window_ui.title_checkbox
+        self.issn_checkbox = main_window_ui.issn_checkbox
+        self.isbn_checkbox = main_window_ui.isbn_checkbox
+        self.search_button = main_window_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.search_table_view = search_table_view
+        self.search_table_view = main_window_ui.search_results_table_view
         self.search_table_view.setModel(self.search_results_model)
 
     def populate_search_dict(self):
@@ -230,7 +225,7 @@ class SearchController:
 
     def show_message(self, message: str):
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = ui.MessageDialog.Ui_message_dialog()
+        message_dialog_ui = MessageDialog.Ui_message_dialog()
         message_dialog_ui.setupUi(message_dialog)
 
         message_label = message_dialog_ui.message_label

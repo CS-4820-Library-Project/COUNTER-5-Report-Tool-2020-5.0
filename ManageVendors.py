@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QListView, QPushButton, QLineEdit, QFrame
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-import ui.AddVendorDialog
+from ui import MainWindow, AddVendorDialog
 import json
 import DataStorage
 from JsonUtils import JsonModel
@@ -35,41 +35,30 @@ class Vendor(JsonModel):
 class ManageVendorsController(QObject):
     vendors_changed_signal = pyqtSignal()
 
-    def __init__(self, vendors_list_view: QListView,
-                 edit_vendor_frame: QFrame,
-                 name_line_edit: QLineEdit,
-                 customer_id_line_edit: QLineEdit,
-                 base_url_line_edit: QLineEdit,
-                 requestor_id_line_edit: QLineEdit,
-                 api_key_line_edit: QLineEdit,
-                 platform_line_edit: QLineEdit,
-                 save_vendor_changes_button: QPushButton,
-                 undo_vendor_changes_button: QPushButton,
-                 remove_vendor_button: QPushButton,
-                 add_vendor_button: QPushButton):
+    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
 
         super().__init__()
-        self.edit_vendor_frame = edit_vendor_frame
+        self.edit_vendor_frame = main_window_ui.modifyVendorFrame
 
-        self.name_line_edit = name_line_edit
-        self.customer_id_line_edit = customer_id_line_edit
-        self.base_url_line_edit = base_url_line_edit
-        self.requestor_id_line_edit = requestor_id_line_edit
-        self.api_key_line_edit = api_key_line_edit
-        self.platform_line_edit = platform_line_edit
+        self.name_line_edit = main_window_ui.nameEdit
+        self.customer_id_line_edit = main_window_ui.customerIdEdit
+        self.base_url_line_edit = main_window_ui.baseUrlEdit
+        self.requestor_id_line_edit = main_window_ui.requestorIdEdit
+        self.api_key_line_edit = main_window_ui.apiKeyEdit
+        self.platform_line_edit = main_window_ui.platformEdit
 
         self.selected_index = None
-        self.save_vendor_changes_button = save_vendor_changes_button
-        self.undo_vendor_changes_button = undo_vendor_changes_button
-        self.remove_vendor_button = remove_vendor_button
-        self.add_vendor_button = add_vendor_button
+        self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
+        self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
+        self.remove_vendor_button = main_window_ui.removeVendorButton
+        self.add_vendor_button = main_window_ui.addVendorButton
 
         self.save_vendor_changes_button.clicked.connect(self.save_vendor_changes)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.remove_vendor)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
 
-        self.vendors_list_view = vendors_list_view
+        self.vendors_list_view = main_window_ui.vendorsListView
         self.vendors_list_model = QStandardItemModel(self.vendors_list_view)
         self.vendors_list_view.setModel(self.vendors_list_model)
         self.vendors_list_view.clicked.connect(self.on_item_changed)
@@ -108,7 +97,7 @@ class ManageVendorsController(QObject):
 
     def open_add_vendor_dialog(self):
         vendor_dialog = QDialog()
-        vendor_dialog_ui = ui.AddVendorDialog.Ui_addVendorDialog()
+        vendor_dialog_ui = AddVendorDialog.Ui_addVendorDialog()
         vendor_dialog_ui.setupUi(vendor_dialog)
 
         name_edit = vendor_dialog_ui.nameEdit

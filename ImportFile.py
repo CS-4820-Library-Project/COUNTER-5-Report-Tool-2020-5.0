@@ -3,20 +3,13 @@ from collections import OrderedDict
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QFileDialog, QLabel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from ui import MessageDialog
+from ui import MainWindow, MessageDialog
 from Search import SearchController
 import FetchData
 
 
 class ImportFileController:
-    def __init__(self, vendors: list,
-                 search_controller: SearchController,
-                 vendor_list_view: QListView,
-                 report_type_list_view: QListView,
-                 year_date_edit: QDateEdit,
-                 select_file_btn: QPushButton,
-                 selected_file_label: QLabel,
-                 import_file_button: QPushButton):
+    def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
 
         self.vendors = vendors
         self.search_controller = search_controller
@@ -26,7 +19,7 @@ class ImportFileController:
         self.selected_file_name: str = ""
         self.selected_file_path: str = ""
 
-        self.vendor_list_view = vendor_list_view
+        self.vendor_list_view = main_window_ui.vendors_list_view_import
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
@@ -35,7 +28,7 @@ class ImportFileController:
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-        self.report_type_list_view = report_type_list_view
+        self.report_type_list_view = main_window_ui.report_types_list_view_import
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         self.report_type_list_view.clicked.connect(self.on_report_type_selected)
@@ -44,16 +37,16 @@ class ImportFileController:
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.year_date_edit = year_date_edit
+        self.year_date_edit = main_window_ui.report_year_date_edit
         self.year_date_edit.setDate(self.date)
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
 
-        self.select_file_btn = select_file_btn
+        self.select_file_btn = main_window_ui.select_file_button
         self.select_file_btn.clicked.connect(self.open_file_select_dialog)
 
-        self.selected_file_label = selected_file_label
+        self.selected_file_label = main_window_ui.selected_file_label
 
-        self.import_file_button = import_file_button
+        self.import_file_button = main_window_ui.import_file_button
         self.import_file_button.clicked.connect(self.import_csv_file)
 
     def on_vendors_size_changed(self):

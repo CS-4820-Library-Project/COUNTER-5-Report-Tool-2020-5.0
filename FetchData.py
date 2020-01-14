@@ -11,7 +11,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, \
     QDialogButtonBox
 
-from ui import MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
+from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
@@ -715,18 +715,7 @@ class RetryLaterException(Exception):
 # endregion
 
 class FetchDataController:
-    def __init__(self, vendors: list,
-                 search_controller: SearchController,
-                 fetch_all_data_button: QPushButton,
-                 fetch_advanced_button: QPushButton,
-                 vendor_list_view: QListView,
-                 select_vendors_btn: QPushButton,
-                 deselect_vendors_btn: QPushButton,
-                 report_type_list_view: QListView,
-                 select_report_types_btn: QPushButton,
-                 deselect_report_types_btn: QPushButton,
-                 begin_date_edit: QDateEdit,
-                 end_date_edit: QDateEdit):
+    def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
 
         # region General
         self.search_controller = search_controller
@@ -754,15 +743,15 @@ class FetchDataController:
         # endregion
 
         # region Start Fetch Buttons
-        self.fetch_all_btn = fetch_all_data_button
+        self.fetch_all_btn = main_window_ui.fetch_all_data_button
         self.fetch_all_btn.clicked.connect(self.fetch_all_data)
 
-        self.fetch_adv_btn = fetch_advanced_button
+        self.fetch_adv_btn = main_window_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = vendor_list_view
+        self.vendor_list_view = main_window_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         for vendor in vendors:
@@ -771,14 +760,14 @@ class FetchDataController:
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-        self.select_vendors_btn = select_vendors_btn
+        self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = deselect_vendors_btn
+        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         # endregion
 
         # region Report Types
-        self.report_type_list_view = report_type_list_view
+        self.report_type_list_view = main_window_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         for report_type in REPORT_TYPES:
@@ -787,17 +776,17 @@ class FetchDataController:
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.select_report_types_btn = select_report_types_btn
+        self.select_report_types_btn = main_window_ui.select_report_types_button_fetch
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
-        self.deselect_report_types_btn = deselect_report_types_btn
+        self.deselect_report_types_btn = main_window_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = begin_date_edit
+        self.begin_date_edit = main_window_ui.begin_date_edit
         self.begin_date_edit.setDate(self.default_begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = end_date_edit
+        self.end_date_edit = main_window_ui.end_date_edit
         self.end_date_edit.setDate(self.default_end_date)
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion

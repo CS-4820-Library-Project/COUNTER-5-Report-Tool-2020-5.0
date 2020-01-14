@@ -29,50 +29,14 @@ if __name__ == "__main__":
     main_window_ui = ui.MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
-    manageVendorsController = ManageVendorsController(main_window_ui.vendorsListView,
-                                                      main_window_ui.modifyVendorFrame,
-                                                      main_window_ui.nameEdit,
-                                                      main_window_ui.customerIdEdit,
-                                                      main_window_ui.baseUrlEdit,
-                                                      main_window_ui.requestorIdEdit,
-                                                      main_window_ui.apiKeyEdit,
-                                                      main_window_ui.platformEdit,
-                                                      main_window_ui.saveVendorChangesButton,
-                                                      main_window_ui.undoVendorChangesButton,
-                                                      main_window_ui.removeVendorButton,
-                                                      main_window_ui.addVendorButton)
+    manageVendorsController = ManageVendorsController(main_window_ui)
+    search_controller = SearchController(main_window_ui)
 
-    search_controller = SearchController(main_window_ui.search_term_edit,
-                                         main_window_ui.title_checkbox,
-                                         main_window_ui.issn_checkbox,
-                                         main_window_ui.isbn_checkbox,
-                                         main_window_ui.search_button,
-                                         main_window_ui.search_results_table_view)
-
-    fetchDataController = FetchDataController(manageVendorsController.vendors,
-                                              search_controller,
-                                              main_window_ui.fetch_all_data_button,
-                                              main_window_ui.fetch_advanced_button,
-                                              main_window_ui.vendors_list_view_fetch,
-                                              main_window_ui.select_vendors_button_fetch,
-                                              main_window_ui.deselect_vendors_button_fetch,
-                                              main_window_ui.report_types_list_view,
-                                              main_window_ui.select_report_types_button_fetch,
-                                              main_window_ui.deselect_report_types_button_fetch,
-                                              main_window_ui.begin_date_edit,
-                                              main_window_ui.end_date_edit)
+    fetchDataController = FetchDataController(manageVendorsController.vendors, search_controller, main_window_ui)
     manageVendorsController.vendors_changed_signal.connect(fetchDataController.on_vendors_size_changed)
 
-    importFileController = ImportFileController(manageVendorsController.vendors,
-                                                search_controller,
-                                                main_window_ui.vendors_list_view_import,
-                                                main_window_ui.report_types_list_view_import,
-                                                main_window_ui.report_year_date_edit,
-                                                main_window_ui.select_file_button,
-                                                main_window_ui.selected_file_label,
-                                                main_window_ui.import_file_button)
+    importFileController = ImportFileController(manageVendorsController.vendors, search_controller, main_window_ui)
     manageVendorsController.vendors_changed_signal.connect(importFileController.on_vendors_size_changed)
 
     main_window.show()
-
     sys.exit(app.exec_())
