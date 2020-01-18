@@ -1,7 +1,7 @@
 There are 2 levels of reports, Master Reports (e.g. PR, DR) which show all possible columns and Standard Views (e.g. PR_P1, DR_D1, DR_D2) which only show some of the columns from the master reports.
 
 ## Report Fetching
-All reports are fetched via the COUNTER_SUSHI API, data is returned as JSON. the JSON models and all other details can be found at: https://app.swaggerhub.com/apis/COUNTER/counter-sushi_5_0_api/1.0.0
+All reports are fetched via the COUNTER_SUSHI API, data is returned as JSON. The JSON models and all other details can be found at: https://app.swaggerhub.com/apis/COUNTER/counter-sushi_5_0_api/1.0.0
 
 ### Authentication
 SUSHI requests can use these parameters for authentication:
@@ -12,15 +12,16 @@ There are also other optional parametrs like "platform"
 
 ### URL Building
 Request supported reports: [base_url]/reports?[authentication],[parameters]
+
 Request report: [base_url]/reports/[report_type]?[authentication],[parameters],[begin_date],[end_date]
 
-## Report Processing
+## TSV Report Formatting
 All information about report formatting can be found at: https://www.projectcounter.org/code-of-practice-five-sections/3-0-technical-specifications/#formats
 
 All reports should be formatted like in this image: https://www.projectcounter.org/wp-content/uploads/2017/07/image3.png
 
 ### Report Header
-All reports have a header that takes the first 12 rows of the report. The header should be formatted like in this image: https://www.projectcounter.org/wp-content/uploads/2018/09/FIG-3D.png
+All reports should have a header that takes the first 12 rows of the report. The header should be formatted like in this image: https://www.projectcounter.org/wp-content/uploads/2018/09/FIG-3D.png
 
 A blank row should then be added to separate the report header from the column headings and body of the report. 
 
@@ -85,3 +86,4 @@ All report types end with these headings:
    "December"
 ]
 
+The report body is then populated with the data received
