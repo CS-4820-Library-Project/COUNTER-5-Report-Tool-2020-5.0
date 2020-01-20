@@ -21,7 +21,7 @@ TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
 EMPTY_CELL = "-"
-CSV_DIR = "./all_data/csv_files/"
+TSV_DIR = "./all_data/tsv_files/"
 
 REPORT_TYPES = ["PR",
                 "PR_P1",
@@ -49,12 +49,6 @@ class MajorReportType(Enum):
     INVALID = "INVALID"
 
 
-class CompletionStatus(Enum):
-    SUCCESSFUL = "Successful!"
-    FAILED = "Failed!"
-    CANCELLED = "Cancelled!"
-
-
 def get_major_report_type(report_type: str) -> MajorReportType:
     if report_type == "PR" or report_type == "PR_P1":
         return MajorReportType.PLATFORM
@@ -71,6 +65,12 @@ def get_major_report_type(report_type: str) -> MajorReportType:
         return MajorReportType.ITEM
     else:
         return MajorReportType.INVALID
+
+
+class CompletionStatus(Enum):
+    SUCCESSFUL = "Successful!"
+    FAILED = "Failed!"
+    CANCELLED = "Cancelled!"
 
 
 # region Models
@@ -121,11 +121,7 @@ class PerformanceModel(JsonModel):
     def from_json(cls, json_dict: dict):
         period = PeriodModel.from_json(json_dict["Period"]) if "Period" in json_dict else None
 
-        instances = []
-        if "Instance" in json_dict:
-            instance_dicts = json_dict["Instance"]
-            for instance_dict in instance_dicts:
-                instances.append(InstanceModel.from_json(instance_dict))
+        instances = get_models("Instance", InstanceModel, json_dict)
 
         return cls(period, instances)
 
@@ -199,29 +195,10 @@ class ReportHeaderModel(JsonModel):
         created = json_dict["Created"] if "Created" in json_dict else ""
         created_by = json_dict["Created_By"] if "Created_By" in json_dict else ""
 
-        institution_ids = []
-        if "Institution_ID" in json_dict:
-            institution_id_dicts = json_dict["Institution_ID"]
-            for institution_id_dict in institution_id_dicts:
-                institution_ids.append(TypeValueModel.from_json(institution_id_dict))
-
-        report_filters = []
-        if "Report_Filters" in json_dict:
-            report_filter_dicts = json_dict["Report_Filters"]
-            for report_filter_dict in report_filter_dicts:
-                report_filters.append(NameValueModel.from_json(report_filter_dict))
-
-        report_attributes = []
-        if "Report_Attributes" in json_dict:
-            report_attribute_dicts = json_dict["Report_Attributes"]
-            for report_attribute_dict in report_attribute_dicts:
-                report_attributes.append(NameValueModel.from_json(report_attribute_dict))
-
-        exceptions = []
-        if "Exceptions" in json_dict:
-            exception_dicts = json_dict["Exceptions"]
-            for exception_dict in exception_dicts:
-                exceptions.append(ExceptionModel.from_json(exception_dict))
+        institution_ids = get_models("Institution_ID", TypeValueModel, json_dict)
+        report_filters = get_models("Report_Filters", NameValueModel, json_dict)
+        report_attributes = get_models("Report_Attributes", NameValueModel, json_dict)
+        exceptions = get_models("Exceptions", ExceptionModel, json_dict)
 
         return cls(report_name, report_id, release, institution_name, institution_ids, report_filters,
                    report_attributes, exceptions, created, created_by)
@@ -361,11 +338,7 @@ class PlatformReportItemModel(JsonModel):
         data_type = json_dict["Data_Type"] if "Data_Type" in json_dict else ""
         access_method = json_dict["Access_Method"] if "Access_Method" in json_dict else ""
 
-        performances = []
-        if "Performance" in json_dict:
-            performance_dicts = json_dict["Performance"]
-            for performance_dict in performance_dicts:
-                performances.append(PerformanceModel.from_json(performance_dict))
+        performances = get_models("Performance", PerformanceModel, json_dict)
 
         return cls(platform, data_type, access_method, performances)
 
@@ -391,26 +364,9 @@ class DatabaseReportItemModel(JsonModel):
         data_type = json_dict["Data_Type"] if "Data_Type" in json_dict else ""
         access_method = json_dict["Access_Method"] if "Access_Method" in json_dict else ""
 
-        item_ids = []
-        if "Item_ID" in json_dict:
-            item_id_dicts = json_dict["Item_ID"]
-            for item_id_dict in item_id_dicts:
-                item_ids.append(TypeValueModel.from_json(item_id_dict))
-
-        publisher_ids = []
-        if "Publisher_ID" in json_dict:
-            if type(json_dict["Publisher_ID"]) is dict:  # Some vendors return a dict instead of list
-                publisher_ids.append(TypeValueModel.from_json(json_dict["Publisher_ID"]))
-            elif type(json_dict["Publisher_ID"]) is list:
-                publisher_id_dicts = json_dict["Publisher_ID"]
-                for publisher_id_dict in publisher_id_dicts:
-                    publisher_ids.append(TypeValueModel.from_json(publisher_id_dict))
-
-        performances = []
-        if "Performance" in json_dict:
-            performance_dicts = json_dict["Performance"]
-            for performance_dict in performance_dicts:
-                performances.append(PerformanceModel.from_json(performance_dict))
+        item_ids = get_models("Item_ID", TypeValueModel, json_dict)
+        publisher_ids = get_models("Publisher_ID", TypeValueModel, json_dict)
+        performances = get_models("Performance", PerformanceModel, json_dict)
 
         return cls(database, publisher, item_ids, publisher_ids, platform, data_type, access_method, performances)
 
@@ -441,23 +397,9 @@ class TitleReportItemModel(JsonModel):
         access_type = json_dict["Access_Type"] if "Access_Type" in json_dict else ""
         access_method = json_dict["Access_Method"] if "Access_Method" in json_dict else ""
 
-        item_ids = []
-        if "Item_ID" in json_dict:
-            item_id_dicts = json_dict["Item_ID"]
-            for item_id_dict in item_id_dicts:
-                item_ids.append(TypeValueModel.from_json(item_id_dict))
-
-        publisher_ids = []
-        if "Publisher_ID" in json_dict:
-            publisher_id_dicts = json_dict["Publisher_ID"]
-            for publisher_id_dict in publisher_id_dicts:
-                publisher_ids.append(TypeValueModel.from_json(publisher_id_dict))
-
-        performances = []
-        if "Performance" in json_dict:
-            performance_dicts = json_dict["Performance"]
-            for performance_dict in performance_dicts:
-                performances.append(PerformanceModel.from_json(performance_dict))
+        item_ids = get_models("Item_ID", TypeValueModel, json_dict)
+        publisher_ids = get_models("Publisher_ID", TypeValueModel, json_dict)
+        performances = get_models("Performance", PerformanceModel, json_dict)
 
         return cls(title, item_ids, platform, publisher, publisher_ids, data_type, section_type, yop, access_type,
                    access_method, performances)
@@ -493,29 +435,10 @@ class ItemParentModel(JsonModel):
         item_name = json_dict["Item_Name"] if "Item_Name" in json_dict else ""
         data_type = json_dict["Data_Type"] if "Data_Type" in json_dict else ""
 
-        item_ids = []
-        if "Item_ID" in json_dict:
-            item_id_dicts = json_dict["Item_ID"]
-            for item_id_dict in item_id_dicts:
-                item_ids.append(TypeValueModel.from_json(item_id_dict))
-
-        item_contributors = []
-        if "Item_Contributors" in json_dict:
-            item_contributor_dicts = json_dict["Item_Contributors"]
-            for item_contributor_dict in item_contributor_dicts:
-                item_contributors.append(ItemContributorModel.from_json(item_contributor_dict))
-
-        item_dates = []
-        if "Item_Dates" in json_dict:
-            item_date_dicts = json_dict["Item_Dates"]
-            for item_date_dict in item_date_dicts:
-                item_dates.append(TypeValueModel.from_json(item_date_dict))
-
-        item_attributes = []
-        if "Item_Attributes" in json_dict:
-            item_attribute_dicts = json_dict["Item_Attributes"]
-            for item_attribute_dict in item_attribute_dicts:
-                item_attributes.append(TypeValueModel.from_json(item_attribute_dict))
+        item_ids = get_models("Item_ID", TypeValueModel, json_dict)
+        item_contributors = get_models("Item_Contributors", ItemContributorModel, json_dict)
+        item_dates = get_models("Item_Dates", TypeValueModel, json_dict)
+        item_attributes = get_models("Item_Attributes", TypeValueModel, json_dict)
 
         return cls(item_name, item_ids, item_contributors, item_dates, item_attributes, data_type)
 
@@ -536,35 +459,11 @@ class ItemComponentModel(JsonModel):
         item_name = json_dict["Item_Name"] if "Item_Name" in json_dict else ""
         data_type = json_dict["Data_Type"] if "Data_Type" in json_dict else ""
 
-        item_ids = []
-        if "Item_ID" in json_dict:
-            item_id_dicts = json_dict["Item_ID"]
-            for item_id_dict in item_id_dicts:
-                item_ids.append(TypeValueModel.from_json(item_id_dict))
-
-        item_contributors = []
-        if "Item_Contributors" in json_dict:
-            item_contributor_dicts = json_dict["Item_Contributors"]
-            for item_contributor_dict in item_contributor_dicts:
-                item_contributors.append(ItemContributorModel.from_json(item_contributor_dict))
-
-        item_dates = []
-        if "Item_Dates" in json_dict:
-            item_date_dicts = json_dict["Item_Dates"]
-            for item_date_dict in item_date_dicts:
-                item_dates.append(TypeValueModel.from_json(item_date_dict))
-
-        item_attributes = []
-        if "Item_Attributes" in json_dict:
-            item_attribute_dicts = json_dict["Item_Attributes"]
-            for item_attribute_dict in item_attribute_dicts:
-                item_attributes.append(TypeValueModel.from_json(item_attribute_dict))
-
-        performances = []
-        if "Performance" in json_dict:
-            performance_dicts = json_dict["Performance"]
-            for performance_dict in performance_dicts:
-                performances.append(PerformanceModel.from_json(performance_dict))
+        item_ids = get_models("Item_ID", TypeValueModel, json_dict)
+        item_contributors = get_models("Item_Contributors", ItemContributorModel, json_dict)
+        item_dates = get_models("Item_Dates", TypeValueModel, json_dict)
+        item_attributes = get_models("Item_Attributes", TypeValueModel, json_dict)
+        performances = get_models("Performance", PerformanceModel, json_dict)
 
         return cls(item_name, item_ids, item_contributors, item_dates, item_attributes, data_type, performances)
 
@@ -602,47 +501,13 @@ class ItemReportItemModel(JsonModel):
 
         item_parent = ItemParentModel.from_json(json_dict["Item_Parent"]) if "Item_Parent" in json_dict else None
 
-        item_ids = []
-        if "Item_ID" in json_dict:
-            item_id_dicts = json_dict["Item_ID"]
-            for item_id_dict in item_id_dicts:
-                item_ids.append(TypeValueModel.from_json(item_id_dict))
-
-        item_contributors = []
-        if "Item_Contributors" in json_dict:
-            item_contributor_dicts = json_dict["Item_Contributors"]
-            for item_contributor_dict in item_contributor_dicts:
-                item_contributors.append(ItemContributorModel.from_json(item_contributor_dict))
-
-        item_dates = []
-        if "Item_Dates" in json_dict:
-            item_date_dicts = json_dict["Item_Dates"]
-            for item_date_dict in item_date_dicts:
-                item_dates.append(TypeValueModel.from_json(item_date_dict))
-
-        item_attributes = []
-        if "Item_Attributes" in json_dict:
-            item_attribute_dicts = json_dict["Item_Attributes"]
-            for item_attribute_dict in item_attribute_dicts:
-                item_attributes.append(TypeValueModel.from_json(item_attribute_dict))
-
-        publisher_ids = []
-        if "Publisher_ID" in json_dict:
-            publisher_id_dicts = json_dict["Publisher_ID"]
-            for publisher_id_dict in publisher_id_dicts:
-                publisher_ids.append(TypeValueModel.from_json(publisher_id_dict))
-
-        item_components = []
-        if "Item_Component" in json_dict:
-            item_component_dicts = json_dict["Item_Component"]
-            for item_component_dict in item_component_dicts:
-                item_components.append(ItemComponentModel.from_json(item_component_dict))
-
-        performances = []
-        if "Performance" in json_dict:
-            performance_dicts = json_dict["Performance"]
-            for performance_dict in performance_dicts:
-                performances.append(PerformanceModel.from_json(performance_dict))
+        item_ids = get_models("Item_ID", TypeValueModel, json_dict)
+        item_contributors = get_models("Item_Contributors", ItemContributorModel, json_dict)
+        item_dates = get_models("Item_Dates", TypeValueModel, json_dict)
+        item_attributes = get_models("Item_Attributes", TypeValueModel, json_dict)
+        publisher_ids = get_models("Publisher_ID", TypeValueModel, json_dict)
+        item_components = get_models("Item_Component", ItemComponentModel, json_dict)
+        performances = get_models("Performance", PerformanceModel, json_dict)
 
         return cls(item, item_ids, item_contributors, item_dates, item_attributes, platform, publisher, publisher_ids,
                    item_parent, item_components, data_type, yop, access_type, access_method, performances)
@@ -729,6 +594,16 @@ class RetryLaterException(Exception):
 
 
 # endregion
+
+def get_models(model_key: str, model_type, json_dict: dict) -> list:
+    models = []
+    if model_key in json_dict and json_dict[model_key] is not None:
+        model_dicts = json_dict[model_key]
+        for model_dict in model_dicts:
+            models.append(model_type.from_json(model_dict))
+
+    return models
+
 
 class FetchDataController:
     def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
@@ -1347,8 +1222,8 @@ class ReportWorker(QObject):
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{CSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.csv"
+        file_dir = f"{TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Processing report")
@@ -1558,32 +1433,32 @@ class ReportWorker(QObject):
             for row in row_dict.values():
                 report_rows.append(row)
 
-        self.save_csv_file(report_model.report_header, report_rows)
+        self.save_tsv_file(report_model.report_header, report_rows)
 
-    def save_csv_file(self, report_header, report_rows: list):
+    def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-        file_dir = f"{CSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.csv"
+        file_dir = f"{TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
         if not path.isdir(file_dir):
             makedirs(file_dir)
 
-        csv_file = open(file_dir + file_name, 'w', encoding="utf-8", newline='')
+        tsv_file = open(file_dir + file_name, 'w', encoding="utf-8", newline='')
 
         # region Report Header
 
-        csv_writer = csv.writer(csv_file, delimiter=",")
-        csv_writer.writerow(["Report_Name", report_header.report_name])
-        csv_writer.writerow(["Report_ID", report_header.report_id])
-        csv_writer.writerow(["Release", report_header.release])
-        csv_writer.writerow(["Institution_Name", report_header.institution_name])
+        tsv_writer = csv.writer(tsv_file, delimiter='\t')
+        tsv_writer.writerow(["Report_Name", report_header.report_name])
+        tsv_writer.writerow(["Report_ID", report_header.report_id])
+        tsv_writer.writerow(["Release", report_header.release])
+        tsv_writer.writerow(["Institution_Name", report_header.institution_name])
 
         institution_ids_str = ""
         for institution_id in report_header.institution_ids:
             institution_ids_str += f"{institution_id.item_type}={institution_id.value}; "
-        csv_writer.writerow(["Institution_ID", institution_ids_str])
+        tsv_writer.writerow(["Institution_ID", institution_ids_str])
 
         metric_types_str = ""
         reporting_period_str = ""
@@ -1594,23 +1469,23 @@ class ReportWorker(QObject):
                 metric_types_str += f"{report_filter.value}; "
             if report_filter.name == "Begin_Date" or report_filter.name == "End_Date":
                 reporting_period_str += f"{report_filter.name}={report_filter.value}; "
-        csv_writer.writerow(["Metric_Types", metric_types_str])
-        csv_writer.writerow(["Report_Filters", report_filters_str])
+        tsv_writer.writerow(["Metric_Types", metric_types_str])
+        tsv_writer.writerow(["Report_Filters", report_filters_str])
 
         report_attributes_str = ""
         for report_attribute in report_header.report_attributes:
             report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
-        csv_writer.writerow(["Report_Attributes", report_attributes_str])
+        tsv_writer.writerow(["Report_Attributes", report_attributes_str])
 
         exceptions_str = ""
         for exception in report_header.exceptions:
             exceptions_str += f"{exception.code}={exception.message}; "
-        csv_writer.writerow(["Exceptions", exceptions_str])
+        tsv_writer.writerow(["Exceptions", exceptions_str])
 
-        csv_writer.writerow(["Reporting_Period", reporting_period_str])
-        csv_writer.writerow(["Created", report_header.created])
-        csv_writer.writerow(["Created_By", report_header.created_by])
-        csv_writer.writerow([])
+        tsv_writer.writerow(["Reporting_Period", reporting_period_str])
+        tsv_writer.writerow(["Created", report_header.created])
+        tsv_writer.writerow(["Created_By", report_header.created_by])
+        tsv_writer.writerow([])
 
         # endregion
 
@@ -1664,23 +1539,7 @@ class ReportWorker(QObject):
 
                 row_dicts.append(row_dict)
 
-        elif report_type == "DR_D1":
-            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID"]
-
-            row: ReportRow
-            for row in report_rows:
-                row_dict = {"Database": row.database,
-                            "Publisher": row.publisher,
-                            "Publisher_ID": row.publisher_id,
-                            "Platform": row.platform,
-                            "Propriety_ID": row.proprietary_id,
-                            "Metric_Type": row.metric_type,
-                            "Reporting_Period_Total": row.total_count}
-                row_dict.update(row.month_counts)
-
-                row_dicts.append(row_dict)
-
-        elif report_type == "DR_D2":
+        elif report_type == "DR_D1" or report_type == "DR_D2":
             column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID"]
 
             row: ReportRow
@@ -1958,13 +1817,13 @@ class ReportWorker(QObject):
             "November",
             "December"
         ]
-        csv_dict_writer = csv.DictWriter(csv_file, column_names)
-        csv_dict_writer.writeheader()
-        csv_dict_writer.writerows(row_dicts)
+        tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
+        tsv_dict_writer.writeheader()
+        tsv_dict_writer.writerows(row_dicts)
 
         # endregion
 
-        csv_file.close()
+        tsv_file.close()
 
         self.process_result.message = f"Saved as: {file_name}"
 
