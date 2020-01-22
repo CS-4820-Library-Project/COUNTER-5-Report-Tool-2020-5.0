@@ -620,13 +620,13 @@ class FetchDataController:
         self.begin_date = QDate()
         self.end_date = QDate()
         current_date = QDate.currentDate()
-        self.default_begin_date = QDate(current_date.year(), 1, current_date.day())
+        self.basic_begin_date = QDate(current_date.year(), 1, current_date.day())
         self.adv_begin_date = QDate(current_date.year(), 1, current_date.day())
         if current_date.month() != 1:  # If not January
-            self.default_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
+            self.basic_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
             self.adv_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
         else:
-            self.default_end_date = QDate(current_date)
+            self.basic_end_date = QDate(current_date)
             self.adv_end_date = QDate(current_date)
 
         self.is_last_fetch_advanced = False
@@ -635,7 +635,7 @@ class FetchDataController:
 
         # region Start Fetch Buttons
         self.fetch_all_btn = main_window_ui.fetch_all_data_button
-        self.fetch_all_btn.clicked.connect(self.fetch_all_data)
+        self.fetch_all_btn.clicked.connect(self.fetch_all_basic_data)
 
         self.fetch_adv_btn = main_window_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
@@ -675,10 +675,10 @@ class FetchDataController:
 
         # region Date Edits
         self.begin_date_edit = main_window_ui.begin_date_edit
-        self.begin_date_edit.setDate(self.default_begin_date)
+        self.begin_date_edit.setDate(self.basic_begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
         self.end_date_edit = main_window_ui.end_date_edit
-        self.end_date_edit.setDate(self.default_end_date)
+        self.end_date_edit.setDate(self.basic_end_date)
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
@@ -736,7 +736,7 @@ class FetchDataController:
         for i in range(self.report_type_list_model.rowCount()):
             self.report_type_list_model.item(i).setCheckState(Qt.Unchecked)
 
-    def fetch_all_data(self):
+    def fetch_all_basic_data(self):
         if self.total_processes > 0:
             self.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
@@ -750,8 +750,8 @@ class FetchDataController:
         for i in range(len(self.vendors)):
             self.selected_data.append((self.vendors[i], REPORT_TYPES))
 
-        self.begin_date = self.default_begin_date
-        self.end_date = self.default_end_date
+        self.begin_date = self.basic_begin_date
+        self.end_date = self.basic_end_date
 
         self.is_last_fetch_advanced = False
         self.start_progress_dialog()
