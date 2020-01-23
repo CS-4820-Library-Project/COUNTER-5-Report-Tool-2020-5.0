@@ -9,7 +9,7 @@ import sys
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, \
-    QDialogButtonBox
+    QDialogButtonBox, QButtonGroup, QCheckBox
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
 from JsonUtils import JsonModel
@@ -21,7 +21,8 @@ TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
 EMPTY_CELL = "-"
-TSV_DIR = "./all_data/tsv_files/"
+NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
+SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
 
 REPORT_TYPES = ["PR",
                 "PR_P1",
@@ -42,10 +43,10 @@ REPORT_TYPES = ["PR",
 
 
 class MajorReportType(Enum):
-    PLATFORM = "PLATFORM"
-    DATABASE = "DATABASE"
-    TITLE = "TITLE"
-    ITEM = "ITEM"
+    PLATFORM = "PR"
+    DATABASE = "DR"
+    TITLE = "TR"
+    ITEM = "IR"
     INVALID = "INVALID"
 
 
@@ -65,6 +66,17 @@ def get_major_report_type(report_type: str) -> MajorReportType:
         return MajorReportType.ITEM
     else:
         return MajorReportType.INVALID
+
+
+def show_message(message: str):
+    message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+    message_dialog_ui = MessageDialog.Ui_message_dialog()
+    message_dialog_ui.setupUi(message_dialog)
+
+    message_label = message_dialog_ui.message_label
+    message_label.setText(message)
+
+    message_dialog.exec_()
 
 
 class CompletionStatus(Enum):
@@ -513,6 +525,23 @@ class ItemReportItemModel(JsonModel):
                    item_parent, item_components, data_type, yop, access_type, access_method, performances)
 
 
+def get_models(model_key: str, model_type, json_dict: dict) -> list:
+    # This converts json formatted lists into a list of the specified model_type
+    # Some vendors sometimes return a single dict even when the standard specifies a list,
+    # we need to check for that
+    models = []
+    if model_key in json_dict and json_dict[model_key] is not None:
+        if type(json_dict[model_key]) is list:
+            model_dicts = json_dict[model_key]
+            for model_dict in model_dicts:
+                models.append(model_type.from_json(model_dict))
+
+        elif type(json_dict[model_key]) is dict:
+            models.append(model_type.from_json(json_dict[model_key]))
+
+    return models
+
+
 class ReportRow:
     def __init__(self):
         self.database = EMPTY_CELL
@@ -579,6 +608,32 @@ class ReportRow:
         self.total_count = 0
 
 
+class Attributes:
+    def __init__(self):
+        # PR, DR, TR, IR
+        self.data_type = False
+        self.access_method = False
+        # TR, IR
+        self.yop = False
+        self.access_type = False
+        # TR
+        self.section_type = False
+        # IR
+        self.include_component_details = False
+        self.include_parent_details = False
+
+
+class RequestData:
+    def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate, save_dir: str,
+                 attributes: Attributes = None):
+        self.vendor = vendor
+        self.target_report_types = target_report_types
+        self.begin_date = begin_date
+        self.end_date = end_date
+        self.save_dir = save_dir
+        self.attributes = attributes
+
+
 class ProcessResult:
     def __init__(self, vendor: Vendor, completion_status: CompletionStatus, message: str, report_type: str = None,
                  retry: bool = False):
@@ -595,15 +650,6 @@ class RetryLaterException(Exception):
 
 # endregion
 
-def get_models(model_key: str, model_type, json_dict: dict) -> list:
-    models = []
-    if model_key in json_dict and json_dict[model_key] is not None:
-        model_dicts = json_dict[model_key]
-        for model_dict in model_dicts:
-            models.append(model_type.from_json(model_dict))
-
-    return models
-
 
 class FetchDataController:
     def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
@@ -611,7 +657,7 @@ class FetchDataController:
         # region General
         self.search_controller = search_controller
         self.vendors = vendors
-        self.selected_data = []  # List of (Vendor, list[report_types])>
+        self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
         self.vendor_workers = {}  # <k = worker_id, v = (VendorWorker, Thread)>
         self.started_processes = 0
@@ -674,11 +720,11 @@ class FetchDataController:
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = main_window_ui.begin_date_edit
-        self.begin_date_edit.setDate(self.basic_begin_date)
+        self.begin_date_edit = main_window_ui.begin_date_edit_fetch
+        self.begin_date_edit.setDate(self.adv_begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = main_window_ui.end_date_edit
-        self.end_date_edit.setDate(self.basic_end_date)
+        self.end_date_edit = main_window_ui.end_date_edit_fetch
+        self.end_date_edit.setDate(self.adv_end_date)
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
@@ -738,20 +784,22 @@ class FetchDataController:
 
     def fetch_all_basic_data(self):
         if self.total_processes > 0:
-            self.show_message(f"Waiting for pending processes to complete...")
+            show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            self.show_message("Vendor list is empty")
+            show_message("Vendor list is empty")
             return
-
-        self.selected_data = []
-        for i in range(len(self.vendors)):
-            self.selected_data.append((self.vendors[i], REPORT_TYPES))
 
         self.begin_date = self.basic_begin_date
         self.end_date = self.basic_end_date
+
+        self.selected_data = []
+        for i in range(len(self.vendors)):
+            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
+                                       NORMAL_TSV_DIR)
+            self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
         self.start_progress_dialog()
@@ -760,19 +808,22 @@ class FetchDataController:
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
         while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
-            vendor, report_types = self.selected_data[self.started_processes]
-            self.fetch_vendor_data(vendor, report_types)
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
     def fetch_advanced_data(self):
         if self.total_processes > 0:
-            self.show_message(f"Waiting for pending processes to complete...")
+            show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            self.show_message("Vendor list is empty")
+            show_message("Vendor list is empty")
             return
+
+        self.begin_date = self.adv_begin_date
+        self.end_date = self.adv_end_date
 
         self.selected_data = []
         selected_report_types = []
@@ -780,18 +831,17 @@ class FetchDataController:
             if self.report_type_list_model.item(i).checkState() == Qt.Checked:
                 selected_report_types.append(REPORT_TYPES[i])
         if len(selected_report_types) == 0:
-            self.show_message("No report type selected")
+            show_message("No report type selected")
             return
 
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
-                self.selected_data.append((self.vendors[i], selected_report_types))
+                request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
+                                           NORMAL_TSV_DIR)
+                self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
-            self.show_message("No vendor selected")
+            show_message("No vendor selected")
             return
-
-        self.begin_date = self.adv_begin_date
-        self.end_date = self.adv_end_date
 
         self.start_progress_dialog()
         self.is_last_fetch_advanced = False
@@ -800,16 +850,15 @@ class FetchDataController:
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
         while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
-            vendor, report_types = self.selected_data[self.started_processes]
-            self.fetch_vendor_data(vendor, report_types)
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-    def fetch_vendor_data(self, vendor: Vendor, report_types: list):
-        worker_id = vendor.name
+    def fetch_vendor_data(self, request_data: RequestData):
+        worker_id = request_data.vendor.name
         if worker_id in self.vendor_workers: return  # Avoid processing a vendor twice
 
-        vendor_worker = VendorWorker(worker_id, vendor, self.search_controller, self.begin_date, self.end_date,
-                                     report_types)
+        vendor_worker = VendorWorker(worker_id, self.search_controller, request_data)
         vendor_worker.worker_finished_signal.connect(self.on_vendor_worker_finished)
         vendor_thread = QThread()
         self.vendor_workers[worker_id] = vendor_worker, vendor_thread
@@ -818,7 +867,7 @@ class FetchDataController:
         vendor_thread.start()
 
         if SHOW_DEBUG_MESSAGES: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
-        self.update_results_ui(vendor)
+        self.update_results_ui(request_data.vendor)
 
     def update_results_ui(self, vendor: Vendor, vendor_result: ProcessResult = None, report_results: list = None):
         self.progress_bar.setValue(int(self.completed_processes / self.total_processes * 100))
@@ -898,8 +947,8 @@ class FetchDataController:
         self.vendor_workers.pop(worker_id, None)
 
         if self.started_processes < self.total_processes and not self.is_cancelling:
-            vendor, report_types = self.selected_data[self.started_processes]
-            self.fetch_vendor_data(vendor, report_types)
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
         elif len(self.vendor_workers) == 0: self.finish()
@@ -930,15 +979,375 @@ class FetchDataController:
         self.status_label.setText("Starting...")
         self.fetch_progress_dialog.show()
 
-    def show_message(self, message: str):
-        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = MessageDialog.Ui_message_dialog()
-        message_dialog_ui.setupUi(message_dialog)
+    def report_to_retry_toggled(self, checked_state: int, vendor: Vendor, report_type):
+        if checked_state == Qt.Checked:
+            found = False
+            for i in range(len(self.retry_data)):
+                v, report_types = self.retry_data[i]
+                if v == vendor:
+                    report_types.append(report_type)
+                    found = True
 
-        message_label = message_dialog_ui.message_label
-        message_label.setText(message)
+            if not found:
+                self.retry_data.append((vendor, [report_type]))
 
-        message_dialog.exec_()
+        elif checked_state == Qt.Unchecked:
+            for i in range(len(self.retry_data)):
+                v, report_types = self.retry_data[i]
+                if v == vendor:
+                    report_types.remove(report_type)
+                    if len(report_types) == 0: self.retry_data.pop(i)
+
+    def retry_selected_reports(self):
+        if len(self.retry_data) == 0:
+            show_message("No report selected")
+            return
+
+        self.selected_data = []
+        for vendor, report_types in self.retry_data:
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, NORMAL_TSV_DIR)
+            self.selected_data.append(request_data)
+
+        self.start_progress_dialog()
+        self.retry_data = []
+
+        self.total_processes = len(self.selected_data)
+        self.started_processes = 0
+        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
+            self.started_processes += 1
+
+    def finish(self):
+        self.search_controller.save_all_data()
+        self.ok_button.setEnabled(True)
+        self.retry_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+        self.status_label.setText("Done!")
+
+        self.started_processes = 0
+        self.completed_processes = 0
+        self.total_processes = 0
+        self.is_cancelling = False
+        if SHOW_DEBUG_MESSAGES: print("Fin!")
+
+    def cancel_workers(self):
+        self.is_cancelling = True
+        self.total_processes = self.started_processes
+        self.status_label.setText(f"Cancelling...")
+        for worker, thread in self.vendor_workers.values():
+            worker.set_cancelling()
+
+
+class FetchSpecialDataController:
+    def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
+        # region General
+        self.search_controller = search_controller
+        self.vendors = vendors
+        self.selected_data = []  # List of ReportData Objects
+        self.selected_report_type = None
+        self.selected_attributes = Attributes()
+        self.attribute_options = {
+            MajorReportType.PLATFORM: ["Data_Type", "Access_Method"],
+            MajorReportType.DATABASE: ["Data_Type", "Access_Method"],
+            MajorReportType.TITLE: ["Data_Type", "Section_Type", "YOP", "Access_Type", "Access_Method"],
+            MajorReportType.ITEM: ["Data_Type", "YOP", "Access_Type", "Access_Method", "Include_Parent_Details",
+                                   "Include_Component_Details"]
+        }
+        self.retry_data = []  # List of (Vendor, list[report_types])>
+        self.vendor_workers = {}  # <k = worker_id, v = (VendorWorker, Thread)>
+        self.started_processes = 0
+        self.completed_processes = 0
+        self.total_processes = 0
+        current_date = QDate.currentDate()
+        self.begin_date = QDate(current_date.year(), 1, current_date.day())
+        if current_date.month() != 1:  # If not January
+            self.end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
+        else:
+            self.end_date = QDate(current_date)
+        self.is_cancelling = False
+        # endregion
+
+        # region Start Fetch Button
+        self.fetch_special_btn = main_window_ui.fetch_special_data_button
+        self.fetch_special_btn.clicked.connect(self.fetch_special_data)
+        # endregion
+
+        # region Vendors
+        self.vendor_list_view = main_window_ui.vendors_list_view_special
+        self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
+        self.vendor_list_view.setModel(self.vendor_list_model)
+        for vendor in vendors:
+            item = QStandardItem(vendor.name)
+            item.setCheckable(True)
+            item.setEditable(False)
+            self.vendor_list_model.appendRow(item)
+
+        self.select_vendors_btn = main_window_ui.select_vendors_button_special
+        self.select_vendors_btn.clicked.connect(self.select_all_vendors)
+        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_special
+        self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
+        # endregion
+
+        # region Attributes
+        self.attributes_frame = main_window_ui.attributes_frame
+        self.attributes_layout = self.attributes_frame.layout()
+        # endregion
+
+        # region Report Types
+        self.pr_radio_button = main_window_ui.pr_radio_button
+        self.dr_radio_button = main_window_ui.dr_radio_button
+        self.tr_radio_button = main_window_ui.tr_radio_button
+        self.ir_radio_button = main_window_ui.ir_radio_button
+
+        self.pr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.PLATFORM))
+        self.dr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.DATABASE))
+        self.tr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.TITLE))
+        self.ir_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.ITEM))
+
+        self.pr_radio_button.setChecked(True)
+        self.on_report_type_selected(MajorReportType.PLATFORM)
+
+        # endregion
+
+        # region Date Edits
+        self.begin_date_edit = main_window_ui.begin_date_edit_special
+        self.begin_date_edit.setDate(self.begin_date)
+        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "begin_date"))
+        self.end_date_edit = main_window_ui.end_date_edit_special
+        self.end_date_edit.setDate(self.end_date)
+        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
+        # endregion
+
+        # region Fetch Progress Dialog
+        self.fetch_progress_dialog: QDialog = None
+        self.progress_bar: QProgressBar = None
+        self.status_label: QLabel = None
+        self.scroll_contents: QWidget = None
+        self.scroll_layout: QVBoxLayout = None
+        self.ok_button: QPushButton = None
+        self.retry_button: QPushButton = None
+        self.cancel_button: QPushButton = None
+
+        self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
+        # endregion
+
+    def on_vendors_size_changed(self):
+        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+
+        for vendor in self.vendors:
+            item = QStandardItem(vendor.name)
+            item.setCheckable(True)
+            item.setEditable(False)
+            self.vendor_list_model.appendRow(item)
+
+    def on_date_changed(self, date: QDate, date_type: str):
+        if date_type == "begin_date":
+            self.begin_date = date
+            if self.begin_date.year() != self.end_date.year():
+                self.end_date.setDate(self.begin_date.year(),
+                                      self.end_date.month(),
+                                      self.end_date.day())
+                self.end_date_edit.setDate(self.end_date)
+        elif date_type == "end_date":
+            self.end_date = date
+            if self.end_date.year() != self.begin_date.year():
+                self.begin_date.setDate(self.end_date.year(),
+                                        self.begin_date.month(),
+                                        self.begin_date.day())
+                self.begin_date_edit.setDate(self.begin_date)
+
+    def on_report_type_selected(self, major_report_type: MajorReportType):
+        if major_report_type == self.selected_report_type: return
+
+        self.selected_report_type = major_report_type
+        self.selected_attributes = Attributes()
+
+        # Remove existing options from ui
+        for i in reversed(range(self.attributes_layout.count())):
+            widget = self.attributes_layout.itemAt(i).widget()
+            # remove it from the layout list
+            self.attributes_layout.removeWidget(widget)
+            # remove it from the gui
+            widget.deleteLater()
+
+        # Add new options
+        attribute_options = self.attribute_options[major_report_type]
+
+        for attribute in attribute_options:
+            checkbox = QCheckBox(attribute, self.attributes_frame)
+            checkbox.toggled.connect(lambda checked, attr=attribute: self.on_attribute_selected(checked, attr))
+            self.attributes_layout.addWidget(checkbox)
+
+    def on_attribute_selected(self, checked: bool, attribute: str):
+        if checked: setattr(self.selected_attributes, attribute.lower(), True)
+        else: setattr(self.selected_attributes, attribute.lower(), False)
+
+    def select_all_vendors(self):
+        for i in range(self.vendor_list_model.rowCount()):
+            self.vendor_list_model.item(i).setCheckState(Qt.Checked)
+
+    def deselect_all_vendors(self):
+        for i in range(self.vendor_list_model.rowCount()):
+            self.vendor_list_model.item(i).setCheckState(Qt.Unchecked)
+
+    def fetch_special_data(self):
+        if self.total_processes > 0:
+            show_message(f"Waiting for pending processes to complete...")
+            if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
+            return
+
+        if len(self.vendors) == 0:
+            show_message("Vendor list is empty")
+            return
+
+        self.selected_data = []
+        selected_report_types = [self.selected_report_type.value]
+
+        for i in range(len(self.vendors)):
+            if self.vendor_list_model.item(i).checkState() == Qt.Checked:
+                request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
+                                           SPECIAL_TSV_DIR, self.selected_attributes)
+                self.selected_data.append(request_data)
+        if len(self.selected_data) == 0:
+            show_message("No vendor selected")
+            return
+
+        self.start_progress_dialog()
+        self.retry_data = []
+
+        self.total_processes = len(self.selected_data)
+        self.started_processes = 0
+        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
+            self.started_processes += 1
+
+    def fetch_vendor_data(self, request_data: RequestData):
+        worker_id = request_data.vendor.name
+        if worker_id in self.vendor_workers: return  # Avoid processing a vendor twice
+
+        vendor_worker = VendorWorker(worker_id, self.search_controller, request_data)
+        vendor_worker.worker_finished_signal.connect(self.on_vendor_worker_finished)
+        vendor_thread = QThread()
+        self.vendor_workers[worker_id] = vendor_worker, vendor_thread
+        vendor_worker.moveToThread(vendor_thread)
+        vendor_thread.started.connect(vendor_worker.work)
+        vendor_thread.start()
+
+        if SHOW_DEBUG_MESSAGES: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
+        self.update_results_ui(request_data.vendor)
+
+    def update_results_ui(self, vendor: Vendor, vendor_result: ProcessResult = None, report_results: list = None):
+        self.progress_bar.setValue(int(self.completed_processes / self.total_processes * 100))
+        if not self.is_cancelling:
+            if self.completed_processes != self.total_processes:
+                self.status_label.setText(f"Progress: {self.completed_processes}/{self.total_processes}")
+            else:
+                self.status_label.setText(f"Finishing...")
+        else:
+            self.status_label.setText(f"Cancelling...")
+
+        if vendor.name in self.vendor_result_widgets:
+            vendor_results_widget, vendor_results_ui = self.vendor_result_widgets[vendor.name]
+            vertical_layout = vendor_results_ui.results_frame.layout()
+            status_label = vendor_results_ui.status_label
+        else:
+            vendor_results_widget = QWidget(self.scroll_contents)
+            vendor_results_ui = VendorResultsWidget.Ui_VendorResultsWidget()
+            vendor_results_ui.setupUi(vendor_results_widget)
+            vendor_results_ui.vendor_label.setText(vendor.name)
+            vertical_layout = vendor_results_ui.results_frame.layout()
+
+            status_label = vendor_results_ui.status_label
+            frame = vendor_results_ui.results_frame
+            expand_button = vendor_results_ui.expand_button
+            collapse_button = vendor_results_ui.collapse_button
+
+            status_label.setText("Working...")
+            frame.hide()
+            expand_button.clicked.connect(lambda: frame.show())
+            collapse_button.clicked.connect(lambda: frame.hide())
+
+            self.vendor_result_widgets[vendor.name] = vendor_results_widget, vendor_results_ui
+            self.scroll_layout.addWidget(vendor_results_widget)
+
+        if vendor_result is None: return
+
+        status_label.setText("Done")
+        result_widget = self.get_result_widget(vendor, vendor_results_widget, vendor_result)
+        vertical_layout.addWidget(result_widget)
+
+        for report_result in report_results:
+            result_widget = self.get_result_widget(vendor, vendor_results_widget, report_result)
+            vertical_layout.addWidget(result_widget)
+
+    def get_result_widget(self, vendor: Vendor, vendor_widget: QWidget, process_result: ProcessResult) -> QWidget:
+        report_result_widget = QWidget(vendor_widget)
+        report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
+        report_result_ui.setupUi(report_result_widget)
+
+        report_result_ui.message_label.setText(process_result.message)
+        if process_result.report_type is not None:
+            report_result_ui.report_type_label.setText(process_result.report_type)
+        else:
+            report_result_ui.report_type_label.setText("Target Reports")
+            report_result_ui.retry_frame.hide()
+
+        report_result_ui.success_label.setText(process_result.completion_status.value)
+        if process_result.completion_status == CompletionStatus.FAILED:
+            report_result_ui.retry_check_box.stateChanged.connect(
+                lambda checked_state: self.report_to_retry_toggled(checked_state, vendor, process_result.report_type))
+        else:
+            report_result_ui.retry_frame.hide()
+
+        return report_result_widget
+
+    def on_vendor_worker_finished(self, worker_id: str):
+        self.completed_processes += 1
+
+        thread: QThread
+        worker: VendorWorker
+        worker, thread = self.vendor_workers[worker_id]
+        self.update_results_ui(worker.vendor, worker.process_result, worker.report_process_results)
+
+        thread.quit()
+        thread.wait()
+        self.vendor_workers.pop(worker_id, None)
+
+        if self.started_processes < self.total_processes and not self.is_cancelling:
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
+            self.started_processes += 1
+
+        elif len(self.vendor_workers) == 0:
+            self.finish()
+
+    def start_progress_dialog(self):
+        self.vendor_result_widgets = {}
+
+        self.fetch_progress_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        fetch_progress_ui = FetchProgressDialog.Ui_FetchProgressDialog()
+        fetch_progress_ui.setupUi(self.fetch_progress_dialog)
+
+        self.progress_bar = fetch_progress_ui.progress_bar
+        self.status_label = fetch_progress_ui.status_label
+        self.scroll_contents = fetch_progress_ui.scroll_area_widget_contents
+        self.scroll_layout = fetch_progress_ui.scroll_area_vertical_layout
+
+        self.ok_button = fetch_progress_ui.buttonBox.button(QDialogButtonBox.Ok)
+        self.retry_button = fetch_progress_ui.buttonBox.button(QDialogButtonBox.Retry)
+        self.cancel_button = fetch_progress_ui.buttonBox.button(QDialogButtonBox.Cancel)
+
+        self.ok_button.setEnabled(False)
+        self.retry_button.setEnabled(False)
+        self.retry_button.setText("Retry Selected")
+        self.ok_button.clicked.connect(lambda: self.fetch_progress_dialog.close())
+        self.retry_button.clicked.connect(self.retry_selected_reports)
+        self.cancel_button.clicked.connect(self.cancel_workers)
+
+        self.status_label.setText("Starting...")
+        self.fetch_progress_dialog.show()
 
     def report_to_retry_toggled(self, checked_state: int, vendor: Vendor, report_type):
         if checked_state == Qt.Checked:
@@ -961,18 +1370,23 @@ class FetchDataController:
 
     def retry_selected_reports(self):
         if len(self.retry_data) == 0:
-            self.show_message("No report selected")
+            show_message("No report selected")
             return
 
+        self.selected_data = []
+        for vendor, report_types in self.retry_data:
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, SPECIAL_TSV_DIR,
+                                       self.selected_attributes)
+            self.selected_data.append(request_data)
+
         self.start_progress_dialog()
-        self.selected_data = self.retry_data
         self.retry_data = []
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
         while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
-            vendor, report_types = self.selected_data[self.started_processes]
-            self.fetch_vendor_data(vendor, report_types)
+            request_data = self.selected_data[self.started_processes]
+            self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
     def finish(self):
@@ -999,16 +1413,13 @@ class FetchDataController:
 class VendorWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, vendor: Vendor, search_controller: SearchController, begin_date: QDate,
-                 end_date: QDate,
-                 target_report_types: list = None):
+    def __init__(self, worker_id: str, search_controller: SearchController, request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.vendor = vendor
         self.search_controller = search_controller
-        self.begin_date = begin_date
-        self.end_date = end_date
-        self.target_report_types = target_report_types
+        self.request_data = request_data
+        self.vendor = self.request_data.vendor
+        self.target_report_types = self.request_data.target_report_types
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1105,8 +1516,7 @@ class VendorWorker(QObject):
         worker_id = supported_report.report_id
         if worker_id in self.report_workers: return  # Avoid fetching a report twice, app will crash!!
 
-        report_worker = ReportWorker(worker_id, vendor, self.search_controller, supported_report, self.begin_date,
-                                     self.end_date)
+        report_worker = ReportWorker(worker_id, self.search_controller, supported_report, self.request_data)
         report_worker.worker_finished_signal.connect(self.on_report_worker_finished)
         report_thread = QThread()
         self.report_workers[worker_id] = report_worker, report_thread
@@ -1153,16 +1563,17 @@ class VendorWorker(QObject):
 class ReportWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, vendor: Vendor,
-                 search_controller: SearchController,
-                 supported_report: SupportedReportModel, begin_date: QDate, end_date: QDate):
+    def __init__(self, worker_id: str, search_controller: SearchController, supported_report: SupportedReportModel,
+                 request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.vendor = vendor
         self.search_controller = search_controller
         self.supported_report = supported_report
-        self.begin_date = begin_date
-        self.end_date = end_date
+        self.vendor = request_data.vendor
+        self.begin_date = request_data.begin_date
+        self.end_date = request_data.end_date
+        self.save_dir = request_data.save_dir
+        self.attributes = request_data.attributes
 
         self.process_result = ProcessResult(self.vendor, CompletionStatus.SUCCESSFUL, "All Good",
                                             self.supported_report.report_id)
@@ -1176,6 +1587,20 @@ class ReportWorker(QObject):
         if self.vendor.platform.strip(): request_query["platform"] = self.vendor.platform
         request_query["begin_date"] = self.begin_date.toString("yyyy-MM")
         request_query["end_date"] = self.end_date.toString("yyyy-MM")
+
+        if self.attributes is not None:
+            attributes_str = ""
+            attributes_dict = self.attributes.__dict__
+            count = 0
+            for attribute in attributes_dict.keys():
+                if attributes_dict[attribute] and count == 0:
+                    attributes_str += attribute
+                    count += 1
+                elif attributes_dict[attribute] and count > 0:
+                    attributes_str += f"|{attribute}"
+                    count += 1
+
+            if attributes_str: request_query["attributes_to_show"] = attributes_str
 
         request_url = f"{self.vendor.base_url}/{self.supported_report.report_id.lower()}"
 
@@ -1222,7 +1647,7 @@ class ReportWorker(QObject):
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{NORMAL_TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
@@ -1438,7 +1863,7 @@ class ReportWorker(QObject):
     def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-        file_dir = f"{TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
