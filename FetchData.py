@@ -1920,15 +1920,25 @@ class ReportWorker(QObject):
         row_dicts = []
 
         if report_type == "PR":
-            column_names += ["Platform", "Data_Type", "Access_Method"]
+            column_names += ["Platform"]
+            if self.attributes is None:
+                column_names += ["Data_Type", "Access_Method"]
+            else:
+                if self.attributes.data_type: column_names += ["Data_Type"]
+                if self.attributes.access_method: column_names += ["Access_Method"]
 
             row: ReportRow
             for row in report_rows:
-                row_dict = {"Platform": row.platform,
-                            "Data_Type": row.data_type,
-                            "Access_Method": row.access_method,
-                            "Metric_Type": row.metric_type,
-                            "Reporting_Period_Total": row.total_count}
+                row_dict = {"Platform": row.platform}
+                if self.attributes is None:
+                    row_dict.update({"Data_Type": row.data_type,
+                                     "Access_Method": row.access_method})
+                else:
+                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
+                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+
+                row_dict.update({"Metric_Type": row.metric_type,
+                                 "Reporting_Period_Total": row.total_count})
                 row_dict.update(row.month_counts)
 
                 row_dicts.append(row_dict)
@@ -1946,8 +1956,12 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "DR":
-            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID", "Data_Type",
-                             "Access_Method"]
+            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID"]
+            if self.attributes is None:
+                column_names += ["Data_Type", "Access_Method"]
+            else:
+                if self.attributes.data_type: column_names += ["Data_Type"]
+                if self.attributes.access_method: column_names += ["Access_Method"]
 
             row: ReportRow
             for row in report_rows:
@@ -1955,11 +1969,17 @@ class ReportWorker(QObject):
                             "Publisher": row.publisher,
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
-                            "Propriety_ID": row.proprietary_id,
-                            "Data_Type": row.data_type,
-                            "Access_Method": row.access_method,
-                            "Metric_Type": row.metric_type,
-                            "Reporting_Period_Total": row.total_count}
+                            "Propriety_ID": row.proprietary_id}
+
+                if self.attributes is None:
+                    row_dict.update({"Data_Type": row.data_type,
+                                     "Access_Method": row.access_method})
+                else:
+                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
+                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+
+                row_dict.update({"Metric_Type": row.metric_type,
+                                 "Reporting_Period_Total": row.total_count})
                 row_dict.update(row.month_counts)
 
                 row_dicts.append(row_dict)
@@ -1982,8 +2002,15 @@ class ReportWorker(QObject):
 
         elif report_type == "TR":
             column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "ISBN",
-                             "Print_ISSN", "Online_ISSN", "Linking_ISSN", "URI", "Data_Type", "Section_Type", "YOP",
-                             "Access_Type", "Access_Method"]
+                             "Print_ISSN", "Online_ISSN", "Linking_ISSN", "URI"]
+            if self.attributes is None:
+                column_names += ["Data_Type", "Section_Type", "YOP", "Access_Type", "Access_Method"]
+            else:
+                if self.attributes.data_type: column_names += ["Data_Type"]
+                if self.attributes.section_type: column_names += ["Section_Type"]
+                if self.attributes.yop: column_names += ["YOP"]
+                if self.attributes.access_type: column_names += ["Access_Type"]
+                if self.attributes.access_method: column_names += ["Access_Method"]
 
             row: ReportRow
             for row in report_rows:
@@ -1997,14 +2024,23 @@ class ReportWorker(QObject):
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
                             "Linking_ISSN": row.linking_issn,
-                            "URI": row.uri,
-                            "Data_Type": row.data_type,
-                            "Section_Type": row.section_type,
-                            "YOP": row.yop,
-                            "Access_Type": row.access_type,
-                            "Access_Method": row.access_method,
-                            "Metric_Type": row.metric_type,
-                            "Reporting_Period_Total": row.total_count}
+                            "URI": row.uri}
+
+                if self.attributes is None:
+                    row_dict.update({"Data_Type": row.data_type,
+                                     "Section_Type": row.section_type,
+                                     "YOP": row.yop,
+                                     "Access_Type": row.access_type,
+                                     "Access_Method": row.access_method})
+                else:
+                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
+                    if self.attributes.section_type: row_dict["Section_Type"] = row.section_type
+                    if self.attributes.yop: row_dict["YOP"] = row.yop
+                    if self.attributes.access_type: row_dict["Access_Type"] = row.access_type
+                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+
+                row_dict.update({"Metric_Type": row.metric_type,
+                                 "Reporting_Period_Total": row.total_count})
                 row_dict.update(row.month_counts)
 
                 row_dicts.append(row_dict)
@@ -2129,10 +2165,22 @@ class ReportWorker(QObject):
         elif report_type == "IR":
             column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "Authors", "Publication_Date",
                              "Article_version", "DOI", "Propriety_ID", "ISBN", "Print_ISSN", "Online_ISSN",
-                             "Linking_ISSN", "URI", "Parent_Title", "Parent_Authors", "Parent_Publication_Date",
-                             "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI", "Parent_Proprietary_ID",
-                             "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN", "Parent_URI", "Data_Type",
-                             "YOP", "Access_Type", "Access_Method"]
+                             "Linking_ISSN", "URI"]
+            if self.attributes is None:
+                column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
+                                 "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI", "Parent_Proprietary_ID",
+                                 "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN", "Parent_URI", "Data_Type",
+                                 "YOP", "Access_Type", "Access_Method"]
+            else:
+                if self.attributes.include_parent_details:
+                    column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
+                                     "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
+                                     "Parent_Proprietary_ID", "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN",
+                                     "Parent_URI"]
+                if self.attributes.data_type: column_names += ["Data_Type"]
+                if self.attributes.yop: column_names += ["YOP"]
+                if self.attributes.access_type: column_names += ["Access_Type"]
+                if self.attributes.access_method: column_names += ["Access_Method"]
 
             row: ReportRow
             for row in report_rows:
@@ -2149,24 +2197,44 @@ class ReportWorker(QObject):
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
                             "Linking_ISSN": row.linking_issn,
-                            "URI": row.uri,
-                            "Parent_Title": row.parent_title,
-                            "Parent_Authors": row.parent_authors,
-                            "Parent_Publication_Date": row.parent_publication_date,
-                            "Parent_Article_Version": row.parent_article_version,
-                            "Parent_Data_Type": row.uri,
-                            "Parent_DOI": row.parent_doi,
-                            "Parent_Proprietary_ID": row.parent_proprietary_id,
-                            "Parent_ISBN": row.parent_isbn,
-                            "Parent_Print_ISSN": row.parent_print_issn,
-                            "Parent_Online_ISSN": row.parent_online_issn,
-                            "Parent_URI": row.parent_uri,
-                            "Data_Type": row.data_type,
-                            "YOP": row.yop,
-                            "Access_Type": row.access_type,
-                            "Access_Method": row.access_method,
-                            "Metric_Type": row.metric_type,
-                            "Reporting_Period_Total": row.total_count}
+                            "URI": row.uri}
+
+                if self.attributes is None:
+                    row_dict.update({"Parent_Title": row.parent_title,
+                                     "Parent_Authors": row.parent_authors,
+                                     "Parent_Publication_Date": row.parent_publication_date,
+                                     "Parent_Article_Version": row.parent_article_version,
+                                     "Parent_Data_Type": row.uri,
+                                     "Parent_DOI": row.parent_doi,
+                                     "Parent_Proprietary_ID": row.parent_proprietary_id,
+                                     "Parent_ISBN": row.parent_isbn,
+                                     "Parent_Print_ISSN": row.parent_print_issn,
+                                     "Parent_Online_ISSN": row.parent_online_issn,
+                                     "Parent_URI": row.parent_uri,
+                                     "Data_Type": row.data_type,
+                                     "YOP": row.yop,
+                                     "Access_Type": row.access_type,
+                                     "Access_Method": row.access_method})
+                else:
+                    if self.attributes.include_parent_details:
+                        row_dict.update({"Parent_Title": row.parent_title,
+                                         "Parent_Authors": row.parent_authors,
+                                         "Parent_Publication_Date": row.parent_publication_date,
+                                         "Parent_Article_Version": row.parent_article_version,
+                                         "Parent_Data_Type": row.uri,
+                                         "Parent_DOI": row.parent_doi,
+                                         "Parent_Proprietary_ID": row.parent_proprietary_id,
+                                         "Parent_ISBN": row.parent_isbn,
+                                         "Parent_Print_ISSN": row.parent_print_issn,
+                                         "Parent_Online_ISSN": row.parent_online_issn,
+                                         "Parent_URI": row.parent_uri})
+                    if self.attributes.section_type: row_dict["Data_Type"] = row.data_type
+                    if self.attributes.yop: row_dict["YOP"] = row.yop
+                    if self.attributes.access_type: row_dict["Access_Type"] = row.access_type
+                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+
+                row_dict.update({"Metric_Type": row.metric_type,
+                                 "Reporting_Period_Total": row.total_count})
                 row_dict.update(row.month_counts)
 
                 row_dicts.append(row_dict)
