@@ -20,7 +20,7 @@ SHOW_DEBUG_MESSAGES = False
 TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
-EMPTY_CELL = "-"
+EMPTY_CELL = ""
 NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
 SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
 
@@ -591,7 +591,6 @@ class ReportRow:
         self.metric_type = EMPTY_CELL
 
         self.month_counts = {}
-
         for i in range(12):
             curr_date: QDate
             if QDate(begin_date.year(), i + 1, 1) < begin_date:
@@ -1879,7 +1878,7 @@ class ReportWorker(QObject):
         institution_ids_str = ""
         for institution_id in report_header.institution_ids:
             institution_ids_str += f"{institution_id.value}; "
-        tsv_writer.writerow(["Institution_ID", institution_ids_str])
+        tsv_writer.writerow(["Institution_ID", institution_ids_str.rstrip("; ")])
 
         metric_types_str = ""
         reporting_period_str = ""
@@ -1891,20 +1890,20 @@ class ReportWorker(QObject):
                 reporting_period_str += f"{report_filter.name}={report_filter.value}; "
             else:
                 report_filters_str += f"{report_filter.name}={report_filter.value}; "
-        tsv_writer.writerow(["Metric_Types", metric_types_str.replace("|", "; ")])
-        tsv_writer.writerow(["Report_Filters", report_filters_str])
+        tsv_writer.writerow(["Metric_Types", metric_types_str.replace("|", "; ").rstrip("; ")])
+        tsv_writer.writerow(["Report_Filters", report_filters_str.rstrip("; ")])
 
         report_attributes_str = ""
         for report_attribute in report_header.report_attributes:
             report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
-        tsv_writer.writerow(["Report_Attributes", report_attributes_str])
+        tsv_writer.writerow(["Report_Attributes", report_attributes_str.rstrip("; ")])
 
         exceptions_str = ""
         for exception in report_header.exceptions:
-            exceptions_str += f"{exception.code}={exception.message}; "
-        tsv_writer.writerow(["Exceptions", exceptions_str])
+            exceptions_str += f"{exception.code}: {exception.message} ({exception.data}); "
+        tsv_writer.writerow(["Exceptions", exceptions_str.rstrip("; ")])
 
-        tsv_writer.writerow(["Reporting_Period", reporting_period_str])
+        tsv_writer.writerow(["Reporting_Period", reporting_period_str.rstrip("; ")])
         tsv_writer.writerow(["Created", report_header.created])
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
