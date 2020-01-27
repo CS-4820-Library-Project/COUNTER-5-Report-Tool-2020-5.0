@@ -543,7 +543,7 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 
 
 class ReportRow:
-    def __init__(self):
+    def __init__(self, begin_date: QDate, end_date: QDate):
         self.database = EMPTY_CELL
         self.title = EMPTY_CELL
         self.item = EMPTY_CELL
@@ -590,20 +590,16 @@ class ReportRow:
         self.access_method = EMPTY_CELL
         self.metric_type = EMPTY_CELL
 
-        self.month_counts = {
-            'January': 0,
-            'February': 0,
-            'March': 0,
-            'April': 0,
-            'May': 0,
-            'June': 0,
-            'July': 0,
-            'August': 0,
-            'September': 0,
-            'October': 0,
-            'November': 0,
-            'December': 0
-        }
+        self.month_counts = {}
+
+        for i in range(12):
+            curr_date: QDate
+            if QDate(begin_date.year(), i + 1, 1) < begin_date:
+                curr_date = QDate(end_date.year(), i + 1, 1)
+            else:
+                curr_date = QDate(begin_date.year(), i + 1, 1)
+
+            self.month_counts[curr_date.toString("MMM-yyyy")] = 0
 
         self.total_count = 0
 
@@ -1658,13 +1654,13 @@ class ReportWorker(QObject):
 
             performance: PerformanceModel
             for performance in report_item.performances:
-                begin_month = QDate.fromString(performance.period.begin_date, "yyyy-MM-dd").toString("MMMM")
+                begin_month = QDate.fromString(performance.period.begin_date, "yyyy-MM-dd").toString("MMM-yyyy")
 
                 instance: InstanceModel
                 for instance in performance.instances:
                     metric_type = instance.metric_type
                     if metric_type not in row_dict:
-                        report_row = ReportRow()
+                        report_row = ReportRow(self.begin_date, self.end_date)
                         report_row.metric_type = metric_type
 
                         if major_report_type == MajorReportType.PLATFORM:
@@ -1914,6 +1910,11 @@ class ReportWorker(QObject):
         tsv_writer.writerow([])
 
         # endregion
+
+        if len(report_rows) == 0:
+            tsv_file.close()
+            self.process_result.message = f"Empty report saved as: {file_name}"
+            return
 
         # region Report Body
 
@@ -2248,22 +2249,8 @@ class ReportWorker(QObject):
 
                 row_dicts.append(row_dict)
 
-        column_names += [
-            "Metric_Type",
-            "Reporting_Period_Total",
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December"
-        ]
+        column_names += ["Metric_Type", "Reporting_Period_Total"]
+        column_names += report_rows[0].month_counts.keys()
         tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
         tsv_dict_writer.writerows(row_dicts)
