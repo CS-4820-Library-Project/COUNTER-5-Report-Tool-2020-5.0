@@ -1882,19 +1882,20 @@ class ReportWorker(QObject):
 
         institution_ids_str = ""
         for institution_id in report_header.institution_ids:
-            institution_ids_str += f"{institution_id.item_type}={institution_id.value}; "
+            institution_ids_str += f"{institution_id.value}; "
         tsv_writer.writerow(["Institution_ID", institution_ids_str])
 
         metric_types_str = ""
         reporting_period_str = ""
         report_filters_str = ""
         for report_filter in report_header.report_filters:
-            report_filters_str += f"{report_filter.name}={report_filter.value}; "
             if report_filter.name == "Metric_Type":
                 metric_types_str += f"{report_filter.value}; "
-            if report_filter.name == "Begin_Date" or report_filter.name == "End_Date":
+            elif report_filter.name == "Begin_Date" or report_filter.name == "End_Date":
                 reporting_period_str += f"{report_filter.name}={report_filter.value}; "
-        tsv_writer.writerow(["Metric_Types", metric_types_str])
+            else:
+                report_filters_str += f"{report_filter.name}={report_filter.value}; "
+        tsv_writer.writerow(["Metric_Types", metric_types_str.replace("|", "; ")])
         tsv_writer.writerow(["Report_Filters", report_filters_str])
 
         report_attributes_str = ""
