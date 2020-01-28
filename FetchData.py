@@ -630,13 +630,13 @@ class RequestData:
 
 
 class ProcessResult:
-    def __init__(self, vendor: Vendor, completion_status: CompletionStatus, message: str, report_type: str = None,
-                 retry: bool = False):
+    def __init__(self, vendor: Vendor, report_type: str = None):
         self.vendor = vendor
-        self.completion_status = completion_status
-        self.message = message
         self.report_type = report_type
-        self.retry = retry
+        self.completion_status = CompletionStatus.SUCCESSFUL
+        self.message = "All Good"
+        self.retry = False
+        self.file_path = None
 
 
 class RetryLaterException(Exception):
@@ -1420,7 +1420,7 @@ class VendorWorker(QObject):
         self.completed_processes = 0
         self.total_processes = 0
 
-        self.process_result = ProcessResult(self.vendor, CompletionStatus.SUCCESSFUL, "All Good")
+        self.process_result = ProcessResult(self.vendor)
         self.report_process_results = []
         self.report_workers = {}  # <k = worker_id, v = (ReportWorker, Thread)>
         self.is_cancelling = False
@@ -1570,8 +1570,7 @@ class ReportWorker(QObject):
         self.save_dir = request_data.save_dir
         self.attributes = request_data.attributes
 
-        self.process_result = ProcessResult(self.vendor, CompletionStatus.SUCCESSFUL, "All Good",
-                                            self.supported_report.report_id)
+        self.process_result = ProcessResult(self.vendor, self.supported_report.report_id)
 
     def work(self):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Fetching Report")
@@ -1860,7 +1859,7 @@ class ReportWorker(QObject):
         major_report_type = report_header.major_report_type
         file_dir = f"{self.save_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}/{file_name}"
+        file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):
             makedirs(file_dir)
@@ -2259,6 +2258,7 @@ class ReportWorker(QObject):
         tsv_file.close()
 
         self.process_result.message = f"Saved as: {file_name}"
+        self.process_result.file_path = file_path
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.worker_id)
