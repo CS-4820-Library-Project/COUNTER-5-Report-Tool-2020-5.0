@@ -1857,7 +1857,7 @@ class ReportWorker(QObject):
     def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-        file_dir = f"{self.save_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
