@@ -5,6 +5,7 @@ import csv
 import json
 import requests
 import sys
+import os
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -914,6 +915,9 @@ class FetchDataController:
         report_result_ui.setupUi(report_result_widget)
 
         report_result_ui.message_label.setText(process_result.message)
+
+        report_result_ui.message_label.mousePressEvent = lambda event: self.open_explorer(event, process_result.file_path)
+
         if process_result.report_type is not None:
             report_result_ui.report_type_label.setText(process_result.report_type)
         else:
@@ -1032,6 +1036,17 @@ class FetchDataController:
         self.status_label.setText(f"Cancelling...")
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
+
+    def open_explorer(self, event, path: str):
+        if path is not None:
+            file_Path = path.lstrip('.').replace('/', '\\')
+            print(file_Path)
+            
+            current_Working_Directory = os.getcwd()
+            open_Explorer_Path = current_Working_Directory + file_Path
+
+            print(open_Explorer_Path)
+            os.system("start explorer %s" % open_Explorer_Path)
 
 
 class FetchSpecialDataController:
