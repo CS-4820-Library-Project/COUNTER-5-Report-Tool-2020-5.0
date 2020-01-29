@@ -924,6 +924,7 @@ class FetchDataController:
             report_result_ui.report_type_label.setText("Target Reports")
             report_result_ui.retry_frame.hide()
 
+
         report_result_ui.success_label.setText(process_result.completion_status.value)
         if process_result.completion_status == CompletionStatus.FAILED:
             report_result_ui.retry_check_box.stateChanged.connect(
@@ -1038,14 +1039,21 @@ class FetchDataController:
             worker.set_cancelling()
 
     def open_explorer(self, event, path: str):
-        if path is not None:
-            file_Path = path.lstrip('.').replace('/', '\\')
-            print(file_Path)
-            
-            current_Working_Directory = os.getcwd()
-            open_Explorer_Path = current_Working_Directory + file_Path
 
-            print(open_Explorer_Path)
+        if path is not None:
+
+            file_path = ""
+            file_path_list = path.split('/')
+
+            for index in range(len(file_path_list)):
+
+                if index != (len(file_path_list)-1):
+                    file_path = str(file_path) + '\\' + str(file_path_list[index])
+
+
+            current_Working_Directory = os.getcwd()
+            open_Explorer_Path = current_Working_Directory + file_path
+
             os.system("start explorer %s" % open_Explorer_Path)
 
 
