@@ -32,7 +32,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -304,8 +304,65 @@
               </size>
              </property>
              <property name="text">
-              <string>Fetch All Data (Current Year)</string>
+              <string>Fetch All Data </string>
              </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="groupBox">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="title">
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <widget class="QLabel" name="Year_text">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>0</y>
+                <width>36</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>36</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Year</string>
+              </property>
+             </widget>
+             <widget class="QDateEdit" name="All_reports_edit_fetch">
+              <property name="geometry">
+               <rect>
+                <x>50</x>
+                <y>0</y>
+                <width>60</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>60</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="displayFormat">
+               <string>yyyy</string>
+              </property>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -1483,7 +1540,7 @@
      <x>0</x>
      <y>0</y>
      <width>920</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

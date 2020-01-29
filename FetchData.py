@@ -716,6 +716,9 @@ class FetchDataController:
         # endregion
 
         # region Date Edits
+        self.all_date_edit = main_window_ui.All_reports_edit_fetch
+        self.all_date_edit.setDate(self.basic_begin_date)
+        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "all_date"))
         self.begin_date_edit = main_window_ui.begin_date_edit_fetch
         self.begin_date_edit.setDate(self.adv_begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
@@ -761,6 +764,10 @@ class FetchDataController:
                                             self.adv_begin_date.month(),
                                             self.adv_begin_date.day())
                 self.begin_date_edit.setDate(self.adv_begin_date)
+        elif date_type == "all_date":
+            self.basic_begin_date = QDate(date.year(), 1, 1)
+            self.basic_end_date = QDate(date.year(), 12, 31)
+
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
