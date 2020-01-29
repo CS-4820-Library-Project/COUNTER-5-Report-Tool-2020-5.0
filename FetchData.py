@@ -1056,6 +1056,7 @@ class FetchDataController:
 
             os.system("start explorer %s" % open_Explorer_Path)
 
+ 
 
 class FetchSpecialDataController:
     def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
