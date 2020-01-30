@@ -1493,20 +1493,23 @@ class VendorWorker(QObject):
             if len(json_dicts) == 0:
                 raise Exception("JSON is empty")
 
+            supported_report_types = []
             self.reports_to_process = []
-            reports_to_process_str = ""
             for json_dict in json_dicts:
                 supported_report = SupportedReportModel.from_json(json_dict)
+                supported_report_types.append(supported_report.report_id)
 
                 if supported_report.report_id in self.target_report_types:
-                    self.reports_to_process.append(supported_report)
-                    reports_to_process_str += f"'{supported_report.report_id}' "
+                    self.reports_to_process.append(supported_report.report_id)
 
-            if len(self.reports_to_process) == 0:
-                self.process_result.message = "Target reports not supported"
-                return
+            unsupported_report_types = list(set(self.target_report_types) - set(supported_report_types))
 
-            self.process_result.message = reports_to_process_str
+            self.process_result.message = "Supported by vendor: "
+            self.process_result.message += ", ".join(self.reports_to_process)
+            self.process_result.message += "\nUnsupported: "
+            self.process_result.message += ", ".join(unsupported_report_types)
+
+            if len(self.reports_to_process) == 0: return
 
             self.total_processes = len(self.reports_to_process)
             self.started_processes = 0
@@ -1528,11 +1531,11 @@ class VendorWorker(QObject):
             self.process_result.message = str(e)
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Exception: {e}")
 
-    def fetch_report(self, vendor: Vendor, supported_report: SupportedReportModel):
-        worker_id = supported_report.report_id
+    def fetch_report(self, vendor: Vendor, report_type: str):
+        worker_id = report_type
         if worker_id in self.report_workers: return  # Avoid fetching a report twice, app will crash!!
 
-        report_worker = ReportWorker(worker_id, self.search_controller, supported_report, self.request_data)
+        report_worker = ReportWorker(worker_id, self.search_controller, report_type, self.request_data)
         report_worker.worker_finished_signal.connect(self.on_report_worker_finished)
         report_thread = QThread()
         self.report_workers[worker_id] = report_worker, report_thread
@@ -1579,22 +1582,22 @@ class VendorWorker(QObject):
 class ReportWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, search_controller: SearchController, supported_report: SupportedReportModel,
+    def __init__(self, worker_id: str, search_controller: SearchController, report_type: str,
                  request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
         self.search_controller = search_controller
-        self.supported_report = supported_report
+        self.report_type = report_type
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
         self.save_dir = request_data.save_dir
         self.attributes = request_data.attributes
 
-        self.process_result = ProcessResult(self.vendor, self.supported_report.report_id)
+        self.process_result = ProcessResult(self.vendor, self.report_type)
 
     def work(self):
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Fetching Report")
+        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Fetching Report")
         request_query = {}
         if self.vendor.customer_id.strip(): request_query["customer_id"] = self.vendor.customer_id
         if self.vendor.requestor_id.strip(): request_query["requestor_id"] = self.vendor.requestor_id
@@ -1617,7 +1620,7 @@ class ReportWorker(QObject):
 
             if attributes_str: request_query["attributes_to_show"] = attributes_str
 
-        request_url = f"{self.vendor.base_url}/{self.supported_report.report_id.lower()}"
+        request_url = f"{self.vendor.base_url}/{self.report_type.lower()}"
 
         try:
             # Some vendors only work if they think a web browser is making the request...
@@ -1628,12 +1631,12 @@ class ReportWorker(QObject):
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Done")
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
             if SHOW_DEBUG_MESSAGES: print(
-                f"{self.vendor.name}-{self.supported_report.report_id}: Request Exception: {e}")
+                f"{self.vendor.name}-{self.report_type}: Request Exception: {e}")
 
         self.notify_worker_finished()
 
@@ -1649,17 +1652,17 @@ class ReportWorker(QObject):
             else:
                 self.process_result.message = f"JSON Exception: {e.msg}"
             if SHOW_DEBUG_MESSAGES: print(
-                f"{self.vendor.name}-{self.supported_report.report_id}: JSON Exception: {e.msg}")
+                f"{self.vendor.name}-{self.report_type}: JSON Exception: {e.msg}")
         except RetryLaterException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
             self.process_result.retry = True
             if SHOW_DEBUG_MESSAGES: print(
-                f"{self.vendor.name}-{self.supported_report.report_id}: Retry Later Exception: {e}")
+                f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
         except Exception as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Exception: {e}")
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
 
     def process_report_model(self, report_model: ReportModel):
         report_type = report_model.report_header.report_id
@@ -1670,7 +1673,7 @@ class ReportWorker(QObject):
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Processing report")
+        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Processing report")
 
         for report_item in report_items:
             row_dict = {}  # <k = metric_type, v = ReportRow>
