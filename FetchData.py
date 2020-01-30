@@ -915,15 +915,14 @@ class FetchDataController:
         report_result_ui.setupUi(report_result_widget)
 
         report_result_ui.message_label.setText(process_result.message)
-
-        report_result_ui.message_label.mousePressEvent = lambda event: self.open_explorer(event, process_result.file_path)
+        report_result_ui.message_label.mousePressEvent = \
+            lambda event: self.open_explorer(event, process_result.file_path)
 
         if process_result.report_type is not None:
             report_result_ui.report_type_label.setText(process_result.report_type)
         else:
             report_result_ui.report_type_label.setText("Target Reports")
             report_result_ui.retry_frame.hide()
-
 
         report_result_ui.success_label.setText(process_result.completion_status.value)
         if process_result.completion_status == CompletionStatus.FAILED:
@@ -1055,7 +1054,6 @@ class FetchDataController:
             open_Explorer_Path = current_Working_Directory + file_path
 
             os.system("start explorer %s" % open_Explorer_Path)
-
 
 
 class FetchSpecialDataController:
@@ -1463,12 +1461,11 @@ class VendorWorker(QObject):
             # Some vendors only work if they think a web browser is making the request...(JSTOR...)
             response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
             if SHOW_DEBUG_MESSAGES: print(response.url)
-
-            if response.status_code == requests.codes.ok:
+            if response.status_code == 200:
                 self.process_response(response)
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
-                self.process_result.message = f"Request failed, status_code: {response.status_code}"
+                self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
@@ -1626,7 +1623,11 @@ class ReportWorker(QObject):
             # Some vendors only work if they think a web browser is making the request...
             response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
             if SHOW_DEBUG_MESSAGES: print(response.url)
-            self.process_response(response)
+            if response.status_code == 200:
+                self.process_response(response)
+            else:
+                self.process_result.completion_status = CompletionStatus.FAILED
+                self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Done")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
@@ -2280,7 +2281,6 @@ class ReportWorker(QObject):
         # endregion
 
         tsv_file.close()
-
         self.process_result.message = f"Saved as: {file_name}"
         self.process_result.file_path = file_path
 
