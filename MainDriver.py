@@ -1,5 +1,4 @@
 import sys
-from datetime import datetime
 
 import ui.MainWindow
 from ManageVendors import ManageVendorsController

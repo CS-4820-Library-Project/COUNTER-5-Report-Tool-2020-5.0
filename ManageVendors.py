@@ -154,7 +154,4 @@ class ManageVendorsController(QObject):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__)
         DataStorage.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
 
-    def save_all_vendors_to_tsv(self):
-        w_filenameTSV = '../../Data/Chapter01/realEstate_trans.tsv'
-
 

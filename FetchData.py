@@ -16,7 +16,7 @@ from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
 
-SHOW_DEBUG_MESSAGES = False
+SHOW_DEBUG_MESSAGES = False #debug messages
 TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
@@ -543,7 +543,7 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 
 
 class ReportRow:
-    def __init__(self):
+    def __init__(self, begin_date: QDate, end_date: QDate):
         self.database = EMPTY_CELL
         self.title = EMPTY_CELL
         self.item = EMPTY_CELL
@@ -590,20 +590,15 @@ class ReportRow:
         self.access_method = EMPTY_CELL
         self.metric_type = EMPTY_CELL
 
-        self.month_counts = {
-            'January': 0,
-            'February': 0,
-            'March': 0,
-            'April': 0,
-            'May': 0,
-            'June': 0,
-            'July': 0,
-            'August': 0,
-            'September': 0,
-            'October': 0,
-            'November': 0,
-            'December': 0
-        }
+        self.month_counts = {}
+        for i in range(12):
+            curr_date: QDate
+            if QDate(begin_date.year(), i + 1, 1) < begin_date:
+                curr_date = QDate(end_date.year(), i + 1, 1)
+            else:
+                curr_date = QDate(begin_date.year(), i + 1, 1)
+
+            self.month_counts[curr_date.toString("MMM-yyyy")] = 0
 
         self.total_count = 0
 
@@ -635,13 +630,13 @@ class RequestData:
 
 
 class ProcessResult:
-    def __init__(self, vendor: Vendor, completion_status: CompletionStatus, message: str, report_type: str = None,
-                 retry: bool = False):
+    def __init__(self, vendor: Vendor, report_type: str = None):
         self.vendor = vendor
-        self.completion_status = completion_status
-        self.message = message
         self.report_type = report_type
-        self.retry = retry
+        self.completion_status = CompletionStatus.SUCCESSFUL
+        self.message = "All Good"
+        self.retry = False
+        self.file_path = None
 
 
 class RetryLaterException(Exception):
@@ -1434,7 +1429,7 @@ class VendorWorker(QObject):
         self.completed_processes = 0
         self.total_processes = 0
 
-        self.process_result = ProcessResult(self.vendor, CompletionStatus.SUCCESSFUL, "All Good")
+        self.process_result = ProcessResult(self.vendor)
         self.report_process_results = []
         self.report_workers = {}  # <k = worker_id, v = (ReportWorker, Thread)>
         self.is_cancelling = False
@@ -1584,8 +1579,7 @@ class ReportWorker(QObject):
         self.save_dir = request_data.save_dir
         self.attributes = request_data.attributes
 
-        self.process_result = ProcessResult(self.vendor, CompletionStatus.SUCCESSFUL, "All Good",
-                                            self.supported_report.report_id)
+        self.process_result = ProcessResult(self.vendor, self.supported_report.report_id)
 
     def work(self):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.supported_report.report_id}: Fetching Report")
@@ -1667,13 +1661,13 @@ class ReportWorker(QObject):
 
             performance: PerformanceModel
             for performance in report_item.performances:
-                begin_month = QDate.fromString(performance.period.begin_date, "yyyy-MM-dd").toString("MMMM")
+                begin_month = QDate.fromString(performance.period.begin_date, "yyyy-MM-dd").toString("MMM-yyyy")
 
                 instance: InstanceModel
                 for instance in performance.instances:
                     metric_type = instance.metric_type
                     if metric_type not in row_dict:
-                        report_row = ReportRow()
+                        report_row = ReportRow(self.begin_date, self.end_date)
                         report_row.metric_type = metric_type
 
                         if major_report_type == MajorReportType.PLATFORM:
@@ -1872,9 +1866,9 @@ class ReportWorker(QObject):
     def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-        file_dir = f"{self.save_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}/{file_name}"
+        file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):
             makedirs(file_dir)
@@ -1891,37 +1885,43 @@ class ReportWorker(QObject):
 
         institution_ids_str = ""
         for institution_id in report_header.institution_ids:
-            institution_ids_str += f"{institution_id.item_type}={institution_id.value}; "
-        tsv_writer.writerow(["Institution_ID", institution_ids_str])
+            institution_ids_str += f"{institution_id.value}; "
+        tsv_writer.writerow(["Institution_ID", institution_ids_str.rstrip("; ")])
 
         metric_types_str = ""
         reporting_period_str = ""
         report_filters_str = ""
         for report_filter in report_header.report_filters:
-            report_filters_str += f"{report_filter.name}={report_filter.value}; "
             if report_filter.name == "Metric_Type":
                 metric_types_str += f"{report_filter.value}; "
-            if report_filter.name == "Begin_Date" or report_filter.name == "End_Date":
+            elif report_filter.name == "Begin_Date" or report_filter.name == "End_Date":
                 reporting_period_str += f"{report_filter.name}={report_filter.value}; "
-        tsv_writer.writerow(["Metric_Types", metric_types_str])
-        tsv_writer.writerow(["Report_Filters", report_filters_str])
+            else:
+                report_filters_str += f"{report_filter.name}={report_filter.value}; "
+        tsv_writer.writerow(["Metric_Types", metric_types_str.replace("|", "; ").rstrip("; ")])
+        tsv_writer.writerow(["Report_Filters", report_filters_str.rstrip("; ")])
 
         report_attributes_str = ""
         for report_attribute in report_header.report_attributes:
             report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
-        tsv_writer.writerow(["Report_Attributes", report_attributes_str])
+        tsv_writer.writerow(["Report_Attributes", report_attributes_str.rstrip("; ")])
 
         exceptions_str = ""
         for exception in report_header.exceptions:
-            exceptions_str += f"{exception.code}={exception.message}; "
-        tsv_writer.writerow(["Exceptions", exceptions_str])
+            exceptions_str += f"{exception.code}: {exception.message} ({exception.data}); "
+        tsv_writer.writerow(["Exceptions", exceptions_str.rstrip("; ")])
 
-        tsv_writer.writerow(["Reporting_Period", reporting_period_str])
+        tsv_writer.writerow(["Reporting_Period", reporting_period_str.rstrip("; ")])
         tsv_writer.writerow(["Created", report_header.created])
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
         # endregion
+
+        if len(report_rows) == 0:
+            tsv_file.close()
+            self.process_result.message = f"Empty report saved as: {file_name}"
+            return
 
         # region Report Body
 
@@ -1960,7 +1960,7 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "DR":
-            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID"]
+            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Proprietary_ID"]
             if self.attributes:
                 if self.attributes.data_type: column_names += ["Data_Type"]
                 if self.attributes.access_method: column_names += ["Access_Method"]
@@ -1971,7 +1971,7 @@ class ReportWorker(QObject):
                             "Publisher": row.publisher,
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
-                            "Propriety_ID": row.proprietary_id}
+                            "Proprietary_ID": row.proprietary_id}
 
                 if self.attributes:
                     if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
@@ -1984,7 +1984,7 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "DR_D1" or report_type == "DR_D2":
-            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Propriety_ID"]
+            column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Proprietary_ID"]
 
             row: ReportRow
             for row in report_rows:
@@ -1992,7 +1992,7 @@ class ReportWorker(QObject):
                             "Publisher": row.publisher,
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "Metric_Type": row.metric_type,
                             "Reporting_Period_Total": row.total_count}
                 row_dict.update(row.month_counts)
@@ -2000,8 +2000,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "ISBN",
-                             "Print_ISSN", "Online_ISSN", "Linking_ISSN", "URI"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
+                             "Print_ISSN", "Online_ISSN", "URI"]
             if self.attributes:
                 if self.attributes.data_type: column_names += ["Data_Type"]
                 if self.attributes.section_type: column_names += ["Section_Type"]
@@ -2016,11 +2016,10 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "ISBN": row.isbn,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri}
 
                 if self.attributes:
@@ -2037,8 +2036,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_B1" or report_type == "TR_B2":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "ISBN",
-                             "Print_ISSN", "Online_ISSN", "Linking_ISSN", "URI", "YOP"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
+                             "Print_ISSN", "Online_ISSN", "URI", "YOP"]
 
             row: ReportRow
             for row in report_rows:
@@ -2047,11 +2046,10 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "ISBN": row.isbn,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "YOP": row.yop,
                             "Metric_Type": row.metric_type,
@@ -2061,8 +2059,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_B3":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "ISBN",
-                             "Print_ISSN", "Online_ISSN", "Linking_ISSN", "URI", "YOP", "Access_Type"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
+                             "Print_ISSN", "Online_ISSN", "URI", "YOP", "Access_Type"]
 
             row: ReportRow
             for row in report_rows:
@@ -2071,11 +2069,10 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "ISBN": row.isbn,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "YOP": row.yop,
                             "Access_Type": row.access_type,
@@ -2086,8 +2083,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_J1" or report_type == "TR_J2":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "Print_ISSN",
-                             "Online_ISSN", "Linking_ISSN", "URI"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "Print_ISSN",
+                             "Online_ISSN", "URI"]
 
             row: ReportRow
             for row in report_rows:
@@ -2096,10 +2093,9 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "Metric_Type": row.metric_type,
                             "Reporting_Period_Total": row.total_count}
@@ -2108,8 +2104,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_J3":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "Print_ISSN",
-                             "Online_ISSN", "Linking_ISSN", "URI", "Access_Type"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "Print_ISSN",
+                             "Online_ISSN", "URI", "Access_Type"]
 
             row: ReportRow
             for row in report_rows:
@@ -2118,10 +2114,9 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "Access_Type": row.access_type,
                             "Metric_Type": row.metric_type,
@@ -2131,8 +2126,8 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_J4":
-            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "Print_ISSN",
-                             "Online_ISSN", "Linking_ISSN", "URI", "YOP"]
+            column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "Print_ISSN",
+                             "Online_ISSN", "URI", "YOP"]
 
             row: ReportRow
             for row in report_rows:
@@ -2141,10 +2136,9 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "YOP": row.yop,
                             "Metric_Type": row.metric_type,
@@ -2155,8 +2149,8 @@ class ReportWorker(QObject):
 
         elif report_type == "IR":
             column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "Authors", "Publication_Date",
-                             "Article_version", "DOI", "Propriety_ID", "ISBN", "Print_ISSN", "Online_ISSN",
-                             "Linking_ISSN", "URI"]
+                             "Article_version", "DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN",
+                             "URI"]
             if self.attributes:
                 if self.attributes.include_parent_details:
                     column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
@@ -2178,11 +2172,10 @@ class ReportWorker(QObject):
                             "Publication_Date": row.publication_date,
                             "Article_version": row.article_version,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "ISBN": row.isbn,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri}
 
                 if self.attributes:
@@ -2211,8 +2204,8 @@ class ReportWorker(QObject):
 
         elif report_type == "IR_A1":
             column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "Authors", "Publication_Date",
-                             "Article_version", "DOI", "Propriety_ID", "Print_ISSN", "Online_ISSN", "Linking_ISSN",
-                             "URI", "Parent_Title", "Parent_Authors", "Parent_Article_Version", "Parent_DOI",
+                             "Article_version", "DOI", "Proprietary_ID", "Print_ISSN", "Online_ISSN", "URI",
+                             "Parent_Title", "Parent_Authors", "Parent_Article_Version", "Parent_DOI",
                              "Parent_Proprietary_ID", "Parent_Print_ISSN", "Parent_Online_ISSN", "Parent_URI",
                              "Access_Type"]
 
@@ -2226,10 +2219,9 @@ class ReportWorker(QObject):
                             "Publication_Date": row.publication_date,
                             "Article_version": row.article_version,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "Print_ISSN": row.print_issn,
                             "Online_ISSN": row.online_issn,
-                            "Linking_ISSN": row.linking_issn,
                             "URI": row.uri,
                             "Parent_Title": row.parent_title,
                             "Parent_Authors": row.parent_authors,
@@ -2247,7 +2239,7 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "IR_M1":
-            column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "DOI", "Propriety_ID", "URI"]
+            column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "URI"]
 
             row: ReportRow
             for row in report_rows:
@@ -2256,7 +2248,7 @@ class ReportWorker(QObject):
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
                             "DOI": row.doi,
-                            "Propriety_ID": row.proprietary_id,
+                            "Proprietary_ID": row.proprietary_id,
                             "URI": row.uri,
                             "Metric_Type": row.metric_type,
                             "Reporting_Period_Total": row.total_count}
@@ -2264,22 +2256,8 @@ class ReportWorker(QObject):
 
                 row_dicts.append(row_dict)
 
-        column_names += [
-            "Metric_Type",
-            "Reporting_Period_Total",
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December"
-        ]
+        column_names += ["Metric_Type", "Reporting_Period_Total"]
+        column_names += report_rows[0].month_counts.keys()
         tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
         tsv_dict_writer.writerows(row_dicts)
@@ -2289,7 +2267,7 @@ class ReportWorker(QObject):
         tsv_file.close()
 
         self.process_result.message = f"Saved as: {file_name}"
+        self.process_result.file_path = file_path
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.worker_id)
-
