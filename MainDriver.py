@@ -2,7 +2,7 @@ import sys
 
 import ui.MainWindow
 from ManageVendors import ManageVendorsController
-from FetchData import FetchDataController, FetchSpecialDataController
+from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
 from Search import SearchController
 from PyQt5.QtWidgets import QApplication, QMainWindow
@@ -30,15 +30,15 @@ if __name__ == "__main__":
     main_window_ui = ui.MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
-    manageVendorsController = ManageVendorsController(main_window_ui)
+    manage_vendors_controller = ManageVendorsController(main_window_ui)
     search_controller = SearchController(main_window_ui)
 
-    fetchDataController = FetchDataController(manageVendorsController.vendors, search_controller, main_window_ui)
-    fetchSpecialDataController = FetchSpecialDataController(manageVendorsController.vendors, search_controller, main_window_ui)
-    manageVendorsController.vendors_changed_signal.connect(fetchDataController.on_vendors_size_changed)
+    fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, search_controller, main_window_ui)
+    fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors, search_controller, main_window_ui)
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_size_changed)
 
-    importFileController = ImportFileController(manageVendorsController.vendors, search_controller, main_window_ui)
-    manageVendorsController.vendors_changed_signal.connect(importFileController.on_vendors_size_changed)
+    import_file_controller = ImportFileController(manage_vendors_controller.vendors, search_controller, main_window_ui)
+    manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_size_changed)
 
     main_window.show()
     sys.exit(app.exec_())

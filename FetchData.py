@@ -650,7 +650,7 @@ class RetryLaterException(Exception):
 # endregion
 
 
-class FetchDataController:
+class FetchReportsController:
     def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
 
         # region General
@@ -1069,7 +1069,7 @@ class FetchDataController:
             os.system("start explorer %s" % open_Explorer_Path)
 
 
-class FetchSpecialDataController:
+class FetchSpecialReportsController:
     def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
         # region General
         self.search_controller = search_controller
