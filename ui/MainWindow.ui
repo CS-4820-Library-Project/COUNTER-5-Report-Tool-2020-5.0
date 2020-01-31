@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>920</width>
-    <height>500</height>
+    <width>1016</width>
+    <height>646</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,6 +23,15 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>9</pointsize>
@@ -32,7 +41,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -271,48 +280,14 @@
       </widget>
       <widget class="QWidget" name="fetchDataTab">
        <attribute name="title">
-        <string>Fetch Data</string>
+        <string>Fetch Report</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QFrame" name="frame_3">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="fetch_all_data_button">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>180</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Fetch All Data (Current Year)</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
          <widget class="QFrame" name="frame_4">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
           <property name="frameShape">
            <enum>QFrame::Box</enum>
           </property>
@@ -320,6 +295,109 @@
            <enum>QFrame::Sunken</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QFrame" name="frame_3">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>1000</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="autoFillBackground">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="fetch_all_data_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Fetch All Report (Current Year)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QFrame" name="frame_28">
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <widget class="QLabel" name="label_year">
+                 <property name="geometry">
+                  <rect>
+                   <x>170</x>
+                   <y>0</y>
+                   <width>41</width>
+                   <height>20</height>
+                  </rect>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>167</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>2020</string>
+                 </property>
+                </widget>
+                <widget class="QLabel" name="label_current_year">
+                 <property name="geometry">
+                  <rect>
+                   <x>80</x>
+                   <y>0</y>
+                   <width>100</width>
+                   <height>20</height>
+                  </rect>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>100</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Current Year:</string>
+                 </property>
+                </widget>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
            <item>
             <widget class="QLabel" name="label_8">
              <property name="maximumSize">
@@ -502,6 +580,16 @@
                       </property>
                      </widget>
                     </item>
+                    <item>
+                     <widget class="QToolButton" name="toolButton">
+                      <property name="cursor">
+                       <cursorShape>ArrowCursor</cursorShape>
+                      </property>
+                      <property name="text">
+                       <string>?</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                  </item>
@@ -527,6 +615,12 @@
                  <size>
                   <width>200</width>
                   <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>250</width>
+                  <height>16777215</height>
                  </size>
                 </property>
                 <property name="frameShape">
@@ -630,7 +724,7 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>Fetch Selected Data</string>
+                       <string>Fetch Selected Report</string>
                       </property>
                      </widget>
                     </item>
@@ -650,7 +744,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Fetch Special Data</string>
+        <string>Fetch Special Report</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
@@ -951,7 +1045,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Fetch Special Data</string>
+                 <string>Fetch Special Report</string>
                 </property>
                </widget>
               </item>
@@ -1482,8 +1576,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>920</width>
-     <height>21</height>
+     <width>1016</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>

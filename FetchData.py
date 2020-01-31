@@ -12,16 +12,16 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, \
     QDialogButtonBox, QButtonGroup, QCheckBox
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
+from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
 
-SHOW_DEBUG_MESSAGES = False
+SHOW_DEBUG_MESSAGES = False #debug messages
 TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
-EMPTY_CELL = ""
+EMPTY_CELL = "-"
 NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
 SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
 
@@ -697,6 +697,9 @@ class FetchDataController:
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
         self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
+        self.tool_button = main_window_ui.toolButton
+        self.tool_button.clicked.connect(self.tool_button_click)
+
         # endregion
 
         # region Report Types
@@ -1036,6 +1039,12 @@ class FetchDataController:
         self.status_label.setText(f"Cancelling...")
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
+    def tool_button_click(self):
+        disclaimer_dialog = QDialog()
+        disclaimer_dialog_ui = DisclaimerDialog.Ui_dialog()
+        disclaimer_dialog_ui.setupUi(disclaimer_dialog)
+
+        disclaimer_dialog.exec_()
 
     def open_explorer(self, event, path: str):
 

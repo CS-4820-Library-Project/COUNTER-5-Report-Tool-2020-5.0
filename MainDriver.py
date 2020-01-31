@@ -1,4 +1,5 @@
 import sys
+
 import ui.MainWindow
 from ManageVendors import ManageVendorsController
 from FetchData import FetchDataController, FetchSpecialDataController

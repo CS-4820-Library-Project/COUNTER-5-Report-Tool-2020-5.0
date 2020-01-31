@@ -153,3 +153,5 @@ class ManageVendorsController(QObject):
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__)
         DataStorage.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
+
+
