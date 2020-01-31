@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1016</width>
-    <height>646</height>
+    <width>920</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -41,7 +41,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -956,11 +956,7 @@
              <property name="frameShadow">
               <enum>QFrame::Sunken</enum>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_18">
-              <property name="spacing">
-               <number>20</number>
-              </property>
-             </layout>
+             <layout class="QVBoxLayout" name="verticalLayout_18"/>
             </widget>
            </item>
            <item>
@@ -1548,10 +1544,10 @@
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
-             <attribute name="horizontalHeaderDefaultSectionSize">
+             <attribute name="horizontalHeaderMinimumSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
+             <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
@@ -1576,8 +1572,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1016</width>
-     <height>22</height>
+     <width>920</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>

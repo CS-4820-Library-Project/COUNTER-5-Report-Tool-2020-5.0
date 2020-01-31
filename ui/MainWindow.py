@@ -2,19 +2,18 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from datetime import datetime
 
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
-        mainWindow.resize(1016, 646)
+        mainWindow.resize(920, 500)
         mainWindow.setMinimumSize(QtCore.QSize(920, 500))
         self.centralwidget = QtWidgets.QWidget(mainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -468,7 +467,6 @@ class Ui_mainWindow(object):
         self.attributes_frame.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.attributes_frame.setObjectName("attributes_frame")
         self.verticalLayout_18 = QtWidgets.QVBoxLayout(self.attributes_frame)
-        self.verticalLayout_18.setSpacing(20)
         self.verticalLayout_18.setObjectName("verticalLayout_18")
         self.verticalLayout_16.addWidget(self.attributes_frame)
         self.frame_31 = QtWidgets.QFrame(self.frame_27)
@@ -779,7 +777,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1016, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 920, 21))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -807,7 +805,7 @@ class Ui_mainWindow(object):
         self.addVendorButton.setText(_translate("mainWindow", "Add New Vendor"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.manageVendorsTab), _translate("mainWindow", "Manage Vendors"))
         self.fetch_all_data_button.setText(_translate("mainWindow", "Fetch All Report (Current Year)"))
-        self.label_year.setText(_translate("mainWindow", datetime.now().strftime('%Y')))
+        self.label_year.setText(_translate("mainWindow", "2020"))
         self.label_current_year.setText(_translate("mainWindow", "Current Year:"))
         self.label_8.setText(_translate("mainWindow", "Advanced Fetch"))
         self.label_11.setText(_translate("mainWindow", "Select Vendors"))

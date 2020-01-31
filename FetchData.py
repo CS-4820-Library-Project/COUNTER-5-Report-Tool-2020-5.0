@@ -17,11 +17,11 @@ from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
 
-SHOW_DEBUG_MESSAGES = False #debug messages
+SHOW_DEBUG_MESSAGES = False
 TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
-EMPTY_CELL = "-"
+EMPTY_CELL = ""
 NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
 SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
 
@@ -615,6 +615,9 @@ class Attributes:
         # TR
         self.section_type = False
         # IR
+        self.authors = False
+        self.publication_date = False
+        self.article_version = False
         self.include_component_details = False
         self.include_parent_details = False
 
@@ -1078,8 +1081,8 @@ class FetchSpecialDataController:
             MajorReportType.PLATFORM: ["Data_Type", "Access_Method"],
             MajorReportType.DATABASE: ["Data_Type", "Access_Method"],
             MajorReportType.TITLE: ["Data_Type", "Section_Type", "YOP", "Access_Type", "Access_Method"],
-            MajorReportType.ITEM: ["Data_Type", "YOP", "Access_Type", "Access_Method", "Include_Parent_Details",
-                                   "Include_Component_Details"]
+            MajorReportType.ITEM: ["Authors", "Publication_Date", "Article_Version", "Data_Type", "YOP", "Access_Type",
+                                   "Access_Method", "Include_Parent_Details", "Include_Component_Details"]
         }
         self.retry_data = []  # List of (Vendor, list[report_types])>
         self.vendor_workers = {}  # <k = worker_id, v = (VendorWorker, Thread)>
@@ -1951,8 +1954,8 @@ class ReportWorker(QObject):
         if report_type == "PR":
             column_names += ["Platform"]
             if self.attributes:
-                if self.attributes.data_type: column_names += ["Data_Type"]
-                if self.attributes.access_method: column_names += ["Access_Method"]
+                if self.attributes.data_type: column_names.append("Data_Type")
+                if self.attributes.access_method: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -1982,8 +1985,8 @@ class ReportWorker(QObject):
         elif report_type == "DR":
             column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Proprietary_ID"]
             if self.attributes:
-                if self.attributes.data_type: column_names += ["Data_Type"]
-                if self.attributes.access_method: column_names += ["Access_Method"]
+                if self.attributes.data_type: column_names.append("Data_Type")
+                if self.attributes.access_method: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2023,11 +2026,11 @@ class ReportWorker(QObject):
             column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
                              "Print_ISSN", "Online_ISSN", "URI"]
             if self.attributes:
-                if self.attributes.data_type: column_names += ["Data_Type"]
-                if self.attributes.section_type: column_names += ["Section_Type"]
-                if self.attributes.yop: column_names += ["YOP"]
-                if self.attributes.access_type: column_names += ["Access_Type"]
-                if self.attributes.access_method: column_names += ["Access_Method"]
+                if self.attributes.data_type: column_names.append("Data_Type")
+                if self.attributes.section_type: column_names.append("Section_Type")
+                if self.attributes.yop: column_names.append("YOP")
+                if self.attributes.access_type: column_names.append("Access_Type")
+                if self.attributes.access_method: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2168,19 +2171,22 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         elif report_type == "IR":
-            column_names += ["Item", "Publisher", "Publisher_ID", "Platform", "Authors", "Publication_Date",
-                             "Article_version", "DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN",
-                             "URI"]
+            column_names += ["Item", "Publisher", "Publisher_ID", "Platform"]
+            if self.attributes:
+                if self.attributes.authors: column_names.append("Authors")
+                if self.attributes.publication_date: column_names.append("Publication_Date")
+                if self.attributes.article_version: column_names.append("Article_version")
+            column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
             if self.attributes:
                 if self.attributes.include_parent_details:
                     column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
                                      "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
                                      "Parent_Proprietary_ID", "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN",
                                      "Parent_URI"]
-                if self.attributes.data_type: column_names += ["Data_Type"]
-                if self.attributes.yop: column_names += ["YOP"]
-                if self.attributes.access_type: column_names += ["Access_Type"]
-                if self.attributes.access_method: column_names += ["Access_Method"]
+                if self.attributes.data_type: column_names.append("Data_Type")
+                if self.attributes.yop: column_names.append("YOP")
+                if self.attributes.access_type: column_names.append("Access_Type")
+                if self.attributes.access_method: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2188,9 +2194,6 @@ class ReportWorker(QObject):
                             "Publisher": row.publisher,
                             "Publisher_ID": row.publisher_id,
                             "Platform": row.platform,
-                            "Authors": row.authors,
-                            "Publication_Date": row.publication_date,
-                            "Article_version": row.article_version,
                             "DOI": row.doi,
                             "Proprietary_ID": row.proprietary_id,
                             "ISBN": row.isbn,
@@ -2199,6 +2202,9 @@ class ReportWorker(QObject):
                             "URI": row.uri}
 
                 if self.attributes:
+                    if self.attributes.authors: row_dict["Authors"] = row.authors
+                    if self.attributes.publication_date: row_dict["Publication_Date"] = row.publication_date
+                    if self.attributes.article_version: row_dict["Article_version"] = row.article_version
                     if self.attributes.include_parent_details:
                         row_dict.update({"Parent_Title": row.parent_title,
                                          "Parent_Authors": row.parent_authors,
@@ -2211,7 +2217,7 @@ class ReportWorker(QObject):
                                          "Parent_Print_ISSN": row.parent_print_issn,
                                          "Parent_Online_ISSN": row.parent_online_issn,
                                          "Parent_URI": row.parent_uri})
-                    if self.attributes.section_type: row_dict["Data_Type"] = row.data_type
+                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
                     if self.attributes.yop: row_dict["YOP"] = row.yop
                     if self.attributes.access_type: row_dict["Access_Type"] = row.access_type
                     if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
