@@ -1039,6 +1039,7 @@ class FetchDataController:
         self.status_label.setText(f"Cancelling...")
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
+
     def tool_button_click(self):
         disclaimer_dialog = QDialog()
         disclaimer_dialog_ui = DisclaimerDialog.Ui_dialog()
@@ -1715,9 +1716,6 @@ class ReportWorker(QObject):
                             pub_id_str = ""
                             for pub_id in report_item.publisher_ids:
                                 pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-
-                                if pub_id.item_type == "Proprietary" or pub_id.item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = pub_id.value
                             if pub_id_str != "": report_row.publisher_id = pub_id_str
 
                             for item_id in report_item.item_ids:
@@ -1738,9 +1736,6 @@ class ReportWorker(QObject):
                             pub_id_str = ""
                             for pub_id in report_item.publisher_ids:
                                 pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-
-                                if pub_id.item_type == "Proprietary" or pub_id.item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = pub_id.value
                             if pub_id_str != "": report_row.publisher_id = pub_id_str
 
                             item_id: TypeValueModel
@@ -1785,9 +1780,6 @@ class ReportWorker(QObject):
                             pub_id_str = ""
                             for pub_id in report_item.publisher_ids:
                                 pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-
-                                if pub_id.item_type == "Proprietary" or pub_id.item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = pub_id.value
                             if pub_id_str != "": report_row.publisher_id = pub_id_str
 
                             # Authors
