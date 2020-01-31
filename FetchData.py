@@ -1661,7 +1661,7 @@ class ReportWorker(QObject):
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             if e.msg == "Expecting value":
-                self.process_result.message = f"Something went wrong on the vendor's end. No data was returned"
+                self.process_result.message = f"Vendor did not return any data"
             else:
                 self.process_result.message = f"JSON Exception: {e.msg}"
             if SHOW_DEBUG_MESSAGES: print(
