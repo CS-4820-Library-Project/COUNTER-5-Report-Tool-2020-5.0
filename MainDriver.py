@@ -40,9 +40,9 @@ if __name__ == "__main__":
     # endregion
 
     # region Connect Signals
-    manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_size_changed)
-    manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_size_changed)
-    manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_size_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_changed)
     # endregion
 
     main_window.show()

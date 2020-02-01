@@ -690,11 +690,7 @@ class FetchReportsController:
         self.vendor_list_view = main_window_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
-        for vendor in vendors:
-            item = QStandardItem(vendor.name)
-            item.setCheckable(True)
-            item.setEditable(False)
-            self.vendor_list_model.appendRow(item)
+        self.update_vendors_ui()
 
         self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
@@ -743,9 +739,11 @@ class FetchReportsController:
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
 
-    def on_vendors_size_changed(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+    def on_vendors_changed(self):
+        self.update_vendors_ui()
 
+    def update_vendors_ui(self):
+        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
@@ -1115,11 +1113,7 @@ class FetchSpecialReportsController:
         self.vendor_list_view = main_window_ui.vendors_list_view_special
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
-        for vendor in vendors:
-            item = QStandardItem(vendor.name)
-            item.setCheckable(True)
-            item.setEditable(False)
-            self.vendor_list_model.appendRow(item)
+        self.update_vendors_ui()
 
         self.select_vendors_btn = main_window_ui.select_vendors_button_special
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
@@ -1170,9 +1164,11 @@ class FetchSpecialReportsController:
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
 
-    def on_vendors_size_changed(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+    def on_vendors_changed(self):
+        self.update_vendors_ui()
 
+    def update_vendors_ui(self):
+        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
             item.setCheckable(True)

@@ -23,10 +23,7 @@ class ImportFileController:
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
-        for vendor in vendors:
-            item = QStandardItem(vendor.name)
-            item.setEditable(False)
-            self.vendor_list_model.appendRow(item)
+        self.update_vendors_ui()
 
         self.report_type_list_view = main_window_ui.report_types_list_view_import
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
@@ -49,13 +46,14 @@ class ImportFileController:
         self.import_file_button = main_window_ui.import_file_button
         self.import_file_button.clicked.connect(self.import_csv_file)
 
-    def on_vendors_size_changed(self):
+    def on_vendors_changed(self):
         self.selected_vendor_index = -1
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.update_vendors_ui()
 
+    def update_vendors_ui(self):
+        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
-            item.setCheckable(True)
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
