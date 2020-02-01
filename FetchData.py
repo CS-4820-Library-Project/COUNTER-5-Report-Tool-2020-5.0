@@ -16,14 +16,17 @@ from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidge
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Search import SearchController
+from Settings import SettingsModel
 
 SHOW_DEBUG_MESSAGES = False
-TIME_BETWEEN_VENDOR_REQUESTS = 3  # Seconds
-CONCURRENT_VENDOR_PROCESSES = 5
-CONCURRENT_REPORT_PROCESSES = 5
-EMPTY_CELL = ""
-NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
-SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
+
+# Settings
+general_tsv_dir = ""
+special_tsv_dir = ""
+request_interval = 3  # Seconds
+concurrent_vendors = 5
+concurrent_reports = 5
+empty_cell = ""
 
 REPORT_TYPES = ["PR",
                 "PR_P1",
@@ -545,51 +548,51 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 
 class ReportRow:
     def __init__(self, begin_date: QDate, end_date: QDate):
-        self.database = EMPTY_CELL
-        self.title = EMPTY_CELL
-        self.item = EMPTY_CELL
-        self.publisher = EMPTY_CELL
-        self.publisher_id = EMPTY_CELL
-        self.platform = EMPTY_CELL
-        self.authors = EMPTY_CELL
-        self.publication_date = EMPTY_CELL
-        self.article_version = EMPTY_CELL
-        self.doi = EMPTY_CELL
-        self.proprietary_id = EMPTY_CELL
-        self.online_issn = EMPTY_CELL
-        self.print_issn = EMPTY_CELL
-        self.linking_issn = EMPTY_CELL
-        self.isbn = EMPTY_CELL
-        self.uri = EMPTY_CELL
-        self.parent_title = EMPTY_CELL
-        self.parent_authors = EMPTY_CELL
-        self.parent_publication_date = EMPTY_CELL
-        self.parent_article_version = EMPTY_CELL
-        self.parent_data_type = EMPTY_CELL
-        self.parent_doi = EMPTY_CELL
-        self.parent_proprietary_id = EMPTY_CELL
-        self.parent_online_issn = EMPTY_CELL
-        self.parent_print_issn = EMPTY_CELL
-        self.parent_linking_issn = EMPTY_CELL
-        self.parent_isbn = EMPTY_CELL
-        self.parent_uri = EMPTY_CELL
-        self.component_title = EMPTY_CELL
-        self.component_authors = EMPTY_CELL
-        self.component_publication_date = EMPTY_CELL
-        self.component_data_type = EMPTY_CELL
-        self.component_doi = EMPTY_CELL
-        self.component_proprietary_id = EMPTY_CELL
-        self.component_online_issn = EMPTY_CELL
-        self.component_print_issn = EMPTY_CELL
-        self.component_linking_issn = EMPTY_CELL
-        self.component_isbn = EMPTY_CELL
-        self.component_uri = EMPTY_CELL
-        self.data_type = EMPTY_CELL
-        self.section_type = EMPTY_CELL
-        self.yop = EMPTY_CELL
-        self.access_type = EMPTY_CELL
-        self.access_method = EMPTY_CELL
-        self.metric_type = EMPTY_CELL
+        self.database = empty_cell
+        self.title = empty_cell
+        self.item = empty_cell
+        self.publisher = empty_cell
+        self.publisher_id = empty_cell
+        self.platform = empty_cell
+        self.authors = empty_cell
+        self.publication_date = empty_cell
+        self.article_version = empty_cell
+        self.doi = empty_cell
+        self.proprietary_id = empty_cell
+        self.online_issn = empty_cell
+        self.print_issn = empty_cell
+        self.linking_issn = empty_cell
+        self.isbn = empty_cell
+        self.uri = empty_cell
+        self.parent_title = empty_cell
+        self.parent_authors = empty_cell
+        self.parent_publication_date = empty_cell
+        self.parent_article_version = empty_cell
+        self.parent_data_type = empty_cell
+        self.parent_doi = empty_cell
+        self.parent_proprietary_id = empty_cell
+        self.parent_online_issn = empty_cell
+        self.parent_print_issn = empty_cell
+        self.parent_linking_issn = empty_cell
+        self.parent_isbn = empty_cell
+        self.parent_uri = empty_cell
+        self.component_title = empty_cell
+        self.component_authors = empty_cell
+        self.component_publication_date = empty_cell
+        self.component_data_type = empty_cell
+        self.component_doi = empty_cell
+        self.component_proprietary_id = empty_cell
+        self.component_online_issn = empty_cell
+        self.component_print_issn = empty_cell
+        self.component_linking_issn = empty_cell
+        self.component_isbn = empty_cell
+        self.component_uri = empty_cell
+        self.data_type = empty_cell
+        self.section_type = empty_cell
+        self.yop = empty_cell
+        self.access_type = empty_cell
+        self.access_method = empty_cell
+        self.metric_type = empty_cell
 
         self.month_counts = {}
         for i in range(12):
@@ -651,7 +654,8 @@ class RetryLaterException(Exception):
 
 
 class FetchReportsController:
-    def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, search_controller: SearchController, settings_model: SettingsModel,
+                 main_window_ui: MainWindow.Ui_mainWindow):
 
         # region General
         self.search_controller = search_controller
@@ -676,6 +680,8 @@ class FetchReportsController:
 
         self.is_last_fetch_advanced = False
         self.is_cancelling = False
+
+        self.on_settings_changed(settings_model)
         # endregion
 
         # region Start Fetch Buttons
@@ -768,6 +774,15 @@ class FetchReportsController:
                                             self.adv_begin_date.day())
                 self.begin_date_edit.setDate(self.adv_begin_date)
 
+    def on_settings_changed(self, settings_model: SettingsModel):
+        global general_tsv_dir, special_tsv_dir, request_interval, concurrent_vendors, concurrent_reports, empty_cell
+        general_tsv_dir = settings_model.general_save_location
+        special_tsv_dir = settings_model.special_save_location
+        request_interval = settings_model.request_interval
+        concurrent_vendors = settings_model.concurrent_vendors
+        concurrent_reports = settings_model.concurrent_reports
+        empty_cell = settings_model.empty_cell
+
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
             self.vendor_list_model.item(i).setCheckState(Qt.Checked)
@@ -800,7 +815,7 @@ class FetchReportsController:
         self.selected_data = []
         for i in range(len(self.vendors)):
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       NORMAL_TSV_DIR)
+                                       general_tsv_dir)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -809,7 +824,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
-        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+        while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
@@ -839,7 +854,7 @@ class FetchReportsController:
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           NORMAL_TSV_DIR)
+                                           general_tsv_dir)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -851,7 +866,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
-        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+        while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
@@ -1010,7 +1025,7 @@ class FetchReportsController:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, NORMAL_TSV_DIR)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, general_tsv_dir)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog()
@@ -1018,7 +1033,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
-        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+        while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
@@ -1062,11 +1077,10 @@ class FetchReportsController:
                 if index != (len(file_path_list)-1):
                     file_path = str(file_path) + '\\' + str(file_path_list[index])
 
+            current_working_directory = os.getcwd()
+            open_explorer_path = current_working_directory + file_path
 
-            current_Working_Directory = os.getcwd()
-            open_Explorer_Path = current_Working_Directory + file_path
-
-            os.system("start explorer %s" % open_Explorer_Path)
+            os.system("start explorer %s" % open_explorer_path)
 
 
 class FetchSpecialReportsController:
@@ -1237,7 +1251,7 @@ class FetchSpecialReportsController:
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           SPECIAL_TSV_DIR, self.selected_attributes)
+                                           special_tsv_dir, self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1248,7 +1262,7 @@ class FetchSpecialReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
-        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+        while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
@@ -1405,7 +1419,7 @@ class FetchSpecialReportsController:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, SPECIAL_TSV_DIR,
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, special_tsv_dir,
                                        self.selected_attributes)
             self.selected_data.append(request_data)
 
@@ -1414,7 +1428,7 @@ class FetchSpecialReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
-        while self.started_processes < len(self.selected_data) and self.started_processes < CONCURRENT_VENDOR_PROCESSES:
+        while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
@@ -1526,13 +1540,13 @@ class VendorWorker(QObject):
 
             self.total_processes = len(self.reports_to_process)
             self.started_processes = 0
-            while self.started_processes < self.total_processes and self.started_processes < CONCURRENT_REPORT_PROCESSES:
-                QThread.currentThread().sleep(TIME_BETWEEN_VENDOR_REQUESTS)  # Avoid spamming vendor's server
+            while self.started_processes < self.total_processes and self.started_processes < concurrent_reports:
+                QThread.currentThread().sleep(request_interval)  # Avoid spamming vendor's server
                 if self.is_cancelling:
                     self.process_result.completion_status = CompletionStatus.CANCELLED
                     return
 
-                self.fetch_report(self.vendor, self.reports_to_process[self.started_processes])
+                self.fetch_report(self.reports_to_process[self.started_processes])
                 self.started_processes += 1
 
         except json.JSONDecodeError as e:
@@ -1544,7 +1558,7 @@ class VendorWorker(QObject):
             self.process_result.message = str(e)
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Exception: {e}")
 
-    def fetch_report(self, vendor: Vendor, report_type: str):
+    def fetch_report(self, report_type: str):
         worker_id = report_type
         if worker_id in self.report_workers: return  # Avoid fetching a report twice, app will crash!!
 
@@ -1582,8 +1596,8 @@ class VendorWorker(QObject):
         self.report_workers.pop(worker_id, None)
 
         if self.started_processes < self.total_processes and not self.is_cancelling:
-            QThread.currentThread().sleep(TIME_BETWEEN_VENDOR_REQUESTS)  # Avoid spamming vendor's server
-            self.fetch_report(self.vendor, self.reports_to_process[self.started_processes])
+            QThread.currentThread().sleep(request_interval)  # Avoid spamming vendor's server
+            self.fetch_report(self.reports_to_process[self.started_processes])
             self.started_processes += 1
 
         if len(self.report_workers) == 0: self.notify_worker_finished()
@@ -1682,7 +1696,7 @@ class ReportWorker(QObject):
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{NORMAL_TSV_DIR}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{general_tsv_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}/{file_name}"
 
