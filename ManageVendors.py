@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QListView, QPushButton, QLineEdit, QFrame
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-from ui import MainWindow, AddVendorDialog
+from ui import MainWindow, AddVendorDialog, MessageDialog
 import json
 import DataStorage
 from JsonUtils import JsonModel
@@ -37,7 +37,8 @@ class ManageVendorsController(QObject):
 
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         super().__init__()
-        self.edit_vendor_frame = main_window_ui.modifyVendorFrame
+        self.edit_vendor_details_frame = main_window_ui.edit_vendor_details_frame
+        self.edit_vendor_options_frame = main_window_ui.edit_vendor_options_frame
 
         self.name_line_edit = main_window_ui.nameEdit
         self.customer_id_line_edit = main_window_ui.customerIdEdit
@@ -46,7 +47,7 @@ class ManageVendorsController(QObject):
         self.api_key_line_edit = main_window_ui.apiKeyEdit
         self.platform_line_edit = main_window_ui.platformEdit
 
-        self.selected_index = None
+        self.selected_index = -1
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
         self.remove_vendor_button = main_window_ui.removeVendorButton
@@ -74,11 +75,11 @@ class ManageVendorsController(QObject):
 
     def on_vendor_selected(self, model_index: QModelIndex):
         self.selected_index = model_index.row()
+        self.set_edit_vendor_view_state(True)
         self.populate_edit_vendor_view()
-        self.edit_vendor_frame.setEnabled(True)
 
     def modify_vendor(self):
-        if self.selected_index is not None:
+        if self.selected_index >= 0:
             selected_vendor = self.vendors[self.selected_index]
             selected_vendor.name = self.name_line_edit.text()
             selected_vendor.customer_id = self.customer_id_line_edit.text()
@@ -93,6 +94,7 @@ class ManageVendorsController(QObject):
 
             self.vendors_changed_signal.emit()
             self.save_all_vendors_to_disk()
+            self.show_message("Changes Saved!")
 
     def open_add_vendor_dialog(self):
         vendor_dialog = QDialog()
@@ -128,7 +130,7 @@ class ManageVendorsController(QObject):
         vendor_dialog.exec_()
 
     def populate_edit_vendor_view(self):
-        if self.selected_index is not None:
+        if self.selected_index >= 0:
             selected_vendor = self.vendors[self.selected_index]
             self.name_line_edit.setText(selected_vendor.name)
             self.customer_id_line_edit.setText(selected_vendor.customer_id)
@@ -137,14 +139,20 @@ class ManageVendorsController(QObject):
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
 
+    def set_edit_vendor_view_state(self, is_enabled):
+        if is_enabled:
+            self.edit_vendor_details_frame.setEnabled(True)
+            self.edit_vendor_options_frame.setEnabled(True)
+        else:
+            self.edit_vendor_details_frame.setEnabled(False)
+            self.edit_vendor_options_frame.setEnabled(False)
+
     def remove_vendor(self):
-        if self.selected_index is not None:
+        if self.selected_index >= 0:
             self.vendors.pop(self.selected_index)
             self.vendors_list_model.removeRow(self.selected_index)
-            self.selected_index = None
-            if len(self.vendors) > 0:
-                self.selected_index = len(self.vendors) - 1
-                self.populate_edit_vendor_view()
+            self.selected_index = -1
+            self.set_edit_vendor_view_state(False)
 
             self.vendors_changed_signal.emit()
             self.save_all_vendors_to_disk()
@@ -152,5 +160,15 @@ class ManageVendorsController(QObject):
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__)
         DataStorage.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
+
+    def show_message(self, message: str):
+        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        message_dialog_ui = MessageDialog.Ui_message_dialog()
+        message_dialog_ui.setupUi(message_dialog)
+
+        message_label = message_dialog_ui.message_label
+        message_label.setText(message)
+
+        message_dialog.exec_()
 
 

@@ -57,9 +57,8 @@ def show_message(message: str):
     message_dialog.exec_()
 
 
-class SettingsController(QObject):
+class SettingsController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__()
         # region General
         settings_json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         settings_dict = json.loads(settings_json_string)
