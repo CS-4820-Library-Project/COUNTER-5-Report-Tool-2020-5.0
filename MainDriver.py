@@ -32,9 +32,10 @@ if __name__ == "__main__":
     search_controller = SearchController(main_window_ui)
     settings_controller = SettingsController(main_window_ui)
     fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, search_controller,
-                                                      settings_controller.settings_model, main_window_ui)
+                                                      settings_controller.settings, main_window_ui)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
-                                                                     search_controller, main_window_ui)
+                                                                     search_controller,
+                                                                     settings_controller.settings, main_window_ui)
     import_file_controller = ImportFileController(manage_vendors_controller.vendors, search_controller, main_window_ui)
     # endregion
 
@@ -42,7 +43,6 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_size_changed)
     manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_size_changed)
     manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_size_changed)
-    settings_controller.settings_changed_signal.connect(fetch_reports_controller.on_settings_changed)
     # endregion
 
     main_window.show()

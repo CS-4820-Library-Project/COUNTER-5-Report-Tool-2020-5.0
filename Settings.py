@@ -9,7 +9,7 @@ SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
 
 # Default Settings
-NORMAL_TSV_DIR = "./all_data/normal_tsv_files/"
+GENERAL_TSV_DIR = "./all_data/general_tsv_files/"
 SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
 REQUEST_INTERVAL = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
@@ -30,7 +30,7 @@ class SettingsModel(JsonModel):
     @classmethod
     def from_json(cls, json_dict: dict):
         general_save_location = json_dict["general_save_location"]\
-            if "general_save_location" in json_dict else NORMAL_TSV_DIR
+            if "general_save_location" in json_dict else GENERAL_TSV_DIR
         special_save_location = json_dict["special_save_location"]\
             if "special_save_location" in json_dict else SPECIAL_TSV_DIR
         request_interval = int(json_dict["request_interval"])\
@@ -58,14 +58,12 @@ def show_message(message: str):
 
 
 class SettingsController(QObject):
-    settings_changed_signal = pyqtSignal(SettingsModel)
-
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         super().__init__()
         # region General
         settings_json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         settings_dict = json.loads(settings_json_string)
-        self.settings_model = SettingsModel.from_json(settings_dict)
+        self.settings = SettingsModel.from_json(settings_dict)
         # endregion
 
         # region Reports
@@ -77,12 +75,12 @@ class SettingsController(QObject):
         main_window_ui.special_save_location_button.clicked.connect(
             lambda: self.open_file_select_dialog("special_save_location"))
 
-        self.general_save_location_edit.setText(self.settings_model.general_save_location)
-        self.special_save_location_edit.setText(self.settings_model.special_save_location)
-        main_window_ui.request_interval_edit.setText(str(self.settings_model.request_interval))
-        main_window_ui.concurrent_vendors_edit.setText(str(self.settings_model.concurrent_vendors))
-        main_window_ui.concurrent_reports_edit.setText(str(self.settings_model.concurrent_reports))
-        main_window_ui.empty_cell_edit.setText(self.settings_model.empty_cell)
+        self.general_save_location_edit.setText(self.settings.general_save_location)
+        self.special_save_location_edit.setText(self.settings.special_save_location)
+        main_window_ui.request_interval_edit.setText(str(self.settings.request_interval))
+        main_window_ui.concurrent_vendors_edit.setText(str(self.settings.concurrent_vendors))
+        main_window_ui.concurrent_reports_edit.setText(str(self.settings.concurrent_reports))
+        main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
 
         self.general_save_location_edit.textEdited.connect(
             lambda text: self.on_setting_changed("general_save_location", text))
@@ -115,20 +113,19 @@ class SettingsController(QObject):
 
     def on_setting_changed(self, setting_key: str, setting_value: str):
         if setting_key == "general_save_location":
-            self.settings_model.general_save_location = setting_value
+            self.settings.general_save_location = setting_value
         elif setting_key == "special_save_location":
-            self.settings_model.special_save_location = setting_value
+            self.settings.special_save_location = setting_value
         elif setting_key == "request_interval":
-            self.settings_model.request_interval = int(setting_value)
+            self.settings.request_interval = int(setting_value)
         elif setting_key == "concurrent_vendors":
-            self.settings_model.concurrent_vendors = int(setting_value)
+            self.settings.concurrent_vendors = int(setting_value)
         elif setting_key == "concurrent_reports":
-            self.settings_model.concurrent_reports = int(setting_value)
+            self.settings.concurrent_reports = int(setting_value)
         elif setting_key == "empty_cell":
-            self.settings_model.empty_cell = setting_value
+            self.settings.empty_cell = setting_value
 
         self.save_settings_to_disk()
-        self.settings_changed_signal.emit(self.settings_model)
 
     def open_file_select_dialog(self, setting: str):
         dialog = QFileDialog()
@@ -143,5 +140,5 @@ class SettingsController(QObject):
             self.on_setting_changed(setting, save_location)
 
     def save_settings_to_disk(self):
-        json_string = json.dumps(self.settings_model, default=lambda o: o.__dict__)
+        json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)

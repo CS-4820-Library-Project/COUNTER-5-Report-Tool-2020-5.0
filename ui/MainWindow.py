@@ -1068,7 +1068,7 @@ class Ui_mainWindow(object):
         self.concurrent_reports_help_button.setText(_translate("mainWindow", "?"))
         self.special_save_help_button.setText(_translate("mainWindow", "?"))
         self.empty_cell_help_button.setText(_translate("mainWindow", "?"))
-        self.label_30.setText(_translate("mainWindow", "Vendor Request Interval"))
+        self.label_30.setText(_translate("mainWindow", "Report Request Interval"))
         self.label_29.setText(_translate("mainWindow", "Special Reports Save Location"))
         self.special_save_location_button.setText(_translate("mainWindow", "Choose Folder..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), _translate("mainWindow", "Settings"))

@@ -20,14 +20,6 @@ from Settings import SettingsModel
 
 SHOW_DEBUG_MESSAGES = False
 
-# Settings
-general_tsv_dir = ""
-special_tsv_dir = ""
-request_interval = 3  # Seconds
-concurrent_vendors = 5
-concurrent_reports = 5
-empty_cell = ""
-
 REPORT_TYPES = ["PR",
                 "PR_P1",
                 "DR",
@@ -547,7 +539,7 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 
 
 class ReportRow:
-    def __init__(self, begin_date: QDate, end_date: QDate):
+    def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
         self.database = empty_cell
         self.title = empty_cell
         self.item = empty_cell
@@ -627,13 +619,16 @@ class Attributes:
 
 class RequestData:
     def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate, save_dir: str,
-                 attributes: Attributes = None):
+                 request_interval: int, concurrent_reports: int, empty_cell: str, attributes: Attributes = None):
         self.vendor = vendor
         self.target_report_types = target_report_types
         self.begin_date = begin_date
         self.end_date = end_date
         self.save_dir = save_dir
         self.attributes = attributes
+        self.request_interval = request_interval
+        self.concurrent_reports = concurrent_reports
+        self.empty_cell = empty_cell
 
 
 class ProcessResult:
@@ -654,9 +649,8 @@ class RetryLaterException(Exception):
 
 
 class FetchReportsController:
-    def __init__(self, vendors: list, search_controller: SearchController, settings_model: SettingsModel,
+    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
                  main_window_ui: MainWindow.Ui_mainWindow):
-
         # region General
         self.search_controller = search_controller
         self.vendors = vendors
@@ -681,7 +675,7 @@ class FetchReportsController:
         self.is_last_fetch_advanced = False
         self.is_cancelling = False
 
-        self.on_settings_changed(settings_model)
+        self.settings = settings
         # endregion
 
         # region Start Fetch Buttons
@@ -774,15 +768,6 @@ class FetchReportsController:
                                             self.adv_begin_date.day())
                 self.begin_date_edit.setDate(self.adv_begin_date)
 
-    def on_settings_changed(self, settings_model: SettingsModel):
-        global general_tsv_dir, special_tsv_dir, request_interval, concurrent_vendors, concurrent_reports, empty_cell
-        general_tsv_dir = settings_model.general_save_location
-        special_tsv_dir = settings_model.special_save_location
-        request_interval = settings_model.request_interval
-        concurrent_vendors = settings_model.concurrent_vendors
-        concurrent_reports = settings_model.concurrent_reports
-        empty_cell = settings_model.empty_cell
-
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
             self.vendor_list_model.item(i).setCheckState(Qt.Checked)
@@ -815,7 +800,8 @@ class FetchReportsController:
         self.selected_data = []
         for i in range(len(self.vendors)):
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       general_tsv_dir)
+                                       self.settings.general_save_location, self.settings.request_interval,
+                                           self.settings.concurrent_reports, self.settings.empty_cell)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -824,6 +810,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
+        concurrent_vendors = self.settings.concurrent_vendors
         while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
@@ -854,7 +841,8 @@ class FetchReportsController:
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           general_tsv_dir)
+                                           self.settings.general_save_location, self.settings.request_interval,
+                                           self.settings.concurrent_reports, self.settings.empty_cell)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -866,6 +854,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
+        concurrent_vendors = self.settings.concurrent_vendors
         while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
@@ -1025,7 +1014,9 @@ class FetchReportsController:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, general_tsv_dir)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date,
+                                       self.settings.general_save_location, self.settings.request_interval,
+                                           self.settings.concurrent_reports, self.settings.empty_cell)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog()
@@ -1033,6 +1024,7 @@ class FetchReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
+        concurrent_vendors = self.settings.concurrent_vendors
         while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
@@ -1066,7 +1058,6 @@ class FetchReportsController:
         disclaimer_dialog.exec_()
 
     def open_explorer(self, event, path: str):
-
         if path is not None:
 
             file_path = ""
@@ -1084,7 +1075,8 @@ class FetchReportsController:
 
 
 class FetchSpecialReportsController:
-    def __init__(self, vendors: list, search_controller: SearchController, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
+                 main_window_ui: MainWindow.Ui_mainWindow):
         # region General
         self.search_controller = search_controller
         self.vendors = vendors
@@ -1110,6 +1102,8 @@ class FetchSpecialReportsController:
         else:
             self.end_date = QDate(current_date)
         self.is_cancelling = False
+
+        self.settings = settings
         # endregion
 
         # region Start Fetch Button
@@ -1251,7 +1245,9 @@ class FetchSpecialReportsController:
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           special_tsv_dir, self.selected_attributes)
+                                           self.settings.special_save_location, self.settings.request_interval,
+                                           self.settings.concurrent_reports, self.settings.empty_cell,
+                                           self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1262,6 +1258,7 @@ class FetchSpecialReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
+        concurrent_vendors = self.settings.concurrent_vendors
         while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
@@ -1419,7 +1416,9 @@ class FetchSpecialReportsController:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, special_tsv_dir,
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date,
+                                       self.settings.special_save_location, self.settings.request_interval,
+                                       self.settings.concurrent_reports, self.settings.empty_cell,
                                        self.selected_attributes)
             self.selected_data.append(request_data)
 
@@ -1428,6 +1427,7 @@ class FetchSpecialReportsController:
 
         self.total_processes = len(self.selected_data)
         self.started_processes = 0
+        concurrent_vendors = self.settings.concurrent_vendors
         while self.started_processes < len(self.selected_data) and self.started_processes < concurrent_vendors:
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
@@ -1462,8 +1462,10 @@ class VendorWorker(QObject):
         self.worker_id = worker_id
         self.search_controller = search_controller
         self.request_data = request_data
-        self.vendor = self.request_data.vendor
-        self.target_report_types = self.request_data.target_report_types
+        self.vendor = request_data.vendor
+        self.target_report_types = request_data.target_report_types
+        self.concurrent_reports = request_data.concurrent_reports
+        self.request_interval = request_data.request_interval
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1540,8 +1542,8 @@ class VendorWorker(QObject):
 
             self.total_processes = len(self.reports_to_process)
             self.started_processes = 0
-            while self.started_processes < self.total_processes and self.started_processes < concurrent_reports:
-                QThread.currentThread().sleep(request_interval)  # Avoid spamming vendor's server
+            while self.started_processes < self.total_processes and self.started_processes < self.concurrent_reports:
+                QThread.currentThread().sleep(self.request_interval)  # Avoid spamming vendor's server
                 if self.is_cancelling:
                     self.process_result.completion_status = CompletionStatus.CANCELLED
                     return
@@ -1596,7 +1598,7 @@ class VendorWorker(QObject):
         self.report_workers.pop(worker_id, None)
 
         if self.started_processes < self.total_processes and not self.is_cancelling:
-            QThread.currentThread().sleep(request_interval)  # Avoid spamming vendor's server
+            QThread.currentThread().sleep(self.request_interval)  # Avoid spamming vendor's server
             self.fetch_report(self.reports_to_process[self.started_processes])
             self.started_processes += 1
 
@@ -1619,6 +1621,7 @@ class ReportWorker(QObject):
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
         self.save_dir = request_data.save_dir
+        self.empty_cell = request_data.empty_cell
         self.attributes = request_data.attributes
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
@@ -1696,9 +1699,9 @@ class ReportWorker(QObject):
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{general_tsv_dir}/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}/{file_name}"
+        file_path = f"{file_dir}{file_name}"
 
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Processing report")
 
@@ -1713,7 +1716,7 @@ class ReportWorker(QObject):
                 for instance in performance.instances:
                     metric_type = instance.metric_type
                     if metric_type not in row_dict:
-                        report_row = ReportRow(self.begin_date, self.end_date)
+                        report_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
                         report_row.metric_type = metric_type
 
                         if major_report_type == MajorReportType.PLATFORM:

@@ -1893,7 +1893,7 @@
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_30">
                    <property name="text">
-                    <string>Vendor Request Interval</string>
+                    <string>Report Request Interval</string>
                    </property>
                   </widget>
                  </item>
