@@ -768,7 +768,6 @@ class FetchDataController:
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
 
-
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
             self.vendor_list_model.item(i).setCheckState(Qt.Checked)

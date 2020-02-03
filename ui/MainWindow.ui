@@ -326,43 +326,73 @@
               <set>Qt::AlignCenter</set>
              </property>
              <widget class="QLabel" name="Year_text">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>0</y>
-                <width>36</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>36</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Year</string>
-              </property>
-             </widget>
-             <widget class="QDateEdit" name="All_reports_edit_fetch">
-              <property name="geometry">
-               <rect>
-                <x>50</x>
-                <y>0</y>
-                <width>60</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>60</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="displayFormat">
-               <string>yyyy</string>
-              </property>
-             </widget>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="fetch_all_data_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Fetch All Reports</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QGroupBox" name="groupBox">
+                <property name="maximumSize">
+                 <size>
+                  <width>140</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="title">
+                 <string/>
+                </property>
+                <widget class="QLabel" name="label_28">
+                 <property name="geometry">
+                  <rect>
+                   <x>30</x>
+                   <y>3</y>
+                   <width>31</width>
+                   <height>16</height>
+                  </rect>
+                 </property>
+                 <property name="text">
+                  <string>Year</string>
+                 </property>
+                </widget>
+                <widget class="QDateTimeEdit" name="All_reports_edit_fetch">
+                 <property name="geometry">
+                  <rect>
+                   <x>80</x>
+                   <y>0</y>
+                   <width>51</width>
+                   <height>24</height>
+                  </rect>
+                 </property>
+                 <property name="date">
+                  <date>
+                   <year>2020</year>
+                   <month>1</month>
+                   <day>1</day>
+                  </date>
+                 </property>
+                 <property name="displayFormat">
+                  <string>yyyy</string>
+                 </property>
+                </widget>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
