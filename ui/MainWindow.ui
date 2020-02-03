@@ -47,7 +47,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -346,60 +346,55 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Fetch All Report (Current Year)</string>
+                 <string>Fetch All Reports</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="2">
-               <widget class="QFrame" name="frame_28">
+              <item row="0" column="1">
+               <widget class="QGroupBox" name="groupBox">
                 <property name="maximumSize">
                  <size>
-                  <width>300</width>
+                  <width>120</width>
                   <height>16777215</height>
                  </size>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
+                <property name="title">
+                 <string/>
                 </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <widget class="QLabel" name="label_year">
+                <widget class="QLabel" name="label_34">
                  <property name="geometry">
                   <rect>
-                   <x>170</x>
-                   <y>0</y>
-                   <width>41</width>
-                   <height>20</height>
+                   <x>10</x>
+                   <y>3</y>
+                   <width>31</width>
+                   <height>16</height>
                   </rect>
                  </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>167</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
                  <property name="text">
-                  <string>2020</string>
+                  <string>Year</string>
                  </property>
                 </widget>
-                <widget class="QLabel" name="label_current_year">
+                <widget class="QDateEdit" name="All_reports_edit_fetch">
                  <property name="geometry">
                   <rect>
-                   <x>80</x>
-                   <y>0</y>
-                   <width>100</width>
-                   <height>20</height>
+                   <x>50</x>
+                   <y>-1</y>
+                   <width>51</width>
+                   <height>24</height>
                   </rect>
                  </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>100</width>
-                   <height>16777215</height>
-                  </size>
+                 <property name="dateTime">
+                  <datetime>
+                   <hour>0</hour>
+                   <minute>0</minute>
+                   <second>0</second>
+                   <year>2020</year>
+                   <month>1</month>
+                   <day>1</day>
+                  </datetime>
                  </property>
-                 <property name="text">
-                  <string>Current Year:</string>
+                 <property name="displayFormat">
+                  <string>yyyy</string>
                  </property>
                 </widget>
                </widget>
@@ -1553,10 +1548,10 @@
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
-             <attribute name="horizontalHeaderMinimumSectionSize">
+             <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="horizontalHeaderDefaultSectionSize">
+             <attribute name="horizontalHeaderMinimumSectionSize">
               <number>200</number>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
@@ -1949,7 +1944,7 @@
      <x>0</x>
      <y>0</y>
      <width>920</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
