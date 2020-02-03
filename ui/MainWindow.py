@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
@@ -188,20 +186,18 @@ class Ui_mainWindow(object):
         self.fetch_all_data_button.setMaximumSize(QtCore.QSize(300, 16777215))
         self.fetch_all_data_button.setObjectName("fetch_all_data_button")
         self.gridLayout_4.addWidget(self.fetch_all_data_button, 0, 0, 1, 1)
-        self.frame_28 = QtWidgets.QFrame(self.frame_3)
-        self.frame_28.setMaximumSize(QtCore.QSize(300, 16777215))
-        self.frame_28.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_28.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_28.setObjectName("frame_28")
-        self.label_year = QtWidgets.QLabel(self.frame_28)
-        self.label_year.setGeometry(QtCore.QRect(170, 0, 41, 20))
-        self.label_year.setMaximumSize(QtCore.QSize(167, 16777215))
-        self.label_year.setObjectName("label_year")
-        self.label_current_year = QtWidgets.QLabel(self.frame_28)
-        self.label_current_year.setGeometry(QtCore.QRect(80, 0, 100, 20))
-        self.label_current_year.setMaximumSize(QtCore.QSize(100, 16777215))
-        self.label_current_year.setObjectName("label_current_year")
-        self.gridLayout_4.addWidget(self.frame_28, 0, 2, 1, 1)
+        self.groupBox = QtWidgets.QGroupBox(self.frame_3)
+        self.groupBox.setMaximumSize(QtCore.QSize(120, 16777215))
+        self.groupBox.setTitle("")
+        self.groupBox.setObjectName("groupBox")
+        self.label_34 = QtWidgets.QLabel(self.groupBox)
+        self.label_34.setGeometry(QtCore.QRect(10, 3, 31, 16))
+        self.label_34.setObjectName("label_34")
+        self.All_reports_edit_fetch = QtWidgets.QDateEdit(self.groupBox)
+        self.All_reports_edit_fetch.setGeometry(QtCore.QRect(50, -1, 51, 24))
+        self.All_reports_edit_fetch.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.All_reports_edit_fetch.setObjectName("All_reports_edit_fetch")
+        self.gridLayout_4.addWidget(self.groupBox, 0, 1, 1, 1)
         self.verticalLayout_3.addWidget(self.frame_3)
         self.label_8 = QtWidgets.QLabel(self.frame_4)
         self.label_8.setMaximumSize(QtCore.QSize(16777215, 20))
@@ -980,7 +976,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 920, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 920, 22))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -988,7 +984,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
     def retranslateUi(self, mainWindow):
@@ -1007,9 +1003,9 @@ class Ui_mainWindow(object):
         self.removeVendorButton.setText(_translate("mainWindow", "Remove Vendor"))
         self.addVendorButton.setText(_translate("mainWindow", "Add New Vendor"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.manage_vendors_tab), _translate("mainWindow", "Manage Vendors"))
-        self.fetch_all_data_button.setText(_translate("mainWindow", "Fetch All Report (Current Year)"))
-        self.label_year.setText(_translate("mainWindow", "2020"))
-        self.label_current_year.setText(_translate("mainWindow", "Current Year:"))
+        self.fetch_all_data_button.setText(_translate("mainWindow", "Fetch All Reports"))
+        self.label_34.setText(_translate("mainWindow", "Year"))
+        self.All_reports_edit_fetch.setDisplayFormat(_translate("mainWindow", "yyyy"))
         self.label_8.setText(_translate("mainWindow", "Advanced Fetch"))
         self.label_11.setText(_translate("mainWindow", "Select Vendors"))
         self.select_vendors_button_fetch.setText(_translate("mainWindow", "Select All"))
@@ -1073,3 +1069,4 @@ class Ui_mainWindow(object):
         self.label_29.setText(_translate("mainWindow", "Special Reports Save Location"))
         self.special_save_location_button.setText(_translate("mainWindow", "Choose Folder..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), _translate("mainWindow", "Settings"))
+
