@@ -13,13 +13,14 @@ VENDORS_FILE_NAME = "vendors.dat"
 
 
 class Vendor(JsonModel):
-    def __init__(self, name="", customer_id="", base_url="", requestor_id="", api_key="", platform=""):
+    def __init__(self, name="", customer_id="", base_url="", requestor_id="", api_key="", platform="", description=""):
         self.name = name
         self.customer_id = customer_id
         self.base_url = base_url
         self.requestor_id = requestor_id
         self.api_key = api_key
         self.platform = platform
+        self.description = description
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -29,7 +30,8 @@ class Vendor(JsonModel):
                    json_dict["base_url"],
                    json_dict["requestor_id"],
                    json_dict["api_key"],
-                   json_dict["platform"])
+                   json_dict["platform"],
+                   json_dict["description"])
 
 
 class ManageVendorsController(QObject):
@@ -46,6 +48,7 @@ class ManageVendorsController(QObject):
         self.requestor_id_line_edit = main_window_ui.requestorIdEdit
         self.api_key_line_edit = main_window_ui.apiKeyEdit
         self.platform_line_edit = main_window_ui.platformEdit
+        self.description_text_edit = main_window_ui.descriptionEdit
 
         self.selected_index = -1
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
@@ -87,6 +90,7 @@ class ManageVendorsController(QObject):
             selected_vendor.requestor_id = self.requestor_id_line_edit.text()
             selected_vendor.api_key = self.api_key_line_edit.text()
             selected_vendor.platform = self.platform_line_edit.text()
+            selected_vendor.description = self.description_text_edit.toPlainText()
 
             item = QStandardItem(selected_vendor.name)
             item.setEditable(False)
@@ -107,6 +111,7 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
+        description_edit = vendor_dialog_ui.descriptionEdit
 
         def add_vendor():
             vendor = Vendor(name_edit.text(),
@@ -114,7 +119,8 @@ class ManageVendorsController(QObject):
                             base_url_edit.text(),
                             requestor_id_edit.text(),
                             api_key_edit.text(),
-                            platform_edit.text())
+                            platform_edit.text(),
+                            description_edit.toPlainText())
 
             self.vendors.append(vendor)
             item = QStandardItem(vendor.name)
@@ -138,6 +144,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
+            self.description_text_edit.setPlainText(selected_vendor.description)
 
     def set_edit_vendor_view_state(self, is_enabled):
         if is_enabled:

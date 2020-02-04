@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_addVendorDialog(object):
     def setupUi(self, addVendorDialog):
         addVendorDialog.setObjectName("addVendorDialog")
-        addVendorDialog.resize(584, 300)
+        addVendorDialog.resize(584, 413)
         self.gridLayout = QtWidgets.QGridLayout(addVendorDialog)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtWidgets.QDialogButtonBox(addVendorDialog)
@@ -60,6 +60,12 @@ class Ui_addVendorDialog(object):
         self.platformEdit = QtWidgets.QLineEdit(self.frame)
         self.platformEdit.setObjectName("platformEdit")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.platformEdit)
+        self.label_7 = QtWidgets.QLabel(self.frame)
+        self.label_7.setObjectName("label_7")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_7)
+        self.descriptionEdit = QtWidgets.QPlainTextEdit(self.frame)
+        self.descriptionEdit.setObjectName("descriptionEdit")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.descriptionEdit)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
 
         self.retranslateUi(addVendorDialog)
@@ -76,4 +82,5 @@ class Ui_addVendorDialog(object):
         self.label_4.setText(_translate("addVendorDialog", "Requestor ID (oprtional)"))
         self.label_5.setText(_translate("addVendorDialog", "API Key (optional)"))
         self.label_6.setText(_translate("addVendorDialog", "Platform (optional)"))
+        self.label_7.setText(_translate("addVendorDialog", "Description"))
 

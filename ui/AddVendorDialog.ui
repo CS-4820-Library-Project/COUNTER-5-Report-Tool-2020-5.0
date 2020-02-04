@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>300</height>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     </widget>
    </item>
    <item row="0" column="0">
-    <widget class="QFrame" name="">
+    <widget class="QFrame" name="frame">
      <layout class="QFormLayout" name="formLayout">
       <property name="horizontalSpacing">
        <number>20</number>
@@ -92,6 +92,16 @@
       </item>
       <item row="5" column="1">
        <widget class="QLineEdit" name="platformEdit"/>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Description</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPlainTextEdit" name="descriptionEdit"/>
       </item>
      </layout>
     </widget>
