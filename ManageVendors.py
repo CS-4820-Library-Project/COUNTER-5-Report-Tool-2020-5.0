@@ -38,6 +38,8 @@ class ManageVendorsController(QObject):
 
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         super().__init__()
+        self.selected_index = -1
+
         self.edit_vendor_details_frame = main_window_ui.edit_vendor_details_frame
         self.edit_vendor_options_frame = main_window_ui.edit_vendor_options_frame
 
@@ -49,7 +51,6 @@ class ManageVendorsController(QObject):
         self.platform_line_edit = main_window_ui.platformEdit
         self.description_text_edit = main_window_ui.descriptionEdit
 
-        self.selected_index = -1
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
         self.remove_vendor_button = main_window_ui.removeVendorButton
