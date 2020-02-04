@@ -1,10 +1,8 @@
 from enum import Enum
-from urllib.parse import urlencode
 from os import path, makedirs
 import csv
 import json
 import requests
-import sys
 import os
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
@@ -1809,8 +1807,11 @@ class ReportWorker(QObject):
                             item_contributor: ItemContributorModel
                             for item_contributor in report_item.item_contributors:
                                 if item_contributor.item_type == "Author":
-                                    authors_str += f"{item_contributor.name} ({item_contributor.identifier}); "
-                            if authors_str != "": report_row.authors = authors_str
+                                    authors_str += f"{item_contributor.name}"
+                                    if item_contributor.identifier:
+                                        authors_str += f" ({item_contributor.identifier})"
+                                    authors_str += "; "
+                            if authors_str != "": report_row.authors = authors_str.rstrip("; ")
 
                             # Publication date
                             item_date: TypeValueModel
@@ -1854,10 +1855,14 @@ class ReportWorker(QObject):
                                 # Authors
                                 authors_str = ""
                                 item_contributor: ItemContributorModel
-                                for item_contributor in item_parent.item_contributors:
+                                for item_contributor in report_item.item_contributors:
                                     if item_contributor.item_type == "Author":
-                                        authors_str += f"{item_contributor.name} ({item_contributor.identifier}); "
-                                if authors_str != "": report_row.parent_authors = authors_str
+                                        authors_str += f"{item_contributor.name}"
+                                        if item_contributor.identifier:
+                                            authors_str += f" ({item_contributor.identifier})"
+                                        authors_str += "; "
+                                authors_str.rstrip("; ")
+                                if authors_str != "": report_row.authors = authors_str
 
                                 # Publication date
                                 item_date: TypeValueModel
@@ -1903,7 +1908,93 @@ class ReportWorker(QObject):
             for row in row_dict.values():
                 report_rows.append(row)
 
+        self.merge_sort(report_rows, major_report_type)
         self.save_tsv_file(report_model.report_header, report_rows)
+
+    def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
+        n = len(report_rows)
+        if n < 2:
+            return
+
+        mid = n // 2
+        left = []
+        right = []
+
+        for i in range(mid):
+            number = report_rows[i]
+            left.append(number)
+
+        for i in range(mid, n):
+            number = report_rows[i]
+            right.append(number)
+
+        self.merge_sort(left, major_report_type)
+        self.merge_sort(right, major_report_type)
+
+        self.merge(left, right, report_rows, major_report_type)
+
+    def merge(self, left, right, report_rows, major_report_type: MajorReportType):
+        i = 0
+        j = 0
+        k = 0
+
+        if major_report_type == MajorReportType.PLATFORM:
+            while i < len(left) and j < len(right):
+                if left[i].platform.lower() < right[j].platform.lower():
+                    report_rows[k] = left[i]
+                    i = i + 1
+                else:
+                    report_rows[k] = right[j]
+                    j = j + 1
+
+                k = k + 1
+        elif major_report_type == MajorReportType.DATABASE:
+            while i < len(left) and j < len(right):
+                if left[i].database.lower() < right[j].database.lower():
+                    report_rows[k] = left[i]
+                    i = i + 1
+                else:
+                    report_rows[k] = right[j]
+                    j = j + 1
+
+                k = k + 1
+        elif major_report_type == MajorReportType.TITLE:
+            while i < len(left) and j < len(right):
+                if left[i].title.lower() < right[j].title.lower():
+                    report_rows[k] = left[i]
+                    i = i + 1
+                elif left[i].title.lower() == right[j].title.lower():
+                    if left[i].yop < right[j].yop:
+                        report_rows[k] = left[i]
+                        i = i + 1
+                    else:
+                        report_rows[k] = right[j]
+                        j = j + 1
+                else:
+                    report_rows[k] = right[j]
+                    j = j + 1
+
+                k = k + 1
+        elif major_report_type == MajorReportType.ITEM:
+            while i < len(left) and j < len(right):
+                if left[i].item.lower() < right[j].item.lower():
+                    report_rows[k] = left[i]
+                    i = i + 1
+                else:
+                    report_rows[k] = right[j]
+                    j = j + 1
+
+                k = k + 1
+
+        while i < len(left):
+            report_rows[k] = left[i]
+            i = i + 1
+            k = k + 1
+
+        while j < len(right):
+            report_rows[k] = right[j]
+            j = j + 1
+            k = k + 1
 
     def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
