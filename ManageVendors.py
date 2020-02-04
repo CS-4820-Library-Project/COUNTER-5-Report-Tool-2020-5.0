@@ -9,8 +9,6 @@ from JsonUtils import JsonModel
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
 
-# TODO validate data entry
-
 
 class Vendor(JsonModel):
     def __init__(self, name="", customer_id="", base_url="", requestor_id="", api_key="", platform="", description=""):
@@ -24,14 +22,15 @@ class Vendor(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
+        name = json_dict["name"] if "name" in json_dict else ""
+        customer_id = json_dict["customer_id"] if "customer_id" in json_dict else ""
+        base_url = json_dict["base_url"] if "base_url" in json_dict else ""
+        requestor_id = json_dict["requestor_id"] if "requestor_id" in json_dict else ""
+        api_key = json_dict["api_key"] if "api_key" in json_dict else ""
+        platform = json_dict["platform"] if "platform" in json_dict else ""
+        description = json_dict["description"] if "description" in json_dict else ""
 
-        return cls(json_dict["name"],
-                   json_dict["customer_id"],
-                   json_dict["base_url"],
-                   json_dict["requestor_id"],
-                   json_dict["api_key"],
-                   json_dict["platform"],
-                   json_dict["description"])
+        return cls(name, customer_id, base_url, requestor_id, api_key, platform, description)
 
 
 class ManageVendorsController(QObject):
