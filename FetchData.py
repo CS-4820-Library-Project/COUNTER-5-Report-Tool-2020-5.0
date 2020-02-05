@@ -960,21 +960,51 @@ class FetchReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
             self.adv_begin_date = date
-            if self.adv_begin_date.year() != self.adv_end_date.year():
-                self.adv_end_date.setDate(self.adv_begin_date.year(),
-                                          self.adv_end_date.month(),
-                                          self.adv_end_date.day())
+            if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+                self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
                 self.end_date_edit.setDate(self.adv_end_date)
+
+            if self.adv_begin_date.year() == self.adv_end_date.year():
+                self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+                self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+                self.begin_date_edit.setDate(self.adv_begin_date)
+                self.end_date_edit.setDate(self.adv_end_date)
+
+            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
+                self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
+                self.end_date_edit.setDate(self.adv_end_date)
+
+            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
+                self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
+                self.end_date_edit.setDate(self.adv_end_date)
+
+            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
+                self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
+                self.end_date_edit.setDate(self.adv_end_date)
+
         elif date_type == "adv_end":
             self.adv_end_date = date
-            if self.adv_end_date.year() != self.adv_begin_date.year():
-                self.adv_begin_date.setDate(self.adv_end_date.year(),
-                                            self.adv_begin_date.month(),
-                                            self.adv_begin_date.day())
+            if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+                self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
                 self.begin_date_edit.setDate(self.adv_begin_date)
-        elif date_type == "all_date":
-            self.basic_begin_date = QDate(date.year(), 1, 1)
-            self.basic_end_date = QDate(date.year(), 12, 31)
+
+            if self.adv_begin_date.year() == self.adv_end_date.year():
+                self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+                self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+                self.begin_date_edit.setDate(self.adv_begin_date)
+                self.end_date_edit.setDate(self.adv_end_date)
+
+            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
+                self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
+                self.begin_date_edit.setDate(self.adv_begin_date)
+
+            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+                self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
+                self.begin_date_edit.setDate(self.adv_begin_date)
+
+            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+                self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
+                self.begin_date_edit.setDate(self.adv_begin_date)
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
