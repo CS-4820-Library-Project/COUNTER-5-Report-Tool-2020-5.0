@@ -1,3 +1,38 @@
+# databse report definitions
+DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
+DATABASE_REPORT_FIELDS = ({'name': 'database',
+                           'type': 'TEXT',
+                           'options': ('NOT NULL',),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')},
+                          {'name': 'publisher',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')},
+                          {'name': 'publisher_id',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')},
+                          {'name': 'platform',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')},
+                          {'name': 'proprietary_id',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')},
+                          {'name': 'data_type',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR',)},
+                          {'name': 'access_method',
+                           'type': 'TEXT',
+                           'options': (),
+                           'reports': ('DR',)},
+                          {'name': 'metric_type',
+                           'type': 'TEXT',
+                           'options': ('NOT NULL',),
+                           'reports': ('DR', 'DR_D1', 'DR_D2')})
+
 # item report definitions
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
 ITEM_REPORT_FIELDS = ({'name': 'item',
@@ -261,6 +296,7 @@ def create_table_sql_texts(reports, report_fields):  # makes the SQL statement t
 sql_texts = {}
 sql_texts.update(create_table_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
 sql_texts.update(create_table_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
+sql_texts.update(create_table_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
 for key in sorted(sql_texts):  # testing
     print(sql_texts[key])
 
