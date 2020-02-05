@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow
 import ui.MainWindow
 from ManageVendors import ManageVendorsController
@@ -21,6 +22,7 @@ sys.excepthook = trap_exc_during_debug
 # endregion
 
 if __name__ == "__main__":
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
 
     main_window = QMainWindow()
