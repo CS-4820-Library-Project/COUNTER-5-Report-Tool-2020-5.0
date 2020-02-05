@@ -167,26 +167,26 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
                        'options': (),
                        'reports': ('IR',)},
-                       {'name': 'data_type',
-                        'type': 'TEXT',
-                        'options': (),
-                        'reports': ('IR',)},
-                       {'name': 'yop',
-                        'type': 'TEXT',
-                        'options': (),
-                        'reports': ('IR',)},
-                       {'name': 'access_type',
-                        'type': 'TEXT',
-                        'options': (),
-                        'reports': ('IR', 'IR_A1')},
-                       {'name': 'access_method',
-                        'type': 'TEXT',
-                        'options': (),
-                        'reports': ('IR',)},
-                       {'name': 'metric_type',
-                        'type': 'TEXT',
-                        'options': ('NOT NULL',),
-                        'reports': ('IR', 'IR_A1', 'IR_M1')})
+                      {'name': 'data_type',
+                       'type': 'TEXT',
+                       'options': (),
+                       'reports': ('IR',)},
+                      {'name': 'yop',
+                       'type': 'TEXT',
+                       'options': (),
+                       'reports': ('IR',)},
+                      {'name': 'access_type',
+                       'type': 'TEXT',
+                       'options': (),
+                       'reports': ('IR', 'IR_A1')},
+                      {'name': 'access_method',
+                       'type': 'TEXT',
+                       'options': (),
+                       'reports': ('IR',)},
+                      {'name': 'metric_type',
+                       'type': 'TEXT',
+                       'options': ('NOT NULL',),
+                       'reports': ('IR', 'IR_A1', 'IR_M1')})
 
 # title report definitions
 TITLE_REPORTS = ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')
@@ -272,7 +272,13 @@ ALL_REPORT_FIELDS = ({'name': 'vendor',
                       'type': 'TEXT',
                       'options': ('NOT NULL',)})
 
-def create_table_sql_texts(reports, report_fields):  # makes the SQL statement to create the tables from the table definition
+MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
+          7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
+
+DATABASE_LOCATION = r"./all_data/search/search.db"
+
+def create_table_sql_texts(reports,
+                           report_fields):  # makes the SQL statements to create the tables from the table definition
     sql_texts = {}
     for report in reports:
         sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
@@ -288,21 +294,40 @@ def create_table_sql_texts(reports, report_fields):  # makes the SQL statement t
             if field['options']:
                 field_text += ' ' + ' '.join(field['options'])
             fields_and_options.append(field_text)
-        sql_text += ', '.join(fields_and_options) + '\n);'
+        sql_text += ', '.join(fields_and_options) + ');'
         sql_texts[report] = sql_text
     return sql_texts
 
 
-sql_texts = {}
-sql_texts.update(create_table_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
-sql_texts.update(create_table_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
-sql_texts.update(create_table_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
-for key in sorted(sql_texts):  # testing
-    print(sql_texts[key])
-
+def create_view_sql_texts(reports,
+                          report_fields):  # makes the SQL statements to create the views from the table definition
+    sql_texts = {}
+    for report in reports:
+        sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + '_view AS SELECT'
+        fields = []
+        for field in report_fields:  # fields specific to this report
+            if report in field['reports']:
+                field_text = '\n\t' + field['name']
+                fields.append(field_text)
+        for field in ALL_REPORT_FIELDS:  # fields in all reports
+            if field['name'] not in ('month', 'metric', 'updated_on'):
+                field_text = '\n\t' + field['name']
+                fields.append(field_text)
+        calcs = []
+        for key in sorted(MONTHS):
+            calc_text = '\n\tSUM(CASE ' + 'month' + ' WHEN ' + str(key)
+            calc_text += ' THEN ' + 'metric' + ' END) AS ' + MONTHS[key]
+            calcs.append(calc_text)
+        sql_text += ', '.join(fields) + ', ' + ', '.join(calcs)
+        sql_text += '\nFROM ' + report
+        sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
+        sql_texts[report + '_view'] = sql_text
+    return sql_texts
 
 import sqlite3
 from sqlite3 import Error
+
+
 def create_connection(db_file):
     connection = None
     try:
@@ -314,16 +339,33 @@ def create_connection(db_file):
         connection.close()
     return connection
 
-def create_table(connection, sql_text):
+
+def run_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
         cursor.execute(sql_text)
     except Error as error:
         print(error)
 
-connection = create_connection(r"./all_data/search/search.db")
-if connection is not None:
-    for key in sorted(sql_texts):
-        create_table(connection, sql_texts[key])
-else:
-    print("Error, no connection")
+def setup_database():
+    sql_texts = {}
+    sql_texts.update(create_table_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
+    sql_texts.update(create_view_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
+    sql_texts.update(create_table_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
+    sql_texts.update(create_view_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
+    sql_texts.update(create_table_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
+    sql_texts.update(create_view_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
+    for key in sorted(sql_texts):  # testing
+        print(sql_texts[key])
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        for key in sorted(sql_texts):
+            print('DROP ' + key)
+            run_sql(connection, 'DROP ' + ('VIEW' if key.endswith("_view") else 'TABLE') + ' IF EXISTS ' + key + ';')
+            print('CREATE ' + key)
+            run_sql(connection, sql_texts[key])
+    else:
+        print("Error, no connection")
+
+setup_database()
