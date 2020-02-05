@@ -11,6 +11,8 @@ SETTINGS_FILE_NAME = "settings.dat"
 # Default Settings
 GENERAL_TSV_DIR = "./all_data/general_tsv_files/"
 SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
+GENERAL_JSON_DIR = "./all_data/general_json_files/"
+SPECIAL_JSON_DIR = "./all_data/special_json_files/"
 REQUEST_INTERVAL = 3  # Seconds
 CONCURRENT_VENDOR_PROCESSES = 5
 CONCURRENT_REPORT_PROCESSES = 5
@@ -18,10 +20,13 @@ EMPTY_CELL = ""
 
 
 class SettingsModel(JsonModel):
-    def __init__(self, general_save_location: str, special_save_location: str, request_interval: int,
-                 concurrent_vendors: int, concurrent_reports: int, empty_cell: str):
-        self.general_save_location = general_save_location
-        self.special_save_location = special_save_location
+    def __init__(self, general_tsv_directory: str, special_tsv_directory: str, general_json_directory: str,
+                 special_json_directory: str, request_interval: int, concurrent_vendors: int,
+                 concurrent_reports: int, empty_cell: str):
+        self.general_tsv_directory = general_tsv_directory
+        self.special_tsv_directory = special_tsv_directory
+        self.general_json_directory = general_json_directory
+        self.special_json_directory = special_json_directory
         self.request_interval = request_interval
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
@@ -29,10 +34,14 @@ class SettingsModel(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
-        general_save_location = json_dict["general_save_location"]\
-            if "general_save_location" in json_dict else GENERAL_TSV_DIR
-        special_save_location = json_dict["special_save_location"]\
-            if "special_save_location" in json_dict else SPECIAL_TSV_DIR
+        general_tsv_directory = json_dict["general_tsv_directory"]\
+            if "general_tsv_directory" in json_dict else GENERAL_TSV_DIR
+        special_tsv_directory = json_dict["special_tsv_directory"]\
+            if "special_tsv_directory" in json_dict else SPECIAL_TSV_DIR
+        general_json_directory = json_dict["general_json_directory"]\
+            if "general_json_directory" in json_dict else GENERAL_JSON_DIR
+        special_json_directory = json_dict["special_json_directory"]\
+            if "special_json_directory" in json_dict else SPECIAL_JSON_DIR
         request_interval = int(json_dict["request_interval"])\
             if "request_interval" in json_dict else REQUEST_INTERVAL
         concurrent_vendors = int(json_dict["concurrent_vendors"])\
@@ -42,8 +51,8 @@ class SettingsModel(JsonModel):
         empty_cell = json_dict["empty_cell"]\
             if "empty_cell" in json_dict else EMPTY_CELL
 
-        return cls(general_save_location, special_save_location, request_interval, concurrent_vendors,
-                   concurrent_reports, empty_cell)
+        return cls(general_tsv_directory, special_tsv_directory, general_json_directory, special_json_directory,
+                   request_interval, concurrent_vendors, concurrent_reports, empty_cell)
 
 
 def show_message(message: str):
@@ -66,25 +75,37 @@ class SettingsController:
         # endregion
 
         # region Reports
-        self.general_save_location_edit = main_window_ui.general_save_location_edit
-        self.special_save_location_edit = main_window_ui.special_save_location_edit
+        self.general_tsv_dir_edit = main_window_ui.general_tsv_directory_edit
+        self.special_tsv_dir_edit = main_window_ui.special_tsv_directory_edit
+        self.general_json_dir_edit = main_window_ui.general_json_directory_edit
+        self.special_json_dir_edit = main_window_ui.special_json_directory_edit
 
-        main_window_ui.general_save_location_button.clicked.connect(
-            lambda: self.open_file_select_dialog("general_save_location"))
-        main_window_ui.special_save_location_button.clicked.connect(
-            lambda: self.open_file_select_dialog("special_save_location"))
+        main_window_ui.general_tsv_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog("general_tsv_directory"))
+        main_window_ui.special_tsv_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog("special_tsv_directory"))
+        main_window_ui.general_json_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog("general_json_directory"))
+        main_window_ui.special_json_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog("special_json_directory"))
 
-        self.general_save_location_edit.setText(self.settings.general_save_location)
-        self.special_save_location_edit.setText(self.settings.special_save_location)
+        self.general_tsv_dir_edit.setText(self.settings.general_tsv_directory)
+        self.special_tsv_dir_edit.setText(self.settings.special_tsv_directory)
+        self.general_json_dir_edit.setText(self.settings.general_json_directory)
+        self.special_json_dir_edit.setText(self.settings.special_json_directory)
         main_window_ui.request_interval_edit.setText(str(self.settings.request_interval))
         main_window_ui.concurrent_vendors_edit.setText(str(self.settings.concurrent_vendors))
         main_window_ui.concurrent_reports_edit.setText(str(self.settings.concurrent_reports))
         main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
 
-        self.general_save_location_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("general_save_location", text))
-        self.special_save_location_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("special_save_location", text))
+        self.general_tsv_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed("general_tsv_directory", text))
+        self.special_tsv_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed("special_tsv_directory", text))
+        self.general_json_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed("general_json_directory", text))
+        self.special_json_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed("special_json_directory", text))
         main_window_ui.request_interval_edit.textEdited.connect(
             lambda text: self.on_setting_changed("request_interval", text))
         main_window_ui.concurrent_vendors_edit.textEdited.connect(
@@ -96,10 +117,14 @@ class SettingsController:
         # endregion
 
         # region Reports Help Messages
-        main_window_ui.general_save_help_button.clicked.connect(
+        main_window_ui.general_tsv_directory_help_button.clicked.connect(
             lambda: show_message("This is where reports from the 'Fetch Reports' tab will be saved by default"))
-        main_window_ui.special_save_help_button.clicked.connect(
+        main_window_ui.special_tsv_directory_help_button.clicked.connect(
             lambda: show_message("This is where reports from the 'Fetch Special Reports' tab will be saved by default"))
+        main_window_ui.general_json_directory_help_button.clicked.connect(
+            lambda: show_message("This is where JSON from the 'Fetch Reports' tab will be saved by default"))
+        main_window_ui.special_json_directory_help_button.clicked.connect(
+            lambda: show_message("This is where JSON from the 'Fetch Special Reports' tab will be saved by default"))
         main_window_ui.request_interval_help_button.clicked.connect(
             lambda: show_message("The amount of time to wait between each vendor's requests"))
         main_window_ui.concurrent_vendors_help_button.clicked.connect(
@@ -111,10 +136,14 @@ class SettingsController:
         # endregion
 
     def on_setting_changed(self, setting_key: str, setting_value: str):
-        if setting_key == "general_save_location":
-            self.settings.general_save_location = setting_value
-        elif setting_key == "special_save_location":
-            self.settings.special_save_location = setting_value
+        if setting_key == "general_tsv_directory":
+            self.settings.general_tsv_directory = setting_value
+        elif setting_key == "special_tsv_directory":
+            self.settings.special_tsv_directory = setting_value
+        if setting_key == "general_json_directory":
+            self.settings.general_json_directory = setting_value
+        elif setting_key == "special_json_directory":
+            self.settings.special_json_directory = setting_value
         elif setting_key == "request_interval":
             self.settings.request_interval = int(setting_value)
         elif setting_key == "concurrent_vendors":
@@ -130,13 +159,17 @@ class SettingsController:
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
-            save_location = dialog.selectedFiles()[0] + "/"
-            if setting == "general_save_location":
-                self.general_save_location_edit.setText(save_location)
-            elif setting == "special_save_location":
-                self.special_save_location_edit.setText(save_location)
+            directory = dialog.selectedFiles()[0] + "/"
+            if setting == "general_tsv_directory":
+                self.general_tsv_dir_edit.setText(directory)
+            elif setting == "special_tsv_directory":
+                self.special_tsv_dir_edit.setText(directory)
+            if setting == "general_json_directory":
+                self.general_json_dir_edit.setText(directory)
+            elif setting == "special_json_directory":
+                self.special_json_dir_edit.setText(directory)
 
-            self.on_setting_changed(setting, save_location)
+            self.on_setting_changed(setting, directory)
 
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)

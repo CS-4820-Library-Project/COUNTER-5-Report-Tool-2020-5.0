@@ -44,6 +44,17 @@ class MajorReportType(Enum):
     INVALID = "INVALID"
 
 
+class CompletionStatus(Enum):
+    SUCCESSFUL = "Successful!"
+    FAILED = "Failed!"
+    CANCELLED = "Cancelled!"
+
+
+class FetchType(Enum):
+    GENERAL = "General"
+    SPECIAL = "Special"
+
+
 def get_major_report_type(report_type: str) -> MajorReportType:
     if report_type == "PR" or report_type == "PR_P1":
         return MajorReportType.PLATFORM
@@ -71,12 +82,6 @@ def show_message(message: str):
     message_label.setText(message)
 
     message_dialog.exec_()
-
-
-class CompletionStatus(Enum):
-    SUCCESSFUL = "Successful!"
-    FAILED = "Failed!"
-    CANCELLED = "Cancelled!"
 
 
 # region Models
@@ -616,17 +621,15 @@ class Attributes:
 
 
 class RequestData:
-    def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate, save_dir: str,
-                 request_interval: int, concurrent_reports: int, empty_cell: str, attributes: Attributes = None):
+    def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate,
+                 fetch_type: FetchType, settings: SettingsModel, attributes: Attributes = None):
         self.vendor = vendor
         self.target_report_types = target_report_types
         self.begin_date = begin_date
         self.end_date = end_date
-        self.save_dir = save_dir
+        self.fetch_type = fetch_type
+        self.settings = settings
         self.attributes = attributes
-        self.request_interval = request_interval
-        self.concurrent_reports = concurrent_reports
-        self.empty_cell = empty_cell
 
 
 class ProcessResult:
@@ -649,6 +652,7 @@ class RetryLaterException(Exception):
 class FetchReportsAbstract:
     def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel):
         # region General
+        self.fetch_type = None
         self.search_controller = search_controller
         self.vendors = vendors
         self.selected_data = []  # List of ReportData Objects
@@ -831,9 +835,8 @@ class FetchReportsAbstract:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date,
-                                       self.settings.general_save_location, self.settings.request_interval,
-                                           self.settings.concurrent_reports, self.settings.empty_cell)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.fetch_type,
+                                       self.settings)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog(progress__window_title)
@@ -890,6 +893,7 @@ class FetchReportsController(FetchReportsAbstract):
         super().__init__(vendors, search_controller, settings)
 
         # region General
+        self.fetch_type = FetchType.GENERAL
         current_date = QDate.currentDate()
         self.basic_begin_date = QDate(current_date.year(), 1, current_date.day())
         self.adv_begin_date = QDate(current_date.year(), 1, current_date.day())
@@ -1015,9 +1019,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.selected_data = []
         for i in range(len(self.vendors)):
-            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       self.settings.general_save_location, self.settings.request_interval,
-                                           self.settings.concurrent_reports, self.settings.empty_cell)
+            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date, self.fetch_type,
+                                       self.settings)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -1057,8 +1060,7 @@ class FetchReportsController(FetchReportsAbstract):
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.general_save_location, self.settings.request_interval,
-                                           self.settings.concurrent_reports, self.settings.empty_cell)
+                                           self.fetch_type, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1090,6 +1092,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         super().__init__(vendors, search_controller, settings)
 
         # region General
+        self.fetch_type = FetchType.SPECIAL
         self.selected_report_type = None
         self.selected_attributes = Attributes()
         self.attribute_options = {
@@ -1231,9 +1234,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         for i in range(len(self.vendors)):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.special_save_location, self.settings.request_interval,
-                                           self.settings.concurrent_reports, self.settings.empty_cell,
-                                           self.selected_attributes)
+                                           self.fetch_type, self.settings, self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1261,8 +1262,8 @@ class VendorWorker(QObject):
         self.request_data = request_data
         self.vendor = request_data.vendor
         self.target_report_types = request_data.target_report_types
-        self.concurrent_reports = request_data.concurrent_reports
-        self.request_interval = request_data.request_interval
+        self.concurrent_reports = request_data.settings.concurrent_reports
+        self.request_interval = request_data.settings.request_interval
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1417,9 +1418,17 @@ class ReportWorker(QObject):
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
-        self.save_dir = request_data.save_dir
-        self.empty_cell = request_data.empty_cell
+        self.empty_cell = request_data.settings.empty_cell
         self.attributes = request_data.attributes
+
+        if request_data.fetch_type == FetchType.GENERAL:
+            self.tsv_save_dir = request_data.settings.general_tsv_directory
+            self.json_save_dir = request_data.settings.general_json_directory
+        elif request_data.fetch_type == FetchType.SPECIAL:
+            self.tsv_save_dir = request_data.settings.special_tsv_directory
+            self.json_save_dir = request_data.settings.special_json_directory
+        else:
+            raise Exception("FetchType not implemented in ReportWorker")
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
 
@@ -1469,9 +1478,10 @@ class ReportWorker(QObject):
 
     def process_response(self, response: requests.Response):
         try:
-            json_dict = response.json()
+            json_string = response.text
+            json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
-            self.process_report_model(report_model)
+            self.process_report_model(report_model, json_string)
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             if e.msg == "Expecting value":
@@ -1491,12 +1501,12 @@ class ReportWorker(QObject):
             self.process_result.message = str(e)
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
 
-    def process_report_model(self, report_model: ReportModel):
+    def process_report_model(self, report_model: ReportModel, json_string: str):
         report_type = report_model.report_header.report_id
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
@@ -1706,7 +1716,7 @@ class ReportWorker(QObject):
                 report_rows.append(row)
 
         self.merge_sort(report_rows, major_report_type)
-        self.save_tsv_file(report_model.report_header, report_rows)
+        self.save_files(report_model.report_header, report_rows, json_string)
 
     def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
@@ -1793,17 +1803,20 @@ class ReportWorker(QObject):
             j = j + 1
             k = k + 1
 
-    def save_tsv_file(self, report_header, report_rows: list):
+    def save_files(self, report_header, report_rows: list, json_string: str):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}{file_name}"
 
-        if not path.isdir(file_dir):
-            makedirs(file_dir)
+        # region Save TSV
 
-        tsv_file = open(file_dir + file_name, 'w', encoding="utf-8", newline='')
+        tsv_file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        tsv_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        tsv_file_path = f"{tsv_file_dir}{tsv_file_name}"
+
+        if not path.isdir(tsv_file_dir):
+            makedirs(tsv_file_dir)
+
+        tsv_file = open(tsv_file_path, 'w', encoding="utf-8", newline='')
 
         # region Report Header
 
@@ -1850,7 +1863,7 @@ class ReportWorker(QObject):
 
         if len(report_rows) == 0:
             tsv_file.close()
-            self.process_result.message = f"Empty report saved as: {file_name}"
+            self.process_result.message = f"Empty report saved as: {tsv_file_name}"
             return
 
         # region Report Body
@@ -2198,8 +2211,26 @@ class ReportWorker(QObject):
         # endregion
 
         tsv_file.close()
-        self.process_result.message = f"Saved as: {file_name}"
-        self.process_result.file_path = file_path
+        self.process_result.message = f"Saved as: {tsv_file_name}"
+        self.process_result.file_path = tsv_file_path
+
+        # endregion
+
+        # region Save JSON
+
+        json_file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        json_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+        # json_file_path = f"{tsv_file_dir}{json_file_name}"
+        json_file_path = f"{json_file_dir}{json_file_name}"
+
+        if not path.isdir(json_file_dir):
+            makedirs(json_file_dir)
+
+        json_file = open(json_file_path, 'w', encoding="utf-8")
+        json_file.write(json_string)
+        json_file.close()
+
+        # endregion
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.worker_id)
