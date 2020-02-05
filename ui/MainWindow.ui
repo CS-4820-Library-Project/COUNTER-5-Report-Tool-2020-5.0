@@ -61,10 +61,7 @@
         <item>
          <widget class="QFrame" name="frame_12">
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
@@ -119,10 +116,7 @@
               <bool>true</bool>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
@@ -255,12 +249,6 @@
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_5">
                  <item>
                   <widget class="QPushButton" name="saveVendorChangesButton">
@@ -298,10 +286,7 @@
            <item>
             <widget class="QFrame" name="frame_2">
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="0" column="0">
@@ -336,10 +321,7 @@
            <bool>true</bool>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
@@ -377,87 +359,70 @@
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
-             <widget class="QPushButton" name="fetch_all_data_button">
-              <property name="geometry">
-               <rect>
-                <x>390</x>
-                <y>15</y>
-                <width>300</width>
-                <height>32</height>
-               </rect>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>300</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Fetch All Reports</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_34">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>15</y>
-                <width>31</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Year</string>
-              </property>
-             </widget>
-             <widget class="QDateEdit" name="All_reports_edit_fetch">
-              <property name="geometry">
-               <rect>
-                <x>190</x>
-                <y>15</y>
-                <width>61</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="dateTime">
-               <datetime>
-                <hour>0</hour>
-                <minute>0</minute>
-                <second>0</second>
-                <year>2020</year>
-                <month>1</month>
-                <day>1</day>
-               </datetime>
-              </property>
-              <property name="displayFormat">
-               <string>yyyy</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <widget class="QFrame" name="frame_28">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                 <property name="spacing">
+                  <number>10</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_34">
+                   <property name="text">
+                    <string>Year</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDateEdit" name="All_reports_edit_fetch">
+                   <property name="dateTime">
+                    <datetime>
+                     <hour>0</hour>
+                     <minute>0</minute>
+                     <second>0</second>
+                     <year>2020</year>
+                     <month>1</month>
+                     <day>1</day>
+                    </datetime>
+                   </property>
+                   <property name="displayFormat">
+                    <string>yyyy</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="fetch_all_data_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>300</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Fetch All Reports</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Maximum</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>5</height>
-              </size>
-             </property>
-            </spacer>
            </item>
            <item>
             <widget class="QLabel" name="Adv_Fetch_text">
@@ -521,10 +486,7 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_4">
                  <item>
@@ -605,10 +567,7 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_5">
                  <item>
@@ -699,10 +658,7 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
@@ -720,10 +676,7 @@
                     </size>
                    </property>
                    <property name="frameShape">
-                    <enum>QFrame::Box</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Sunken</enum>
+                    <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QFormLayout" name="formLayout_2">
                     <property name="fieldGrowthPolicy">
@@ -798,10 +751,7 @@
                     </sizepolicy>
                    </property>
                    <property name="frameShape">
-                    <enum>QFrame::Box</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Sunken</enum>
+                    <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2">
                     <item row="0" column="0">
@@ -857,10 +807,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_15">
            <item>
@@ -947,10 +894,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_14">
            <item>
@@ -978,9 +922,6 @@
             <widget class="QFrame" name="frame_30">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_9">
               <item row="3" column="0" alignment="Qt::AlignHCenter">
@@ -1035,10 +976,7 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
            <item>
@@ -1056,10 +994,7 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_18"/>
             </widget>
@@ -1068,9 +1003,6 @@
             <widget class="QFrame" name="frame_31">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
              </property>
              <layout class="QFormLayout" name="formLayout_5">
               <property name="fieldGrowthPolicy">
@@ -1125,10 +1057,7 @@
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_8">
               <item row="0" column="0">
@@ -1218,10 +1147,7 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_12">
               <item>
@@ -1270,10 +1196,7 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_11">
               <item>
@@ -1322,10 +1245,7 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_13">
               <item>
@@ -1343,10 +1263,7 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QFormLayout" name="formLayout_4">
                  <property name="fieldGrowthPolicy">
@@ -1422,10 +1339,7 @@
                  </sizepolicy>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_7">
                  <item row="0" column="0">
@@ -1491,10 +1405,7 @@
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
            <item>
@@ -1510,12 +1421,6 @@
                <width>0</width>
                <height>0</height>
               </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
              </property>
              <layout class="QFormLayout" name="formLayout_3">
               <property name="fieldGrowthPolicy">
@@ -1561,12 +1466,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
              <layout class="QGridLayout" name="gridLayout_5">
               <property name="leftMargin">
                <number>0</number>
@@ -1600,24 +1499,12 @@
                   <pointsize>11</pointsize>
                  </font>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
                   <widget class="QLabel" name="label_16">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
+                     <width>120</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1664,12 +1551,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0">
                <widget class="QPushButton" name="search_button">
@@ -1705,10 +1586,7 @@
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
@@ -1779,10 +1657,7 @@
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_10">
            <property name="leftMargin">
@@ -1807,9 +1682,6 @@
              </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_20">
               <item alignment="Qt::AlignHCenter">
@@ -1840,12 +1712,6 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QFormLayout" name="formLayout_7">
                  <property name="horizontalSpacing">
@@ -1882,9 +1748,6 @@
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
              <layout class="QVBoxLayout" name="verticalLayout_19">
               <item alignment="Qt::AlignHCenter">
                <widget class="QLabel" name="label_24">
@@ -1914,12 +1777,6 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_11">
                  <property name="horizontalSpacing">

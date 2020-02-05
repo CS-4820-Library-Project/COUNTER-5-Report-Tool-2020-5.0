@@ -4,6 +4,7 @@ import csv
 import json
 import requests
 import os
+import webbrowser
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -745,11 +746,11 @@ class FetchReportsAbstract:
         report_result_ui.setupUi(report_result_widget)
 
         report_result_ui.message_label.setText(process_result.message)
-        report_result_ui.message_label.mousePressEvent = \
-            lambda event: self.open_explorer(event, process_result.file_path)
 
-        if process_result.report_type is not None:
+        if process_result.report_type is not None:  # If this report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
+            report_result_ui.message_label.mousePressEvent = \
+                lambda event: self.open_explorer(process_result.file_path)
         else:
             report_result_ui.report_type_label.setText("Target Reports")
             report_result_ui.retry_frame.hide()
@@ -870,21 +871,8 @@ class FetchReportsAbstract:
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
-    def open_explorer(self, event, path: str):
-        if path is not None:
-
-            file_path = ""
-            file_path_list = path.split('/')
-
-            for index in range(len(file_path_list)):
-
-                if index != (len(file_path_list)-1):
-                    file_path = str(file_path) + '\\' + str(file_path_list[index])
-
-            current_working_directory = os.getcwd()
-            open_explorer_path = current_working_directory + file_path
-
-            os.system("start explorer %s" % open_explorer_path)
+    def open_explorer(self, file_dir: str):
+        webbrowser.open(os.path.realpath(file_dir))
 
 
 class FetchReportsController(FetchReportsAbstract):
