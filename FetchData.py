@@ -2208,7 +2208,6 @@ class ReportWorker(QObject):
 
         json_file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         json_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
-        # json_file_path = f"{tsv_file_dir}{json_file_name}"
         json_file_path = f"{json_file_dir}{json_file_name}"
 
         if not path.isdir(json_file_dir):
