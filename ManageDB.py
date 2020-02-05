@@ -275,6 +275,12 @@ ALL_REPORT_FIELDS = ({'name': 'vendor',
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
 
+YEAR_TOTAL = 'year_total'
+
+VIEW_SUFFIX = '_view'
+
+FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
+
 DATABASE_LOCATION = r"./all_data/search/search.db"
 
 def create_table_sql_texts(reports,
@@ -298,19 +304,18 @@ def create_table_sql_texts(reports,
         sql_texts[report] = sql_text
     return sql_texts
 
-
 def create_view_sql_texts(reports,
                           report_fields):  # makes the SQL statements to create the views from the table definition
     sql_texts = {}
     for report in reports:
-        sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + '_view AS SELECT'
+        sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
         fields = []
         for field in report_fields:  # fields specific to this report
             if report in field['reports']:
                 field_text = '\n\t' + field['name']
                 fields.append(field_text)
         for field in ALL_REPORT_FIELDS:  # fields in all reports
-            if field['name'] not in ('month', 'metric', 'updated_on'):
+            if field['name'] not in FIELDS_NOT_IN_VIEWS:
                 field_text = '\n\t' + field['name']
                 fields.append(field_text)
         calcs = []
@@ -318,11 +323,11 @@ def create_view_sql_texts(reports,
             calc_text = '\n\tSUM(CASE ' + 'month' + ' WHEN ' + str(key)
             calc_text += ' THEN ' + 'metric' + ' END) AS ' + MONTHS[key]
             calcs.append(calc_text)
-        calcs.append('\n\tSUM(' + 'metric' + ') AS ' + 'year_total')
+        calcs.append('\n\tSUM(' + 'metric' + ') AS ' + YEAR_TOTAL)
         sql_text += ', '.join(fields) + ', ' + ', '.join(calcs)
         sql_text += '\nFROM ' + report
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
-        sql_texts[report + '_view'] = sql_text
+        sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
 
 import sqlite3
@@ -363,9 +368,10 @@ def setup_database():
     if connection is not None:
         for key in sorted(sql_texts):
             print('DROP ' + key)
-            run_sql(connection, 'DROP ' + ('VIEW' if key.endswith("_view") else 'TABLE') + ' IF EXISTS ' + key + ';')
+            run_sql(connection, 'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';')
             print('CREATE ' + key)
             run_sql(connection, sql_texts[key])
+        connection.close()
     else:
         print("Error, no connection")
 
