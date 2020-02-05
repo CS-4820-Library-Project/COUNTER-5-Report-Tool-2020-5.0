@@ -318,6 +318,7 @@ def create_view_sql_texts(reports,
             calc_text = '\n\tSUM(CASE ' + 'month' + ' WHEN ' + str(key)
             calc_text += ' THEN ' + 'metric' + ' END) AS ' + MONTHS[key]
             calcs.append(calc_text)
+        calcs.append('\n\tSUM(' + 'metric' + ') AS ' + 'year_total')
         sql_text += ', '.join(fields) + ', ' + ', '.join(calcs)
         sql_text += '\nFROM ' + report
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
