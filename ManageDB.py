@@ -257,8 +257,37 @@ def create_table_sql_texts(reports, report_fields):  # makes the SQL statement t
         sql_texts[report] = sql_text
     return sql_texts
 
+
 sql_texts = {}
 sql_texts.update(create_table_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
 sql_texts.update(create_table_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
 for key in sorted(sql_texts):  # testing
     print(sql_texts[key])
+
+
+import sqlite3
+from sqlite3 import Error
+def create_connection(db_file):
+    connection = None
+    try:
+        connection = sqlite3.connect(db_file)
+        print(sqlite3.version)
+        return connection
+    except Error as error:
+        print(error)
+        connection.close()
+    return connection
+
+def create_table(connection, sql_text):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_text)
+    except Error as error:
+        print(error)
+
+connection = create_connection(r"./all_data/search/search.db")
+if connection is not None:
+    for key in sorted(sql_texts):
+        create_table(connection, sql_texts[key])
+else:
+    print("Error, no connection")
