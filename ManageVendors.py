@@ -145,6 +145,14 @@ class ManageVendorsController(QObject):
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
             self.description_text_edit.setPlainText(selected_vendor.description)
+        else:
+            self.name_line_edit.setText("")
+            self.customer_id_line_edit.setText("")
+            self.base_url_line_edit.setText("")
+            self.requestor_id_line_edit.setText("")
+            self.api_key_line_edit.setText("")
+            self.platform_line_edit.setText("")
+            self.description_text_edit.setPlainText("")
 
     def set_edit_vendor_view_state(self, is_enabled):
         if is_enabled:
@@ -160,6 +168,7 @@ class ManageVendorsController(QObject):
             self.vendors_list_model.removeRow(self.selected_index)
             self.selected_index = -1
             self.set_edit_vendor_view_state(False)
+            self.populate_edit_vendor_view()
 
             self.vendors_changed_signal.emit()
             self.save_all_vendors_to_disk()
