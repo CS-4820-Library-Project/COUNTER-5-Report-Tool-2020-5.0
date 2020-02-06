@@ -589,18 +589,33 @@ class ReportRow:
         self.access_type = empty_cell
         self.access_method = empty_cell
         self.metric_type = empty_cell
+        self.total_count = 0
 
         self.month_counts = {}
-        for i in range(12):
-            curr_date: QDate
-            if QDate(begin_date.year(), i + 1, 1) < begin_date:
-                curr_date = QDate(end_date.year(), i + 1, 1)
-            else:
-                curr_date = QDate(begin_date.year(), i + 1, 1)
 
-            self.month_counts[curr_date.toString("MMM-yyyy")] = 0
+        # This only works with 12 months
+        # for i in range(12):
+        #     curr_date: QDate
+        #     if QDate(begin_date.year(), i + 1, 1) < begin_date:
+        #         curr_date = QDate(end_date.year(), i + 1, 1)
+        #     else:
+        #         curr_date = QDate(begin_date.year(), i + 1, 1)
+        #
+        #     self.month_counts[curr_date.toString("MMM-yyyy")] = 0
+        #
+        # self.total_count = 0
 
-        self.total_count = 0
+        # This works with more than 12 months
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        for i in range(num_months):
+            month_year_str = begin_date.addMonths(i).toString("MMM-yyyy")
+            self.month_counts[month_year_str] = 0
 
 
 class Attributes:
@@ -960,51 +975,55 @@ class FetchReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
             self.adv_begin_date = date
-            if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-                self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
-                self.end_date_edit.setDate(self.adv_end_date)
-
-            if self.adv_begin_date.year() == self.adv_end_date.year():
-                self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-                self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
-                self.end_date_edit.setDate(self.adv_end_date)
-
-            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
-                self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
-                self.end_date_edit.setDate(self.adv_end_date)
-
-            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
-                self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
-                self.end_date_edit.setDate(self.adv_end_date)
-
-            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
-                self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
-                self.end_date_edit.setDate(self.adv_end_date)
+            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+            #     self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if self.adv_begin_date.year() == self.adv_end_date.year():
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
 
         elif date_type == "adv_end":
             self.adv_end_date = date
-            if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-                self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
+            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+            #     self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if self.adv_begin_date.year() == self.adv_end_date.year():
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
 
-            if self.adv_begin_date.year() == self.adv_end_date.year():
-                self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-                self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
-                self.end_date_edit.setDate(self.adv_end_date)
-
-            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
-                self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
-
-            if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-                self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
-
-            if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-                self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
-                self.begin_date_edit.setDate(self.adv_begin_date)
+        elif date_type == "all_date":
+            self.basic_begin_date = QDate(date.year(), 1, 1)
+            self.basic_end_date = QDate(date.year(), 12, 31)
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1034,6 +1053,9 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.begin_date = self.basic_begin_date
         self.end_date = self.basic_end_date
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            return
 
         self.selected_data = []
         for i in range(len(self.vendors)):
@@ -1065,6 +1087,9 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            return
 
         self.selected_data = []
         selected_report_types = []
@@ -1189,18 +1214,18 @@ class FetchSpecialReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "begin_date":
             self.begin_date = date
-            if self.begin_date.year() != self.end_date.year():
-                self.end_date.setDate(self.begin_date.year(),
-                                      self.end_date.month(),
-                                      self.end_date.day())
-                self.end_date_edit.setDate(self.end_date)
+            # if self.begin_date.year() != self.end_date.year():
+            #     self.end_date.setDate(self.begin_date.year(),
+            #                           self.end_date.month(),
+            #                           self.end_date.day())
+            #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
             self.end_date = date
-            if self.end_date.year() != self.begin_date.year():
-                self.begin_date.setDate(self.end_date.year(),
-                                        self.begin_date.month(),
-                                        self.begin_date.day())
-                self.begin_date_edit.setDate(self.begin_date)
+            # if self.end_date.year() != self.begin_date.year():
+            #     self.begin_date.setDate(self.end_date.year(),
+            #                             self.begin_date.month(),
+            #                             self.begin_date.day())
+            #     self.begin_date_edit.setDate(self.begin_date)
 
     def on_report_type_selected(self, major_report_type: MajorReportType):
         if major_report_type == self.selected_report_type: return
@@ -1244,6 +1269,10 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
         if len(self.vendors) == 0:
             show_message("Vendor list is empty")
+            return
+
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.selected_data = []
