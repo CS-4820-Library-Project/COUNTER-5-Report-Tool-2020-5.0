@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'AddVendorDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_addVendorDialog(object):
     def setupUi(self, addVendorDialog):
         addVendorDialog.setObjectName("addVendorDialog")
-        addVendorDialog.resize(584, 413)
+        addVendorDialog.resize(600, 464)
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        addVendorDialog.setFont(font)
         self.gridLayout = QtWidgets.QGridLayout(addVendorDialog)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtWidgets.QDialogButtonBox(addVendorDialog)
@@ -62,10 +67,17 @@ class Ui_addVendorDialog(object):
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.platformEdit)
         self.label_7 = QtWidgets.QLabel(self.frame)
         self.label_7.setObjectName("label_7")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_7)
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_7)
         self.descriptionEdit = QtWidgets.QPlainTextEdit(self.frame)
         self.descriptionEdit.setObjectName("descriptionEdit")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.descriptionEdit)
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.descriptionEdit)
+        self.label_8 = QtWidgets.QLabel(self.frame)
+        self.label_8.setObjectName("label_8")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_8)
+        self.local_only_check_box = QtWidgets.QCheckBox(self.frame)
+        self.local_only_check_box.setText("")
+        self.local_only_check_box.setObjectName("local_only_check_box")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.local_only_check_box)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
 
         self.retranslateUi(addVendorDialog)
@@ -83,4 +95,4 @@ class Ui_addVendorDialog(object):
         self.label_5.setText(_translate("addVendorDialog", "API Key (optional)"))
         self.label_6.setText(_translate("addVendorDialog", "Platform (optional)"))
         self.label_7.setText(_translate("addVendorDialog", "Description"))
-
+        self.label_8.setText(_translate("addVendorDialog", "Local Only Vendor"))

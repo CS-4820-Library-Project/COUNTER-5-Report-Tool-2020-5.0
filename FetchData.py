@@ -967,6 +967,8 @@ class FetchReportsController(FetchReportsAbstract):
     def update_vendors_ui(self):
         self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
         for vendor in self.vendors:
+            if vendor.is_local: continue
+
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
@@ -1206,6 +1208,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
     def update_vendors_ui(self):
         self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
         for vendor in self.vendors:
+            if vendor.is_local: continue
+
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)

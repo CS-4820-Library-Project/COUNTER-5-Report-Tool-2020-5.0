@@ -234,14 +234,14 @@
                  <item row="5" column="1">
                   <widget class="QLineEdit" name="platformEdit"/>
                  </item>
-                 <item row="6" column="0">
+                 <item row="7" column="0">
                   <widget class="QLabel" name="label_28">
                    <property name="text">
                     <string>Description</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
+                 <item row="7" column="1">
                   <widget class="QPlainTextEdit" name="descriptionEdit">
                    <property name="autoFillBackground">
                     <bool>false</bool>
@@ -262,6 +262,16 @@
                     <bool>false</bool>
                    </property>
                   </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="label_39">
+                   <property name="text">
+                    <string>Local Only Vendor</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QCheckBox" name="local_only_check_box"/>
                  </item>
                 </layout>
                </widget>

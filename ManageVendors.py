@@ -11,13 +11,15 @@ VENDORS_FILE_NAME = "vendors.dat"
 
 
 class Vendor(JsonModel):
-    def __init__(self, name="", customer_id="", base_url="", requestor_id="", api_key="", platform="", description=""):
+    def __init__(self, name: str, customer_id: str, base_url: str, requestor_id: str, api_key: str, platform: str,
+                 is_local: bool, description: str):
         self.name = name
         self.customer_id = customer_id
         self.base_url = base_url
         self.requestor_id = requestor_id
         self.api_key = api_key
         self.platform = platform
+        self.is_local = is_local
         self.description = description
 
     @classmethod
@@ -28,9 +30,10 @@ class Vendor(JsonModel):
         requestor_id = json_dict["requestor_id"] if "requestor_id" in json_dict else ""
         api_key = json_dict["api_key"] if "api_key" in json_dict else ""
         platform = json_dict["platform"] if "platform" in json_dict else ""
+        is_local = json_dict["is_local"] if "is_local" in json_dict else False
         description = json_dict["description"] if "description" in json_dict else ""
 
-        return cls(name, customer_id, base_url, requestor_id, api_key, platform, description)
+        return cls(name, customer_id, base_url, requestor_id, api_key, platform, is_local, description)
 
 
 class ManageVendorsController(QObject):
@@ -49,6 +52,7 @@ class ManageVendorsController(QObject):
         self.requestor_id_line_edit = main_window_ui.requestorIdEdit
         self.api_key_line_edit = main_window_ui.apiKeyEdit
         self.platform_line_edit = main_window_ui.platformEdit
+        self.local_only_check_box = main_window_ui.local_only_check_box
         self.description_text_edit = main_window_ui.descriptionEdit
 
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
@@ -66,7 +70,7 @@ class ManageVendorsController(QObject):
         self.vendors_list_view.setModel(self.vendors_list_model)
         self.vendors_list_view.clicked.connect(self.on_vendor_selected)
 
-        self.vendors = list()
+        self.vendors = []
         vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
@@ -90,6 +94,7 @@ class ManageVendorsController(QObject):
             selected_vendor.requestor_id = self.requestor_id_line_edit.text()
             selected_vendor.api_key = self.api_key_line_edit.text()
             selected_vendor.platform = self.platform_line_edit.text()
+            selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
             selected_vendor.description = self.description_text_edit.toPlainText()
 
             item = QStandardItem(selected_vendor.name)
@@ -111,6 +116,7 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
+        local_only_check_box = vendor_dialog_ui.local_only_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
 
         def add_vendor():
@@ -120,6 +126,7 @@ class ManageVendorsController(QObject):
                             requestor_id_edit.text(),
                             api_key_edit.text(),
                             platform_edit.text(),
+                            local_only_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText())
 
             self.vendors.append(vendor)
@@ -144,6 +151,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
+            self.local_only_check_box.setChecked(selected_vendor.is_local)
             self.description_text_edit.setPlainText(selected_vendor.description)
         else:
             self.name_line_edit.setText("")
@@ -152,6 +160,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText("")
             self.api_key_line_edit.setText("")
             self.platform_line_edit.setText("")
+            self.local_only_check_box.setChecked(False)
             self.description_text_edit.setPlainText("")
 
     def set_edit_vendor_view_state(self, is_enabled):
