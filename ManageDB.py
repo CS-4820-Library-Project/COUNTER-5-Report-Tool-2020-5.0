@@ -1,4 +1,4 @@
-# databse report definitions
+# database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
@@ -275,7 +275,7 @@ ALL_REPORT_FIELDS = ({'name': 'vendor',
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
 
-YEAR_TOTAL = 'year_total'
+YEAR_TOTAL = 'report_period_total'
 
 VIEW_SUFFIX = '_view'
 
@@ -293,19 +293,19 @@ def create_table_sql_texts(reports,
         key_fields = []
         for field in report_fields:  # fields specific to this report
             if report in field['reports']:
-                field_text = '\n\t' + field['name'] + ' ' + field['type']
+                field_text = field['name'] + ' ' + field['type']
                 if field['options']:
                     field_text += ' ' + ' '.join(field['options'])
                 fields_and_options.append(field_text)
                 key_fields.append(field['name'])
         for field in ALL_REPORT_FIELDS:  # fields in all reports
-            field_text = '\n\t' + field['name'] + ' ' + field['type']
+            field_text = field['name'] + ' ' + field['type']
             if field['options']:
                 field_text += ' ' + ' '.join(field['options'])
             fields_and_options.append(field_text)
             if field['name'] not in FIELDS_NOT_IN_KEYS:
                 key_fields.append(field['name'])
-        sql_text += ', '.join(fields_and_options) + ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
+        sql_text += '\n\t' + ', \n\t'.join(fields_and_options) + ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
         sql_texts[report] = sql_text
     return sql_texts
 
@@ -317,27 +317,38 @@ def create_view_sql_texts(reports,
         fields = []
         for field in report_fields:  # fields specific to this report
             if report in field['reports']:
-                field_text = '\n\t' + field['name']
-                fields.append(field_text)
+                fields.append(field['name'])
         for field in ALL_REPORT_FIELDS:  # fields in all reports
             if field['name'] not in FIELDS_NOT_IN_VIEWS:
-                field_text = '\n\t' + field['name']
-                fields.append(field_text)
+                fields.append(field['name'])
         calcs = []
-        for key in sorted(MONTHS):
-            calc_text = '\n\tSUM(CASE ' + 'month' + ' WHEN ' + str(key)
+        for key in sorted(MONTHS):  # month columns
+            calc_text = 'SUM(CASE ' + 'month' + ' WHEN ' + str(key)
             calc_text += ' THEN ' + 'metric' + ' END) AS ' + MONTHS[key]
             calcs.append(calc_text)
-        calcs.append('\n\tSUM(' + 'metric' + ') AS ' + YEAR_TOTAL)
-        sql_text += ', '.join(fields) + ', ' + ', '.join(calcs)
+        calcs.append('SUM(' + 'metric' + ') AS ' + YEAR_TOTAL)  # year total column
+        sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
         sql_text += '\nFROM ' + report
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
 
-def insert_sql_texts(report, data):
-    sql_text = "INSERT"
+def insert_sql_text(report, data):
+    sql_text = 'INSERT INTO ' + report + '('
+    switch = {'DR': DATABASE_REPORT_FIELDS, 'IR': ITEM_REPORT_FIELDS, 'TR': TITLE_REPORT_FIELDS}
+    report_fields = switch(report[:2])
+    fields = []
+    for field in report_fields:  # fields specific to this report
+        if report in field['reports']:
+            field_text = field['name']
+            fields.append(field_text)
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        field_text = field['name']
+        fields.append(field_text)
+    sql_text += ', '.join(fields) + ')'
+    sql_text += '\nVALUES'
     return sql_text
+
 
 import sqlite3
 from sqlite3 import Error
