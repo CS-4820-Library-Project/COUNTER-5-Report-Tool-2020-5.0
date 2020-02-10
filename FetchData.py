@@ -764,8 +764,9 @@ class FetchReportsAbstract:
 
         if process_result.report_type is not None:  # If this report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
-            report_result_ui.message_label.mousePressEvent = \
-                lambda event: self.open_explorer(process_result.file_path)
+            if process_result.completion_status == CompletionStatus.SUCCESSFUL:
+                report_result_ui.message_label.mousePressEvent = \
+                    lambda event: self.open_explorer(process_result.file_path)
         else:
             report_result_ui.report_type_label.setText("Target Reports")
             report_result_ui.retry_frame.hide()
