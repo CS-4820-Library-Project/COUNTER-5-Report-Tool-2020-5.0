@@ -32,7 +32,8 @@ class AddVendorDialogTests(unittest.TestCase):
     def test_ok_button(self):
         okWidget = vendor_dialog_ui.buttonBox.Ok
         self.assertIsNotNone(okWidget)
-
+        cancelWidget = vendor_dialog_ui.buttonBox.Cancel
+        self.assertIsNotNone(cancelWidget)
 
 
 if __name__ == "__main__":
