@@ -1,9 +1,7 @@
 import sys
 import unittest
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QAction, QLabel, QDialog
-from PyQt5.QtTest import QTest
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QDialog
+
 
 from ui import AddVendorDialog
 
@@ -15,11 +13,8 @@ vendor_dialog_ui.setupUi(vendor_dialog)
 
 class AddVendorDialogTests(unittest.TestCase):
 
-
     def test_defaults(self):
         '''Test the defaults'''
-
-
         self.assertEqual(vendor_dialog_ui.nameEdit.text(), "")
         self.assertEqual(vendor_dialog_ui.customerIdEdit.text(), "")
         self.assertEqual(vendor_dialog_ui.baseUrlEdit.text(), "")
@@ -34,7 +29,6 @@ class AddVendorDialogTests(unittest.TestCase):
         self.assertIsNotNone(okWidget)
         cancelWidget = vendor_dialog_ui.buttonBox.Cancel
         self.assertIsNotNone(cancelWidget)
-
 
 if __name__ == "__main__":
         unittest.main()
