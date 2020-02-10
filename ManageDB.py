@@ -272,10 +272,14 @@ ALL_REPORT_FIELDS = ({'name': 'vendor',
                       'type': 'TEXT',
                       'options': ('NOT NULL',)})
 
+REPORT_TYPE_SWITCHER = {'DR': {'reports': DATABASE_REPORTS, 'report_fields': DATABASE_REPORT_FIELDS},
+                        'IR': {'reports': ITEM_REPORTS, 'report_fields': ITEM_REPORT_FIELDS},
+                        'TR': {'reports': TITLE_REPORTS, 'report_fields': TITLE_REPORT_FIELDS}}
+
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
 
-YEAR_TOTAL = 'report_period_total'
+YEAR_TOTAL = 'reporting_period_total'
 
 VIEW_SUFFIX = '_view'
 
@@ -335,18 +339,23 @@ def create_view_sql_texts(reports,
 
 def insert_sql_text(report, data):
     sql_text = 'INSERT INTO ' + report + '('
-    switch = {'DR': DATABASE_REPORT_FIELDS, 'IR': ITEM_REPORT_FIELDS, 'TR': TITLE_REPORT_FIELDS}
-    report_fields = switch(report[:2])
+    report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
         if report in field['reports']:
-            field_text = field['name']
-            fields.append(field_text)
+            fields.append(field['name'])
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        field_text = field['name']
-        fields.append(field_text)
+        fields.append(field['name'])
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
+    values_texts = []
+    for row in data:
+        values = []
+        for key in fields:
+            values.append(row.get(key))
+        values_texts.append('(' + ', '.join(values) + ')')
+    sql_text += '\n\t' + ', \n\t'.join(values_texts)
+    sql_text += ';'
     return sql_text
 
 
@@ -396,3 +405,7 @@ def setup_database():
         print("Error, no connection")
 
 setup_database()
+print(insert_sql_text('DR_D1', ({'database': 'hello', 'vendor': 'hi', 'year': 2020, 'month': 2, 'metric': 1,
+                                    'updated_on': '2020-02-10 12:32:00'},
+                                {'database': 'hello', 'vendor': 'hi', 'year': 2020, 'month': 1, 'metric': 2,
+                                 'updated_on': '2020-02-10 12:32:00'})))
