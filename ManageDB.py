@@ -6,27 +6,27 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'publisher',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'publisher_id',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'platform',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'proprietary_id',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'data_type',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR',)},
                           {'name': 'access_method',
                            'type': 'TEXT',
-                           'options': ('DEFAULT \'\'',),
+                           'options': ('NOT NULL',),
                            'reports': ('DR',)},
                           {'name': 'metric_type',
                            'type': 'TEXT',
@@ -41,147 +41,147 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'publisher',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'publisher_id',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'platform',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'authors',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'publication_date',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'doi',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'proprietary_id',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'isbn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'print_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'online_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'uri',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'parent_title',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_authors',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_publication_date',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'parent_article_version',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_data_type',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'parent_doi',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_proprietary_id',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_isbn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'parent_print_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_online_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'parent_uri',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'component_title',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_authors',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_publication_date',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_data_type',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_doi',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_proprietary_id',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_isbn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_print_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_online_issn',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'component_uri',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'data_type',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'yop',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'access_type',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1')},
                       {'name': 'access_method',
                        'type': 'TEXT',
-                       'options': ('DEFAULT \'\'',),
+                       'options': ('NOT NULL',),
                        'reports': ('IR',)},
                       {'name': 'metric_type',
                        'type': 'TEXT',
@@ -196,59 +196,59 @@ TITLE_REPORT_FIELDS = ({'name': 'title',
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'publisher',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'publisher_id',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'platform',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'doi',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'proprietary_id',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'isbn',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3')},
                        {'name': 'print_issn',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'online_issn',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'uri',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'data_type',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR',)},
                        {'name': 'section_type',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR',)},
                        {'name': 'yop',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J4')},
                        {'name': 'access_type',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B3', 'TR_J3')},
                        {'name': 'access_method',
                         'type': 'TEXT',
-                        'options': ('DEFAULT \'\'',),
+                        'options': ('NOT NULL',),
                         'reports': ('TR',)},
                        {'name': 'metric_type',
                         'type': 'TEXT',
@@ -288,11 +288,11 @@ FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 
 DATABASE_LOCATION = r"./all_data/search/search.db"
 
-def create_table_sql_texts(reports,
-                           report_fields):  # makes the SQL statements to create the tables from the table definition
+def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
     sql_texts = {}
     for report in reports:
         sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
+        report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
         fields_and_options = []
         key_fields = []
         for field in report_fields:  # fields specific to this report
@@ -313,11 +313,11 @@ def create_table_sql_texts(reports,
         sql_texts[report] = sql_text
     return sql_texts
 
-def create_view_sql_texts(reports,
-                          report_fields):  # makes the SQL statements to create the views from the table definition
+def create_view_sql_texts(reports):  # makes the SQL statements to create the views from the table definition
     sql_texts = {}
     for report in reports:
         sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
+        report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
         fields = []
         for field in report_fields:  # fields specific to this report
             if report in field['reports']:
@@ -337,22 +337,33 @@ def create_view_sql_texts(reports,
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
 
-def insert_sql_text(report, data):
-    sql_text = 'INSERT INTO ' + report + '('
+def replace_sql_text(report, data):
+    sql_text = 'REPLACE INTO ' + report + '('
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
+    types = {}
     for field in report_fields:  # fields specific to this report
         if report in field['reports']:
             fields.append(field['name'])
+            types[field['name']] = field['type']
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         fields.append(field['name'])
+        types[field['name']] = field['type']
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
     values_texts = []
     for row in data:
         values = []
         for key in fields:
-            values.append(row.get(key))
+            value = None
+            if row.get(key):
+                if types[key] == 'TEXT':
+                    value = '\"' + row.get(key) + '\"'
+                else:
+                    value = str(row.get(key))
+            else:
+                value = '\"\"'
+            values.append(value)
         values_texts.append('(' + ', '.join(values) + ')')
     sql_text += '\n\t' + ', \n\t'.join(values_texts)
     sql_text += ';'
@@ -384,12 +395,12 @@ def run_sql(connection, sql_text):
 
 def setup_database():
     sql_texts = {}
-    sql_texts.update(create_table_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
-    sql_texts.update(create_view_sql_texts(ITEM_REPORTS, ITEM_REPORT_FIELDS))
-    sql_texts.update(create_table_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
-    sql_texts.update(create_view_sql_texts(TITLE_REPORTS, TITLE_REPORT_FIELDS))
-    sql_texts.update(create_table_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
-    sql_texts.update(create_view_sql_texts(DATABASE_REPORTS, DATABASE_REPORT_FIELDS))
+    sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
+    sql_texts.update(create_view_sql_texts(ITEM_REPORTS))
+    sql_texts.update(create_table_sql_texts(TITLE_REPORTS))
+    sql_texts.update(create_view_sql_texts(TITLE_REPORTS))
+    sql_texts.update(create_table_sql_texts(DATABASE_REPORTS))
+    sql_texts.update(create_view_sql_texts(DATABASE_REPORTS))
     for key in sorted(sql_texts):  # testing
         print(sql_texts[key])
 
@@ -404,8 +415,30 @@ def setup_database():
     else:
         print("Error, no connection")
 
+def test_insert():
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        replace = replace_sql_text('DR_D1', ({'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+                                              'year': 2020, 'month': 2, 'metric': 1,
+                                              'updated_on': '2020-02-10 12:32:00'},
+                                             {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+                                              'year': 2020, 'month': 1, 'metric': 2,
+                                              'updated_on': '2020-02-10 12:32:00'}))
+        print(replace)
+        run_sql(connection, replace)
+        connection.commit()
+        replace = replace_sql_text('DR_D1', ({'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+                                              'year': 2020, 'month': 2, 'metric': 3,
+                                              'updated_on': '2020-02-10 12:32:00'},
+                                             {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+                                              'year': 2020, 'month': 1, 'metric': 4,
+                                              'updated_on': '2020-02-10 12:32:00'}))
+        print(replace)
+        run_sql(connection, replace)
+        connection.commit()
+        connection.close()
+    else:
+        print("Error, no connection")
+
 setup_database()
-print(insert_sql_text('DR_D1', ({'database': 'hello', 'vendor': 'hi', 'year': 2020, 'month': 2, 'metric': 1,
-                                    'updated_on': '2020-02-10 12:32:00'},
-                                {'database': 'hello', 'vendor': 'hi', 'year': 2020, 'month': 1, 'metric': 2,
-                                 'updated_on': '2020-02-10 12:32:00'})))
+test_insert()
