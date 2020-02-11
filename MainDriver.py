@@ -1,5 +1,6 @@
 import sys
 import os
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow
 import ui.MainWindow
 from ManageVendors import ManageVendorsController
@@ -21,8 +22,13 @@ sys.excepthook = trap_exc_during_debug
 
 # endregion
 
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
 if __name__ == "__main__":
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
 
     main_window = QMainWindow()

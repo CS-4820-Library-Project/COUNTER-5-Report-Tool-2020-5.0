@@ -36,17 +36,32 @@ REPORT_TYPES = ["PR",
                 "IR_A1",
                 "IR_M1"]
 
+# If these codes are received with a Report_Header, files will be created and saved
+ACCEPTABLE_CODES = [3000,
+                    3010,
+                    3020,
+                    3030,
+                    3031,
+                    3040,
+                    3050,
+                    3060,
+                    3062]
+
+# If these codes are received with a Report_Header, files will be created and saved
+RETRY_LATER_CODES = [1010,
+                     1011]
+
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
     DATABASE = "DR"
     TITLE = "TR"
     ITEM = "IR"
-    INVALID = "INVALID"
 
 
 class CompletionStatus(Enum):
     SUCCESSFUL = "Successful!"
+    WARNING = "Warning!"
     FAILED = "Failed!"
     CANCELLED = "Cancelled!"
 
@@ -70,8 +85,6 @@ def get_major_report_type(report_type: str) -> MajorReportType:
 
     elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
         return MajorReportType.ITEM
-    else:
-        return MajorReportType.INVALID
 
 
 def show_message(message: str):
@@ -165,7 +178,7 @@ class NameValueModel(JsonModel):
 
 
 class ExceptionModel(JsonModel):
-    def __init__(self, code: int = None, message: str = None, severity: str = None, data: str = None):
+    def __init__(self, code: int, message: str, severity: str, data: str):
         self.code = code
         self.message = message
         self.severity = severity
@@ -173,12 +186,24 @@ class ExceptionModel(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
-        code = int(json_dict["Code"]) if "Code" in json_dict else None
-        message = json_dict["Message"] if "Message" in json_dict else None
-        severity = json_dict["Severity"] if "Severity" in json_dict else None
-        data = json_dict["Data"] if "Data" in json_dict else None
+        code = int(json_dict["Code"]) if "Code" in json_dict else 0
+        message = json_dict["Message"] if "Message" in json_dict else ""
+        severity = json_dict["Severity"] if "Severity" in json_dict else ""
+        data = json_dict["Data"] if "Data" in json_dict else ""
 
         return cls(code, message, severity, data)
+
+
+def exception_models_to_message(exceptions: list) -> str:
+    message = ""
+    for exception in exceptions:
+        if message: message += "\n"
+        message += f"Code: {exception.code}" \
+                   f"\nMessage: {exception.message}" \
+                   f"\nSeverity: {exception.severity}" \
+                   f"\nData: {exception.data}"
+
+    return message
 
 
 class ReportHeaderModel(JsonModel):
@@ -221,19 +246,16 @@ class ReportModel(JsonModel):
         self.report_header = report_header
         self.report_items = report_items
 
+        # Not part of JSON
+        self.exceptions = []
+
     @classmethod
     def from_json(cls, json_dict: dict):
-        exception_messages = ReportModel.check_for_exceptions(json_dict)
+        exceptions = ReportModel.process_exceptions(json_dict)
 
         report_header = ReportHeaderModel.from_json(json_dict["Report_Header"])
         report_type = report_header.report_id
         major_report_type = get_major_report_type(report_type)
-        if major_report_type == MajorReportType.INVALID:
-            if exception_messages == "":
-                raise Exception("Invalid report type")
-            else:
-                raise Exception(exception_messages + "\nInvalid report type")
-
         report_header.major_report_type = major_report_type
 
         report_items = []
@@ -256,85 +278,39 @@ class ReportModel(JsonModel):
                     for report_item_dict in report_item_dicts:
                         report_items.append(ItemReportItemModel.from_json(report_item_dict))
 
-            else:  # Report_Items is empty
-                if exception_messages == "":
-                    raise Exception("Vendor returned empty Report_Items")
-                else:
-                    raise Exception(exception_messages + "\nVendor returned empty \"Report_Items\"")
-
-        else:  # Report_Items is missing
-            if exception_messages == "":
-                raise Exception("Vendor did not return Report_Items")
-            else:
-                raise Exception(exception_messages + "\nVendor did not return \"Report_Items\"")
-
-        return cls(report_header, report_items)
+        report_model = cls(report_header, report_items)
+        report_model.exceptions = exceptions
+        return report_model
 
     @classmethod
-    def check_for_exceptions(cls, json_dict: dict) -> str:
-        exception_messages = ""
-        count = 0
-        if "Exception" in json_dict:
-            exception = ExceptionModel.from_json(json_dict["Exception"])
-            if exception.code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {exception.code}"
-                                          f"\nMessage: {exception.message}"
-                                          f"\nData: {exception.data}")
-            if count == 0:
-                exception_messages += f"Code: {exception.code}" \
-                                      f"\nMessage: {exception.message}" \
-                                      f"\nData: {exception.data}"
-            else:
-                exception_messages += f"\nCode: {exception.code}" \
-                                      f"\nMessage: {exception.message}" \
-                                      f"\nData: {exception.data}"
-            count += 1
+    def process_exceptions(cls, json_dict: dict) -> list:
+        exceptions = []
 
-        code = int(json_dict["Code"]) if "Code" in json_dict else None
-        message = json_dict["Message"] if "Message" in json_dict else None
-        data = json_dict["Data"] if "Data" in json_dict else None
-        if code is not None:
-            if code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {code}"
-                                          f"\nMessage: {message}"
-                                          f"\nData: {data}")
-            if count == 0:
-                exception_messages += f"Code: {code}" \
-                                      f"\nMessage: {message}" \
-                                      f"\nData: {data}"
-            else:
-                exception_messages += f"\nCode: {code}" \
-                                      f"\nMessage: {message}" \
-                                      f"\nData: {data}"
-            count += 1
+        if "Exception" in json_dict:
+            exceptions.append(ExceptionModel.from_json(json_dict["Exception"]))
+
+        code = int(json_dict["Code"]) if "Code" in json_dict else ""
+        message = json_dict["Message"] if "Message" in json_dict else ""
+        data = json_dict["Data"] if "Data" in json_dict else ""
+        severity = json_dict["Severity"] if "Severity" in json_dict else ""
+        if code:
+            exceptions.append(ExceptionModel(code, message, severity, data))
 
         if "Report_Header" in json_dict:
             report_header = ReportHeaderModel.from_json(json_dict["Report_Header"])
-            if report_header.exceptions is not None:
-                if len(report_header.exceptions) > 0:
-                    exception: ExceptionModel
-                    for exception in report_header.exceptions:
-                        if exception.code == 1011:  # Report Queued for Processing
-                            raise RetryLaterException(f"Code: {exception.code}"
-                                                      f"\nMessage: {exception.message}"
-                                                      f"\nData: {exception.data}")
-                        if count == 0:
-                            exception_messages += f"Code: {exception.code}" \
-                                                  f"\nMessage: {exception.message}" \
-                                                  f"\nData: {exception.data}"
-                        else:
-                            exception_messages += f"\nCode: {exception.code}" \
-                                                  f"\nMessage: {exception.message}" \
-                                                  f"\nData: {exception.data}"
-                        count += 1
+            if len(report_header.exceptions) > 0:
+                for exception in report_header.exceptions:
+                    exceptions.append(exception)
         else:
-            if count == 0:
-                exception_messages += "Report_Header is missing"
-            else:
-                exception_messages += "\n" + "Report_Header is missing"
-            raise Exception(exception_messages)
+            raise ReportHeaderMissingException(exceptions)
 
-        return exception_messages
+        for exception in exceptions:
+            if exception.code in RETRY_LATER_CODES:
+                raise RetryLaterException(exceptions)
+            elif exception.code not in ACCEPTABLE_CODES:
+                raise UnacceptableCodeException(exceptions)
+
+        return exceptions
 
 
 class PlatformReportItemModel(JsonModel):
@@ -525,6 +501,7 @@ class ItemReportItemModel(JsonModel):
                    item_parent, item_components, data_type, yop, access_type, access_method, performances)
 
 
+# Returns a list of JsonModel objects
 def get_models(model_key: str, model_type, json_dict: dict) -> list:
     # This converts json formatted lists into a list of the specified model_type
     # Some vendors sometimes return a single dict even when the standard specifies a list,
@@ -606,16 +583,24 @@ class ReportRow:
         # self.total_count = 0
 
         # This works with more than 12 months
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
-
-        for i in range(num_months):
-            month_year_str = begin_date.addMonths(i).toString("MMM-yyyy")
+        for month_year_str in get_month_years(begin_date, end_date):
             self.month_counts[month_year_str] = 0
+
+
+# Returns a list of strings using the provided range in the format Month-Year
+def get_month_years(begin_date: QDate, end_date: QDate) -> list:
+    month_years = []
+    if begin_date.year() == end_date.year():
+        num_months = (end_date.month() - begin_date.month()) + 1
+    else:
+        num_months = (12 - begin_date.month() + end_date.month()) + 1
+        num_years = end_date.year() - begin_date.year()
+        num_months += (num_years - 1) * 12
+
+    for i in range(num_months):
+        month_years.append(begin_date.addMonths(i).toString("MMM-yyyy"))
+
+    return month_years
 
 
 class Attributes:
@@ -653,13 +638,26 @@ class ProcessResult:
         self.vendor = vendor
         self.report_type = report_type
         self.completion_status = CompletionStatus.SUCCESSFUL
-        self.message = "All Good"
+        self.message = ""
         self.retry = False
-        self.file_path = None
+        self.file_name = ""
+        self.file_dir = ""
+        self.file_path = ""
 
 
 class RetryLaterException(Exception):
-    pass
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class ReportHeaderMissingException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class UnacceptableCodeException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
 
 
 # endregion
@@ -756,23 +754,31 @@ class FetchReportsAbstract:
             vertical_layout.addWidget(result_widget)
 
     def get_result_widget(self, vendor: Vendor, vendor_widget: QWidget, process_result: ProcessResult) -> QWidget:
+        completion_status = process_result.completion_status
         report_result_widget = QWidget(vendor_widget)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
         report_result_ui.setupUi(report_result_widget)
 
-        report_result_ui.message_label.setText(process_result.message)
+        if process_result.message:
+            report_result_ui.message_label.setText(process_result.message)
+        else:
+            report_result_ui.message_label.hide()
 
         if process_result.report_type is not None:  # If this report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
-            if process_result.completion_status == CompletionStatus.SUCCESSFUL:
-                report_result_ui.message_label.mousePressEvent = \
+            if completion_status == CompletionStatus.SUCCESSFUL or completion_status == CompletionStatus.WARNING:
+                report_result_ui.file_label.setText(f"Saved to: {process_result.file_name}")
+                report_result_ui.file_label.mousePressEvent = \
                     lambda event: self.open_explorer(process_result.file_path)
+            else:
+                report_result_ui.file_label.hide()
         else:
             report_result_ui.report_type_label.setText("Target Reports")
+            report_result_ui.file_label.hide()
             report_result_ui.retry_frame.hide()
 
         report_result_ui.success_label.setText(process_result.completion_status.value)
-        if process_result.completion_status == CompletionStatus.FAILED:
+        if completion_status == CompletionStatus.FAILED:
             report_result_ui.retry_check_box.stateChanged.connect(
                 lambda checked_state: self.report_to_retry_toggled(checked_state, vendor, process_result.report_type))
         else:
@@ -1062,6 +1068,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.selected_data = []
         for i in range(len(self.vendors)):
+            if self.vendors[i].is_local: continue
+
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date, self.fetch_type,
                                        self.settings)
             self.selected_data.append(request_data)
@@ -1103,7 +1111,7 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
-        for i in range(len(self.vendors)):
+        for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
                                            self.fetch_type, self.settings)
@@ -1283,7 +1291,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
-        for i in range(len(self.vendors)):
+        for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
                                            self.fetch_type, self.settings, self.selected_attributes)
@@ -1534,6 +1542,7 @@ class ReportWorker(QObject):
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
             self.process_report_model(report_model, json_string)
+            self.process_result.message = exception_models_to_message(report_model.exceptions)
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             if e.msg == "Expecting value":
@@ -1543,11 +1552,27 @@ class ReportWorker(QObject):
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: JSON Exception: {e.msg}")
         except RetryLaterException as e:
+            self.process_result.message = "Retry report Later"
+            message = exception_models_to_message(e.exceptions)
+            if message: self.process_result.message += "\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
-            self.process_result.message = str(e)
             self.process_result.retry = True
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+        except ReportHeaderMissingException as e:
+            self.process_result.message = "Report_Header not received"
+            message = exception_models_to_message(e.exceptions)
+            if message: self.process_result.message += "\n" + message
+            self.process_result.completion_status = CompletionStatus.FAILED
+            if SHOW_DEBUG_MESSAGES: print(
+                f"{self.vendor.name}-{self.report_type}: Report Header Missing Exception: {e}")
+        except UnacceptableCodeException as e:
+            self.process_result.message = "Unsupported exception code received"
+            message = exception_models_to_message(e.exceptions)
+            if message: self.process_result.message += "\n" + message
+            self.process_result.completion_status = CompletionStatus.FAILED
+            if SHOW_DEBUG_MESSAGES: print(
+                f"{self.vendor.name}-{self.report_type}: Unsupported Code Exception: {e}")
         except Exception as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
@@ -1768,7 +1793,8 @@ class ReportWorker(QObject):
                 report_rows.append(row)
 
         self.merge_sort(report_rows, major_report_type)
-        self.save_files(report_model.report_header, report_rows, json_string)
+        self.save_tsv_file(report_model.report_header, report_rows)
+        self.save_json_file(report_type, json_string)
 
     def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
@@ -1855,11 +1881,9 @@ class ReportWorker(QObject):
             j = j + 1
             k = k + 1
 
-    def save_files(self, report_header, report_rows: list, json_string: str):
+    def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
-
-        # region Save TSV
 
         tsv_file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         tsv_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
@@ -1912,11 +1936,6 @@ class ReportWorker(QObject):
         tsv_writer.writerow([])
 
         # endregion
-
-        if len(report_rows) == 0:
-            tsv_file.close()
-            self.process_result.message = f"Empty report saved as: {tsv_file_name}"
-            return
 
         # region Report Body
 
@@ -2255,21 +2274,29 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         column_names += ["Metric_Type", "Reporting_Period_Total"]
-        column_names += report_rows[0].month_counts.keys()
+        column_names += get_month_years(self.begin_date, self.end_date)
         tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
+
+        if len(row_dicts) == 0:
+            tsv_file.close()
+            # self.process_result.message = f"Empty report saved as: {tsv_file_name}"
+            self.process_result.completion_status = CompletionStatus.WARNING
+            self.process_result.file_name = tsv_file_name
+            self.process_result.file_dir = tsv_file_dir
+            self.process_result.file_path = tsv_file_path
+            return
+
         tsv_dict_writer.writerows(row_dicts)
 
         # endregion
 
         tsv_file.close()
-        self.process_result.message = f"Saved as: {tsv_file_name}"
+        self.process_result.file_name = tsv_file_name
+        self.process_result.file_dir = tsv_file_dir
         self.process_result.file_path = tsv_file_path
 
-        # endregion
-
-        # region Save JSON
-
+    def save_json_file(self, report_type: str, json_string: str):
         json_file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         json_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
         json_file_path = f"{json_file_dir}{json_file_name}"
@@ -2280,8 +2307,6 @@ class ReportWorker(QObject):
         json_file = open(json_file_path, 'w', encoding="utf-8")
         json_file.write(json_string)
         json_file.close()
-
-        # endregion
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.worker_id)

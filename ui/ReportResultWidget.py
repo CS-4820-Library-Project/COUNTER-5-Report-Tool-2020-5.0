@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'ReportResultWidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ReportResultWidget(object):
     def setupUi(self, ReportResultWidget):
@@ -27,7 +29,7 @@ class Ui_ReportResultWidget(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame = QtWidgets.QFrame(ReportResultWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
@@ -67,8 +69,30 @@ class Ui_ReportResultWidget(object):
         self.report_type_label.setObjectName("report_type_label")
         self.verticalLayout_5.addWidget(self.report_type_label, 0, QtCore.Qt.AlignHCenter)
         self.horizontalLayout_2.addWidget(self.frame_6)
-        self.message_label = QtWidgets.QLabel(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        self.frame_2 = QtWidgets.QFrame(self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
+        self.frame_2.setSizePolicy(sizePolicy)
+        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_2.setObjectName("frame_2")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame_2)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setSpacing(6)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.file_label = QtWidgets.QLabel(self.frame_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.file_label.sizePolicy().hasHeightForWidth())
+        self.file_label.setSizePolicy(sizePolicy)
+        self.file_label.setWordWrap(True)
+        self.file_label.setObjectName("file_label")
+        self.verticalLayout.addWidget(self.file_label)
+        self.message_label = QtWidgets.QLabel(self.frame_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.message_label.sizePolicy().hasHeightForWidth())
@@ -76,7 +100,8 @@ class Ui_ReportResultWidget(object):
         self.message_label.setWordWrap(True)
         self.message_label.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextSelectableByMouse)
         self.message_label.setObjectName("message_label")
-        self.horizontalLayout_2.addWidget(self.message_label)
+        self.verticalLayout.addWidget(self.message_label)
+        self.horizontalLayout_2.addWidget(self.frame_2)
         self.frame_4 = QtWidgets.QFrame(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -143,7 +168,7 @@ class Ui_ReportResultWidget(object):
         _translate = QtCore.QCoreApplication.translate
         ReportResultWidget.setWindowTitle(_translate("ReportResultWidget", "Report Result"))
         self.report_type_label.setText(_translate("ReportResultWidget", "TR_J1"))
-        self.message_label.setText(_translate("ReportResultWidget", "Miusov, as a man man of breeding and deilcacy, could not but feel some inwrd qualms, when he reached the Father Superior\'s with Ivan: he felt ashamed of havin lost his temper. He felt that he ought to have disdaimed that despicable wretch, Fyodor Pavlovitch, too much to have been upset by him in Father Zossima\'s cell, and so to have forgotten himself. \"Teh monks were not to blame, in any case,\" he reflceted, on the steps. \"And if they\'re decent people here (and the Father Superior, I understand, is a nobleman) why not be friendly and courteous withthem? I won\'t argue, I\'ll fall in with everything, I\'ll win them by politness, and show them that I\'ve nothing to do with that Aesop, thta buffoon, that Pierrot, and have merely been takken in over this affair, just as they have.\""))
+        self.file_label.setText(_translate("ReportResultWidget", "Saved as: Bleh.tsv"))
+        self.message_label.setText(_translate("ReportResultWidget", "No exception messages"))
         self.success_label.setText(_translate("ReportResultWidget", "Failed!"))
         self.label_6.setText(_translate("ReportResultWidget", "Retry"))
-
