@@ -661,10 +661,9 @@ class UnacceptableCodeException(Exception):
 
 
 class FetchReportsAbstract:
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel):
+    def __init__(self, vendors: list, settings: SettingsModel):
         # region General
         self.fetch_type = None
-        self.search_controller = search_controller
         self.vendors = vendors
         self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
@@ -695,7 +694,7 @@ class FetchReportsAbstract:
         worker_id = request_data.vendor.name
         if worker_id in self.vendor_workers: return  # Avoid processing a vendor twice
 
-        vendor_worker = VendorWorker(worker_id, self.search_controller, request_data)
+        vendor_worker = VendorWorker(worker_id, request_data)
         vendor_worker.worker_finished_signal.connect(self.on_vendor_worker_finished)
         vendor_thread = QThread()
         self.vendor_workers[worker_id] = vendor_worker, vendor_thread
@@ -871,7 +870,6 @@ class FetchReportsAbstract:
             self.started_processes += 1
 
     def finish(self):
-        self.search_controller.save_all_data()
         self.ok_button.setEnabled(True)
         self.retry_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
@@ -895,9 +893,8 @@ class FetchReportsAbstract:
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
-                 main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, search_controller, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+        super().__init__(vendors, settings)
 
         # region General
         self.fetch_type = FetchType.GENERAL
@@ -1138,9 +1135,8 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
-                 main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, search_controller, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+        super().__init__(vendors, settings)
 
         # region General
         self.fetch_type = FetchType.SPECIAL
@@ -1312,10 +1308,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 class VendorWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, search_controller: SearchController, request_data: RequestData):
+    def __init__(self, worker_id: str, request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.search_controller = search_controller
         self.request_data = request_data
         self.vendor = request_data.vendor
         self.target_report_types = request_data.target_report_types
@@ -1419,7 +1414,7 @@ class VendorWorker(QObject):
         worker_id = report_type
         if worker_id in self.report_workers: return  # Avoid fetching a report twice, app will crash!!
 
-        report_worker = ReportWorker(worker_id, self.search_controller, report_type, self.request_data)
+        report_worker = ReportWorker(worker_id, report_type, self.request_data)
         report_worker.worker_finished_signal.connect(self.on_report_worker_finished)
         report_thread = QThread()
         self.report_workers[worker_id] = report_worker, report_thread
@@ -1466,11 +1461,9 @@ class VendorWorker(QObject):
 class ReportWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, search_controller: SearchController, report_type: str,
-                 request_data: RequestData):
+    def __init__(self, worker_id: str, report_type: str, request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.search_controller = search_controller
         self.report_type = report_type
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
@@ -1557,7 +1550,7 @@ class ReportWorker(QObject):
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
         except ReportHeaderMissingException as e:
-            self.process_result.message = "Report_Header not received"
+            self.process_result.message = "Report_Header not received, no file was created"
             message = exception_models_to_message(e.exceptions)
             if message: self.process_result.message += "\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
@@ -1657,15 +1650,6 @@ class ReportWorker(QObject):
                                     report_row.linking_issn = item_id.value
                                 elif item_type == "URI":
                                     report_row.uri = item_id.value
-
-                            self.search_controller.index_word(report_row.title,
-                                                              file_path,
-                                                              self.begin_date.year(),
-                                                              self.vendor.name,
-                                                              report_row.online_issn,
-                                                              report_row.print_issn,
-                                                              report_row.linking_issn,
-                                                              report_row.isbn)
 
                         elif major_report_type == MajorReportType.ITEM:
                             report_item: ItemReportItemModel
@@ -1882,18 +1866,18 @@ class ReportWorker(QObject):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        tsv_file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        tsv_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        tsv_file_path = f"{tsv_file_dir}{tsv_file_name}"
+        file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        file_path = f"{file_dir}{file_name}"
 
-        if not path.isdir(tsv_file_dir):
-            makedirs(tsv_file_dir)
+        if not path.isdir(file_dir):
+            makedirs(file_dir)
 
-        tsv_file = open(tsv_file_path, 'w', encoding="utf-8", newline='')
+        file = open(file_path, 'w', encoding="utf-8", newline='')
 
         # region Report Header
 
-        tsv_writer = csv.writer(tsv_file, delimiter='\t')
+        tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
         tsv_writer.writerow(["Report_ID", report_header.report_id])
         tsv_writer.writerow(["Release", report_header.release])
@@ -2272,35 +2256,35 @@ class ReportWorker(QObject):
 
         column_names += ["Metric_Type", "Reporting_Period_Total"]
         column_names += get_month_years(self.begin_date, self.end_date)
-        tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
+        tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
 
         if len(row_dicts) == 0:
-            tsv_file.close()
+            file.close()
             self.process_result.completion_status = CompletionStatus.WARNING
-            self.process_result.file_name = tsv_file_name
-            self.process_result.file_dir = tsv_file_dir
-            self.process_result.file_path = tsv_file_path
+            self.process_result.file_name = file_name
+            self.process_result.file_dir = file_dir
+            self.process_result.file_path = file_path
             return
 
         tsv_dict_writer.writerows(row_dicts)
 
         # endregion
 
-        tsv_file.close()
-        self.process_result.file_name = tsv_file_name
-        self.process_result.file_dir = tsv_file_dir
-        self.process_result.file_path = tsv_file_path
+        file.close()
+        self.process_result.file_name = file_name
+        self.process_result.file_dir = file_dir
+        self.process_result.file_path = file_path
 
     def save_json_file(self, report_type: str, json_string: str):
-        json_file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        json_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
-        json_file_path = f"{json_file_dir}{json_file_name}"
+        file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+        file_path = f"{file_dir}{file_name}"
 
-        if not path.isdir(json_file_dir):
-            makedirs(json_file_dir)
+        if not path.isdir(file_dir):
+            makedirs(file_dir)
 
-        json_file = open(json_file_path, 'w', encoding="utf-8")
+        json_file = open(file_path, 'w', encoding="utf-8")
         json_file.write(json_string)
         json_file.close()
 

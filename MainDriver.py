@@ -39,10 +39,9 @@ if __name__ == "__main__":
     manage_vendors_controller = ManageVendorsController(main_window_ui)
     search_controller = SearchController(main_window_ui)
     settings_controller = SettingsController(main_window_ui)
-    fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, search_controller,
-                                                      settings_controller.settings, main_window_ui)
+    fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
+                                                      main_window_ui)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
-                                                                     search_controller,
                                                                      settings_controller.settings, main_window_ui)
     import_file_controller = ImportFileController(manage_vendors_controller.vendors, search_controller, main_window_ui)
     # endregion
