@@ -286,7 +286,12 @@ VIEW_SUFFIX = '_view'
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 
-DATABASE_LOCATION = r"./all_data/search/search.db"
+DATABASE_LOCATION = r'./all_data/search/search.db'
+FILE_LOCATION = './all_data/normal_tsv_files/'
+
+HEADER_ROWS = 12
+BLANK_ROWS = 1
+DELIMITERS = {'tsv': '\t', 'csv': ','}
 
 def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
     sql_texts = {}
@@ -369,6 +374,34 @@ def replace_sql_text(report, data):
     sql_text += ';'
     return sql_text
 
+def read_report_file(file_name, report, vendor, year):
+    delimiter = DELIMITERS[file_name[-3:]]
+    file = open(file_name, 'r', encoding='utf-8')
+    if file.mode == 'r':
+        lines = file.readlines()
+        header = {}
+        for line in lines[:HEADER_ROWS - 1]:
+            cells = line.strip().split(delimiter)
+            key = cells[0].strip().lower()
+            if len(cells) > 1:
+                header[key] = cells[1].strip()
+            else:
+                header[key] = None
+        print(header)
+        column_headers = lines[HEADER_ROWS + BLANK_ROWS].strip().lower().split(delimiter)
+        print(column_headers)
+        values = []
+        for line in lines[HEADER_ROWS + BLANK_ROWS + 1:]:
+            cells = line.strip().split(delimiter)
+            value = {}
+            for i in range(len(column_headers)):
+                value[column_headers[i]] = cells[i]
+            values.append(value)
+        print(values[:10])
+
+    else:
+        print('Error: could not open file ' + file_name)
+
 
 import sqlite3
 from sqlite3 import Error
@@ -385,7 +418,6 @@ def create_connection(db_file):
         connection.close()
     return connection
 
-
 def run_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
@@ -393,7 +425,7 @@ def run_sql(connection, sql_text):
     except Error as error:
         print(error)
 
-def setup_database():
+def setup_database(drop_tables):
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
     sql_texts.update(create_view_sql_texts(ITEM_REPORTS))
@@ -407,8 +439,10 @@ def setup_database():
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         for key in sorted(sql_texts):
-            print('DROP ' + key)
-            run_sql(connection, 'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';')
+            if drop_tables:
+                print('DROP ' + key)
+                run_sql(connection,
+                        'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';')
             print('CREATE ' + key)
             run_sql(connection, sql_texts[key])
         connection.close()
@@ -418,21 +452,24 @@ def setup_database():
 def test_insert():
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        replace = replace_sql_text('DR_D1', ({'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+        replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 2, 'metric': 1,
                                               'updated_on': '2020-02-10 12:32:00'},
                                              {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 1, 'metric': 2,
-                                              'updated_on': '2020-02-10 12:32:00'}))
+                                              'updated_on': '2020-02-10 12:32:00'}])
         print(replace)
         run_sql(connection, replace)
         connection.commit()
-        replace = replace_sql_text('DR_D1', ({'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
+        replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 2, 'metric': 3,
                                               'updated_on': '2020-02-10 12:32:00'},
                                              {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 1, 'metric': 4,
-                                              'updated_on': '2020-02-10 12:32:00'}))
+                                              'updated_on': '2020-02-10 12:32:00'},
+                                             {'database': 'goodbye', 'metric_type': 'count', 'vendor': 'hi',
+                                              'year': 2020, 'month': 1, 'metric': 6,
+                                              'updated_on': '2020-02-10 12:32:00'}])
         print(replace)
         run_sql(connection, replace)
         connection.commit()
@@ -440,5 +477,6 @@ def test_insert():
     else:
         print("Error, no connection")
 
-setup_database()
+setup_database(True)
 test_insert()
+read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'DR_D1', 'EBSCO', 2019)
