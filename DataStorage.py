@@ -17,7 +17,6 @@ def read_json_file(file_path: str):
     try:
         file = open(file_path, 'r')
         json_string = file.read()
-        file.read()
         file.close()
     except IOError as e:
         print(e)

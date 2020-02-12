@@ -6,27 +6,43 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>920</width>
-    <height>500</height>
+    <width>1000</width>
+    <height>640</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>920</width>
-    <height>500</height>
+    <width>1000</width>
+    <height>640</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+    <pointsize>11</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
-   <string>Libly Snek :)</string>
+   <string>Libly</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
-      <property name="font">
-       <font>
-        <pointsize>9</pointsize>
-       </font>
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
       </property>
       <property name="tabPosition">
        <enum>QTabWidget::North</enum>
@@ -37,7 +53,7 @@
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
       </property>
-      <widget class="QWidget" name="manageVendorsTab">
+      <widget class="QWidget" name="manage_vendors_tab">
        <attribute name="title">
         <string>Manage Vendors</string>
        </attribute>
@@ -45,17 +61,15 @@
         <item>
          <widget class="QFrame" name="frame_12">
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
             <widget class="QLabel" name="label_13">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -67,9 +81,37 @@
            </item>
            <item>
             <widget class="QListView" name="vendorsListView">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
              </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_2">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="addVendorButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>150</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Add New Vendor</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -96,10 +138,7 @@
               <bool>true</bool>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
@@ -109,7 +148,8 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
                   <weight>75</weight>
                   <bold>true</bold>
                  </font>
@@ -123,7 +163,10 @@
                </widget>
               </item>
               <item>
-               <widget class="QFrame" name="frame_9">
+               <widget class="QFrame" name="edit_vendor_details_frame">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <layout class="QFormLayout" name="formLayout">
                  <property name="horizontalSpacing">
                   <number>20</number>
@@ -164,7 +207,7 @@
                  <item row="3" column="0">
                   <widget class="QLabel" name="label_4">
                    <property name="text">
-                    <string>Requestor ID (oprtional)</string>
+                    <string>Requestor ID</string>
                    </property>
                   </widget>
                  </item>
@@ -174,7 +217,7 @@
                  <item row="4" column="0">
                   <widget class="QLabel" name="label_5">
                    <property name="text">
-                    <string>API Key (optional)</string>
+                    <string>API Key</string>
                    </property>
                   </widget>
                  </item>
@@ -184,26 +227,59 @@
                  <item row="5" column="0">
                   <widget class="QLabel" name="label_6">
                    <property name="text">
-                    <string>Platform (optional)</string>
+                    <string>Platform</string>
                    </property>
                   </widget>
                  </item>
                  <item row="5" column="1">
                   <widget class="QLineEdit" name="platformEdit"/>
                  </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_28">
+                   <property name="text">
+                    <string>Description</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QPlainTextEdit" name="descriptionEdit">
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Sunken</enum>
+                   </property>
+                   <property name="tabChangesFocus">
+                    <bool>false</bool>
+                   </property>
+                   <property name="plainText">
+                    <string/>
+                   </property>
+                   <property name="backgroundVisible">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="label_39">
+                   <property name="text">
+                    <string>Local Only Vendor</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QCheckBox" name="local_only_check_box"/>
+                 </item>
                 </layout>
                </widget>
               </item>
               <item>
-               <widget class="QFrame" name="modifyVendorFrame">
+               <widget class="QFrame" name="edit_vendor_options_frame">
                 <property name="enabled">
                  <bool>false</bool>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_5">
                  <item>
@@ -239,89 +315,127 @@
              </layout>
             </widget>
            </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="fetch_reports_tab">
+       <attribute name="title">
+        <string>Fetch Reports</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QFrame" name="frame_4">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QFrame" name="frame_2">
+            <widget class="QLabel" name="label_35">
+             <property name="minimumSize">
+              <size>
+               <width>15</width>
+               <height>15</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>13</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Fetch All Reports</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_9">
+             <property name="minimumSize">
+              <size>
+               <width>800</width>
+               <height>60</height>
+              </size>
+             </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <item row="0" column="0">
-               <widget class="QPushButton" name="addVendorButton">
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <widget class="QFrame" name="frame_28">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                 <property name="spacing">
+                  <number>10</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_34">
+                   <property name="text">
+                    <string>Year</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QDateEdit" name="All_reports_edit_fetch">
+                   <property name="dateTime">
+                    <datetime>
+                     <hour>0</hour>
+                     <minute>0</minute>
+                     <second>0</second>
+                     <year>2020</year>
+                     <month>1</month>
+                     <day>1</day>
+                    </datetime>
+                   </property>
+                   <property name="displayFormat">
+                    <string>yyyy</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="fetch_all_data_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="maximumSize">
                  <size>
-                  <width>150</width>
+                  <width>300</width>
                   <height>16777215</height>
                  </size>
                 </property>
                 <property name="text">
-                 <string>Add New Vendor</string>
+                 <string>Fetch All Reports</string>
                 </property>
                </widget>
               </item>
              </layout>
             </widget>
            </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="fetchDataTab">
-       <attribute name="title">
-        <string>Fetch Data</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QFrame" name="frame_3">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>50</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="fetch_all_data_button">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>180</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Fetch All Data (Current Year)</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame_4">
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QLabel" name="label_8">
+            <widget class="QLabel" name="Adv_Fetch_text">
              <property name="maximumSize">
               <size>
                <width>16777215</width>
@@ -330,13 +444,19 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <family>Segoe UI</family>
+               <pointsize>13</pointsize>
                <weight>75</weight>
+               <italic>false</italic>
                <bold>true</bold>
+               <underline>false</underline>
               </font>
              </property>
              <property name="text">
-              <string>Advanced Fetch</string>
+              <string>Advanced Fetch Reports</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -376,17 +496,15 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_4">
                  <item>
                   <widget class="QLabel" name="label_11">
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <family>Segoe UI</family>
+                     <pointsize>11</pointsize>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
@@ -430,6 +548,12 @@
                  </item>
                  <item>
                   <widget class="QListView" name="vendors_list_view_fetch">
+                   <property name="font">
+                    <font>
+                     <family>Segoe UI</family>
+                     <pointsize>11</pointsize>
+                    </font>
+                   </property>
                    <property name="alternatingRowColors">
                     <bool>true</bool>
                    </property>
@@ -453,17 +577,15 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_5">
                  <item>
                   <widget class="QLabel" name="label_12">
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <family>Segoe UI</family>
+                     <pointsize>11</pointsize>
                      <weight>75</weight>
                      <bold>true</bold>
                     </font>
@@ -502,11 +624,27 @@
                       </property>
                      </widget>
                     </item>
+                    <item>
+                     <widget class="QToolButton" name="toolButton">
+                      <property name="cursor">
+                       <cursorShape>ArrowCursor</cursorShape>
+                      </property>
+                      <property name="text">
+                       <string>?</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                  </item>
                  <item>
                   <widget class="QListView" name="report_types_list_view">
+                   <property name="font">
+                    <font>
+                     <family>Segoe UI</family>
+                     <pointsize>11</pointsize>
+                    </font>
+                   </property>
                    <property name="alternatingRowColors">
                     <bool>true</bool>
                    </property>
@@ -530,10 +668,7 @@
                  </size>
                 </property>
                 <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <item>
@@ -551,10 +686,7 @@
                     </size>
                    </property>
                    <property name="frameShape">
-                    <enum>QFrame::Box</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Sunken</enum>
+                    <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QFormLayout" name="formLayout_2">
                     <property name="fieldGrowthPolicy">
@@ -577,7 +709,17 @@
                      </widget>
                     </item>
                     <item row="0" column="1">
-                     <widget class="QDateEdit" name="begin_date_edit">
+                     <widget class="QDateEdit" name="begin_date_edit_fetch">
+                      <property name="dateTime">
+                       <datetime>
+                        <hour>0</hour>
+                        <minute>0</minute>
+                        <second>0</second>
+                        <year>2020</year>
+                        <month>1</month>
+                        <day>1</day>
+                       </datetime>
+                      </property>
                       <property name="displayFormat">
                        <string>yyyy-MM</string>
                       </property>
@@ -591,7 +733,17 @@
                      </widget>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QDateEdit" name="end_date_edit">
+                     <widget class="QDateEdit" name="end_date_edit_fetch">
+                      <property name="dateTime">
+                       <datetime>
+                        <hour>0</hour>
+                        <minute>0</minute>
+                        <second>0</second>
+                        <year>2020</year>
+                        <month>1</month>
+                        <day>1</day>
+                       </datetime>
+                      </property>
                       <property name="displayFormat">
                        <string>yyyy-MM</string>
                       </property>
@@ -609,10 +761,7 @@
                     </sizepolicy>
                    </property>
                    <property name="frameShape">
-                    <enum>QFrame::Box</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Sunken</enum>
+                    <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2">
                     <item row="0" column="0">
@@ -630,7 +779,7 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>Fetch Selected Data</string>
+                       <string>Fetch Selected Reports</string>
                       </property>
                      </widget>
                     </item>
@@ -648,13 +797,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="fetch_special_reports_tab">
        <attribute name="title">
-        <string>Import File</string>
+        <string>Fetch Special Reports</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
-         <widget class="QFrame" name="frame_21">
+         <widget class="QFrame" name="frame_26">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -668,27 +817,70 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_12">
+          <layout class="QVBoxLayout" name="verticalLayout_15">
            <item>
-            <widget class="QLabel" name="label_18">
+            <widget class="QLabel" name="label_21">
              <property name="font">
               <font>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
              <property name="text">
-              <string>Select Vendor</string>
+              <string>Select Vendors</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QListView" name="vendors_list_view_import">
+            <widget class="QFrame" name="frame_32">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="select_vendors_button_special">
+                <property name="text">
+                 <string>Select All</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="deselect_vendors_button_special">
+                <property name="text">
+                 <string>Deselect All</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListView" name="vendors_list_view_special">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
              </property>
@@ -698,7 +890,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QFrame" name="frame_20">
+         <widget class="QFrame" name="frame_25">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -712,16 +904,21 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_11">
+          <layout class="QVBoxLayout" name="verticalLayout_14">
            <item>
-            <widget class="QLabel" name="label_17">
+            <widget class="QLabel" name="label_20">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -732,17 +929,50 @@
             </widget>
            </item>
            <item>
-            <widget class="QListView" name="report_types_list_view_import">
-             <property name="alternatingRowColors">
-              <bool>true</bool>
+            <widget class="QFrame" name="frame_30">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <item row="3" column="0" alignment="Qt::AlignHCenter">
+               <widget class="QRadioButton" name="ir_radio_button">
+                <property name="text">
+                 <string>IR</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" alignment="Qt::AlignHCenter">
+               <widget class="QRadioButton" name="tr_radio_button">
+                <property name="text">
+                 <string>TR</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" alignment="Qt::AlignHCenter">
+               <widget class="QRadioButton" name="pr_radio_button">
+                <property name="text">
+                 <string>PR</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" alignment="Qt::AlignHCenter">
+               <widget class="QRadioButton" name="dr_radio_button">
+                <property name="text">
+                 <string>DR</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QFrame" name="frame_22">
+         <widget class="QFrame" name="frame_27">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -756,16 +986,13 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_13">
+          <layout class="QVBoxLayout" name="verticalLayout_16">
            <item>
-            <widget class="QFrame" name="frame_23">
+            <widget class="QFrame" name="attributes_frame">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -777,12 +1004,17 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
+             <layout class="QVBoxLayout" name="verticalLayout_18"/>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_31">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <layout class="QFormLayout" name="formLayout_4">
+             <layout class="QFormLayout" name="formLayout_5">
               <property name="fieldGrowthPolicy">
                <enum>QFormLayout::FieldsStayAtSizeHint</enum>
               </property>
@@ -796,51 +1028,30 @@
                <number>20</number>
               </property>
               <item row="0" column="0">
-               <widget class="QLabel" name="label_19">
-                <property name="minimumSize">
-                 <size>
-                  <width>100</width>
-                  <height>0</height>
-                 </size>
-                </property>
+               <widget class="QLabel" name="label_22">
                 <property name="text">
-                 <string>Report Year</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QDateEdit" name="report_year_date_edit">
-                <property name="displayFormat">
-                 <string>yyyy</string>
+                 <string>Begin Date</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QPushButton" name="select_file_button">
-                <property name="minimumSize">
-                 <size>
-                  <width>100</width>
-                  <height>0</height>
-                 </size>
-                </property>
+               <widget class="QLabel" name="label_23">
                 <property name="text">
-                 <string>Select File</string>
+                 <string>End Date</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDateEdit" name="begin_date_edit_special">
+                <property name="displayFormat">
+                 <string>yyyy-MM</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLabel" name="selected_file_label">
-                <property name="minimumSize">
-                 <size>
-                  <width>100</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>None</string>
+               <widget class="QDateEdit" name="end_date_edit_special">
+                <property name="displayFormat">
+                 <string>yyyy-MM</string>
                 </property>
                </widget>
               </item>
@@ -848,22 +1059,19 @@
             </widget>
            </item>
            <item>
-            <widget class="QFrame" name="frame_24">
+            <widget class="QFrame" name="frame_29">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
+              <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Sunken</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_7">
+             <layout class="QGridLayout" name="gridLayout_8">
               <item row="0" column="0">
-               <widget class="QPushButton" name="import_file_button">
+               <widget class="QPushButton" name="fetch_special_data_button">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -877,8 +1085,293 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Import Selected File</string>
+                 <string>Fetch Special Report</string>
                 </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="import_file_tab">
+       <attribute name="title">
+        <string>Import File</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_21">
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>14</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>PAGE IS IN DEVELOPMENT</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignHCenter|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame_3">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QFrame" name="frame_21">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_12">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Select Vendor</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QListView" name="vendors_list_view_import">
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                 </font>
+                </property>
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_20">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <item>
+               <widget class="QLabel" name="label_17">
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Select Report Type</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QListView" name="report_types_list_view_import">
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                 </font>
+                </property>
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="frame_22">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_13">
+              <item>
+               <widget class="QFrame" name="frame_23">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <layout class="QFormLayout" name="formLayout_4">
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+                 </property>
+                 <property name="formAlignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="horizontalSpacing">
+                  <number>20</number>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>20</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_19">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Report Year</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QDateEdit" name="report_year_date_edit">
+                   <property name="displayFormat">
+                    <string>yyyy</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QPushButton" name="select_file_button">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Select File</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLabel" name="selected_file_label">
+                   <property name="minimumSize">
+                    <size>
+                     <width>100</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame_24">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_7">
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="import_file_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>180</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Import Selected File</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
              </layout>
@@ -895,6 +1388,25 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>
+         <widget class="QLabel" name="label_36">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>14</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>true</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>PAGE IS IN DEVELOPMENT</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QFrame" name="frame_19">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -903,10 +1415,7 @@
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
            <item>
@@ -922,12 +1431,6 @@
                <width>0</width>
                <height>0</height>
               </size>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
              </property>
              <layout class="QFormLayout" name="formLayout_3">
               <property name="fieldGrowthPolicy">
@@ -973,12 +1476,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
              <layout class="QGridLayout" name="gridLayout_5">
               <property name="leftMargin">
                <number>0</number>
@@ -1002,27 +1499,27 @@
                 </property>
                 <property name="maximumSize">
                  <size>
-                  <width>240</width>
+                  <width>340</width>
                   <height>16777215</height>
                  </size>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                 </font>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
                   <widget class="QLabel" name="label_16">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                   <property name="minimumSize">
+                    <size>
+                     <width>120</width>
+                     <height>0</height>
+                    </size>
                    </property>
                    <property name="text">
-                    <string>(Optional)</string>
+                    <string>Search by:</string>
                    </property>
                   </widget>
                  </item>
@@ -1064,12 +1561,6 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0">
                <widget class="QPushButton" name="search_button">
@@ -1105,17 +1596,15 @@
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
             <widget class="QLabel" name="label_15">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
                <weight>75</weight>
                <bold>true</bold>
               </font>
@@ -1127,6 +1616,12 @@
            </item>
            <item>
             <widget class="QTableView" name="search_results_table_view">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>11</pointsize>
+              </font>
+             </property>
              <property name="alternatingRowColors">
               <bool>true</bool>
              </property>
@@ -1139,10 +1634,10 @@
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
-             <attribute name="horizontalHeaderDefaultSectionSize">
+             <attribute name="horizontalHeaderMinimumSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
+             <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
@@ -1151,6 +1646,444 @@
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
              </attribute>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="settings_tab">
+       <attribute name="title">
+        <string>Settings</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_17">
+        <item>
+         <widget class="QFrame" name="frame_37">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="1" column="0">
+            <widget class="QFrame" name="frame_35">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_20">
+              <item alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="label_26">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Search</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame_36">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <layout class="QFormLayout" name="formLayout_7">
+                 <property name="horizontalSpacing">
+                  <number>50</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_27">
+                   <property name="text">
+                    <string>[In Development]</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="save_location_edit_fetch_2">
+                   <property name="text">
+                    <string>[In Development]</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QFrame" name="frame_33">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <item alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="label_24">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>11</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Reports</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QFrame" name="frame_34">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_11">
+                 <property name="horizontalSpacing">
+                  <number>10</number>
+                 </property>
+                 <item row="7" column="2">
+                  <widget class="QPushButton" name="request_interval_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="special_tsv_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="2">
+                  <widget class="QPushButton" name="empty_cell_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>Special Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="0">
+                  <widget class="QLabel" name="label_33">
+                   <property name="text">
+                    <string>Empty Cell</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLineEdit" name="request_interval_edit">
+                   <property name="inputMask">
+                    <string>999</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
+                  <widget class="QLabel" name="label_32">
+                   <property name="text">
+                    <string>Concurrent Report Processes</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="general_json_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="label_31">
+                   <property name="text">
+                    <string>Concurrent Vendor Processes</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="1">
+                  <widget class="QLineEdit" name="concurrent_reports_edit">
+                   <property name="inputMask">
+                    <string>999</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="3">
+                  <widget class="QPushButton" name="general_json_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Report Request Interval</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_25">
+                   <property name="text">
+                    <string>General Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLineEdit" name="general_json_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="special_tsv_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="1">
+                  <widget class="QLineEdit" name="empty_cell_edit"/>
+                 </item>
+                 <item row="8" column="2">
+                  <widget class="QPushButton" name="concurrent_vendors_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="general_tsv_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QPushButton" name="general_tsv_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="general_tsv_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="label_37">
+                   <property name="text">
+                    <string>General JSON Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="concurrent_vendors_edit">
+                   <property name="inputMask">
+                    <string>999</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="2">
+                  <widget class="QPushButton" name="concurrent_reports_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QPushButton" name="special_tsv_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="label_38">
+                   <property name="text">
+                    <string>Special JSON Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="special_json_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="2">
+                  <widget class="QPushButton" name="special_json_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="3">
+                  <widget class="QPushButton" name="special_json_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -1167,7 +2100,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>920</width>
+     <width>1000</width>
      <height>21</height>
     </rect>
    </property>

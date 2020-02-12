@@ -1,10 +1,13 @@
 import sys
+import os
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow
 import ui.MainWindow
 from ManageVendors import ManageVendorsController
-from FetchData import FetchDataController
+from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
 from Search import SearchController
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from Settings import SettingsController
 
 
 # region debug_stuff
@@ -19,8 +22,11 @@ sys.excepthook = trap_exc_during_debug
 
 # endregion
 
-PREF_VIEW_WIDTH = 1000.0
-PREF_VIEW_HEIGHT = 600.0
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -29,50 +35,23 @@ if __name__ == "__main__":
     main_window_ui = ui.MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
-    manageVendorsController = ManageVendorsController(main_window_ui.vendorsListView,
-                                                      main_window_ui.modifyVendorFrame,
-                                                      main_window_ui.nameEdit,
-                                                      main_window_ui.customerIdEdit,
-                                                      main_window_ui.baseUrlEdit,
-                                                      main_window_ui.requestorIdEdit,
-                                                      main_window_ui.apiKeyEdit,
-                                                      main_window_ui.platformEdit,
-                                                      main_window_ui.saveVendorChangesButton,
-                                                      main_window_ui.undoVendorChangesButton,
-                                                      main_window_ui.removeVendorButton,
-                                                      main_window_ui.addVendorButton)
+    # region Setup Tab Controllers
+    manage_vendors_controller = ManageVendorsController(main_window_ui)
+    search_controller = SearchController(main_window_ui)
+    settings_controller = SettingsController(main_window_ui)
+    fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, search_controller,
+                                                      settings_controller.settings, main_window_ui)
+    fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
+                                                                     search_controller,
+                                                                     settings_controller.settings, main_window_ui)
+    import_file_controller = ImportFileController(manage_vendors_controller.vendors, search_controller, main_window_ui)
+    # endregion
 
-    search_controller = SearchController(main_window_ui.search_term_edit,
-                                         main_window_ui.title_checkbox,
-                                         main_window_ui.issn_checkbox,
-                                         main_window_ui.isbn_checkbox,
-                                         main_window_ui.search_button,
-                                         main_window_ui.search_results_table_view)
-
-    fetchDataController = FetchDataController(manageVendorsController.vendors,
-                                              search_controller,
-                                              main_window_ui.fetch_all_data_button,
-                                              main_window_ui.fetch_advanced_button,
-                                              main_window_ui.vendors_list_view_fetch,
-                                              main_window_ui.select_vendors_button_fetch,
-                                              main_window_ui.deselect_vendors_button_fetch,
-                                              main_window_ui.report_types_list_view,
-                                              main_window_ui.select_report_types_button_fetch,
-                                              main_window_ui.deselect_report_types_button_fetch,
-                                              main_window_ui.begin_date_edit,
-                                              main_window_ui.end_date_edit)
-    manageVendorsController.vendors_changed_signal.connect(fetchDataController.on_vendors_size_changed)
-
-    importFileController = ImportFileController(manageVendorsController.vendors,
-                                                search_controller,
-                                                main_window_ui.vendors_list_view_import,
-                                                main_window_ui.report_types_list_view_import,
-                                                main_window_ui.report_year_date_edit,
-                                                main_window_ui.select_file_button,
-                                                main_window_ui.selected_file_label,
-                                                main_window_ui.import_file_button)
-    manageVendorsController.vendors_changed_signal.connect(importFileController.on_vendors_size_changed)
+    # region Connect Signals
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_changed)
+    # endregion
 
     main_window.show()
-
     sys.exit(app.exec_())
