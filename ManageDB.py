@@ -293,6 +293,7 @@ HEADER_ROWS = 12
 BLANK_ROWS = 1
 DELIMITERS = {'tsv': '\t', 'csv': ','}
 
+
 def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
     sql_texts = {}
     for report in reports:
@@ -318,6 +319,7 @@ def create_table_sql_texts(reports):  # makes the SQL statements to create the t
         sql_texts[report] = sql_text
     return sql_texts
 
+
 def create_view_sql_texts(reports):  # makes the SQL statements to create the views from the table definition
     sql_texts = {}
     for report in reports:
@@ -332,8 +334,8 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
                 fields.append(field['name'])
         calcs = []
         for key in sorted(MONTHS):  # month columns
-            calc_text = 'SUM(CASE ' + 'month' + ' WHEN ' + str(key)
-            calc_text += ' THEN ' + 'metric' + ' END) AS ' + MONTHS[key]
+            calc_text = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(key)
+            calc_text += ' THEN ' + 'metric' + ' END), 0) AS ' + MONTHS[key]
             calcs.append(calc_text)
         calcs.append('SUM(' + 'metric' + ') AS ' + YEAR_TOTAL)  # year total column
         sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
@@ -342,7 +344,8 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
 
-def replace_sql_text(report, data):
+
+def replace_sql_text(report, data):  # makes the sql statement to 'replace or insert' data into a table
     sql_text = 'REPLACE INTO ' + report + '('
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
@@ -375,17 +378,15 @@ def replace_sql_text(report, data):
     return sql_text
 
 
-from datetime import datetime
-
-
-def read_report_file(file_name, vendor):
+def read_report_file(file_name,
+                     vendor):  # reads a specific csv/tsv file and returns the report type and the values for inserting
     delimiter = DELIMITERS[file_name[-3:]]
     file = open(file_name, 'r', encoding='utf-8')
     results = {}
     if file.mode == 'r':
         lines = file.readlines()
         header = {}
-        for line in lines[:HEADER_ROWS - 1]:
+        for line in lines[:HEADER_ROWS - 1]:  # reads header row data
             cells = line.strip().split(delimiter)
             key = cells[0].strip().lower()
             if len(cells) > 1:
@@ -399,16 +400,17 @@ def read_report_file(file_name, vendor):
         for line in lines[HEADER_ROWS + BLANK_ROWS + 1:]:
             cells = line.strip().split(delimiter)
             month = 1
-            for column in range(len(MONTHS)):
+            for column in range(len(MONTHS)):  # makes value from each month with metric > 0 for each row
                 current_column = len(column_headers) - len(MONTHS) + month - 1
                 metric = int(cells[current_column])
                 if metric > 0:
                     value = {}
-                    for i in range(len(column_headers) - len(MONTHS) - 1):
+                    for i in range(len(column_headers) - len(MONTHS) - 1):  # read rows before months
                         value[column_headers[i]] = cells[i]
-                    if not value['metric_type']:
+                    if not value['metric_type']:  # if no metric type column, use the metric type from header
                         value['metric_type'] = header['metric_types']
                     current_header = column_headers[current_column]
+                    # additional fields
                     value['year'] = int(current_header[-4:])
                     value['month'] = month
                     value['metric'] = int(cells[current_column])
@@ -421,6 +423,25 @@ def read_report_file(file_name, vendor):
     else:
         print('Error: could not open file ' + file_name)
         return None
+
+
+def search_sql_text(report, start_year, end_year, search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
+    sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
+    sql_text += '\nWHERE'
+    clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
+               [{'field': 'year', 'comparison': '<=', 'value': end_year}]]
+    clauses.extend(search_parameters)
+    print(clauses)
+    clauses_texts = []
+    for clause in clauses:
+        sub_clauses_text = []
+        for sub_clause in clause:
+            sub_clauses_text.append(
+                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
+        clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
+    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
+    sql_text += ';'
+    return sql_text
 
 
 import sqlite3
@@ -438,12 +459,24 @@ def create_connection(db_file):
         connection.close()
     return connection
 
+
 def run_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
         cursor.execute(sql_text)
     except Error as error:
         print(error)
+
+
+def run_select_sql(connection, sql_text):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_text)
+        return cursor.fetchall()
+    except Error as error:
+        print(error)
+        return None
+
 
 def setup_database(drop_tables):
     sql_texts = {}
@@ -469,18 +502,36 @@ def setup_database(drop_tables):
     else:
         print("Error, no connection")
 
+
 def test_insert():
+    data = read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
+    replace = replace_sql_text(data['report'], data['values'])
+    print(replace)  # testing
+
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        data = read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
-        replace = replace_sql_text(data['report'], data['values'])
-        print(replace)
         run_sql(connection, replace)
         connection.commit()
         connection.close()
     else:
         print("Error, no connection")
 
+
+def test_search():
+    search = search_sql_text('DR_D1', 2019, 2019,
+                             [[{'field': 'database', 'comparison': 'like', 'value': '19th Century%'}],
+                              [{'field': 'publisher', 'comparison': '=', 'value': 'JSTOR'},
+                               {'field': 'platform', 'comparison': '=', 'value': 'EBSCOhost'}]])
+    print(search)  # testing
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        print(run_select_sql(connection, search))
+        connection.close()
+    else:
+        print("Error, no connection")
+
+
 setup_database(True)
 test_insert()
-
+test_search()
