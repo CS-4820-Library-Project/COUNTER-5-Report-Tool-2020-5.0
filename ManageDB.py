@@ -287,7 +287,7 @@ FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 
 DATABASE_LOCATION = r'./all_data/search/search.db'
-FILE_LOCATION = './all_data/normal_tsv_files/'
+FILE_LOCATION = r'./all_data/normal_tsv_files/'
 
 HEADER_ROWS = 12
 BLANK_ROWS = 1
@@ -333,11 +333,11 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
             if field['name'] not in FIELDS_NOT_IN_VIEWS:
                 fields.append(field['name'])
         calcs = []
+        calcs.append('SUM(' + 'metric' + ') AS ' + YEAR_TOTAL)  # year total column
         for key in sorted(MONTHS):  # month columns
             calc_text = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(key)
             calc_text += ' THEN ' + 'metric' + ' END), 0) AS ' + MONTHS[key]
             calcs.append(calc_text)
-        calcs.append('SUM(' + 'metric' + ') AS ' + YEAR_TOTAL)  # year total column
         sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
         sql_text += '\nFROM ' + report
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
@@ -425,7 +425,8 @@ def read_report_file(file_name,
         return None
 
 
-def search_sql_text(report, start_year, end_year, search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
+def search_sql_text(report, start_year, end_year,
+                    search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
