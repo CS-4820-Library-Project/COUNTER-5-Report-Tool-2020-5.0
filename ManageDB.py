@@ -381,6 +381,7 @@ from datetime import datetime
 def read_report_file(file_name, vendor):
     delimiter = DELIMITERS[file_name[-3:]]
     file = open(file_name, 'r', encoding='utf-8')
+    results = {}
     if file.mode == 'r':
         lines = file.readlines()
         header = {}
@@ -392,27 +393,34 @@ def read_report_file(file_name, vendor):
             else:
                 header[key] = None
         print(header)
+        results['report'] = header['report_id']
         column_headers = lines[HEADER_ROWS + BLANK_ROWS].strip().lower().split(delimiter)
-        print(column_headers)
         values = []
         for line in lines[HEADER_ROWS + BLANK_ROWS + 1:]:
             cells = line.strip().split(delimiter)
-            value = {}
-            for i in range(len(column_headers) - len(MONTHS) - 1):
-                value[column_headers[i]] = cells[i]
-            current_header = column_headers[len(column_headers) - len(MONTHS)]
-            print(current_header)
-            current = datetime(current_header, '%b-%Y')
-            value['year'] = current.year
-            value['month'] = current.month
-            value['vendor'] = vendor
-            value['report'] = header['report_id']
-            value['updated_on'] = header['created']
-            values.append(value)
-        print(values[:10])
-
+            month = 1
+            for column in range(len(MONTHS)):
+                current_column = len(column_headers) - len(MONTHS) + month - 1
+                metric = int(cells[current_column])
+                if metric > 0:
+                    value = {}
+                    for i in range(len(column_headers) - len(MONTHS) - 1):
+                        value[column_headers[i]] = cells[i]
+                    if not value['metric_type']:
+                        value['metric_type'] = header['metric_types']
+                    current_header = column_headers[current_column]
+                    value['year'] = int(current_header[-4:])
+                    value['month'] = month
+                    value['metric'] = int(cells[current_column])
+                    value['vendor'] = vendor
+                    value['updated_on'] = header['created']
+                    values.append(value)
+                month += 1
+        results['values'] = values
+        return results
     else:
         print('Error: could not open file ' + file_name)
+        return None
 
 
 import sqlite3
@@ -464,24 +472,8 @@ def setup_database(drop_tables):
 def test_insert():
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
-                                              'year': 2020, 'month': 2, 'metric': 1,
-                                              'updated_on': datetime.now().isoformat()},
-                                             {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
-                                              'year': 2020, 'month': 1, 'metric': 2,
-                                              'updated_on': datetime.now().isoformat()}])
-        print(replace)
-        run_sql(connection, replace)
-        connection.commit()
-        replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
-                                              'year': 2020, 'month': 2, 'metric': 3,
-                                              'updated_on': datetime.now().isoformat()},
-                                             {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
-                                              'year': 2020, 'month': 1, 'metric': 4,
-                                              'updated_on': datetime.now().isoformat()},
-                                             {'database': 'goodbye', 'metric_type': 'count', 'vendor': 'hi',
-                                              'year': 2020, 'month': 1, 'metric': 6,
-                                              'updated_on': datetime.now().isoformat()}])
+        data = read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
+        replace = replace_sql_text(data['report'], data['values'])
         print(replace)
         run_sql(connection, replace)
         connection.commit()
@@ -491,4 +483,4 @@ def test_insert():
 
 setup_database(True)
 test_insert()
-read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
+
