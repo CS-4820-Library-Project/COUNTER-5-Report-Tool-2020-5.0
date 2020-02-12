@@ -42,7 +42,7 @@ ACCEPTABLE_CODES = [3030,
                     3040,
                     3050,
                     3060,
-                    3062]
+                    3062] + list(range(1, 1000))
 
 # If these codes are received the retry checkbox will be checked, user can retry later
 RETRY_LATER_CODES = [1010,
