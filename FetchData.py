@@ -37,17 +37,14 @@ REPORT_TYPES = ["PR",
                 "IR_M1"]
 
 # If these codes are received with a Report_Header, files will be created and saved
-ACCEPTABLE_CODES = [3000,
-                    3010,
-                    3020,
-                    3030,
+ACCEPTABLE_CODES = [3030,
                     3031,
                     3040,
                     3050,
                     3060,
                     3062]
 
-# If these codes are received with a Report_Header, files will be created and saved
+# If these codes are received the retry checkbox will be checked, user can retry later
 RETRY_LATER_CODES = [1010,
                      1011]
 
@@ -2280,7 +2277,6 @@ class ReportWorker(QObject):
 
         if len(row_dicts) == 0:
             tsv_file.close()
-            # self.process_result.message = f"Empty report saved as: {tsv_file_name}"
             self.process_result.completion_status = CompletionStatus.WARNING
             self.process_result.file_name = tsv_file_name
             self.process_result.file_dir = tsv_file_dir
