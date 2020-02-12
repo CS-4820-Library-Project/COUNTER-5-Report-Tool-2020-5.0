@@ -374,7 +374,11 @@ def replace_sql_text(report, data):
     sql_text += ';'
     return sql_text
 
-def read_report_file(file_name, report, vendor, year):
+
+from datetime import datetime
+
+
+def read_report_file(file_name, vendor):
     delimiter = DELIMITERS[file_name[-3:]]
     file = open(file_name, 'r', encoding='utf-8')
     if file.mode == 'r':
@@ -394,8 +398,16 @@ def read_report_file(file_name, report, vendor, year):
         for line in lines[HEADER_ROWS + BLANK_ROWS + 1:]:
             cells = line.strip().split(delimiter)
             value = {}
-            for i in range(len(column_headers)):
+            for i in range(len(column_headers) - len(MONTHS) - 1):
                 value[column_headers[i]] = cells[i]
+            current_header = column_headers[len(column_headers) - len(MONTHS)]
+            print(current_header)
+            current = datetime(current_header, '%b-%Y')
+            value['year'] = current.year
+            value['month'] = current.month
+            value['vendor'] = vendor
+            value['report'] = header['report_id']
+            value['updated_on'] = header['created']
             values.append(value)
         print(values[:10])
 
@@ -454,22 +466,22 @@ def test_insert():
     if connection is not None:
         replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 2, 'metric': 1,
-                                              'updated_on': '2020-02-10 12:32:00'},
+                                              'updated_on': datetime.now().isoformat()},
                                              {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 1, 'metric': 2,
-                                              'updated_on': '2020-02-10 12:32:00'}])
+                                              'updated_on': datetime.now().isoformat()}])
         print(replace)
         run_sql(connection, replace)
         connection.commit()
         replace = replace_sql_text('DR_D1', [{'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 2, 'metric': 3,
-                                              'updated_on': '2020-02-10 12:32:00'},
+                                              'updated_on': datetime.now().isoformat()},
                                              {'database': 'hello', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 1, 'metric': 4,
-                                              'updated_on': '2020-02-10 12:32:00'},
+                                              'updated_on': datetime.now().isoformat()},
                                              {'database': 'goodbye', 'metric_type': 'count', 'vendor': 'hi',
                                               'year': 2020, 'month': 1, 'metric': 6,
-                                              'updated_on': '2020-02-10 12:32:00'}])
+                                              'updated_on': datetime.now().isoformat()}])
         print(replace)
         run_sql(connection, replace)
         connection.commit()
@@ -479,4 +491,4 @@ def test_insert():
 
 setup_database(True)
 test_insert()
-read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'DR_D1', 'EBSCO', 2019)
+read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
