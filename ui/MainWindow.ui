@@ -1792,45 +1792,7 @@
                  <property name="horizontalSpacing">
                   <number>10</number>
                  </property>
-                 <item row="7" column="2">
-                  <widget class="QPushButton" name="request_interval_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QPushButton" name="special_tsv_directory_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="2">
+                 <item row="8" column="2">
                   <widget class="QPushButton" name="empty_cell_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1849,57 +1811,25 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="empty_cell_edit"/>
+                 </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_29">
                    <property name="text">
-                    <string>Special Reports Directory</string>
+                    <string>Other Reports Directory</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="10" column="0">
-                  <widget class="QLabel" name="label_33">
-                   <property name="text">
-                    <string>Empty Cell</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QLineEdit" name="request_interval_edit">
-                   <property name="inputMask">
-                    <string>999</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="9" column="0">
-                  <widget class="QLabel" name="label_32">
-                   <property name="text">
-                    <string>Concurrent Report Processes</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="general_json_directory_button">
-                   <property name="text">
-                    <string>Choose Folder...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="0">
+                 <item row="6" column="0">
                   <widget class="QLabel" name="label_31">
                    <property name="text">
                     <string>Concurrent Vendor Processes</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="9" column="1">
-                  <widget class="QLineEdit" name="concurrent_reports_edit">
-                   <property name="inputMask">
-                    <string>999</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="3">
-                  <widget class="QPushButton" name="general_json_directory_help_button">
+                 <item row="5" column="2">
+                  <widget class="QPushButton" name="request_interval_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -1917,104 +1847,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_30">
-                   <property name="text">
-                    <string>Report Request Interval</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_25">
-                   <property name="text">
-                    <string>General Reports Directory</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="general_json_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="special_tsv_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="1">
-                  <widget class="QLineEdit" name="empty_cell_edit"/>
-                 </item>
-                 <item row="8" column="2">
-                  <widget class="QPushButton" name="concurrent_vendors_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="general_tsv_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QPushButton" name="general_tsv_directory_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QPushButton" name="general_tsv_directory_button">
-                   <property name="text">
-                    <string>Choose Folder...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_37">
-                   <property name="text">
-                    <string>General JSON Directory</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="1">
-                  <widget class="QLineEdit" name="concurrent_vendors_edit">
-                   <property name="inputMask">
-                    <string>999</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="9" column="2">
+                 <item row="7" column="2">
                   <widget class="QPushButton" name="concurrent_reports_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -2033,36 +1866,29 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2">
-                  <widget class="QPushButton" name="special_tsv_directory_button">
-                   <property name="text">
-                    <string>Choose Folder...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_38">
-                   <property name="text">
-                    <string>Special JSON Directory</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="special_json_directory_edit">
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="other_directory_edit">
                    <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="2">
-                  <widget class="QPushButton" name="special_json_directory_button">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_25">
                    <property name="text">
-                    <string>Choose Folder...</string>
+                    <string>Yearly Reports Directory</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="3">
-                  <widget class="QPushButton" name="special_json_directory_help_button">
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="label_33">
+                   <property name="text">
+                    <string>Empty Cell</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="other_directory_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -2079,6 +1905,88 @@
                     <string>?</string>
                    </property>
                   </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="yearly_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="yearly_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Report Request Interval</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_32">
+                   <property name="text">
+                    <string>Concurrent Report Processes</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="2">
+                  <widget class="QPushButton" name="concurrent_vendors_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QPushButton" name="other_directory_button">
+                   <property name="text">
+                    <string>Choose Folder...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QPushButton" name="yearly_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QSpinBox" name="request_interval_spin_box"/>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QSpinBox" name="concurrent_vendors_spin_box"/>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QSpinBox" name="concurrent_reports_spin_box"/>
                  </item>
                 </layout>
                </widget>

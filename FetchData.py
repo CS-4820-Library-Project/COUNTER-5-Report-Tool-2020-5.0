@@ -64,8 +64,8 @@ class CompletionStatus(Enum):
 
 
 class FetchType(Enum):
-    GENERAL = "General"
-    SPECIAL = "Special"
+    YEARLY = 0
+    OTHER = 1
 
 
 def get_major_report_type(report_type: str) -> MajorReportType:
@@ -897,7 +897,7 @@ class FetchReportsController(FetchReportsAbstract):
         super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.GENERAL
+        self.fetch_type = FetchType.YEARLY
         current_date = QDate.currentDate()
         self.basic_begin_date = QDate(current_date.year(), 1, current_date.day())
         self.adv_begin_date = QDate(current_date.year(), 1, current_date.day())
@@ -1139,7 +1139,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.SPECIAL
+        self.fetch_type = FetchType.OTHER
         self.selected_report_type = None
         self.selected_attributes = Attributes()
         self.attribute_options = {
@@ -1471,12 +1471,10 @@ class ReportWorker(QObject):
         self.empty_cell = request_data.settings.empty_cell
         self.attributes = request_data.attributes
 
-        if request_data.fetch_type == FetchType.GENERAL:
-            self.tsv_save_dir = request_data.settings.general_tsv_directory
-            self.json_save_dir = request_data.settings.general_json_directory
-        elif request_data.fetch_type == FetchType.SPECIAL:
-            self.tsv_save_dir = request_data.settings.special_tsv_directory
-            self.json_save_dir = request_data.settings.special_json_directory
+        if request_data.fetch_type == FetchType.YEARLY:
+            self.save_dir = request_data.settings.yearly_directory
+        elif request_data.fetch_type == FetchType.OTHER:
+            self.save_dir = request_data.settings.other_directory
         else:
             raise Exception("FetchType not implemented in ReportWorker")
 
@@ -1573,7 +1571,7 @@ class ReportWorker(QObject):
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
@@ -1866,7 +1864,7 @@ class ReportWorker(QObject):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
@@ -2277,7 +2275,7 @@ class ReportWorker(QObject):
         self.process_result.file_path = file_path
 
     def save_json_file(self, report_type: str, json_string: str):
-        file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
