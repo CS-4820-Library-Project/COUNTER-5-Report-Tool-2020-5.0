@@ -1316,6 +1316,7 @@ class VendorWorker(QObject):
         self.target_report_types = request_data.target_report_types
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
+        self.request_timeout = request_data.settings.request_timeout
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1338,13 +1339,18 @@ class VendorWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...(JSTOR...)
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+                                    timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
+        except requests.exceptions.Timeout as e:
+            self.process_result.completion_status = CompletionStatus.FAILED
+            self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
@@ -1468,6 +1474,7 @@ class ReportWorker(QObject):
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
+        self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
         self.attributes = request_data.attributes
 
@@ -1508,7 +1515,8 @@ class ReportWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+                                    timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
@@ -1516,6 +1524,10 @@ class ReportWorker(QObject):
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
+        except requests.exceptions.Timeout as e:
+            self.process_result.completion_status = CompletionStatus.FAILED
+            self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"

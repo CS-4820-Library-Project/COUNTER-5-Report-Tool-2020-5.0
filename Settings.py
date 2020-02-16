@@ -14,26 +14,29 @@ class Setting(Enum):
     YEARLY_DIR = 0
     OTHER_DIR = 1
     REQUEST_INTERVAL = 2
-    CONCURRENT_VENDORS = 3
-    CONCURRENT_REPORTS = 4
-    EMPTY_CELL = 5
+    REQUEST_TIMEOUT = 3
+    CONCURRENT_VENDORS = 4
+    CONCURRENT_REPORTS = 5
+    EMPTY_CELL = 6
 
 
 # Default Settings
 YEARLY_DIR = "./all_data/yearly_files/"
 OTHER_DIR = "./all_data/other_files/"
 REQUEST_INTERVAL = 3  # Seconds
+REQUEST_TIMEOUT = 120  # Seconds
 CONCURRENT_VENDORS = 5
 CONCURRENT_REPORTS = 5
 EMPTY_CELL = ""
 
 
 class SettingsModel(JsonModel):
-    def __init__(self, yearly_directory: str, other_directory: str, request_interval: int,
+    def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
                  concurrent_vendors: int, concurrent_reports: int, empty_cell: str):
         self.yearly_directory = yearly_directory
         self.other_directory = other_directory
         self.request_interval = request_interval
+        self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
@@ -46,6 +49,8 @@ class SettingsModel(JsonModel):
             if "other_directory" in json_dict else OTHER_DIR
         request_interval = int(json_dict["request_interval"])\
             if "request_interval" in json_dict else REQUEST_INTERVAL
+        request_timeout = int(json_dict["request_timeout"])\
+            if "request_timeout" in json_dict else REQUEST_TIMEOUT
         concurrent_vendors = int(json_dict["concurrent_vendors"])\
             if "concurrent_vendors" in json_dict else CONCURRENT_VENDORS
         concurrent_reports = int(json_dict["concurrent_reports"])\
@@ -53,7 +58,7 @@ class SettingsModel(JsonModel):
         empty_cell = json_dict["empty_cell"]\
             if "empty_cell" in json_dict else EMPTY_CELL
 
-        return cls(yearly_directory, other_directory, request_interval, concurrent_vendors,
+        return cls(yearly_directory, other_directory, request_interval, request_timeout, concurrent_vendors,
                    concurrent_reports, empty_cell)
 
 
@@ -88,6 +93,7 @@ class SettingsController:
         self.yearly_dir_edit.setText(self.settings.yearly_directory)
         self.other_dir_edit.setText(self.settings.other_directory)
         main_window_ui.request_interval_spin_box.setValue(self.settings.request_interval)
+        main_window_ui.request_timeout_spin_box.setValue(self.settings.request_timeout)
         main_window_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
         main_window_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
         main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
@@ -98,6 +104,8 @@ class SettingsController:
             lambda text: self.on_setting_changed(Setting.OTHER_DIR, text))
         main_window_ui.request_interval_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.REQUEST_INTERVAL, value))
+        main_window_ui.request_timeout_spin_box.valueChanged.connect(
+            lambda value: self.on_setting_changed(Setting.REQUEST_TIMEOUT, value))
         main_window_ui.concurrent_vendors_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.CONCURRENT_VENDORS, value))
         main_window_ui.concurrent_reports_spin_box.valueChanged.connect(
@@ -113,6 +121,8 @@ class SettingsController:
             lambda: show_message("This is where special and non-yearly files will be saved by default"))
         main_window_ui.request_interval_help_button.clicked.connect(
             lambda: show_message("The amount of time to wait between a vendor's report requests"))
+        main_window_ui.request_timeout_help_button.clicked.connect(
+            lambda: show_message("The amount of time to wait before cancelling a request"))
         main_window_ui.concurrent_vendors_help_button.clicked.connect(
             lambda: show_message("The maximum number of vendors to work on at the same time"))
         main_window_ui.concurrent_reports_help_button.clicked.connect(
@@ -128,6 +138,8 @@ class SettingsController:
             self.settings.other_directory = setting_value
         elif setting == Setting.REQUEST_INTERVAL:
             self.settings.request_interval = int(setting_value)
+        elif setting == Setting.REQUEST_TIMEOUT:
+            self.settings.request_timeout = int(setting_value)
         elif setting == Setting.CONCURRENT_VENDORS:
             self.settings.concurrent_vendors = int(setting_value)
         elif setting == Setting.CONCURRENT_REPORTS:
