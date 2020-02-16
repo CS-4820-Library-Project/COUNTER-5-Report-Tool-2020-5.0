@@ -3,7 +3,6 @@ from os import path, makedirs
 import csv
 import json
 import requests
-import os
 import webbrowser
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
@@ -14,7 +13,6 @@ from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget,
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
-from Search import SearchController
 from Settings import SettingsModel
 
 SHOW_DEBUG_MESSAGES = False
@@ -763,7 +761,7 @@ class FetchReportsAbstract:
         if process_result.report_type is not None:  # If this report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
             if completion_status == CompletionStatus.SUCCESSFUL or completion_status == CompletionStatus.WARNING:
-                report_result_ui.file_label.setText(f"Saved to: {process_result.file_name}")
+                report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
                 report_result_ui.file_label.mousePressEvent = \
                     lambda event: self.open_explorer(process_result.file_path)
             else:
@@ -889,7 +887,7 @@ class FetchReportsAbstract:
             worker.set_cancelling()
 
     def open_explorer(self, file_dir: str):
-        webbrowser.open(os.path.realpath(file_dir))
+        webbrowser.open(path.realpath(file_dir))
 
 
 class FetchReportsController(FetchReportsAbstract):

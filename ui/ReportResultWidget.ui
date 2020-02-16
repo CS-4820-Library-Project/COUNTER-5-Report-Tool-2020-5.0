@@ -102,12 +102,6 @@
           <height>50</height>
          </size>
         </property>
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
-        </property>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <property name="spacing">
           <number>3</number>
@@ -224,12 +218,6 @@
           <width>120</width>
           <height>50</height>
          </size>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <property name="leftMargin">
