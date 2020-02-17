@@ -886,8 +886,11 @@ class FetchReportsAbstract:
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
-    def open_explorer(self, file_dir: str):
-        webbrowser.open(path.realpath(file_dir))
+    def open_explorer(self, file_path: str):
+        if path.exists(file_path):
+            webbrowser.open(path.realpath(file_path))
+        else:
+            show_message(f"\'{file_path}\' does not exist")
 
 
 class FetchReportsController(FetchReportsAbstract):
@@ -1540,7 +1543,10 @@ class ReportWorker(QObject):
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
             self.process_report_model(report_model, json_string)
-            self.process_result.message = exception_models_to_message(report_model.exceptions)
+            if len(report_model.report_items) > 0 or len(report_model.exceptions) > 0:
+                self.process_result.message = exception_models_to_message(report_model.exceptions)
+            else:
+                self.process_result.message = "Report items not received. No exception received."
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             if e.msg == "Expecting value":
