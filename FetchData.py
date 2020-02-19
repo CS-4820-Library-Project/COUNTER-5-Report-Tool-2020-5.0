@@ -892,6 +892,21 @@ class FetchReportsAbstract:
         else:
             show_message(f"\'{file_path}\' does not exist")
 
+    def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
+        current_date = QDate.currentDate()
+
+        if begin_date.year() != end_date.year() or begin_date.year() > current_date.year():
+            return False
+
+        if begin_date.year() == current_date.year():
+            if begin_date.month() == 1 and end_date.month() == max(current_date.month() - 1, 1):
+                return True
+        else:
+            if begin_date.month() == 1 and end_date.month() == 12:
+                return True
+
+        return False
+
 
 class FetchReportsController(FetchReportsAbstract):
     def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
@@ -900,15 +915,12 @@ class FetchReportsController(FetchReportsAbstract):
         # region General
         self.fetch_type = FetchType.YEARLY
         current_date = QDate.currentDate()
-        self.basic_begin_date = QDate(current_date.year(), 1, current_date.day())
-        self.adv_begin_date = QDate(current_date.year(), 1, current_date.day())
-        if current_date.month() != 1:  # If not January
-            self.basic_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-            self.adv_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-        else:
-            self.basic_end_date = QDate(current_date)
-            self.adv_end_date = QDate(current_date)
-
+        begin_date = QDate(current_date.year(), 1, current_date.day())
+        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        self.basic_begin_date = QDate(begin_date)
+        self.adv_begin_date = QDate(begin_date)
+        self.basic_end_date = QDate(end_date)
+        self.adv_end_date = QDate(end_date)
         self.is_last_fetch_advanced = False
         # endregion
 
@@ -1152,10 +1164,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         }
         current_date = QDate.currentDate()
         self.begin_date = QDate(current_date.year(), 1, current_date.day())
-        if current_date.month() != 1:  # If not January
-            self.end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-        else:
-            self.end_date = QDate(current_date)
+        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
         # endregion
 
         # region Start Fetch Button
