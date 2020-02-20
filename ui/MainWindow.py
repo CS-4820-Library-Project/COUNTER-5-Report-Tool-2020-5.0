@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -394,7 +394,10 @@ class Ui_mainWindow(object):
         self.fetch_advanced_button.setSizePolicy(sizePolicy)
         self.fetch_advanced_button.setMaximumSize(QtCore.QSize(180, 16777215))
         self.fetch_advanced_button.setObjectName("fetch_advanced_button")
-        self.gridLayout_2.addWidget(self.fetch_advanced_button, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.fetch_advanced_button, 2, 1, 1, 1)
+        self.save_checkbox = QtWidgets.QCheckBox(self.frame_13)
+        self.save_checkbox.setObjectName("save_checkbox")
+        self.gridLayout_2.addWidget(self.save_checkbox, 1, 1, 1, 1)
         self.verticalLayout_7.addWidget(self.frame_13)
         self.horizontalLayout_3.addWidget(self.frame_7)
         self.verticalLayout_3.addWidget(self.frame_5)
@@ -1063,10 +1066,24 @@ class Ui_mainWindow(object):
         self.gridLayout_10.addWidget(self.frame_33, 0, 0, 1, 1)
         self.verticalLayout_17.addWidget(self.frame_37)
         self.tabWidget.addTab(self.settings_tab, "")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.label_40 = QtWidgets.QLabel(self.tab)
+        self.label_40.setGeometry(QtCore.QRect(30, 10, 946, 17))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(14)
+        font.setBold(True)
+        font.setUnderline(True)
+        font.setWeight(75)
+        self.label_40.setFont(font)
+        self.label_40.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_40.setObjectName("label_40")
+        self.tabWidget.addTab(self.tab, "")
         self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 22))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -1074,7 +1091,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
     def retranslateUi(self, mainWindow):
@@ -1112,6 +1129,7 @@ class Ui_mainWindow(object):
         self.label_10.setText(_translate("mainWindow", "End Date"))
         self.end_date_edit_fetch.setDisplayFormat(_translate("mainWindow", "yyyy-MM"))
         self.fetch_advanced_button.setText(_translate("mainWindow", "Fetch Selected Reports"))
+        self.save_checkbox.setText(_translate("mainWindow", "Save Elsewhere"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.fetch_reports_tab), _translate("mainWindow", "Fetch Reports"))
         self.label_21.setText(_translate("mainWindow", "Select Vendors"))
         self.select_vendors_button_special.setText(_translate("mainWindow", "Select All"))
@@ -1166,3 +1184,5 @@ class Ui_mainWindow(object):
         self.label_37.setText(_translate("mainWindow", "Request Timeout"))
         self.request_timeout_help_button.setText(_translate("mainWindow", "?"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), _translate("mainWindow", "Settings"))
+        self.label_40.setText(_translate("mainWindow", "PAGE IS IN DEVELOPMENT"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("mainWindow", "Visual"))

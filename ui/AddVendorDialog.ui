@@ -19,16 +19,6 @@
    <string>Add Vendor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QFrame" name="frame">
      <layout class="QFormLayout" name="formLayout">
@@ -55,12 +45,18 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="customerIdEdit"/>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Base URL</string>
         </property>
        </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="baseUrlEdit"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_4">
@@ -69,6 +65,9 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="requestorIdEdit"/>
+      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
@@ -76,24 +75,15 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="apiKeyEdit"/>
+      </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Platform (optional)</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="customerIdEdit"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="baseUrlEdit"/>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="requestorIdEdit"/>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="apiKeyEdit"/>
       </item>
       <item row="5" column="1">
        <widget class="QLineEdit" name="platformEdit"/>
@@ -123,6 +113,16 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
     </widget>
    </item>
   </layout>

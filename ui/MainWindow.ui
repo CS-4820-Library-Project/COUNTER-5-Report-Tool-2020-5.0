@@ -48,7 +48,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -764,7 +764,7 @@
                     <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2">
-                    <item row="0" column="0">
+                    <item row="2" column="1">
                      <widget class="QPushButton" name="fetch_advanced_button">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -780,6 +780,13 @@
                       </property>
                       <property name="text">
                        <string>Fetch Selected Reports</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QCheckBox" name="save_checkbox">
+                      <property name="text">
+                       <string>Save Elsewhere</string>
                       </property>
                      </widget>
                     </item>
@@ -1634,10 +1641,10 @@
              <property name="gridStyle">
               <enum>Qt::SolidLine</enum>
              </property>
-             <attribute name="horizontalHeaderMinimumSectionSize">
+             <attribute name="horizontalHeaderDefaultSectionSize">
               <number>200</number>
              </attribute>
-             <attribute name="horizontalHeaderDefaultSectionSize">
+             <attribute name="horizontalHeaderMinimumSectionSize">
               <number>200</number>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
@@ -2047,6 +2054,36 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Visual</string>
+       </attribute>
+       <widget class="QLabel" name="label_40">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>10</y>
+          <width>946</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Segoe UI</family>
+          <pointsize>14</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+          <underline>true</underline>
+         </font>
+        </property>
+        <property name="text">
+         <string>PAGE IS IN DEVELOPMENT</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2057,7 +2094,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
