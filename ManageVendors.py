@@ -39,7 +39,6 @@ class Vendor(JsonModel):
 
 
 class ManageVendorsController(QObject):
-    sorted_vendors: List[Vendor]
     vendors_changed_signal = pyqtSignal()
 
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
@@ -73,12 +72,8 @@ class ManageVendorsController(QObject):
         self.vendors_list_view.setModel(self.vendors_list_model)
         self.vendors_list_view.clicked.connect(self.on_vendor_selected)
 
-<<<<<<< Updated upstream
         self.vendors = []
-=======
-        self.vendors = list()
         self.sorted_vendors = list()
->>>>>>> Stashed changes
         vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
@@ -180,20 +175,10 @@ class ManageVendorsController(QObject):
             self.edit_vendor_details_frame.setEnabled(False)
             self.edit_vendor_options_frame.setEnabled(False)
 
-<<<<<<< Updated upstream
-    def remove_vendor(self):
-        if self.selected_index >= 0:
-            self.vendors.pop(self.selected_index)
-            self.vendors_list_model.removeRow(self.selected_index)
-            self.selected_index = -1
-            self.set_edit_vendor_view_state(False)
-            self.populate_edit_vendor_view()
-=======
     def open_remove_vendor_dialog(self):
         dialog_remove = QDialog()
         dialog_remove_ui = RemoveVendorDialog.Ui_dialog_remove()
         dialog_remove_ui.setupUi(dialog_remove)
->>>>>>> Stashed changes
 
         def remove_vendor():
             if self.selected_index >= 0:
@@ -201,6 +186,7 @@ class ManageVendorsController(QObject):
                 self.vendors_list_model.removeRow(self.selected_index)
                 self.selected_index = -1
                 self.set_edit_vendor_view_state(False)
+                self.populate_edit_vendor_view()
 
                 self.vendors_changed_signal.emit()
                 self.save_all_vendors_to_disk()
@@ -226,5 +212,4 @@ class ManageVendorsController(QObject):
     def sortVendor(self, vendor):
         self.sorted_vendors = self.vendors
         self.sorted_vendors.sort(vendor)
-        print(self.sorted_vendors)
 

@@ -7,7 +7,6 @@ from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
 from Search import SearchController
 from Settings import SettingsController
-#from Visual import VisualController
 
 
 # region debug_stuff
@@ -42,13 +41,8 @@ if __name__ == "__main__":
                                                       main_window_ui)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
                                                                      settings_controller.settings, main_window_ui)
-<<<<<<< Updated upstream
     import_file_controller = ImportFileController(manage_vendors_controller.vendors, settings_controller.settings,
                                                   main_window_ui)
-=======
-    import_file_controller = ImportFileController(manage_vendors_controller.vendors, search_controller, main_window_ui)
-    #visual_controller = VisualController(main_window_ui)
->>>>>>> Stashed changes
     # endregion
 
     # region Connect Signals
