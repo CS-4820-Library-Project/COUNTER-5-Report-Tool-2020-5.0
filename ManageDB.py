@@ -505,13 +505,17 @@ def setup_database(drop_tables):
 
 
 def test_insert():
-    data = read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO')
-    replace = replace_sql_text(data['report'], data['values'])
+    data = [read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO'),
+            read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_TR_B2.tsv', 'EBSCO')]
+    replace = []
+    for datum in data:
+        replace.append(replace_sql_text(datum['report'], datum['values']))
     print(replace)  # testing
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, replace)
+        for sql in replace:
+            run_sql(connection, sql)
         connection.commit()
         connection.close()
     else:
