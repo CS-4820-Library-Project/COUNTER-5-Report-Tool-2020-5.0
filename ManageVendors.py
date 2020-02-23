@@ -208,8 +208,3 @@ class ManageVendorsController(QObject):
         message_label.setText(message)
 
         message_dialog.exec_()
-
-    def sortVendor(self, vendor):
-        self.sorted_vendors = self.vendors
-        self.sorted_vendors.sort(vendor)
-
