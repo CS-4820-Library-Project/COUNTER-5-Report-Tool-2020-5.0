@@ -241,6 +241,8 @@ class ManageVendorsController(QObject):
         self.selected_index = -1
         self.update_vendors_ui()
         self.populate_edit_vendor_view()
+        self.vendors_changed_signal.emit(self.vendors)
+        self.save_all_vendors_to_disk()
 
     def add_vendor(self, new_vendor: Vendor) -> bool:
         # Check if vendor already exists
