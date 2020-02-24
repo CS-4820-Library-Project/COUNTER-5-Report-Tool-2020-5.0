@@ -1,5 +1,3 @@
-from typing import List
-
 from PyQt5.QtWidgets import QDialog, QListView, QPushButton, QLineEdit, QFrame
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
@@ -73,7 +71,6 @@ class ManageVendorsController(QObject):
         self.vendors_list_view.clicked.connect(self.on_vendor_selected)
 
         self.vendors = []
-        self.sorted_vendors = list()
         vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
@@ -133,14 +130,22 @@ class ManageVendorsController(QObject):
                             description_edit.toPlainText())
 
             self.vendors.append(vendor)
-            self.sortVendor(self.vendors)
+            self.sort_vendor()
             item = QStandardItem(vendor.name)
             item.setEditable(False)
             self.vendors_list_model.appendRow(item)
 
             self.vendors_changed_signal.emit()
             self.save_all_vendors_to_disk()
-
+            self.vendors_list_model.clear()
+            vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
+            vendor_dicts = json.loads(vendors_json_string)
+            for json_dict in vendor_dicts:
+                vendor = Vendor.from_json(json_dict)
+                item = QStandardItem(vendor.name)
+                item.setEditable(False)
+                self.vendors_list_model.appendRow(item)
+        self.vendors_changed_signal.emit()
         button_box = vendor_dialog_ui.buttonBox
         button_box.accepted.connect(add_vendor)
 
@@ -208,3 +213,6 @@ class ManageVendorsController(QObject):
         message_label.setText(message)
 
         message_dialog.exec_()
+
+    def sort_vendor(self):
+        self.vendors = sorted(self.vendors, key=operator.attrgetter("name"))
