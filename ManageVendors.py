@@ -241,29 +241,32 @@ class ManageVendorsController(QObject):
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
 
     def import_vendors_tsv(self, file_path):
-        tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
-        reader = csv.DictReader(tsv_file, delimiter='\t')
-        for row in reader:
-            is_local = row['is_local'].lower() == "true"
-            vendor = Vendor(row['name'],
-                            row['customer_id'],
-                            row['base_url'],
-                            row['requestor_id'],
-                            row['api_key'],
-                            row['platform'],
-                            is_local,
-                            row['description'])
+        try:
+            tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
+            reader = csv.DictReader(tsv_file, delimiter='\t')
+            for row in reader:
+                is_local = row['is_local'].lower() == "true"
+                vendor = Vendor(row['name'],
+                                row['customer_id'],
+                                row['base_url'],
+                                row['requestor_id'],
+                                row['api_key'],
+                                row['platform'],
+                                is_local,
+                                row['description'])
 
-            if self.add_vendor(vendor):
-                print(f"Vendor '{vendor.name}' added")
-            else:
-                print(f"Vendor '{vendor.name}' already exists")
+                if self.add_vendor(vendor):
+                    print(f"Vendor '{vendor.name}' added")
+                else:
+                    print(f"Vendor '{vendor.name}' already exists")
 
-        tsv_file.close()
+            tsv_file.close()
 
-        self.sort_vendors()
-        self.selected_index = -1
-        self.update_vendors_ui()
-        self.populate_edit_vendor_view()
-        self.vendors_changed_signal.emit(self.vendors)
-        self.save_all_vendors_to_disk()
+            self.sort_vendors()
+            self.selected_index = -1
+            self.update_vendors_ui()
+            self.populate_edit_vendor_view()
+            self.vendors_changed_signal.emit(self.vendors)
+            self.save_all_vendors_to_disk()
+        except Exception as e:
+            print(f"File import failed: {e}")
