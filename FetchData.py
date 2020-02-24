@@ -37,6 +37,7 @@ REPORT_TYPES = ["PR",
 # If these codes are received with a Report_Header, files will be created and saved
 ACCEPTABLE_CODES = [3030,
                     3031,
+                    3032,
                     3040,
                     3050,
                     3060,
