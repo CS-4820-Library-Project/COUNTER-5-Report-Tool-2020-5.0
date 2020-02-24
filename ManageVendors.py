@@ -124,7 +124,7 @@ class ManageVendorsController(QObject):
         local_only_check_box = vendor_dialog_ui.local_only_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
 
-        def add_vendor():
+        def attempt_add_vendor():
             vendor = Vendor(name_edit.text(),
                             customer_id_edit.text(),
                             base_url_edit.text(),
@@ -134,16 +134,19 @@ class ManageVendorsController(QObject):
                             local_only_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText())
 
-            self.vendors.append(vendor)
-            self.sort_vendors()
-            self.selected_index = -1
-            self.update_vendors_ui()
-            self.populate_edit_vendor_view()
-            self.vendors_changed_signal.emit(self.vendors)
-            self.save_all_vendors_to_disk()
+            if self.add_vendor(vendor):
+                self.vendors.append(vendor)
+                self.sort_vendors()
+                self.selected_index = -1
+                self.update_vendors_ui()
+                self.populate_edit_vendor_view()
+                self.vendors_changed_signal.emit(self.vendors)
+                self.save_all_vendors_to_disk()
+            else:
+                print(f"Vendor '{vendor.name}' already exists")
 
         button_box = vendor_dialog_ui.buttonBox
-        button_box.accepted.connect(add_vendor)
+        button_box.accepted.connect(attempt_add_vendor)
 
         vendor_dialog.exec_()
 
