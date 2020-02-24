@@ -1,8 +1,7 @@
-import operator
 from PyQt5.QtWidgets import QDialog, QListView, QPushButton, QLineEdit, QFrame
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-from ui import MainWindow, AddVendorDialog, MessageDialog
+from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
 import json
 import DataStorage
 from JsonUtils import JsonModel
@@ -63,7 +62,7 @@ class ManageVendorsController(QObject):
 
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
-        self.remove_vendor_button.clicked.connect(self.remove_vendor)
+        self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
 
         self.vendors_list_view = main_window_ui.vendorsListView
@@ -181,16 +180,25 @@ class ManageVendorsController(QObject):
             self.edit_vendor_details_frame.setEnabled(False)
             self.edit_vendor_options_frame.setEnabled(False)
 
-    def remove_vendor(self):
-        if self.selected_index >= 0:
-            self.vendors.pop(self.selected_index)
-            self.vendors_list_model.removeRow(self.selected_index)
-            self.selected_index = -1
-            self.set_edit_vendor_view_state(False)
-            self.populate_edit_vendor_view()
+    def open_remove_vendor_dialog(self):
+        dialog_remove = QDialog()
+        dialog_remove_ui = RemoveVendorDialog.Ui_dialog_remove()
+        dialog_remove_ui.setupUi(dialog_remove)
 
-            self.vendors_changed_signal.emit()
-            self.save_all_vendors_to_disk()
+        def remove_vendor():
+            if self.selected_index >= 0:
+                self.vendors.pop(self.selected_index)
+                self.vendors_list_model.removeRow(self.selected_index)
+                self.selected_index = -1
+                self.set_edit_vendor_view_state(False)
+                self.populate_edit_vendor_view()
+
+                self.vendors_changed_signal.emit()
+                self.save_all_vendors_to_disk()
+
+        button_box = dialog_remove_ui.buttonBox
+        button_box.accepted.connect(remove_vendor)
+        dialog_remove.exec_()
 
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
