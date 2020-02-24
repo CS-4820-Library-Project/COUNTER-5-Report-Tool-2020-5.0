@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>431</width>
-    <height>300</height>
+    <width>483</width>
+    <height>133</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,10 +26,23 @@
    <enum>QFrame::Raised</enum>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="search_value_parameter_lineedit"/>
+   </item>
+   <item row="0" column="2">
     <widget class="QLabel" name="search_value_parameter_label">
      <property name="text">
       <string>Value</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QComboBox" name="search_field_parameter_combobox"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="search_field_parameter_label">
+     <property name="text">
+      <string>Field</string>
      </property>
     </widget>
    </item>
@@ -40,21 +53,8 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QLabel" name="search_field_parameter_label">
-     <property name="text">
-      <string>Field</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLineEdit" name="search_value_parameter_lineedit"/>
-   </item>
    <item row="1" column="1">
     <widget class="QComboBox" name="search_comparison_parameter_combobox"/>
-   </item>
-   <item row="1" column="2">
-    <widget class="QComboBox" name="search_field_parameter_combobox"/>
    </item>
   </layout>
  </widget>

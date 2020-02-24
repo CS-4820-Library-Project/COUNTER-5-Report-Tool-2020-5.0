@@ -1,10 +1,38 @@
-from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog
+from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog, QFrame, QStackedLayout
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QSize
 from JsonUtils import JsonModel
-from ui import MainWindow, MessageDialog
+from ui import MainWindow, MessageDialog, SearchAndClauseFrame, SearchOrClauseFrame
 import DataStorage
 import json
 
+import ManageDB
+
+
+class SearchController:
+    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+        self.report_parameter = main_window_ui.search_report_parameter_combobox
+        self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
+        self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
+        self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
+        self.and_clause_parameters = main_window_ui.search_and_clause_parameters_scrollarea
+        self.add_and_clause()
+
+    def add_and_clause(self):
+        and_clause = QFrame()
+        and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
+        and_clause_ui.setupUi(and_clause)
+        self.add_or_clause(and_clause_ui)
+        self.and_clause_parameters.setWidget(and_clause)
+
+    def add_or_clause(self, and_clause):
+        or_clause = QFrame()
+        or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
+        or_clause_ui.setupUi(or_clause)
+        comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
+        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+        and_clause.verticalLayout.addChildWidget(or_clause)
+
+'''
 SEARCH_FILE_DIR = "./all_data/search/"
 SEARCH_FILE_NAME = "search.dat"
 
@@ -103,7 +131,6 @@ class SearchResultTableModel(QAbstractTableModel):
 
 
 # endregion
-
 
 class SearchController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
@@ -232,3 +259,4 @@ class SearchController:
         message_label.setText(message)
 
         message_dialog.exec_()
+'''

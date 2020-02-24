@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_search_and_clause_parameter_frame(object):
     def setupUi(self, search_and_clause_parameter_frame):
         search_and_clause_parameter_frame.setObjectName("search_and_clause_parameter_frame")
-        search_and_clause_parameter_frame.resize(400, 300)
+        search_and_clause_parameter_frame.resize(400, 164)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

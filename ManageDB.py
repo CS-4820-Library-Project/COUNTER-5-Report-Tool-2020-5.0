@@ -537,6 +537,6 @@ def test_search():
         print("Error, no connection")
 
 
-setup_database(True)
-test_insert()
-test_search()
+# setup_database(True)
+# test_insert()
+# test_search()
