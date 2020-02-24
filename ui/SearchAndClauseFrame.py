@@ -12,7 +12,7 @@ class Ui_search_and_clause_parameter_frame(object):
     def setupUi(self, search_and_clause_parameter_frame):
         search_and_clause_parameter_frame.setObjectName("search_and_clause_parameter_frame")
         search_and_clause_parameter_frame.resize(400, 164)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(search_and_clause_parameter_frame.sizePolicy().hasHeightForWidth())
@@ -34,7 +34,7 @@ class Ui_search_and_clause_parameter_frame(object):
         self.verticalLayout_22.setObjectName("verticalLayout_22")
         self.verticalLayout.addWidget(self.search_or_clause_parameters_frame)
         self.search_add_or_clause_button = QtWidgets.QPushButton(search_and_clause_parameter_frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.search_add_or_clause_button.sizePolicy().hasHeightForWidth())

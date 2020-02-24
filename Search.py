@@ -14,25 +14,51 @@ class SearchController:
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
+
+        self.start_year_parameter = main_window_ui.search_start_year_parameter_lineedit
+
+        self.end_year_parameter = main_window_ui.search_end_year_parameter_lineedit
+
         self.and_clause_parameters = QFrame()
         self.and_clause_parameters.setLayout(QVBoxLayout())
         main_window_ui.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
         self.add_and_clause()
 
+        self.search_button = main_window_ui.search_button
+        self.search_button.clicked.connect(self.search)
+
+        self.add_and_button = main_window_ui.search_add_and_button
+        self.add_and_button.clicked.connect(self.add_and_clause)
+
     def add_and_clause(self):
+        print('and')
         and_clause = QFrame()
         and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
+
         self.add_or_clause(and_clause_ui)
+
+        and_clause_ui.search_add_or_clause_button.clicked.connect(lambda add_or_to_this_and: self.add_or_clause(and_clause_ui))
+
         self.and_clause_parameters.layout().addWidget(and_clause)
 
     def add_or_clause(self, and_clause):
+        print('or')
         or_clause = QFrame()
         or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
         or_clause_ui.setupUi(or_clause)
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
         and_clause.verticalLayout.addChildWidget(or_clause)
+
+    def search(self):
+        '''search_parameters = []
+        sql_text = ManageDB.search_sql_text(self.report_parameter.currentData(), self.start_year_parameter.text(),
+                                            self.end_year_parameter.text(), search_parameters)'''
+        for and_clauses in self.and_clause_parameters.children():
+            print('x')
+        print()
+
 
 '''
 SEARCH_FILE_DIR = "./all_data/search/"
