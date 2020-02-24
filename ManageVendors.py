@@ -1,11 +1,11 @@
-from PyQt5.QtWidgets import QDialog, QListView, QPushButton, QLineEdit, QFrame
+import csv
+from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
 import json
 import DataStorage
 from JsonUtils import JsonModel
-import operator
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
@@ -215,3 +215,38 @@ class ManageVendorsController(QObject):
 
     def sort_vendors(self):
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
+
+    def import_vendors_tsv(self, file_path):
+        tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
+        reader = csv.DictReader(tsv_file, delimiter='\t')
+        for row in reader:
+            is_local = row['is_local'].lower() == "true"
+            vendor = Vendor(row['name'],
+                            row['customer_id'],
+                            row['base_url'],
+                            row['requestor_id'],
+                            row['api_key'],
+                            row['platform'],
+                            is_local,
+                            row['description'])
+
+            if self.add_vendor(vendor):
+                print(f"Vendor '{vendor.name}' added")
+            else:
+                print(f"Vendor '{vendor.name}' already exists")
+
+        tsv_file.close()
+
+        self.sort_vendors()
+        self.selected_index = -1
+        self.update_vendors_ui()
+        self.populate_edit_vendor_view()
+
+    def add_vendor(self, new_vendor: Vendor) -> bool:
+        # Check if vendor already exists
+        for vendor in self.vendors:
+            if vendor.name.lower() == new_vendor.name.lower():
+                return False
+
+        self.vendors.append(new_vendor)
+        return True
