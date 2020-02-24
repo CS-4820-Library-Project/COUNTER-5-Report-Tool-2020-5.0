@@ -270,3 +270,25 @@ class ManageVendorsController(QObject):
             self.save_all_vendors_to_disk()
         except Exception as e:
             print(f"File import failed: {e}")
+
+    def export_vendors_tsv(self, file_path):
+        column_names = ["name",
+                        "customer_id",
+                        "base_url",
+                        "requestor_id",
+                        "api_key",
+                        "platform",
+                        "is_local",
+                        "description"]
+        try:
+            tsv_file = open(file_path, 'w', encoding="utf-8", newline='')
+            tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
+            tsv_dict_writer.writeheader()
+
+            for vendor in self.vendors:
+                tsv_dict_writer.writerow(vendor.__dict__)
+
+            tsv_file.close()
+
+        except Exception as e:
+            print(f"File export failed: {e}")
