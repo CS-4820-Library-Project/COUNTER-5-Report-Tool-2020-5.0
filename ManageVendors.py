@@ -93,22 +93,43 @@ class ManageVendorsController(QObject):
 
         self.populate_edit_vendor_view()
 
-    def modify_vendor(self):
-        if self.selected_index >= 0:
-            selected_vendor = self.vendors[self.selected_index]
-            selected_vendor.name = self.name_line_edit.text()
-            selected_vendor.customer_id = self.customer_id_line_edit.text()
-            selected_vendor.base_url = self.base_url_line_edit.text()
-            selected_vendor.requestor_id = self.requestor_id_line_edit.text()
-            selected_vendor.api_key = self.api_key_line_edit.text()
-            selected_vendor.platform = self.platform_line_edit.text()
-            selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
-            selected_vendor.description = self.description_text_edit.toPlainText()
+    def add_vendor(self, new_vendor: Vendor) -> bool:
+        # Check if vendor already exists
+        for vendor in self.vendors:
+            if vendor.name.lower() == new_vendor.name.lower():
+                return False
 
-            self.update_vendors_ui()
-            self.vendors_changed_signal.emit(self.vendors)
-            self.save_all_vendors_to_disk()
-            self.show_message("Changes Saved!")
+        self.vendors.append(new_vendor)
+        return True
+
+    def modify_vendor(self):
+        if self.selected_index < 0:
+            print("No vendor selected")
+            return
+
+        # Check if changing name to another vendor's name
+        name = self.name_line_edit.text()
+        selected_vendor = self.vendors[self.selected_index]
+        for vendor in self.vendors:
+            if vendor.name.lower() == name.lower():
+                if name.lower() != selected_vendor.name.lower():
+                    self.show_message("Vendor already exists")
+                    return
+
+        # Modify vendor
+        selected_vendor.name = self.name_line_edit.text()
+        selected_vendor.customer_id = self.customer_id_line_edit.text()
+        selected_vendor.base_url = self.base_url_line_edit.text()
+        selected_vendor.requestor_id = self.requestor_id_line_edit.text()
+        selected_vendor.api_key = self.api_key_line_edit.text()
+        selected_vendor.platform = self.platform_line_edit.text()
+        selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
+        selected_vendor.description = self.description_text_edit.toPlainText()
+
+        self.update_vendors_ui()
+        self.vendors_changed_signal.emit(self.vendors)
+        self.save_all_vendors_to_disk()
+        self.show_message("Changes Saved!")
 
     def open_add_vendor_dialog(self):
         vendor_dialog = QDialog()
@@ -246,12 +267,3 @@ class ManageVendorsController(QObject):
         self.populate_edit_vendor_view()
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
-
-    def add_vendor(self, new_vendor: Vendor) -> bool:
-        # Check if vendor already exists
-        for vendor in self.vendors:
-            if vendor.name.lower() == new_vendor.name.lower():
-                return False
-
-        self.vendors.append(new_vendor)
-        return True
