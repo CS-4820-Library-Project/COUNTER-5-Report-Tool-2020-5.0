@@ -1494,8 +1494,8 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="search_start_year_parameter_lineedit"/>
+              <item row="2" column="0">
+               <widget class="QComboBox" name="search_report_parameter_combobox"/>
               </item>
               <item row="0" column="0">
                <widget class="QLabel" name="search_report_parameter_label">
@@ -1504,9 +1504,6 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QComboBox" name="search_report_parameter_combobox"/>
-              </item>
               <item row="0" column="2">
                <widget class="QLabel" name="search_end_year_parameter_label">
                 <property name="text">
@@ -1514,8 +1511,22 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="2">
-               <widget class="QLineEdit" name="search_end_year_parameter_lineedit"/>
+              <item row="2" column="1">
+               <widget class="QDateEdit" name="search_start_year_parameter_dateedit">
+                <property name="displayFormat">
+                 <string>yyyy</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QDateEdit" name="search_end_year_parameter_dateedit">
+                <property name="currentSection">
+                 <enum>QDateTimeEdit::YearSection</enum>
+                </property>
+                <property name="displayFormat">
+                 <string>yyyy</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>

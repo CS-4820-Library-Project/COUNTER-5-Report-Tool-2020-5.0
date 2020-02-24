@@ -2,11 +2,11 @@
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
-                           'options': ('NOT NULL',),
+                           'options': ('NOT NULL', 'CHECK(database <> \"\")'),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'publisher',
                            'type': 'TEXT',
-                           'options': ('NOT NULL',),
+                           'options': ('NOT NULL'),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'publisher_id',
                            'type': 'TEXT',
@@ -27,17 +27,13 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
                           {'name': 'access_method',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
-                           'reports': ('DR',)},
-                          {'name': 'metric_type',
-                           'type': 'TEXT',
-                           'options': ('NOT NULL',),
-                           'reports': ('DR', 'DR_D1', 'DR_D2')})
+                           'reports': ('DR',)},)
 
 # item report definitions
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
 ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
-                       'options': ('NOT NULL',),
+                       'options': ('NOT NULL', 'CHECK(item <> \"\")'),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'publisher',
                        'type': 'TEXT',
@@ -182,17 +178,13 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
                       {'name': 'access_method',
                        'type': 'TEXT',
                        'options': ('NOT NULL',),
-                       'reports': ('IR',)},
-                      {'name': 'metric_type',
-                       'type': 'TEXT',
-                       'options': ('NOT NULL',),
-                       'reports': ('IR', 'IR_A1', 'IR_M1')})
+                       'reports': ('IR',)})
 
 # title report definitions
 TITLE_REPORTS = ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')
 TITLE_REPORT_FIELDS = ({'name': 'title',
                         'type': 'TEXT',
-                        'options': ('NOT NULL',),
+                        'options': ('NOT NULL', 'CHECK(title <> \"\")'),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'publisher',
                         'type': 'TEXT',
@@ -249,16 +241,15 @@ TITLE_REPORT_FIELDS = ({'name': 'title',
                        {'name': 'access_method',
                         'type': 'TEXT',
                         'options': ('NOT NULL',),
-                        'reports': ('TR',)},
-                       {'name': 'metric_type',
-                        'type': 'TEXT',
-                        'options': ('NOT NULL',),
-                        'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')})
+                        'reports': ('TR',)})
 
 # fields that all reports have
-ALL_REPORT_FIELDS = ({'name': 'vendor',
+ALL_REPORT_FIELDS = ({'name': 'metric_type',
                       'type': 'TEXT',
-                      'options': ('NOT NULL',)},
+                      'options': ('NOT NULL', 'CHECK(metric_type <> \"\")')},
+                     {'name': 'vendor',
+                      'type': 'TEXT',
+                      'options': ('NOT NULL', 'CHECK(vendor <> \"\")')},
                      {'name': 'year',
                       'type': 'INTEGER',
                       'options': ('NOT NULL', 'CHECK(LENGTH(year) = 4)')},
@@ -294,21 +285,31 @@ BLANK_ROWS = 1
 DELIMITERS = {'tsv': '\t', 'csv': ','}
 
 
+def get_report_fields_list(report, is_view):
+    report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
+    fields = []
+    for field in report_fields:  # fields specific to this report
+        if report in field['reports']:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if not is_view or field['name'] not in FIELDS_NOT_IN_VIEWS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    if is_view:
+        fields.append({'name': YEAR_TOTAL, 'calculation': 'SUM(' + 'metric' + ')'})  # year total column
+        for key in sorted(MONTHS):  # month columns
+            fields.append({'name': MONTHS[key], 'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
+                key) + ' THEN ' + 'metric' + ' END), 0)'})
+    return fields
+
+
 def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
     sql_texts = {}
     for report in reports:
         sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
-        report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
+        report_fields = get_report_fields_list(report, False)
         fields_and_options = []
         key_fields = []
         for field in report_fields:  # fields specific to this report
-            if report in field['reports']:
-                field_text = field['name'] + ' ' + field['type']
-                if field['options']:
-                    field_text += ' ' + ' '.join(field['options'])
-                fields_and_options.append(field_text)
-                key_fields.append(field['name'])
-        for field in ALL_REPORT_FIELDS:  # fields in all reports
             field_text = field['name'] + ' ' + field['type']
             if field['options']:
                 field_text += ' ' + ' '.join(field['options'])
@@ -324,20 +325,14 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
     sql_texts = {}
     for report in reports:
         sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
-        report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
+        report_fields = get_report_fields_list(report, True)
         fields = []
-        for field in report_fields:  # fields specific to this report
-            if report in field['reports']:
-                fields.append(field['name'])
-        for field in ALL_REPORT_FIELDS:  # fields in all reports
-            if field['name'] not in FIELDS_NOT_IN_VIEWS:
-                fields.append(field['name'])
         calcs = []
-        calcs.append('SUM(' + 'metric' + ') AS ' + YEAR_TOTAL)  # year total column
-        for key in sorted(MONTHS):  # month columns
-            calc_text = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(key)
-            calc_text += ' THEN ' + 'metric' + ' END), 0) AS ' + MONTHS[key]
-            calcs.append(calc_text)
+        for field in report_fields:  # fields specific to this report
+            if 'calculation' not in field.keys():
+                fields.append(field['name'])
+            else:
+                calcs.append(field['calculation'] + ' AS ' + field['name'])
         sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
         sql_text += '\nFROM ' + report
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
@@ -347,14 +342,10 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
 
 def replace_sql_text(report, data):  # makes the sql statement to 'replace or insert' data into a table
     sql_text = 'REPLACE INTO ' + report + '('
-    report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
+    report_fields = get_report_fields_list(report, False)
     fields = []
     types = {}
     for field in report_fields:  # fields specific to this report
-        if report in field['reports']:
-            fields.append(field['name'])
-            types[field['name']] = field['type']
-    for field in ALL_REPORT_FIELDS:  # fields in all reports
         fields.append(field['name'])
         types[field['name']] = field['type']
     sql_text += ', '.join(fields) + ')'
@@ -535,7 +526,6 @@ def test_search():
         connection.close()
     else:
         print("Error, no connection")
-
 
 # setup_database(True)
 # test_insert()

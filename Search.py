@@ -4,6 +4,7 @@ from JsonUtils import JsonModel
 from ui import MainWindow, MessageDialog, SearchAndClauseFrame, SearchOrClauseFrame
 import DataStorage
 import json
+from datetime import date
 
 import ManageDB
 
@@ -15,9 +16,11 @@ class SearchController:
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
 
-        self.start_year_parameter = main_window_ui.search_start_year_parameter_lineedit
+        self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
+        self.start_year_parameter.setDate(date.today())
 
-        self.end_year_parameter = main_window_ui.search_end_year_parameter_lineedit
+        self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
+        self.end_year_parameter.setDate(date.today())
 
         self.and_clause_parameters = QFrame()
         self.and_clause_parameters.setLayout(QVBoxLayout())
@@ -48,8 +51,15 @@ class SearchController:
         or_clause = QFrame()
         or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
         or_clause_ui.setupUi(or_clause)
+
+        field_combobox = or_clause_ui.search_field_parameter_combobox
+        for field in ManageDB.get_report_fields_list(self.report_parameter.currentText(), True):
+            if 'calculation' not in field.keys():
+                field_combobox.addItem(field['name'])
+
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+
         and_clause.verticalLayout.addWidget(or_clause)
 
     def search(self):
@@ -61,11 +71,11 @@ class SearchController:
         print(end_year)
         search_parameters = []
 
-        for and_clause in self.and_clause_parameters.children():
-            print(and_clause.objectName())
+        for i in range(self.and_clause_parameters.layout().count()):
+            print(self.and_clause_parameters.layout().itemAt(i))
             print('and')
-            for or_clause in and_clause.verticalLayout.children():
-                print(or_clause.objectName())
+            for j in self.and_clause_parameters.layout().itemAt(i).layout().count():
+                print(self.and_clause_parameters.layout().itemAt(i).layout().itemAt(j))
                 print('or')
 
         sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
