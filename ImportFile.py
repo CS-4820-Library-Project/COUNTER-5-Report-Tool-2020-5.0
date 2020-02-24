@@ -57,12 +57,13 @@ class ImportFileController:
         self.import_file_button.clicked.connect(self.import_file)
         # endregion
 
-    def on_vendors_changed(self):
+    def on_vendors_changed(self, vendors: list):
+        self.vendors = vendors
         self.selected_vendor_index = -1
         self.update_vendors_ui()
 
     def update_vendors_ui(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.vendor_list_model.clear()
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
             item.setEditable(False)

@@ -7,8 +7,8 @@ import webbrowser
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, \
-    QDialogButtonBox, QButtonGroup, QCheckBox
+from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
+    QCheckBox
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
@@ -976,11 +976,12 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
-    def on_vendors_changed(self):
+    def on_vendors_changed(self, vendors: list):
+        self.vendors = vendors
         self.update_vendors_ui()
 
     def update_vendors_ui(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.vendor_list_model.clear()
         for vendor in self.vendors:
             if vendor.is_local: continue
 
@@ -1215,11 +1216,12 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
         # endregion
 
-    def on_vendors_changed(self):
+    def on_vendors_changed(self, vendors: list):
+        self.vendors = vendors
         self.update_vendors_ui()
 
     def update_vendors_ui(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.vendor_list_model.clear()
         for vendor in self.vendors:
             if vendor.is_local: continue
 

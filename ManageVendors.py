@@ -38,7 +38,7 @@ class Vendor(JsonModel):
 
 
 class ManageVendorsController(QObject):
-    vendors_changed_signal = pyqtSignal()
+    vendors_changed_signal = pyqtSignal(list)
 
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         super().__init__()
@@ -66,10 +66,10 @@ class ManageVendorsController(QObject):
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
 
-        self.vendors_list_view = main_window_ui.vendorsListView
-        self.vendors_list_model = QStandardItemModel(self.vendors_list_view)
-        self.vendors_list_view.setModel(self.vendors_list_model)
-        self.vendors_list_view.clicked.connect(self.on_vendor_selected)
+        self.vendor_list_view = main_window_ui.vendorsListView
+        self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
+        self.vendor_list_view.setModel(self.vendor_list_model)
+        self.vendor_list_view.clicked.connect(self.on_vendor_selected)
 
         self.vendors = []
         vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
@@ -77,13 +77,20 @@ class ManageVendorsController(QObject):
         for json_dict in vendor_dicts:
             vendor = Vendor.from_json(json_dict)
             self.vendors.append(vendor)
-            item = QStandardItem(vendor.name)
-            item.setEditable(False)
-            self.vendors_list_model.appendRow(item)
+
+        self.update_vendors_ui()
 
     def on_vendor_selected(self, model_index: QModelIndex):
         self.selected_index = model_index.row()
-        self.set_edit_vendor_view_state(True)
+        self.populate_edit_vendor_view()
+
+    def update_vendors_ui(self):
+        self.vendor_list_model.clear()
+        for vendor in self.vendors:
+            item = QStandardItem(vendor.name)
+            item.setEditable(False)
+            self.vendor_list_model.appendRow(item)
+
         self.populate_edit_vendor_view()
 
     def modify_vendor(self):
@@ -98,11 +105,8 @@ class ManageVendorsController(QObject):
             selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
             selected_vendor.description = self.description_text_edit.toPlainText()
 
-            item = QStandardItem(selected_vendor.name)
-            item.setEditable(False)
-            self.vendors_list_model.setItem(self.selected_index, item)
-
-            self.vendors_changed_signal.emit()
+            self.update_vendors_ui()
+            self.vendors_changed_signal.emit(self.vendors)
             self.save_all_vendors_to_disk()
             self.show_message("Changes Saved!")
 
@@ -131,22 +135,13 @@ class ManageVendorsController(QObject):
                             description_edit.toPlainText())
 
             self.vendors.append(vendor)
-            self.sort_vendor()
-            item = QStandardItem(vendor.name)
-            item.setEditable(False)
-            self.vendors_list_model.appendRow(item)
-
-            self.vendors_changed_signal.emit()
+            self.sort_vendors()
+            self.selected_index = -1
+            self.update_vendors_ui()
+            self.populate_edit_vendor_view()
+            self.vendors_changed_signal.emit(self.vendors)
             self.save_all_vendors_to_disk()
-            self.vendors_list_model.clear()
-            vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
-            vendor_dicts = json.loads(vendors_json_string)
-            for json_dict in vendor_dicts:
-                vendor = Vendor.from_json(json_dict)
-                item = QStandardItem(vendor.name)
-                item.setEditable(False)
-                self.vendors_list_model.appendRow(item)
-        self.vendors_changed_signal.emit()
+
         button_box = vendor_dialog_ui.buttonBox
         button_box.accepted.connect(add_vendor)
 
@@ -163,6 +158,8 @@ class ManageVendorsController(QObject):
             self.platform_line_edit.setText(selected_vendor.platform)
             self.local_only_check_box.setChecked(selected_vendor.is_local)
             self.description_text_edit.setPlainText(selected_vendor.description)
+
+            self.set_edit_vendor_view_state(True)
         else:
             self.name_line_edit.setText("")
             self.customer_id_line_edit.setText("")
@@ -172,6 +169,8 @@ class ManageVendorsController(QObject):
             self.platform_line_edit.setText("")
             self.local_only_check_box.setChecked(False)
             self.description_text_edit.setPlainText("")
+
+            self.set_edit_vendor_view_state(False)
 
     def set_edit_vendor_view_state(self, is_enabled):
         if is_enabled:
@@ -189,12 +188,11 @@ class ManageVendorsController(QObject):
         def remove_vendor():
             if self.selected_index >= 0:
                 self.vendors.pop(self.selected_index)
-                self.vendors_list_model.removeRow(self.selected_index)
                 self.selected_index = -1
-                self.set_edit_vendor_view_state(False)
-                self.populate_edit_vendor_view()
 
-                self.vendors_changed_signal.emit()
+                self.update_vendors_ui()
+                self.populate_edit_vendor_view()
+                self.vendors_changed_signal.emit(self.vendors)
                 self.save_all_vendors_to_disk()
 
         button_box = dialog_remove_ui.buttonBox
@@ -215,5 +213,5 @@ class ManageVendorsController(QObject):
 
         message_dialog.exec_()
 
-    def sort_vendor(self):
-        self.vendors = sorted(self.vendors, key=operator.attrgetter("name"))
+    def sort_vendors(self):
+        self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
