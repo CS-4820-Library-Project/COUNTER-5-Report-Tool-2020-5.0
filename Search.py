@@ -38,7 +38,8 @@ class SearchController:
 
         self.add_or_clause(and_clause_ui)
 
-        and_clause_ui.search_add_or_clause_button.clicked.connect(lambda add_or_to_this_and: self.add_or_clause(and_clause_ui))
+        and_clause_ui.search_add_or_clause_button.clicked.connect(
+            lambda add_or_to_this_and: self.add_or_clause(and_clause_ui))
 
         self.and_clause_parameters.layout().addWidget(and_clause)
 
@@ -49,16 +50,26 @@ class SearchController:
         or_clause_ui.setupUi(or_clause)
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
-        and_clause.verticalLayout.addChildWidget(or_clause)
+        and_clause.verticalLayout.addWidget(or_clause)
 
     def search(self):
-        '''search_parameters = []
-        sql_text = ManageDB.search_sql_text(self.report_parameter.currentData(), self.start_year_parameter.text(),
-                                            self.end_year_parameter.text(), search_parameters)'''
-        for and_clauses in self.and_clause_parameters.children():
-            print('x')
-        print()
+        report = self.report_parameter.currentText()
+        print(report)
+        start_year = self.start_year_parameter.text()
+        print(start_year)
+        end_year = self.end_year_parameter.text()
+        print(end_year)
+        search_parameters = []
 
+        for and_clause in self.and_clause_parameters.children():
+            print(and_clause.objectName())
+            print('and')
+            for or_clause in and_clause.verticalLayout.children():
+                print(or_clause.objectName())
+                print('or')
+
+        sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
+        print(sql_text)
 
 '''
 SEARCH_FILE_DIR = "./all_data/search/"
