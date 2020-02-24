@@ -5,6 +5,7 @@ from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
 import json
 import DataStorage
 from JsonUtils import JsonModel
+import operator
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
