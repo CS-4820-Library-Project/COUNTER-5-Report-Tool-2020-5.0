@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_search_and_clause_parameter_frame(object):
     def setupUi(self, search_and_clause_parameter_frame):
         search_and_clause_parameter_frame.setObjectName("search_and_clause_parameter_frame")
-        search_and_clause_parameter_frame.resize(400, 164)
+        search_and_clause_parameter_frame.resize(542, 175)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -19,8 +19,16 @@ class Ui_search_and_clause_parameter_frame(object):
         search_and_clause_parameter_frame.setSizePolicy(sizePolicy)
         search_and_clause_parameter_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         search_and_clause_parameter_frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.verticalLayout = QtWidgets.QVBoxLayout(search_and_clause_parameter_frame)
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.gridLayout = QtWidgets.QGridLayout(search_and_clause_parameter_frame)
+        self.gridLayout.setObjectName("gridLayout")
+        self.search_add_or_clause_button = QtWidgets.QPushButton(search_and_clause_parameter_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.search_add_or_clause_button.sizePolicy().hasHeightForWidth())
+        self.search_add_or_clause_button.setSizePolicy(sizePolicy)
+        self.search_add_or_clause_button.setObjectName("search_add_or_clause_button")
+        self.gridLayout.addWidget(self.search_add_or_clause_button, 1, 0, 1, 1)
         self.search_or_clause_parameters_frame = QtWidgets.QFrame(search_and_clause_parameter_frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -32,15 +40,10 @@ class Ui_search_and_clause_parameter_frame(object):
         self.search_or_clause_parameters_frame.setObjectName("search_or_clause_parameters_frame")
         self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.search_or_clause_parameters_frame)
         self.verticalLayout_22.setObjectName("verticalLayout_22")
-        self.verticalLayout.addWidget(self.search_or_clause_parameters_frame)
-        self.search_add_or_clause_button = QtWidgets.QPushButton(search_and_clause_parameter_frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.search_add_or_clause_button.sizePolicy().hasHeightForWidth())
-        self.search_add_or_clause_button.setSizePolicy(sizePolicy)
-        self.search_add_or_clause_button.setObjectName("search_add_or_clause_button")
-        self.verticalLayout.addWidget(self.search_add_or_clause_button)
+        self.gridLayout.addWidget(self.search_or_clause_parameters_frame, 0, 0, 1, 1)
+        self.search_remove_and_clause_button = QtWidgets.QPushButton(search_and_clause_parameter_frame)
+        self.search_remove_and_clause_button.setObjectName("search_remove_and_clause_button")
+        self.gridLayout.addWidget(self.search_remove_and_clause_button, 0, 1, 1, 1)
 
         self.retranslateUi(search_and_clause_parameter_frame)
         QtCore.QMetaObject.connectSlotsByName(search_and_clause_parameter_frame)
@@ -49,6 +52,7 @@ class Ui_search_and_clause_parameter_frame(object):
         _translate = QtCore.QCoreApplication.translate
         search_and_clause_parameter_frame.setWindowTitle(_translate("search_and_clause_parameter_frame", "Frame"))
         self.search_add_or_clause_button.setText(_translate("search_and_clause_parameter_frame", "Add \"Or\" Clause"))
+        self.search_remove_and_clause_button.setText(_translate("search_and_clause_parameter_frame", "Remove \"And\" Clause"))
 
 
 if __name__ == "__main__":

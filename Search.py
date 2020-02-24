@@ -1,12 +1,8 @@
-from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog, QFrame, QVBoxLayout
-from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QSize
-from JsonUtils import JsonModel
-from ui import MainWindow, MessageDialog, SearchAndClauseFrame, SearchOrClauseFrame
-import DataStorage
-import json
+import sip
+from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from datetime import date
-
 import ManageDB
+from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
 
 
 class SearchController:
@@ -41,8 +37,17 @@ class SearchController:
 
         self.add_or_clause(and_clause_ui)
 
-        and_clause_ui.search_add_or_clause_button.clicked.connect(
-            lambda add_or_to_this_and: self.add_or_clause(and_clause_ui))
+
+        def add_or_to_this_and():
+            self.add_or_clause(and_clause_ui)
+
+
+        def remove_this_and():
+            self.and_clause_parameters.layout().removeWidget(and_clause)
+            sip.delete(and_clause)
+
+        and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
+        and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
         self.and_clause_parameters.layout().addWidget(and_clause)
 
@@ -60,7 +65,14 @@ class SearchController:
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
 
-        and_clause.verticalLayout.addWidget(or_clause)
+
+        def remove_this_or():
+            and_clause.search_or_clause_parameters_frame.layout().removeWidget(or_clause)
+            sip.delete(or_clause)
+
+        or_clause_ui.search_remove_or_clause_button.clicked.connect(remove_this_or)
+
+        and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
     def search(self):
         report = self.report_parameter.currentText()
@@ -71,15 +83,9 @@ class SearchController:
         print(end_year)
         search_parameters = []
 
-        for i in range(self.and_clause_parameters.layout().count()):
-            print(self.and_clause_parameters.layout().itemAt(i))
-            print('and')
-            for j in self.and_clause_parameters.layout().itemAt(i).layout().count():
-                print(self.and_clause_parameters.layout().itemAt(i).layout().itemAt(j))
-                print('or')
-
         sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
         print(sql_text)
+
 
 '''
 SEARCH_FILE_DIR = "./all_data/search/"

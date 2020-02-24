@@ -1,3 +1,5 @@
+import sqlite3
+
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
@@ -436,17 +438,13 @@ def search_sql_text(report, start_year, end_year,
     return sql_text
 
 
-import sqlite3
-from sqlite3 import Error
-
-
 def create_connection(db_file):
     connection = None
     try:
         connection = sqlite3.connect(db_file)
         print(sqlite3.version)
         return connection
-    except Error as error:
+    except sqlite3.Error as error:
         print(error)
         connection.close()
     return connection
@@ -456,7 +454,7 @@ def run_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
         cursor.execute(sql_text)
-    except Error as error:
+    except sqlite3.Error as error:
         print(error)
 
 
@@ -465,7 +463,7 @@ def run_select_sql(connection, sql_text):
         cursor = connection.cursor()
         cursor.execute(sql_text)
         return cursor.fetchall()
-    except Error as error:
+    except sqlite3.Error as error:
         print(error)
         return None
 
@@ -526,6 +524,7 @@ def test_search():
         connection.close()
     else:
         print("Error, no connection")
+
 
 # setup_database(True)
 # test_insert()
