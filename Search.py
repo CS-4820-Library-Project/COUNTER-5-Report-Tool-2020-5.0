@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog, QFrame, QStackedLayout
+from PyQt5.QtWidgets import QTableView, QCheckBox, QPushButton, QLineEdit, QDialog, QFrame, QVBoxLayout
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, QVariant, QSize
 from JsonUtils import JsonModel
 from ui import MainWindow, MessageDialog, SearchAndClauseFrame, SearchOrClauseFrame
@@ -14,7 +14,9 @@ class SearchController:
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
-        self.and_clause_parameters = main_window_ui.search_and_clause_parameters_scrollarea
+        self.and_clause_parameters = QFrame()
+        self.and_clause_parameters.setLayout(QVBoxLayout())
+        main_window_ui.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
         self.add_and_clause()
 
     def add_and_clause(self):
@@ -22,7 +24,7 @@ class SearchController:
         and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
         self.add_or_clause(and_clause_ui)
-        self.and_clause_parameters.setWidget(and_clause)
+        self.and_clause_parameters.layout().addWidget(and_clause)
 
     def add_or_clause(self, and_clause):
         or_clause = QFrame()
