@@ -10,6 +10,8 @@ from JsonUtils import JsonModel
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
 
+EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
+
 
 class Vendor(JsonModel):
     def __init__(self, name: str, customer_id: str, base_url: str, requestor_id: str, api_key: str, platform: str,
@@ -271,7 +273,8 @@ class ManageVendorsController(QObject):
         except Exception as e:
             print(f"File import failed: {e}")
 
-    def export_vendors_tsv(self, file_path):
+    def export_vendors_tsv(self, dir_path):
+        file_path = f"{dir_path}{EXPORT_VENDORS_FILE_NAME}"
         column_names = ["name",
                         "customer_id",
                         "base_url",
