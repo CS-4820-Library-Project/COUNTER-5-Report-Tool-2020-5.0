@@ -1,4 +1,4 @@
-import sip
+import sip, csv
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit
 from datetime import date
 import ManageDB
@@ -104,13 +104,15 @@ class SearchController:
         end_year = self.end_year_parameter.text()
 
         search_parameters = []
-
         for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
-            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))
+            # iterate over and clauses
+            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
             or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
             or_clauses = []
             for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
-                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))
+                # iterate over child or clauses
+                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
+                # get parameters for clause
                 field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
                 comparison_parameter = or_widget.findChild(QComboBox,
                                                            'search_comparison_parameter_combobox').currentText()
@@ -121,18 +123,26 @@ class SearchController:
 
         # sql query to get search results
         sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
-        print(sql_text)
+        print(sql_text)  # testing
+
+        headers = []
+        for field in ManageDB.get_report_fields_list(report, True):
+            headers.append(field['name'])
 
         # get results
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text)
+            results.insert(0, headers)
             print(results)
+            with open('output.tsv', 'w', newline="") as output:
+                tsv_output = csv.writer(output, delimiter='\t')
+                for row in results:
+                    tsv_output.writerow(row)
             connection.close()
         else:
             print("Error, no connection")
 
-        # TODO save results in csv/tsv file and open it
 
 
 '''
