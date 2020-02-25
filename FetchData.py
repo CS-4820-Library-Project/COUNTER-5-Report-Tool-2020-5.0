@@ -3,17 +3,16 @@ from os import path, makedirs
 import csv
 import json
 import requests
-import os
+import webbrowser
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QListView, QPushButton, QDateEdit, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, \
-    QDialogButtonBox, QButtonGroup, QCheckBox
+from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
+    QCheckBox
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
-from Search import SearchController
 from Settings import SettingsModel
 
 SHOW_DEBUG_MESSAGES = False
@@ -35,24 +34,38 @@ REPORT_TYPES = ["PR",
                 "IR_A1",
                 "IR_M1"]
 
+# If these codes are received with a Report_Header, files will be created and saved
+ACCEPTABLE_CODES = [3030,
+                    3031,
+                    3032,
+                    3040,
+                    3050,
+                    3060,
+                    3062] + list(range(1, 1000))
+
+# If these codes are received the retry checkbox will be checked, user can retry later
+RETRY_LATER_CODES = [1010,
+                     1011]
+RETRY_WAIT_TIME = 5  # Seconds
+
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
     DATABASE = "DR"
     TITLE = "TR"
     ITEM = "IR"
-    INVALID = "INVALID"
 
 
 class CompletionStatus(Enum):
     SUCCESSFUL = "Successful!"
+    WARNING = "Warning!"
     FAILED = "Failed!"
     CANCELLED = "Cancelled!"
 
 
 class FetchType(Enum):
-    GENERAL = "General"
-    SPECIAL = "Special"
+    YEARLY = 0
+    OTHER = 1
 
 
 def get_major_report_type(report_type: str) -> MajorReportType:
@@ -69,8 +82,6 @@ def get_major_report_type(report_type: str) -> MajorReportType:
 
     elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
         return MajorReportType.ITEM
-    else:
-        return MajorReportType.INVALID
 
 
 def show_message(message: str):
@@ -164,7 +175,7 @@ class NameValueModel(JsonModel):
 
 
 class ExceptionModel(JsonModel):
-    def __init__(self, code: int = None, message: str = None, severity: str = None, data: str = None):
+    def __init__(self, code: int, message: str, severity: str, data: str):
         self.code = code
         self.message = message
         self.severity = severity
@@ -172,12 +183,24 @@ class ExceptionModel(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
-        code = int(json_dict["Code"]) if "Code" in json_dict else None
-        message = json_dict["Message"] if "Message" in json_dict else None
-        severity = json_dict["Severity"] if "Severity" in json_dict else None
-        data = json_dict["Data"] if "Data" in json_dict else None
+        code = int(json_dict["Code"]) if "Code" in json_dict else 0
+        message = json_dict["Message"] if "Message" in json_dict else ""
+        severity = json_dict["Severity"] if "Severity" in json_dict else ""
+        data = json_dict["Data"] if "Data" in json_dict else ""
 
         return cls(code, message, severity, data)
+
+
+def exception_models_to_message(exceptions: list) -> str:
+    message = ""
+    for exception in exceptions:
+        if message: message += "\n"
+        message += f"Code: {exception.code}" \
+                   f"\nMessage: {exception.message}" \
+                   f"\nSeverity: {exception.severity}" \
+                   f"\nData: {exception.data}"
+
+    return message
 
 
 class ReportHeaderModel(JsonModel):
@@ -220,19 +243,16 @@ class ReportModel(JsonModel):
         self.report_header = report_header
         self.report_items = report_items
 
+        # Not part of JSON
+        self.exceptions = []
+
     @classmethod
     def from_json(cls, json_dict: dict):
-        exception_messages = ReportModel.check_for_exceptions(json_dict)
+        exceptions = ReportModel.process_exceptions(json_dict)
 
         report_header = ReportHeaderModel.from_json(json_dict["Report_Header"])
         report_type = report_header.report_id
         major_report_type = get_major_report_type(report_type)
-        if major_report_type == MajorReportType.INVALID:
-            if exception_messages == "":
-                raise Exception("Invalid report type")
-            else:
-                raise Exception(exception_messages + "\nInvalid report type")
-
         report_header.major_report_type = major_report_type
 
         report_items = []
@@ -255,85 +275,39 @@ class ReportModel(JsonModel):
                     for report_item_dict in report_item_dicts:
                         report_items.append(ItemReportItemModel.from_json(report_item_dict))
 
-            else:  # Report_Items is empty
-                if exception_messages == "":
-                    raise Exception("Vendor returned empty Report_Items")
-                else:
-                    raise Exception(exception_messages + "\nVendor returned empty \"Report_Items\"")
-
-        else:  # Report_Items is missing
-            if exception_messages == "":
-                raise Exception("Vendor did not return Report_Items")
-            else:
-                raise Exception(exception_messages + "\nVendor did not return \"Report_Items\"")
-
-        return cls(report_header, report_items)
+        report_model = cls(report_header, report_items)
+        report_model.exceptions = exceptions
+        return report_model
 
     @classmethod
-    def check_for_exceptions(cls, json_dict: dict) -> str:
-        exception_messages = ""
-        count = 0
-        if "Exception" in json_dict:
-            exception = ExceptionModel.from_json(json_dict["Exception"])
-            if exception.code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {exception.code}"
-                                          f"\nMessage: {exception.message}"
-                                          f"\nData: {exception.data}")
-            if count == 0:
-                exception_messages += f"Code: {exception.code}" \
-                                      f"\nMessage: {exception.message}" \
-                                      f"\nData: {exception.data}"
-            else:
-                exception_messages += f"\nCode: {exception.code}" \
-                                      f"\nMessage: {exception.message}" \
-                                      f"\nData: {exception.data}"
-            count += 1
+    def process_exceptions(cls, json_dict: dict) -> list:
+        exceptions = []
 
-        code = int(json_dict["Code"]) if "Code" in json_dict else None
-        message = json_dict["Message"] if "Message" in json_dict else None
-        data = json_dict["Data"] if "Data" in json_dict else None
-        if code is not None:
-            if code == 1011:  # Report Queued for Processing
-                raise RetryLaterException(f"Code: {code}"
-                                          f"\nMessage: {message}"
-                                          f"\nData: {data}")
-            if count == 0:
-                exception_messages += f"Code: {code}" \
-                                      f"\nMessage: {message}" \
-                                      f"\nData: {data}"
-            else:
-                exception_messages += f"\nCode: {code}" \
-                                      f"\nMessage: {message}" \
-                                      f"\nData: {data}"
-            count += 1
+        if "Exception" in json_dict:
+            exceptions.append(ExceptionModel.from_json(json_dict["Exception"]))
+
+        code = int(json_dict["Code"]) if "Code" in json_dict else ""
+        message = json_dict["Message"] if "Message" in json_dict else ""
+        data = json_dict["Data"] if "Data" in json_dict else ""
+        severity = json_dict["Severity"] if "Severity" in json_dict else ""
+        if code:
+            exceptions.append(ExceptionModel(code, message, severity, data))
 
         if "Report_Header" in json_dict:
             report_header = ReportHeaderModel.from_json(json_dict["Report_Header"])
-            if report_header.exceptions is not None:
-                if len(report_header.exceptions) > 0:
-                    exception: ExceptionModel
-                    for exception in report_header.exceptions:
-                        if exception.code == 1011:  # Report Queued for Processing
-                            raise RetryLaterException(f"Code: {exception.code}"
-                                                      f"\nMessage: {exception.message}"
-                                                      f"\nData: {exception.data}")
-                        if count == 0:
-                            exception_messages += f"Code: {exception.code}" \
-                                                  f"\nMessage: {exception.message}" \
-                                                  f"\nData: {exception.data}"
-                        else:
-                            exception_messages += f"\nCode: {exception.code}" \
-                                                  f"\nMessage: {exception.message}" \
-                                                  f"\nData: {exception.data}"
-                        count += 1
+            if len(report_header.exceptions) > 0:
+                for exception in report_header.exceptions:
+                    exceptions.append(exception)
         else:
-            if count == 0:
-                exception_messages += "Report_Header is missing"
-            else:
-                exception_messages += "\n" + "Report_Header is missing"
-            raise Exception(exception_messages)
+            raise ReportHeaderMissingException(exceptions)
 
-        return exception_messages
+        for exception in exceptions:
+            if exception.code in RETRY_LATER_CODES:
+                raise RetryLaterException(exceptions)
+            elif exception.code not in ACCEPTABLE_CODES:
+                raise UnacceptableCodeException(exceptions)
+
+        return exceptions
 
 
 class PlatformReportItemModel(JsonModel):
@@ -524,6 +498,7 @@ class ItemReportItemModel(JsonModel):
                    item_parent, item_components, data_type, yop, access_type, access_method, performances)
 
 
+# Returns a list of JsonModel objects
 def get_models(model_key: str, model_type, json_dict: dict) -> list:
     # This converts json formatted lists into a list of the specified model_type
     # Some vendors sometimes return a single dict even when the standard specifies a list,
@@ -588,18 +563,41 @@ class ReportRow:
         self.access_type = empty_cell
         self.access_method = empty_cell
         self.metric_type = empty_cell
+        self.total_count = 0
 
         self.month_counts = {}
-        for i in range(12):
-            curr_date: QDate
-            if QDate(begin_date.year(), i + 1, 1) < begin_date:
-                curr_date = QDate(end_date.year(), i + 1, 1)
-            else:
-                curr_date = QDate(begin_date.year(), i + 1, 1)
 
-            self.month_counts[curr_date.toString("MMM-yyyy")] = 0
+        # This only works with 12 months
+        # for i in range(12):
+        #     curr_date: QDate
+        #     if QDate(begin_date.year(), i + 1, 1) < begin_date:
+        #         curr_date = QDate(end_date.year(), i + 1, 1)
+        #     else:
+        #         curr_date = QDate(begin_date.year(), i + 1, 1)
+        #
+        #     self.month_counts[curr_date.toString("MMM-yyyy")] = 0
+        #
+        # self.total_count = 0
 
-        self.total_count = 0
+        # This works with more than 12 months
+        for month_year_str in get_month_years(begin_date, end_date):
+            self.month_counts[month_year_str] = 0
+
+
+# Returns a list of strings using the provided range in the format Month-Year
+def get_month_years(begin_date: QDate, end_date: QDate) -> list:
+    month_years = []
+    if begin_date.year() == end_date.year():
+        num_months = (end_date.month() - begin_date.month()) + 1
+    else:
+        num_months = (12 - begin_date.month() + end_date.month()) + 1
+        num_years = end_date.year() - begin_date.year()
+        num_months += (num_years - 1) * 12
+
+    for i in range(num_months):
+        month_years.append(begin_date.addMonths(i).toString("MMM-yyyy"))
+
+    return month_years
 
 
 class Attributes:
@@ -637,23 +635,35 @@ class ProcessResult:
         self.vendor = vendor
         self.report_type = report_type
         self.completion_status = CompletionStatus.SUCCESSFUL
-        self.message = "All Good"
+        self.message = ""
         self.retry = False
-        self.file_path = None
+        self.file_name = ""
+        self.file_dir = ""
+        self.file_path = ""
 
 
 class RetryLaterException(Exception):
-    pass
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class ReportHeaderMissingException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class UnacceptableCodeException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
 
 
 # endregion
 
 
 class FetchReportsAbstract:
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel):
+    def __init__(self, vendors: list, settings: SettingsModel):
         # region General
         self.fetch_type = None
-        self.search_controller = search_controller
         self.vendors = vendors
         self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
@@ -684,7 +694,7 @@ class FetchReportsAbstract:
         worker_id = request_data.vendor.name
         if worker_id in self.vendor_workers: return  # Avoid processing a vendor twice
 
-        vendor_worker = VendorWorker(worker_id, self.search_controller, request_data)
+        vendor_worker = VendorWorker(worker_id, request_data)
         vendor_worker.worker_finished_signal.connect(self.on_vendor_worker_finished)
         vendor_thread = QThread()
         self.vendor_workers[worker_id] = vendor_worker, vendor_thread
@@ -740,22 +750,31 @@ class FetchReportsAbstract:
             vertical_layout.addWidget(result_widget)
 
     def get_result_widget(self, vendor: Vendor, vendor_widget: QWidget, process_result: ProcessResult) -> QWidget:
+        completion_status = process_result.completion_status
         report_result_widget = QWidget(vendor_widget)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
         report_result_ui.setupUi(report_result_widget)
 
-        report_result_ui.message_label.setText(process_result.message)
-        report_result_ui.message_label.mousePressEvent = \
-            lambda event: self.open_explorer(event, process_result.file_path)
+        if process_result.message:
+            report_result_ui.message_label.setText(process_result.message)
+        else:
+            report_result_ui.message_label.hide()
 
-        if process_result.report_type is not None:
+        if process_result.report_type is not None:  # If this report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
+            if completion_status == CompletionStatus.SUCCESSFUL or completion_status == CompletionStatus.WARNING:
+                report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
+                report_result_ui.file_label.mousePressEvent = \
+                    lambda event: self.open_explorer(process_result.file_path)
+            else:
+                report_result_ui.file_label.hide()
         else:
             report_result_ui.report_type_label.setText("Target Reports")
+            report_result_ui.file_label.hide()
             report_result_ui.retry_frame.hide()
 
         report_result_ui.success_label.setText(process_result.completion_status.value)
-        if process_result.completion_status == CompletionStatus.FAILED:
+        if completion_status == CompletionStatus.FAILED:
             report_result_ui.retry_check_box.stateChanged.connect(
                 lambda checked_state: self.report_to_retry_toggled(checked_state, vendor, process_result.report_type))
         else:
@@ -851,7 +870,6 @@ class FetchReportsAbstract:
             self.started_processes += 1
 
     def finish(self):
-        self.search_controller.save_all_data()
         self.ok_button.setEnabled(True)
         self.retry_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
@@ -870,40 +888,41 @@ class FetchReportsAbstract:
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
-    def open_explorer(self, event, path: str):
-        if path is not None:
+    def open_explorer(self, file_path: str):
+        if path.exists(file_path):
+            webbrowser.open(path.realpath(file_path))
+        else:
+            show_message(f"\'{file_path}\' does not exist")
 
-            file_path = ""
-            file_path_list = path.split('/')
+    def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
+        current_date = QDate.currentDate()
 
-            for index in range(len(file_path_list)):
+        if begin_date.year() != end_date.year() or begin_date.year() > current_date.year():
+            return False
 
-                if index != (len(file_path_list)-1):
-                    file_path = str(file_path) + '\\' + str(file_path_list[index])
+        if begin_date.year() == current_date.year():
+            if begin_date.month() == 1 and end_date.month() == max(current_date.month() - 1, 1):
+                return True
+        else:
+            if begin_date.month() == 1 and end_date.month() == 12:
+                return True
 
-            current_working_directory = os.getcwd()
-            open_explorer_path = current_working_directory + file_path
-
-            os.system("start explorer %s" % open_explorer_path)
+        return False
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
-                 main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, search_controller, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+        super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.GENERAL
+        self.fetch_type = FetchType.YEARLY
         current_date = QDate.currentDate()
-        self.basic_begin_date = QDate(current_date.year(), 1, current_date.day())
-        self.adv_begin_date = QDate(current_date.year(), 1, current_date.day())
-        if current_date.month() != 1:  # If not January
-            self.basic_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-            self.adv_end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-        else:
-            self.basic_end_date = QDate(current_date)
-            self.adv_end_date = QDate(current_date)
-
+        begin_date = QDate(current_date.year(), 1, current_date.day())
+        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        self.basic_begin_date = QDate(begin_date)
+        self.adv_begin_date = QDate(begin_date)
+        self.basic_end_date = QDate(end_date)
+        self.adv_end_date = QDate(end_date)
         self.is_last_fetch_advanced = False
         # endregion
 
@@ -958,12 +977,15 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
-    def on_vendors_changed(self):
+    def on_vendors_changed(self, vendors: list):
+        self.vendors = vendors
         self.update_vendors_ui()
 
     def update_vendors_ui(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.vendor_list_model.clear()
         for vendor in self.vendors:
+            if vendor.is_local: continue
+
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
@@ -972,18 +994,52 @@ class FetchReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
             self.adv_begin_date = date
-            if self.adv_begin_date.year() != self.adv_end_date.year():
-                self.adv_end_date.setDate(self.adv_begin_date.year(),
-                                          self.adv_end_date.month(),
-                                          self.adv_end_date.day())
-                self.end_date_edit.setDate(self.adv_end_date)
+            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+            #     self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if self.adv_begin_date.year() == self.adv_end_date.year():
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
+            #     self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+
         elif date_type == "adv_end":
             self.adv_end_date = date
-            if self.adv_end_date.year() != self.adv_begin_date.year():
-                self.adv_begin_date.setDate(self.adv_end_date.year(),
-                                            self.adv_begin_date.month(),
-                                            self.adv_begin_date.day())
-                self.begin_date_edit.setDate(self.adv_begin_date)
+            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
+            #     self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if self.adv_begin_date.year() == self.adv_end_date.year():
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
+            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #     self.end_date_edit.setDate(self.adv_end_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+            #
+            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
+            #     self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
+            #     self.begin_date_edit.setDate(self.adv_begin_date)
+
         elif date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
@@ -1016,9 +1072,14 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.begin_date = self.basic_begin_date
         self.end_date = self.basic_end_date
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            return
 
         self.selected_data = []
         for i in range(len(self.vendors)):
+            if self.vendors[i].is_local: continue
+
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date, self.fetch_type,
                                        self.settings)
             self.selected_data.append(request_data)
@@ -1047,6 +1108,9 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            return
 
         self.selected_data = []
         selected_report_types = []
@@ -1057,7 +1121,7 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
-        for i in range(len(self.vendors)):
+        for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
                                            self.fetch_type, self.settings)
@@ -1087,12 +1151,11 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, search_controller: SearchController, settings: SettingsModel,
-                 main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, search_controller, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+        super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.SPECIAL
+        self.fetch_type = FetchType.OTHER
         self.selected_report_type = None
         self.selected_attributes = Attributes()
         self.attribute_options = {
@@ -1104,10 +1167,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         }
         current_date = QDate.currentDate()
         self.begin_date = QDate(current_date.year(), 1, current_date.day())
-        if current_date.month() != 1:  # If not January
-            self.end_date = QDate(current_date.year(), current_date.month() - 1, current_date.day())
-        else:
-            self.end_date = QDate(current_date)
+        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
         # endregion
 
         # region Start Fetch Button
@@ -1157,12 +1217,15 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
         # endregion
 
-    def on_vendors_changed(self):
+    def on_vendors_changed(self, vendors: list):
+        self.vendors = vendors
         self.update_vendors_ui()
 
     def update_vendors_ui(self):
-        self.vendor_list_model.removeRows(0, self.vendor_list_model.rowCount())
+        self.vendor_list_model.clear()
         for vendor in self.vendors:
+            if vendor.is_local: continue
+
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
@@ -1171,18 +1234,18 @@ class FetchSpecialReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "begin_date":
             self.begin_date = date
-            if self.begin_date.year() != self.end_date.year():
-                self.end_date.setDate(self.begin_date.year(),
-                                      self.end_date.month(),
-                                      self.end_date.day())
-                self.end_date_edit.setDate(self.end_date)
+            # if self.begin_date.year() != self.end_date.year():
+            #     self.end_date.setDate(self.begin_date.year(),
+            #                           self.end_date.month(),
+            #                           self.end_date.day())
+            #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
             self.end_date = date
-            if self.end_date.year() != self.begin_date.year():
-                self.begin_date.setDate(self.end_date.year(),
-                                        self.begin_date.month(),
-                                        self.begin_date.day())
-                self.begin_date_edit.setDate(self.begin_date)
+            # if self.end_date.year() != self.begin_date.year():
+            #     self.begin_date.setDate(self.end_date.year(),
+            #                             self.begin_date.month(),
+            #                             self.begin_date.day())
+            #     self.begin_date_edit.setDate(self.begin_date)
 
     def on_report_type_selected(self, major_report_type: MajorReportType):
         if major_report_type == self.selected_report_type: return
@@ -1228,10 +1291,14 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             show_message("Vendor list is empty")
             return
 
+        if self.begin_date > self.end_date:
+            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            return
+
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
-        for i in range(len(self.vendors)):
+        for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
                                            self.fetch_type, self.settings, self.selected_attributes)
@@ -1255,15 +1322,15 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 class VendorWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, search_controller: SearchController, request_data: RequestData):
+    def __init__(self, worker_id: str, request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.search_controller = search_controller
         self.request_data = request_data
         self.vendor = request_data.vendor
         self.target_report_types = request_data.target_report_types
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
+        self.request_timeout = request_data.settings.request_timeout
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1286,13 +1353,18 @@ class VendorWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...(JSTOR...)
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+                                    timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
+        except requests.exceptions.Timeout as e:
+            self.process_result.completion_status = CompletionStatus.FAILED
+            self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
@@ -1362,7 +1434,7 @@ class VendorWorker(QObject):
         worker_id = report_type
         if worker_id in self.report_workers: return  # Avoid fetching a report twice, app will crash!!
 
-        report_worker = ReportWorker(worker_id, self.search_controller, report_type, self.request_data)
+        report_worker = ReportWorker(worker_id, report_type, self.request_data)
         report_worker.worker_finished_signal.connect(self.on_report_worker_finished)
         report_thread = QThread()
         self.report_workers[worker_id] = report_worker, report_thread
@@ -1409,31 +1481,36 @@ class VendorWorker(QObject):
 class ReportWorker(QObject):
     worker_finished_signal = pyqtSignal(str)
 
-    def __init__(self, worker_id: str, search_controller: SearchController, report_type: str,
-                 request_data: RequestData):
+    def __init__(self, worker_id: str, report_type: str, request_data: RequestData):
         super().__init__()
         self.worker_id = worker_id
-        self.search_controller = search_controller
         self.report_type = report_type
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
+        self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
         self.attributes = request_data.attributes
 
-        if request_data.fetch_type == FetchType.GENERAL:
-            self.tsv_save_dir = request_data.settings.general_tsv_directory
-            self.json_save_dir = request_data.settings.general_json_directory
-        elif request_data.fetch_type == FetchType.SPECIAL:
-            self.tsv_save_dir = request_data.settings.special_tsv_directory
-            self.json_save_dir = request_data.settings.special_json_directory
+        if request_data.fetch_type == FetchType.YEARLY:
+            self.save_dir = request_data.settings.yearly_directory
+        elif request_data.fetch_type == FetchType.OTHER:
+            self.save_dir = request_data.settings.other_directory
         else:
             raise Exception("FetchType not implemented in ReportWorker")
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
+        self.retried_request = False
 
     def work(self):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Fetching Report")
+
+        self.make_request()
+
+        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
+        self.notify_worker_finished()
+
+    def make_request(self):
         request_query = {}
         if self.vendor.customer_id.strip(): request_query["customer_id"] = self.vendor.customer_id
         if self.vendor.requestor_id.strip(): request_query["requestor_id"] = self.vendor.requestor_id
@@ -1460,28 +1537,36 @@ class ReportWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+                                    timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
+        except requests.exceptions.Timeout as e:
+            self.process_result.completion_status = CompletionStatus.FAILED
+            self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
+            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Request Exception: {e}")
 
-        self.notify_worker_finished()
-
     def process_response(self, response: requests.Response):
         try:
             json_string = response.text
+            self.save_json_file(self.report_type, json_string)
+
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
-            self.process_report_model(report_model, json_string)
+            self.process_report_model(report_model)
+            if len(report_model.report_items) > 0 or len(report_model.exceptions) > 0:
+                self.process_result.message = exception_models_to_message(report_model.exceptions)
+            else:
+                self.process_result.message = "Report items not received. No exception received."
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             if e.msg == "Expecting value":
@@ -1491,22 +1576,46 @@ class ReportWorker(QObject):
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: JSON Exception: {e.msg}")
         except RetryLaterException as e:
+            if not self.retried_request:
+                if SHOW_DEBUG_MESSAGES:
+                    print(f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+                    print(f"{self.vendor.name}-{self.report_type}: Retrying in {RETRY_WAIT_TIME} seconds...")
+                QThread.currentThread().sleep(RETRY_WAIT_TIME)  # Wait some time before retrying request
+                self.retried_request = True
+                self.make_request()
+            else:
+                self.process_result.message = "Retry later exception received"
+                message = exception_models_to_message(e.exceptions)
+                if message: self.process_result.message += "\n" + message
+                self.process_result.completion_status = CompletionStatus.FAILED
+                self.process_result.retry = True
+                if SHOW_DEBUG_MESSAGES: print(
+                    f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+        except ReportHeaderMissingException as e:
+            self.process_result.message = "Report_Header not received, no file was created"
+            message = exception_models_to_message(e.exceptions)
+            if message: self.process_result.message += "\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
-            self.process_result.message = str(e)
-            self.process_result.retry = True
             if SHOW_DEBUG_MESSAGES: print(
-                f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+                f"{self.vendor.name}-{self.report_type}: Report Header Missing Exception: {e}")
+        except UnacceptableCodeException as e:
+            self.process_result.message = "Unsupported exception code received"
+            message = exception_models_to_message(e.exceptions)
+            if message: self.process_result.message += "\n" + message
+            self.process_result.completion_status = CompletionStatus.FAILED
+            if SHOW_DEBUG_MESSAGES: print(
+                f"{self.vendor.name}-{self.report_type}: Unsupported Code Exception: {e}")
         except Exception as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
 
-    def process_report_model(self, report_model: ReportModel, json_string: str):
+    def process_report_model(self, report_model: ReportModel):
         report_type = report_model.report_header.report_id
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
         report_rows = []
-        file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
@@ -1583,15 +1692,6 @@ class ReportWorker(QObject):
                                     report_row.linking_issn = item_id.value
                                 elif item_type == "URI":
                                     report_row.uri = item_id.value
-
-                            self.search_controller.index_word(report_row.title,
-                                                              file_path,
-                                                              self.begin_date.year(),
-                                                              self.vendor.name,
-                                                              report_row.online_issn,
-                                                              report_row.print_issn,
-                                                              report_row.linking_issn,
-                                                              report_row.isbn)
 
                         elif major_report_type == MajorReportType.ITEM:
                             report_item: ItemReportItemModel
@@ -1716,7 +1816,7 @@ class ReportWorker(QObject):
                 report_rows.append(row)
 
         self.merge_sort(report_rows, major_report_type)
-        self.save_files(report_model.report_header, report_rows, json_string)
+        self.save_tsv_file(report_model.report_header, report_rows)
 
     def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
@@ -1803,24 +1903,22 @@ class ReportWorker(QObject):
             j = j + 1
             k = k + 1
 
-    def save_files(self, report_header, report_rows: list, json_string: str):
+    def save_tsv_file(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        # region Save TSV
+        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        file_path = f"{file_dir}{file_name}"
 
-        tsv_file_dir = f"{self.tsv_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        tsv_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        tsv_file_path = f"{tsv_file_dir}{tsv_file_name}"
+        if not path.isdir(file_dir):
+            makedirs(file_dir)
 
-        if not path.isdir(tsv_file_dir):
-            makedirs(tsv_file_dir)
-
-        tsv_file = open(tsv_file_path, 'w', encoding="utf-8", newline='')
+        file = open(file_path, 'w', encoding="utf-8", newline='')
 
         # region Report Header
 
-        tsv_writer = csv.writer(tsv_file, delimiter='\t')
+        tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
         tsv_writer.writerow(["Report_ID", report_header.report_id])
         tsv_writer.writerow(["Release", report_header.release])
@@ -1860,11 +1958,6 @@ class ReportWorker(QObject):
         tsv_writer.writerow([])
 
         # endregion
-
-        if len(report_rows) == 0:
-            tsv_file.close()
-            self.process_result.message = f"Empty report saved as: {tsv_file_name}"
-            return
 
         # region Report Body
 
@@ -2203,34 +2296,38 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         column_names += ["Metric_Type", "Reporting_Period_Total"]
-        column_names += report_rows[0].month_counts.keys()
-        tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')
+        column_names += get_month_years(self.begin_date, self.end_date)
+        tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
+
+        if len(row_dicts) == 0:
+            file.close()
+            self.process_result.completion_status = CompletionStatus.WARNING
+            self.process_result.file_name = file_name
+            self.process_result.file_dir = file_dir
+            self.process_result.file_path = file_path
+            return
+
         tsv_dict_writer.writerows(row_dicts)
 
         # endregion
 
-        tsv_file.close()
-        self.process_result.message = f"Saved as: {tsv_file_name}"
-        self.process_result.file_path = tsv_file_path
+        file.close()
+        self.process_result.file_name = file_name
+        self.process_result.file_dir = file_dir
+        self.process_result.file_path = file_path
 
-        # endregion
+    def save_json_file(self, report_type: str, json_string: str):
+        file_dir = f"{self.save_dir}json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+        file_path = f"{file_dir}{file_name}"
 
-        # region Save JSON
+        if not path.isdir(file_dir):
+            makedirs(file_dir)
 
-        json_file_dir = f"{self.json_save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        json_file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
-        # json_file_path = f"{tsv_file_dir}{json_file_name}"
-        json_file_path = f"{json_file_dir}{json_file_name}"
-
-        if not path.isdir(json_file_dir):
-            makedirs(json_file_dir)
-
-        json_file = open(json_file_path, 'w', encoding="utf-8")
+        json_file = open(file_path, 'w', encoding="utf-8")
         json_file.write(json_string)
         json_file.close()
-
-        # endregion
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.worker_id)
