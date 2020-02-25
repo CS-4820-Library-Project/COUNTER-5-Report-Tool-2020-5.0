@@ -1552,9 +1552,11 @@ class ReportWorker(QObject):
     def process_response(self, response: requests.Response):
         try:
             json_string = response.text
+            self.save_json_file(self.report_type, json_string)
+
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
-            self.process_report_model(report_model, json_string)
+            self.process_report_model(report_model)
             if len(report_model.report_items) > 0 or len(report_model.exceptions) > 0:
                 self.process_result.message = exception_models_to_message(report_model.exceptions)
             else:
@@ -1594,7 +1596,7 @@ class ReportWorker(QObject):
             self.process_result.message = str(e)
             if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
 
-    def process_report_model(self, report_model: ReportModel, json_string: str):
+    def process_report_model(self, report_model: ReportModel):
         report_type = report_model.report_header.report_id
         major_report_type = report_model.report_header.major_report_type
         report_items = report_model.report_items
@@ -1801,7 +1803,6 @@ class ReportWorker(QObject):
 
         self.merge_sort(report_rows, major_report_type)
         self.save_tsv_file(report_model.report_header, report_rows)
-        self.save_json_file(report_type, json_string)
 
     def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
