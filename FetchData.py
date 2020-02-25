@@ -15,7 +15,7 @@ from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
 
-SHOW_DEBUG_MESSAGES = False
+SHOW_DEBUG_MESSAGES = True
 
 REPORT_TYPES = ["PR",
                 "PR_P1",
