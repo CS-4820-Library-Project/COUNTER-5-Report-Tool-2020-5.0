@@ -278,6 +278,7 @@ VIEW_SUFFIX = '_view'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
+FIELDS_NOT_IN_SEARCH = ('year',)
 
 DATABASE_LOCATION = r'./all_data/search/search.db'
 FILE_LOCATION = r'./all_data/normal_tsv_files/'

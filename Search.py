@@ -7,84 +7,137 @@ from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
 
 class SearchController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+        # set up report types combobox
         self.report_parameter = main_window_ui.search_report_parameter_combobox
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
 
+        # set up start year dateedit
         self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
         self.start_year_parameter.setDate(date.today())
 
+        # set up end year dateedit
         self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
         self.end_year_parameter.setDate(date.today())
 
+        # set up the search clauses
+        self.and_clause_parameters = None
+
+        def refresh_clauses():
+            self.refresh_clauses(main_window_ui)
+
+        refresh_clauses()
+
+        # resets the search clauses when the report type is changed
+        self.report_parameter.currentTextChanged.connect(refresh_clauses)
+
+        # set up search button
+        self.search_button = main_window_ui.search_button
+        self.search_button.clicked.connect(self.search)
+
+        # set up add and clause button
+        self.add_and_button = main_window_ui.search_add_and_button
+        self.add_and_button.clicked.connect(self.add_and_clause)
+
+    def refresh_clauses(self, main_window_ui: MainWindow.Ui_mainWindow):  # resets the search clauses
         self.and_clause_parameters = QFrame()
         self.and_clause_parameters.setLayout(QVBoxLayout())
         main_window_ui.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
         self.add_and_clause()
 
-        self.search_button = main_window_ui.search_button
-        self.search_button.clicked.connect(self.search)
-
-        self.add_and_button = main_window_ui.search_add_and_button
-        self.add_and_button.clicked.connect(self.add_and_clause)
-
     def add_and_clause(self):
-        print('and')
         and_clause = QFrame()
         and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
 
+        # add one blank clause
         self.add_or_clause(and_clause_ui)
 
-
+        # set up add or clause button
         def add_or_to_this_and():
             self.add_or_clause(and_clause_ui)
 
+        and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
 
+        # set up remove current and clause button
         def remove_this_and():
             self.and_clause_parameters.layout().removeWidget(and_clause)
             sip.delete(and_clause)
 
-        and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
+        # add to the layout
         self.and_clause_parameters.layout().addWidget(and_clause)
 
     def add_or_clause(self, and_clause):
-        print('or')
         or_clause = QFrame()
         or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
         or_clause_ui.setupUi(or_clause)
 
+        # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_report_fields_list(self.report_parameter.currentText(), True):
-            if 'calculation' not in field.keys():
+            if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'])
 
+        # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
 
-
+        # set up remove current or clause button
         def remove_this_or():
             and_clause.search_or_clause_parameters_frame.layout().removeWidget(or_clause)
             sip.delete(or_clause)
 
         or_clause_ui.search_remove_or_clause_button.clicked.connect(remove_this_or)
 
+        # add to parent and clause's layout
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
-    def search(self):
+    def search(self):  # submit search result to database and open results
+        # get report type
         report = self.report_parameter.currentText()
         print(report)
+
+        # get start year
         start_year = self.start_year_parameter.text()
         print(start_year)
+
+        # get end year
         end_year = self.end_year_parameter.text()
         print(end_year)
-        search_parameters = []
 
+        search_parameters = []
+        print(self.and_clause_parameters.layout().count())
+        for i in range(self.and_clause_parameters.layout().count()):  # TODO iterate through and clauses
+            and_clause = self.and_clause_parameters.layout().itemAt(i).widget()
+            if and_clause.objectName() == 'search_and_clause_parameter_frame':
+                print('and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
+                for j in range(and_clause.search_or_clause_parameters_frame.layout().count()):
+                    # TODO iterate through and clause's or clauses
+                    or_clause = and_clause.search_or_clause_parameters_frame.layout().itemAt(j)
+                    if or_clause.objectName() == 'search_or_clause_parameter_frame':
+                        print('\tor: ' + str(or_clause))
+                    else:
+                        print('\tnot or' + str(or_clause))
+            else:
+                print('not and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
+
+        # sql query to get search results
         sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
         print(sql_text)
+
+        # get results
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text)
+            print(results)
+            connection.close()
+        else:
+            print("Error, no connection")
+
+        # TODO save results in csv/tsv file and open it
 
 
 '''
