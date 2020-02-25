@@ -1,5 +1,5 @@
 import sip
-from PyQt5.QtWidgets import QFrame, QVBoxLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit
 from datetime import date
 import ManageDB
 from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
@@ -98,31 +98,26 @@ class SearchController:
     def search(self):  # submit search result to database and open results
         # get report type
         report = self.report_parameter.currentText()
-        print(report)
-
         # get start year
         start_year = self.start_year_parameter.text()
-        print(start_year)
-
         # get end year
         end_year = self.end_year_parameter.text()
-        print(end_year)
 
         search_parameters = []
-        print(self.and_clause_parameters.layout().count())
-        for i in range(self.and_clause_parameters.layout().count()):  # TODO iterate through and clauses
-            and_clause = self.and_clause_parameters.layout().itemAt(i).widget()
-            if and_clause.objectName() == 'search_and_clause_parameter_frame':
-                print('and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
-                for j in range(and_clause.layout().count()):
-                    # TODO iterate through and clause's or clauses
-                    or_clause = and_clause.layout().itemAt(j).widget()
-                    if or_clause.objectName() == 'search_or_clause_parameters_frame':
-                        print('\tor: ' + str(or_clause.objectName()) + ' ' + str(or_clause))
-                    else:
-                        print('\tnot or: ' + str(or_clause.objectName()) + ' ' + str(or_clause))
-            else:
-                print('not and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
+
+        for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))
+            or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
+            or_clauses = []
+            for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
+                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))
+                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
+                comparison_parameter = or_widget.findChild(QComboBox,
+                                                           'search_comparison_parameter_combobox').currentText()
+                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
+                or_clauses.append(
+                    {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
+            search_parameters.append(or_clauses)
 
         # sql query to get search results
         sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
