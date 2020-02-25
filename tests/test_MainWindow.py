@@ -99,7 +99,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(main_window_ui.label_5.text(), "API Key")
         self.assertEqual(main_window_ui.label_6.text(), "Platform")
         self.assertEqual(main_window_ui.label_7.text(), "Edit Vendor")
-        
+
         self.assertEqual(main_window_ui.label_9.text(), "Begin Date")
         self.assertEqual(main_window_ui.label_10.text(), "End Date")
         self.assertEqual(main_window_ui.label_11.text(), "Select Vendors")
