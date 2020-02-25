@@ -99,7 +99,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(main_window_ui.label_5.text(), "API Key")
         self.assertEqual(main_window_ui.label_6.text(), "Platform")
         self.assertEqual(main_window_ui.label_7.text(), "Edit Vendor")
-        self.assertEqual(main_window_ui.label_8.text(), "PAGE IS IN DEVELOPMENT")
+        
         self.assertEqual(main_window_ui.label_9.text(), "Begin Date")
         self.assertEqual(main_window_ui.label_10.text(), "End Date")
         self.assertEqual(main_window_ui.label_11.text(), "Select Vendors")
@@ -118,7 +118,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(main_window_ui.label_24.text(), "Reports")
         self.assertEqual(main_window_ui.label_25.text(), "Yearly Reports Directory")
         self.assertEqual(main_window_ui.label_26.text(), "Search")
-        self.assertEqual(main_window_ui.label_27.text(), "[In Development]")
+
         self.assertEqual(main_window_ui.label_28.text(), "Description")
         self.assertEqual(main_window_ui.label_29.text(), "Other Reports Directory")
         self.assertEqual(main_window_ui.label_30.text(), "Report Request Interval")
@@ -127,10 +127,10 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(main_window_ui.label_33.text(), "Empty Cell")
         self.assertEqual(main_window_ui.label_34.text(), "Year")
         self.assertEqual(main_window_ui.label_35.text(), "Fetch All Reports")
-        self.assertEqual(main_window_ui.label_36.text(), "PAGE IS IN DEVELOPMENT")
+
         self.assertEqual(main_window_ui.label_37.text(), "Request Timeout")
         self.assertEqual(main_window_ui.label_39.text(), "Local Only Vendor")
-        self.assertEqual(main_window_ui.label_40.text(), "PAGE IS IN DEVELOPMENT")
+
         self.assertEqual(main_window_ui.Adv_Fetch_text.text(), "Advanced Fetch Reports")
         self.assertEqual(main_window_ui.selected_file_label.text(), "None")
 
