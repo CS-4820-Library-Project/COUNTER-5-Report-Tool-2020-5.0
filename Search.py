@@ -114,13 +114,13 @@ class SearchController:
             and_clause = self.and_clause_parameters.layout().itemAt(i).widget()
             if and_clause.objectName() == 'search_and_clause_parameter_frame':
                 print('and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
-                for j in range(and_clause.search_or_clause_parameters_frame.layout().count()):
+                for j in range(and_clause.layout().count()):
                     # TODO iterate through and clause's or clauses
-                    or_clause = and_clause.search_or_clause_parameters_frame.layout().itemAt(j)
-                    if or_clause.objectName() == 'search_or_clause_parameter_frame':
-                        print('\tor: ' + str(or_clause))
+                    or_clause = and_clause.layout().itemAt(j).widget()
+                    if or_clause.objectName() == 'search_or_clause_parameters_frame':
+                        print('\tor: ' + str(or_clause.objectName()) + ' ' + str(or_clause))
                     else:
-                        print('\tnot or' + str(or_clause))
+                        print('\tnot or: ' + str(or_clause.objectName()) + ' ' + str(or_clause))
             else:
                 print('not and: ' + str(and_clause.objectName()) + ' ' + str(and_clause))
 
