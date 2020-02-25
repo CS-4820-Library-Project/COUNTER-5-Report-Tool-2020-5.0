@@ -46,6 +46,7 @@ ACCEPTABLE_CODES = [3030,
 # If these codes are received the retry checkbox will be checked, user can retry later
 RETRY_LATER_CODES = [1010,
                      1011]
+RETRY_WAIT_TIME = 5  # Seconds
 
 
 class MajorReportType(Enum):
@@ -1499,9 +1500,17 @@ class ReportWorker(QObject):
             raise Exception("FetchType not implemented in ReportWorker")
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
+        self.retried_request = False
 
     def work(self):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Fetching Report")
+
+        self.make_request()
+
+        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
+        self.notify_worker_finished()
+
+    def make_request(self):
         request_query = {}
         if self.vendor.customer_id.strip(): request_query["customer_id"] = self.vendor.customer_id
         if self.vendor.requestor_id.strip(): request_query["requestor_id"] = self.vendor.requestor_id
@@ -1536,7 +1545,6 @@ class ReportWorker(QObject):
             else:
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.message = f"Unexpected HTTP status code received: {response.status_code}"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
         except requests.exceptions.Timeout as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
@@ -1546,8 +1554,6 @@ class ReportWorker(QObject):
             self.process_result.message = f"Request Exception: {e}"
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Request Exception: {e}")
-
-        self.notify_worker_finished()
 
     def process_response(self, response: requests.Response):
         try:
@@ -1570,13 +1576,21 @@ class ReportWorker(QObject):
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: JSON Exception: {e.msg}")
         except RetryLaterException as e:
-            self.process_result.message = "Retry report Later"
-            message = exception_models_to_message(e.exceptions)
-            if message: self.process_result.message += "\n" + message
-            self.process_result.completion_status = CompletionStatus.FAILED
-            self.process_result.retry = True
-            if SHOW_DEBUG_MESSAGES: print(
-                f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+            if not self.retried_request:
+                if SHOW_DEBUG_MESSAGES:
+                    print(f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
+                    print(f"{self.vendor.name}-{self.report_type}: Retrying in {RETRY_WAIT_TIME} seconds...")
+                QThread.currentThread().sleep(RETRY_WAIT_TIME)  # Wait some time before retrying request
+                self.retried_request = True
+                self.make_request()
+            else:
+                self.process_result.message = "Retry later exception received"
+                message = exception_models_to_message(e.exceptions)
+                if message: self.process_result.message += "\n" + message
+                self.process_result.completion_status = CompletionStatus.FAILED
+                self.process_result.retry = True
+                if SHOW_DEBUG_MESSAGES: print(
+                    f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
         except ReportHeaderMissingException as e:
             self.process_result.message = "Report_Header not received, no file was created"
             message = exception_models_to_message(e.exceptions)
