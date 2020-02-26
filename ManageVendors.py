@@ -158,7 +158,6 @@ class ManageVendorsController(QObject):
                             description_edit.toPlainText())
 
             if self.add_vendor(vendor):
-                self.vendors.append(vendor)
                 self.sort_vendors()
                 self.selected_index = -1
                 self.update_vendors_ui()
