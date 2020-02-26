@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -280,7 +281,8 @@ FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH = ('year',)
 
-DATABASE_LOCATION = r'./all_data/search/search.db'
+DATABASE_FOLDER = r'./all_data/search/'
+DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 FILE_LOCATION = r'./all_data/normal_tsv_files/'
 
 HEADER_ROWS = 12
@@ -470,6 +472,8 @@ def run_select_sql(connection, sql_text):
 
 
 def setup_database(drop_tables):
+    if not os.path.isfile(DATABASE_FOLDER):
+        os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
     sql_texts.update(create_view_sql_texts(ITEM_REPORTS))
