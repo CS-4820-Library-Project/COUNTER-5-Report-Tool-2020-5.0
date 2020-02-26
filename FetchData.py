@@ -890,7 +890,10 @@ class FetchReportsAbstract:
 
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
+            file_path_list = os.path.split(path.realpath(file_path))
+            webbrowser.open(file_path_list[0])
             webbrowser.open(path.realpath(file_path))
+
         else:
             show_message(f"\'{file_path}\' does not exist")
 
