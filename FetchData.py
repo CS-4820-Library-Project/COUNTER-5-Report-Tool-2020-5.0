@@ -6,7 +6,7 @@ import requests
 import webbrowser
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox
 
@@ -760,17 +760,23 @@ class FetchReportsAbstract:
         else:
             report_result_ui.message_label.hide()
 
-        if process_result.report_type is not None:  # If this report result, not vendor
+        if process_result.report_type is not None:  # If this is a report result, not vendor
             report_result_ui.report_type_label.setText(process_result.report_type)
             if completion_status == CompletionStatus.SUCCESSFUL or completion_status == CompletionStatus.WARNING:
+                report_result_ui.file_frame.show()
+
+                folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
+                report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
+                report_result_ui.folder_button.clicked.connect(lambda: self.open_explorer(process_result.file_dir))
+
                 report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
                 report_result_ui.file_label.mousePressEvent = \
                     lambda event: self.open_explorer(process_result.file_path)
             else:
-                report_result_ui.file_label.hide()
+                report_result_ui.file_frame.hide()
         else:
             report_result_ui.report_type_label.setText("Target Reports")
-            report_result_ui.file_label.hide()
+            report_result_ui.file_frame.hide()
             report_result_ui.retry_frame.hide()
 
         report_result_ui.success_label.setText(process_result.completion_status.value)
