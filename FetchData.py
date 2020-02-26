@@ -4,6 +4,7 @@ import csv
 import json
 import requests
 import webbrowser
+import os
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
