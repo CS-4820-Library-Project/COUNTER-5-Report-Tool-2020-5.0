@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'ReportResultWidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_ReportResultWidget(object):
     def setupUi(self, ReportResultWidget):
@@ -86,6 +84,7 @@ class Ui_ReportResultWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.file_label.sizePolicy().hasHeightForWidth())
         self.file_label.setSizePolicy(sizePolicy)
+        self.file_label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.file_label.setWordWrap(True)
         self.file_label.setObjectName("file_label")
         self.verticalLayout.addWidget(self.file_label)
@@ -168,3 +167,4 @@ class Ui_ReportResultWidget(object):
         self.message_label.setText(_translate("ReportResultWidget", "No exception messages"))
         self.success_label.setText(_translate("ReportResultWidget", "Failed!"))
         self.label_6.setText(_translate("ReportResultWidget", "Retry"))
+
