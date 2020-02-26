@@ -201,6 +201,9 @@
                 <underline>true</underline>
                </font>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="styleSheet">
                <string notr="true">color: #0000EE</string>
               </property>

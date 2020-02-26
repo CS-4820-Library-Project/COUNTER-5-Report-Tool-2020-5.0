@@ -96,6 +96,7 @@ class Ui_ReportResultWidget(object):
         font = QtGui.QFont()
         font.setUnderline(True)
         self.file_label.setFont(font)
+        self.file_label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.file_label.setStyleSheet("color: #0000EE")
         self.file_label.setWordWrap(True)
         self.file_label.setObjectName("file_label")
