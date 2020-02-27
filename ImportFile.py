@@ -70,9 +70,12 @@ class ImportFileController:
         # endregion
 
     def on_vendors_changed(self, vendors: list):
-        self.vendors = vendors
         self.selected_vendor_index = -1
+        self.update_vendors(vendors)
         self.update_vendors_ui()
+
+    def update_vendors(self, vendors: list):
+        self.vendors = vendors
 
     def update_vendors_ui(self):
         self.vendor_list_model.clear()

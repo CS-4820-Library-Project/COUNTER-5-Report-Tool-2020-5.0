@@ -9,6 +9,7 @@ from JsonUtils import JsonModel
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
+VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
 
 EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 
@@ -61,7 +62,6 @@ class ManageVendorsController(QObject):
         self.description_text_edit = main_window_ui.descriptionEdit
         self.companies_text_edit = main_window_ui.companiesEdit
 
-
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
         self.remove_vendor_button = main_window_ui.removeVendorButton
@@ -78,7 +78,7 @@ class ManageVendorsController(QObject):
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
 
         self.vendors = []
-        vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_DIR + VENDORS_FILE_NAME)
+        vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
             vendor = Vendor.from_json(json_dict)
