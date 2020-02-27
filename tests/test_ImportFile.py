@@ -44,12 +44,27 @@ def settings() -> Settings.SettingsModel:
                                   Settings.EMPTY_CELL)
 
 
-def test_on_vendors_changed(qtbot, vendors, settings):
+@pytest.fixture
+def controller(qtbot, settings):  # ImportFileController without populated vendor list
     window = QMainWindow()
     window_ui = MainWindow.Ui_mainWindow()
     window_ui.setupUi(window)
 
-    controller = ImportFileController([], settings, window_ui)
+    c = ImportFileController([], settings, window_ui)
+    yield c
+
+
+@pytest.fixture
+def controller_v(qtbot, vendors, settings):  # ImportFileController with populated vendor list
+    window = QMainWindow()
+    window_ui = MainWindow.Ui_mainWindow()
+    window_ui.setupUi(window)
+
+    c = ImportFileController(vendors, settings, window_ui)
+    yield c
+
+
+def test_on_vendors_changed(controller, vendors):
     controller.on_vendors_changed(vendors)
 
     assert controller.selected_vendor_index == -1
@@ -57,25 +72,15 @@ def test_on_vendors_changed(qtbot, vendors, settings):
     assert controller.vendor_list_model.rowCount() == len(vendors)
 
 
-def test_update_vendors(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController([], settings, window_ui)
-
+def test_update_vendors(controller, vendors):
     controller.update_vendors(vendors)
+
     assert len(controller.vendors) == len(vendors)
     for i in range(len(controller.vendors)):
         assert controller.vendors[i].name == vendors[i].name
 
 
-def test_update_vendors_ui(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController([], settings, window_ui)
+def test_update_vendors_ui(controller, vendors):
     controller.update_vendors(vendors)
 
     vendor_list_model = controller.vendor_list_model
@@ -87,129 +92,90 @@ def test_update_vendors_ui(qtbot, vendors, settings):
         assert vendor_list_model.item(i, 0).text() == controller.vendors[i].name
 
 
-def test_on_vendor_selected(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController([], settings, window_ui)
-    controller.update_vendors(vendors)
-
+def test_on_vendor_selected(controller_v, vendors, settings):
     index_to_select = 5
     model_index = QStandardItemModel.createIndex(QStandardItemModel(), index_to_select, 0)
-    controller.on_vendor_selected(model_index)
+    controller_v.on_vendor_selected(model_index)
 
-    assert controller.selected_vendor_index == index_to_select
+    assert controller_v.selected_vendor_index == index_to_select
 
 
-def test_on_report_type_selected(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController([], settings, window_ui)
-    controller.update_vendors(vendors)
+def test_on_report_type_selected(controller_v):
 
     index_to_select = 3
     model_index = QStandardItemModel.createIndex(QStandardItemModel(), index_to_select, 0)
-    controller.on_report_type_selected(model_index)
+    controller_v.on_report_type_selected(model_index)
 
-    assert controller.selected_report_type_index == index_to_select
+    assert controller_v.selected_report_type_index == index_to_select
 
 
-def test_on_date_changed(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController(vendors, settings, window_ui)
-
+def test_on_date_changed(controller_v):
     test_date = QDate.currentDate()
-    controller.on_date_changed(test_date)
+    controller_v.on_date_changed(test_date)
 
-    assert controller.date == test_date
+    assert controller_v.date == test_date
 
 
-def test_on_import_clicked(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController(vendors, settings, window_ui)
-    controller.update_vendors(vendors)
-
+def test_on_import_clicked(controller_v):
     # No vendor selected
-    controller.on_import_clicked()
-    controller.selected_vendor_index = 1
+    controller_v.on_import_clicked()
+    controller_v.selected_vendor_index = 1
 
     # No report type selected
-    controller.on_import_clicked()
-    controller.selected_report_type_index = 1
+    controller_v.on_import_clicked()
+    controller_v.selected_report_type_index = 1
 
-    vendor = controller.vendors[controller.selected_vendor_index]
-    report_type = REPORT_TYPES[controller.selected_report_type_index]
-    file_dir = f"{controller.settings.yearly_directory}{controller.date.toString('yyyy')}/{vendor.name}/"
-    file_name = f"{controller.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
+    vendor = controller_v.vendors[controller_v.selected_vendor_index]
+    report_type = REPORT_TYPES[controller_v.selected_report_type_index]
+    file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
+    file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
 
     # No file selected
-    controller.on_import_clicked()
+    controller_v.on_import_clicked()
 
     # Invalid file selected
-    controller.selected_file_path = "./data/invalid_file"
-    controller.on_import_clicked()
+    controller_v.selected_file_path = "./data/invalid_file"
+    controller_v.on_import_clicked()
 
     # Valid file selected
-    controller.selected_file_path = "./data/test_file_for_import.tsv"
-    controller.on_import_clicked()
+    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
+    controller_v.on_import_clicked()
     assert path.isfile(file_path)
 
 
-def test_import_file(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
+def test_import_file(controller_v):
+    controller_v.selected_vendor_index = 1
+    controller_v.selected_report_type_index = 1
 
-    controller = ImportFileController(vendors, settings, window_ui)
-    controller.update_vendors(vendors)
-
-    controller.selected_vendor_index = 1
-    controller.selected_report_type_index = 1
-
-    vendor = controller.vendors[controller.selected_vendor_index]
-    report_type = REPORT_TYPES[controller.selected_report_type_index]
-    file_dir = f"{controller.settings.yearly_directory}{controller.date.toString('yyyy')}/{vendor.name}/"
-    file_name = f"{controller.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
+    vendor = controller_v.vendors[controller_v.selected_vendor_index]
+    report_type = REPORT_TYPES[controller_v.selected_report_type_index]
+    file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
+    file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
 
     # No file selected
-    assert controller.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Invalid file selected
-    controller.selected_file_path = "./data/invalid_file"
-    assert controller.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    controller_v.selected_file_path = "./data/invalid_file"
+    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Valid file selected
-    controller.selected_file_path = "./data/test_file_for_import.tsv"
-    assert controller.import_file(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
+    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
+    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
     assert path.isfile(file_path)
 
 
-def test_open_file(qtbot, vendors, settings):
-    window = QMainWindow()
-    window_ui = MainWindow.Ui_mainWindow()
-    window_ui.setupUi(window)
-
-    controller = ImportFileController(vendors, settings, window_ui)
-
+def test_open_file(controller_v):
     # Invalid file/folder
-    controller.open_explorer("./data/invalid_file")
+    controller_v.open_explorer("./data/invalid_file")
 
     # Valid file
-    controller.open_explorer("./data/test_file_for_import.tsv")
+    controller_v.open_explorer("./data/test_file_for_import.tsv")
 
     # Valid folder
-    controller.open_explorer("./data/")
+    controller_v.open_explorer("./data/")
 
 
 

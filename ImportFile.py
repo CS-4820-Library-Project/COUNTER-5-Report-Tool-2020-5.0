@@ -196,7 +196,7 @@ class ImportFileController:
         message_label = message_dialog_ui.message_label
         message_label.setText(message)
 
-        message_dialog.exec_()
+        message_dialog.show()
 
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
