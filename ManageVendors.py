@@ -66,11 +66,13 @@ class ManageVendorsController(QObject):
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
         self.remove_vendor_button = main_window_ui.removeVendorButton
         self.add_vendor_button = main_window_ui.addVendorButton
+        # TODO(Ziheng) add import and export vendor buttons
 
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
+        # TODO(Ziheng) add connections to dialogs to choose import file path and export dir path
 
         self.vendor_list_view = main_window_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
@@ -178,6 +180,10 @@ class ManageVendorsController(QObject):
         button_box.accepted.connect(attempt_add_vendor)
 
         vendor_dialog.exec_()
+
+    # TODO(Ziheng) add method to open dialog to choose vendors file to import. Pass file path to import_vendors_tsv()
+
+    # TODO(Ziheng) add method to open dialog to choose where to export the vendor. Pass directory path to export_vendors_tsv()
 
     def populate_edit_vendor_view(self):
         if self.selected_index >= 0:
