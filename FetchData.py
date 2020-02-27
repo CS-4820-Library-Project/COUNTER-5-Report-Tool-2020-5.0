@@ -8,7 +8,7 @@ import webbrowser
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox
+    QCheckBox, QFileDialog
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
@@ -945,6 +945,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         self.tool_button = main_window_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
+        self.save_checkbox = main_window_ui.save_checkbox
 
         # endregion
 
@@ -1096,6 +1097,10 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
+        self.settings.yearly_directory = "./all_data/yearly_files/"
+        if self.save_checkbox.isChecked():
+            self.checkbox_checked()
+
         if self.total_processes > 0:
             show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
@@ -1147,6 +1152,13 @@ class FetchReportsController(FetchReportsAbstract):
         disclaimer_dialog_ui.setupUi(disclaimer_dialog)
 
         disclaimer_dialog.exec_()
+
+    def checkbox_checked(self):
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+            self.settings.yearly_directory = directory
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
