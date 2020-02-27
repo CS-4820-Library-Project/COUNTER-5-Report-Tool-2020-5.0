@@ -1097,9 +1097,9 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
-        self.settings.yearly_directory = "./all_data/yearly_files/"
+        custom_dir = ""
         if self.save_checkbox.isChecked():
-            self.checkbox_checked()
+            custom_dir = self.open_custom_dir_dialog()
 
         if self.total_processes > 0:
             show_message(f"Waiting for pending processes to complete...")
@@ -1125,10 +1125,11 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
+        save_dir = custom_dir if custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.yearly_directory, self.settings)
+                                           save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1153,12 +1154,13 @@ class FetchReportsController(FetchReportsAbstract):
 
         disclaimer_dialog.exec_()
 
-    def checkbox_checked(self):
+    def open_custom_dir_dialog(self) -> str:
+        directory = ""
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
-            self.settings.yearly_directory = directory
+        return directory
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):

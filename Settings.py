@@ -147,7 +147,7 @@ class SettingsController:
         elif setting == Setting.EMPTY_CELL:
             self.settings.empty_cell = setting_value
 
-        #self.save_settings_to_disk()
+        self.save_settings_to_disk()
 
     def open_file_select_dialog(self, setting: Setting):
         dialog = QFileDialog()
