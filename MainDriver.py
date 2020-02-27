@@ -41,6 +41,7 @@ if __name__ == "__main__":
                                                       main_window_ui)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
                                                                      settings_controller.settings, main_window_ui)
+    search_controller = SearchController(main_window_ui)
     import_file_controller = ImportFileController(manage_vendors_controller.vendors, settings_controller.settings,
                                                   main_window_ui)
     # endregion

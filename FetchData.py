@@ -62,11 +62,6 @@ class CompletionStatus(Enum):
     CANCELLED = "Cancelled!"
 
 
-class FetchType(Enum):
-    YEARLY = 0
-    OTHER = 1
-
-
 def get_major_report_type(report_type: str) -> MajorReportType:
     if report_type == "PR" or report_type == "PR_P1":
         return MajorReportType.PLATFORM
@@ -619,12 +614,12 @@ class Attributes:
 
 class RequestData:
     def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate,
-                 fetch_type: FetchType, settings: SettingsModel, attributes: Attributes = None):
+                 save_location: str, settings: SettingsModel, attributes: Attributes = None):
         self.vendor = vendor
         self.target_report_types = target_report_types
         self.begin_date = begin_date
         self.end_date = end_date
-        self.fetch_type = fetch_type
+        self.save_location = save_location
         self.settings = settings
         self.attributes = attributes
 
@@ -662,7 +657,6 @@ class UnacceptableCodeException(Exception):
 class FetchReportsAbstract:
     def __init__(self, vendors: list, settings: SettingsModel):
         # region General
-        self.fetch_type = None
         self.vendors = vendors
         self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
@@ -920,7 +914,6 @@ class FetchReportsController(FetchReportsAbstract):
         super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.YEARLY
         current_date = QDate.currentDate()
         begin_date = QDate(current_date.year(), 1, current_date.day())
         end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
@@ -1086,8 +1079,8 @@ class FetchReportsController(FetchReportsAbstract):
         for i in range(len(self.vendors)):
             if self.vendors[i].is_local: continue
 
-            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date, self.fetch_type,
-                                       self.settings)
+            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
+                                       self.settings.yearly_directory, self.settings)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -1134,7 +1127,7 @@ class FetchReportsController(FetchReportsAbstract):
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.fetch_type, self.settings)
+                                           self.settings.yearly_directory, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1172,7 +1165,6 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         super().__init__(vendors, settings)
 
         # region General
-        self.fetch_type = FetchType.OTHER
         self.selected_report_type = None
         self.selected_attributes = Attributes()
         self.attribute_options = {
@@ -1318,7 +1310,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.fetch_type, self.settings, self.selected_attributes)
+                                           self.settings.other_directory, self.settings, self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1507,6 +1499,7 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
+        self.save_dir = request_data.save_location
         self.attributes = request_data.attributes
         if request_data.fetch_type == FetchType.YEARLY:
             self.save_dir = request_data.settings.yearly_directory
