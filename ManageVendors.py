@@ -15,7 +15,7 @@ EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 
 class Vendor(JsonModel):
     def __init__(self, name: str, customer_id: str, base_url: str, requestor_id: str, api_key: str, platform: str,
-                 is_local: bool, description: str):
+                 is_local: bool, description: str, companies: str):
         self.name = name
         self.customer_id = customer_id
         self.base_url = base_url
@@ -24,6 +24,7 @@ class Vendor(JsonModel):
         self.platform = platform
         self.is_local = is_local
         self.description = description
+        self.companies = companies
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -35,8 +36,9 @@ class Vendor(JsonModel):
         platform = json_dict["platform"] if "platform" in json_dict else ""
         is_local = json_dict["is_local"] if "is_local" in json_dict else False
         description = json_dict["description"] if "description" in json_dict else ""
+        companies = json_dict["companies"] if "companies" in json_dict else ""
 
-        return cls(name, customer_id, base_url, requestor_id, api_key, platform, is_local, description)
+        return cls(name, customer_id, base_url, requestor_id, api_key, platform, is_local, description, companies)
 
 
 class ManageVendorsController(QObject):
@@ -57,6 +59,8 @@ class ManageVendorsController(QObject):
         self.platform_line_edit = main_window_ui.platformEdit
         self.local_only_check_box = main_window_ui.local_only_check_box
         self.description_text_edit = main_window_ui.descriptionEdit
+        self.companies_text_edit = main_window_ui.companiesEdit
+
 
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
@@ -127,6 +131,7 @@ class ManageVendorsController(QObject):
         selected_vendor.platform = self.platform_line_edit.text()
         selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
         selected_vendor.description = self.description_text_edit.toPlainText()
+        selected_vendor.companies = self.companies_text_edit.toPlainText()
 
         self.update_vendors_ui()
         self.vendors_changed_signal.emit(self.vendors)
@@ -146,6 +151,7 @@ class ManageVendorsController(QObject):
         platform_edit = vendor_dialog_ui.platformEdit
         local_only_check_box = vendor_dialog_ui.local_only_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
+        companies_edit = vendor_dialog_ui.companiesEdit
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(),
@@ -155,10 +161,10 @@ class ManageVendorsController(QObject):
                             api_key_edit.text(),
                             platform_edit.text(),
                             local_only_check_box.checkState() == Qt.Checked,
-                            description_edit.toPlainText())
+                            description_edit.toPlainText(),
+                            companies_edit.toPlainText())
 
             if self.add_vendor(vendor):
-                self.vendors.append(vendor)
                 self.sort_vendors()
                 self.selected_index = -1
                 self.update_vendors_ui()
@@ -184,6 +190,7 @@ class ManageVendorsController(QObject):
             self.platform_line_edit.setText(selected_vendor.platform)
             self.local_only_check_box.setChecked(selected_vendor.is_local)
             self.description_text_edit.setPlainText(selected_vendor.description)
+            self.companies_text_edit.setPlainText(selected_vendor.companies)
 
             self.set_edit_vendor_view_state(True)
         else:
@@ -195,6 +202,7 @@ class ManageVendorsController(QObject):
             self.platform_line_edit.setText("")
             self.local_only_check_box.setChecked(False)
             self.description_text_edit.setPlainText("")
+            self.companies_text_edit.setPlainText("")
 
             self.set_edit_vendor_view_state(False)
 
@@ -255,7 +263,8 @@ class ManageVendorsController(QObject):
                                 row['api_key'],
                                 row['platform'],
                                 is_local,
-                                row['description'])
+                                row['description'],
+                                row['companies'])
 
                 if self.add_vendor(vendor):
                     print(f"Vendor '{vendor.name}' added")
@@ -282,7 +291,8 @@ class ManageVendorsController(QObject):
                         "api_key",
                         "platform",
                         "is_local",
-                        "description"]
+                        "description",
+                        "companies"]
         try:
             tsv_file = open(file_path, 'w', encoding="utf-8", newline='')
             tsv_dict_writer = csv.DictWriter(tsv_file, column_names, delimiter='\t')

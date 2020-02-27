@@ -2,28 +2,21 @@
 
 # Form implementation generated from reading ui file 'AddVendorDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_addVendorDialog(object):
     def setupUi(self, addVendorDialog):
         addVendorDialog.setObjectName("addVendorDialog")
-        addVendorDialog.resize(600, 464)
+        addVendorDialog.resize(600, 548)
         font = QtGui.QFont()
         font.setPointSize(11)
         addVendorDialog.setFont(font)
         self.gridLayout = QtWidgets.QGridLayout(addVendorDialog)
         self.gridLayout.setObjectName("gridLayout")
-        self.buttonBox = QtWidgets.QDialogButtonBox(addVendorDialog)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
         self.frame = QtWidgets.QFrame(addVendorDialog)
         self.frame.setObjectName("frame")
         self.formLayout = QtWidgets.QFormLayout(self.frame)
@@ -38,30 +31,30 @@ class Ui_addVendorDialog(object):
         self.label_2 = QtWidgets.QLabel(self.frame)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
-        self.label_3 = QtWidgets.QLabel(self.frame)
-        self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
-        self.label_4 = QtWidgets.QLabel(self.frame)
-        self.label_4.setObjectName("label_4")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_4)
-        self.label_5 = QtWidgets.QLabel(self.frame)
-        self.label_5.setObjectName("label_5")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_5)
-        self.label_6 = QtWidgets.QLabel(self.frame)
-        self.label_6.setObjectName("label_6")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_6)
         self.customerIdEdit = QtWidgets.QLineEdit(self.frame)
         self.customerIdEdit.setObjectName("customerIdEdit")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.customerIdEdit)
+        self.label_3 = QtWidgets.QLabel(self.frame)
+        self.label_3.setObjectName("label_3")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
         self.baseUrlEdit = QtWidgets.QLineEdit(self.frame)
         self.baseUrlEdit.setObjectName("baseUrlEdit")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.baseUrlEdit)
+        self.label_4 = QtWidgets.QLabel(self.frame)
+        self.label_4.setObjectName("label_4")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_4)
         self.requestorIdEdit = QtWidgets.QLineEdit(self.frame)
         self.requestorIdEdit.setObjectName("requestorIdEdit")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.requestorIdEdit)
+        self.label_5 = QtWidgets.QLabel(self.frame)
+        self.label_5.setObjectName("label_5")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_5)
         self.apiKeyEdit = QtWidgets.QLineEdit(self.frame)
         self.apiKeyEdit.setObjectName("apiKeyEdit")
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.apiKeyEdit)
+        self.label_6 = QtWidgets.QLabel(self.frame)
+        self.label_6.setObjectName("label_6")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_6)
         self.platformEdit = QtWidgets.QLineEdit(self.frame)
         self.platformEdit.setObjectName("platformEdit")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.platformEdit)
@@ -78,7 +71,18 @@ class Ui_addVendorDialog(object):
         self.local_only_check_box.setText("")
         self.local_only_check_box.setObjectName("local_only_check_box")
         self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.local_only_check_box)
+        self.companiesEdit = QtWidgets.QPlainTextEdit(self.frame)
+        self.companiesEdit.setObjectName("companiesEdit")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.companiesEdit)
+        self.label_9 = QtWidgets.QLabel(self.frame)
+        self.label_9.setObjectName("label_9")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.label_9)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
+        self.buttonBox = QtWidgets.QDialogButtonBox(addVendorDialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
 
         self.retranslateUi(addVendorDialog)
         self.buttonBox.accepted.connect(addVendorDialog.accept)
@@ -96,3 +100,5 @@ class Ui_addVendorDialog(object):
         self.label_6.setText(_translate("addVendorDialog", "Platform (optional)"))
         self.label_7.setText(_translate("addVendorDialog", "Description"))
         self.label_8.setText(_translate("addVendorDialog", "Local Only Vendor"))
+        self.label_9.setText(_translate("addVendorDialog", "External Companies"))
+

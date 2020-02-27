@@ -133,6 +133,12 @@ class Ui_mainWindow(object):
         self.platformEdit = QtWidgets.QLineEdit(self.edit_vendor_details_frame)
         self.platformEdit.setObjectName("platformEdit")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.platformEdit)
+        self.label_39 = QtWidgets.QLabel(self.edit_vendor_details_frame)
+        self.label_39.setObjectName("label_39")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_39)
+        self.local_only_check_box = QtWidgets.QCheckBox(self.edit_vendor_details_frame)
+        self.local_only_check_box.setObjectName("local_only_check_box")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.local_only_check_box)
         self.label_28 = QtWidgets.QLabel(self.edit_vendor_details_frame)
         self.label_28.setObjectName("label_28")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_28)
@@ -145,12 +151,12 @@ class Ui_mainWindow(object):
         self.descriptionEdit.setBackgroundVisible(False)
         self.descriptionEdit.setObjectName("descriptionEdit")
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.descriptionEdit)
-        self.label_39 = QtWidgets.QLabel(self.edit_vendor_details_frame)
-        self.label_39.setObjectName("label_39")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_39)
-        self.local_only_check_box = QtWidgets.QCheckBox(self.edit_vendor_details_frame)
-        self.local_only_check_box.setObjectName("local_only_check_box")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.local_only_check_box)
+        self.companiesText = QtWidgets.QLabel(self.edit_vendor_details_frame)
+        self.companiesText.setObjectName("companiesText")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.companiesText)
+        self.companiesEdit = QtWidgets.QPlainTextEdit(self.edit_vendor_details_frame)
+        self.companiesEdit.setObjectName("companiesEdit")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.companiesEdit)
         self.verticalLayout.addWidget(self.edit_vendor_details_frame)
         self.edit_vendor_options_frame = QtWidgets.QFrame(self.frame)
         self.edit_vendor_options_frame.setEnabled(False)
@@ -1016,7 +1022,7 @@ class Ui_mainWindow(object):
         mainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(mainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
     def retranslateUi(self, mainWindow):
@@ -1031,8 +1037,9 @@ class Ui_mainWindow(object):
         self.label_4.setText(_translate("mainWindow", "Requestor ID"))
         self.label_5.setText(_translate("mainWindow", "API Key"))
         self.label_6.setText(_translate("mainWindow", "Platform"))
-        self.label_28.setText(_translate("mainWindow", "Description"))
         self.label_39.setText(_translate("mainWindow", "Local Only Vendor"))
+        self.label_28.setText(_translate("mainWindow", "Description"))
+        self.companiesText.setText(_translate("mainWindow", "External Companies"))
         self.saveVendorChangesButton.setText(_translate("mainWindow", "Save Changes"))
         self.undoVendorChangesButton.setText(_translate("mainWindow", "Undo Changes"))
         self.removeVendorButton.setText(_translate("mainWindow", "Remove Vendor"))
@@ -1110,14 +1117,4 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), _translate("mainWindow", "Settings"))
         self.label_40.setText(_translate("mainWindow", "PAGE IS IN DEVELOPMENT"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("mainWindow", "Visual"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    mainWindow = QtWidgets.QMainWindow()
-    ui = Ui_mainWindow()
-    ui.setupUi(mainWindow)
-    mainWindow.show()
-    sys.exit(app.exec_())
 
