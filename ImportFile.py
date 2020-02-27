@@ -3,11 +3,23 @@ import webbrowser
 from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
 from ui import MainWindow, MessageDialog, ReportResultWidget
-from FetchData import REPORT_TYPES
+from ManageVendors import Vendor
+from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
+
+
+class ProcessResult:
+    def __init__(self, vendor: Vendor, report_type: str):
+        self.vendor = vendor
+        self.report_type = report_type
+        self.completion_status = CompletionStatus.SUCCESSFUL
+        self.message = ""
+        self.file_name = ""
+        self.file_dir = ""
+        self.file_path = ""
 
 
 class ImportFileController:
@@ -54,7 +66,7 @@ class ImportFileController:
         self.selected_file_label = main_window_ui.selected_file_label
 
         self.import_file_button = main_window_ui.import_file_button
-        self.import_file_button.clicked.connect(self.import_file)
+        self.import_file_button.clicked.connect(self.on_import_clicked)
         # endregion
 
     def on_vendors_changed(self, vendors: list):
@@ -88,7 +100,7 @@ class ImportFileController:
             self.selected_file_name = arr[len(arr) - 1]
             self.selected_file_label.setText(self.selected_file_name)
 
-    def import_file(self):
+    def on_import_clicked(self):
         if self.selected_vendor_index == -1:
             self.show_message("Select a vendor")
             return
@@ -99,39 +111,79 @@ class ImportFileController:
             self.show_message("Select a file")
             return
 
+        vendor = self.vendors[self.selected_vendor_index]
+        report_type = REPORT_TYPES[self.selected_report_type_index]
+
+        process_result = self.import_file(vendor, report_type)
+        self.show_result(process_result)
+
+    def import_file(self, vendor: Vendor, report_type: str) -> ProcessResult:
+        process_result = ProcessResult(vendor, report_type)
+
         try:
-            vendor = self.vendors[self.selected_vendor_index]
-            report_type = REPORT_TYPES[self.selected_report_type_index]
             dest_file_dir = f"{self.settings.yearly_directory}{self.date.toString('yyyy')}/{vendor.name}/"
             dest_file_name = f"{self.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
             dest_file_path = f"{dest_file_dir}{dest_file_name}"
 
-            if not path.isdir(dest_file_dir):
-                makedirs(dest_file_dir)
+            self.verify_path_exists(dest_file_dir)
+            self.copy_file(self.selected_file_path, dest_file_path)
 
-            shutil.copy2(self.selected_file_path, dest_file_path)
+            process_result.file_dir = dest_file_dir
+            process_result.file_name = dest_file_name
+            process_result.file_path = dest_file_path
+            process_result.completion_status = CompletionStatus.SUCCESSFUL
 
-            # Show result
-            self.result_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-            self.result_dialog.setWindowTitle("Import Result")
-            vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
-            vertical_layout.setContentsMargins(5, 5, 5, 5)
+        except Exception as e:
+            process_result.message = f"Exception: {e}"
+            process_result.completion_status = CompletionStatus.FAILED
 
-            report_result_widget = QWidget(self.result_dialog)
-            report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
-            report_result_ui.setupUi(report_result_widget)
+        return process_result
 
-            report_result_ui.report_type_label.setText(f"{vendor.name} - {report_type}")
+    def verify_path_exists(self, path_str: str):
+        if not path.isdir(path_str):
+            makedirs(path_str)
+
+    def copy_file(self, origin_path: str, dest_path: str):
+        shutil.copy2(origin_path, dest_path)
+
+    def show_result(self, process_result: ProcessResult):
+        self.result_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        self.result_dialog.setWindowTitle("Import Result")
+        vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
+        vertical_layout.setContentsMargins(5, 5, 5, 5)
+
+        report_result_widget = QWidget(self.result_dialog)
+        report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
+        report_result_ui.setupUi(report_result_widget)
+
+        vendor = process_result.vendor
+        report_type = process_result.report_type
+
+        report_result_ui.report_type_label.setText(f"{vendor.name} - {report_type}")
+        report_result_ui.success_label.setText(process_result.completion_status.value)
+
+        if process_result.completion_status == CompletionStatus.SUCCESSFUL:
             report_result_ui.message_label.hide()
-            report_result_ui.file_label.setText(f"Saved as: {dest_file_name}")
-            report_result_ui.file_label.mousePressEvent = lambda event: self.open_explorer(dest_file_path)
+            report_result_ui.retry_frame.hide()
+
+            report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
+            report_result_ui.file_label.mousePressEvent = lambda event: self.open_explorer(process_result.file_path)
+
+            folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
+            report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
+            report_result_ui.folder_button.clicked.connect(lambda: self.open_explorer(process_result.file_dir))
+
             report_result_ui.success_label.setText("Successful!")
             report_result_ui.retry_frame.hide()
 
-            vertical_layout.addWidget(report_result_widget)
-            self.result_dialog.show()
-        except Exception as e:
-            self.show_message(f"Exception: {e}")
+        elif process_result.completion_status == CompletionStatus.FAILED:
+            report_result_ui.file_frame.hide()
+            report_result_ui.retry_frame.hide()
+
+            report_result_ui.message_label.setText(process_result.message)
+
+        vertical_layout.addWidget(report_result_widget)
+        self.result_dialog.show()
 
     def show_message(self, message: str):
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
