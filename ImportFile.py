@@ -100,7 +100,7 @@ class ImportFileController:
         if dialog.exec_():
             self.selected_file_path = dialog.selectedFiles()[0]
             arr = self.selected_file_path.split("/")
-            self.selected_file_name = arr[len(arr) - 1]
+            self.selected_file_name = arr[max(len(arr), 1) - 1]
             self.selected_file_label.setText(self.selected_file_name)
 
     def on_import_clicked(self):
@@ -198,7 +198,10 @@ class ImportFileController:
 
         message_dialog.exec_()
 
-    def open_explorer(self, file_dir: str):
-        webbrowser.open(path.realpath(file_dir))
+    def open_explorer(self, file_path: str):
+        if path.exists(file_path):
+            webbrowser.open(path.realpath(file_path))
+        else:
+            self.show_message(f"\'{file_path}\' does not exist")
 
 
