@@ -1103,6 +1103,7 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
+        self.settings.yearly_directory = "./all_data/yearly_files/"
         if self.save_checkbox.isChecked():
             self.checkbox_checked()
 
