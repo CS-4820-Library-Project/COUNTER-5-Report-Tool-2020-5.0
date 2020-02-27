@@ -658,7 +658,8 @@ class UnacceptableCodeException(Exception):
 class FetchReportsAbstract:
     def __init__(self, vendors: list, settings: SettingsModel):
         # region General
-        self.vendors = vendors
+        self.vendors = []
+        self.update_vendors(vendors)
         self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
         self.vendor_workers = {}  # <k = worker_id, v = (VendorWorker, Thread)>
@@ -683,6 +684,19 @@ class FetchReportsAbstract:
 
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
+
+    def on_vendors_changed(self, vendors: list):
+        self.update_vendors(vendors)
+        self.update_vendors_ui()
+
+    def update_vendors(self, vendors: list):
+        self.vendors = []
+        for vendor in vendors:
+            if vendor.is_local: continue
+            self.vendors.append(vendor)
+
+    def update_vendors_ui(self):
+        raise NotImplementedError()
 
     def fetch_vendor_data(self, request_data: RequestData):
         worker_id = request_data.vendor.name
@@ -977,15 +991,9 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
-    def on_vendors_changed(self, vendors: list):
-        self.vendors = vendors
-        self.update_vendors_ui()
-
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
-            if vendor.is_local: continue
-
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
@@ -1229,15 +1237,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
         # endregion
 
-    def on_vendors_changed(self, vendors: list):
-        self.vendors = vendors
-        self.update_vendors_ui()
-
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
-            if vendor.is_local: continue
-
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
