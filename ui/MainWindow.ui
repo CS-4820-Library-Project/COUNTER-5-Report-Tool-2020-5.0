@@ -27,7 +27,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
+    <item row="2" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="enabled">
        <bool>true</bool>
@@ -1960,6 +1960,13 @@
       </widget>
      </widget>
     </item>
+    <item row="1" column="0" alignment="Qt::AlignRight">
+     <widget class="QPushButton" name="helpButton">
+      <property name="text">
+       <string>Help</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1968,7 +1975,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>47</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

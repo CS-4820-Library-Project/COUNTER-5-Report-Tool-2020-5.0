@@ -8,7 +8,7 @@ import webbrowser
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox
+    QCheckBox, QFileDialog
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
@@ -658,7 +658,8 @@ class UnacceptableCodeException(Exception):
 class FetchReportsAbstract:
     def __init__(self, vendors: list, settings: SettingsModel):
         # region General
-        self.vendors = vendors
+        self.vendors = []
+        self.update_vendors(vendors)
         self.selected_data = []  # List of ReportData Objects
         self.retry_data = []  # List of (Vendor, list[report_types])>
         self.vendor_workers = {}  # <k = worker_id, v = (VendorWorker, Thread)>
@@ -683,6 +684,19 @@ class FetchReportsAbstract:
 
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
+
+    def on_vendors_changed(self, vendors: list):
+        self.update_vendors(vendors)
+        self.update_vendors_ui()
+
+    def update_vendors(self, vendors: list):
+        self.vendors = []
+        for vendor in vendors:
+            if vendor.is_local: continue
+            self.vendors.append(vendor)
+
+    def update_vendors_ui(self):
+        raise NotImplementedError()
 
     def fetch_vendor_data(self, request_data: RequestData):
         worker_id = request_data.vendor.name
@@ -945,6 +959,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         self.tool_button = main_window_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
+        self.save_checkbox = main_window_ui.save_checkbox
 
         # endregion
 
@@ -976,15 +991,9 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
-    def on_vendors_changed(self, vendors: list):
-        self.vendors = vendors
-        self.update_vendors_ui()
-
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
-            if vendor.is_local: continue
-
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
@@ -1096,6 +1105,10 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
+        custom_dir = ""
+        if self.save_checkbox.isChecked():
+            custom_dir = self.open_custom_dir_dialog()
+
         if self.total_processes > 0:
             show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
@@ -1120,10 +1133,11 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
+        save_dir = custom_dir if custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.yearly_directory, self.settings)
+                                           save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1147,6 +1161,14 @@ class FetchReportsController(FetchReportsAbstract):
         disclaimer_dialog_ui.setupUi(disclaimer_dialog)
 
         disclaimer_dialog.exec_()
+
+    def open_custom_dir_dialog(self) -> str:
+        directory = ""
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+        return directory
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
@@ -1215,15 +1237,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
         # endregion
 
-    def on_vendors_changed(self, vendors: list):
-        self.vendors = vendors
-        self.update_vendors_ui()
-
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
-            if vendor.is_local: continue
-
             item = QStandardItem(vendor.name)
             item.setCheckable(True)
             item.setEditable(False)
