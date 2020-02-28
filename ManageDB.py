@@ -304,7 +304,7 @@ FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 
 HEADER_ROWS = 12
 BLANK_ROWS = 1
-DELIMITERS = {'tsv': '\t', 'csv': ','}
+DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 
 def get_report_fields_list(report, is_view):
@@ -394,7 +394,7 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
 
 def read_report_file(file_name,
                      vendor):  # reads a specific csv/tsv file and returns the report type and the values for inserting
-    delimiter = DELIMITERS[file_name[-3:]]
+    delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8')
     results = {}
     if file.mode == 'r':
@@ -420,7 +420,7 @@ def read_report_file(file_name,
                 if metric > 0:
                     value = {}
                     for i in range(len(column_headers) - len(MONTHS) - 1):  # read rows before months
-                        value[column_headers[i]] = cells[i]
+                        value[column_headers[i]] = cells[i]  # TODO remove quotes from around strings?
                     if not value['metric_type']:  # if no metric type column, use the metric type from header
                         value['metric_type'] = header['metric_types']
                     current_header = column_headers[current_column]
@@ -464,6 +464,7 @@ def insert_all_files():
 
 def search_sql_text(report, start_year, end_year,
                     search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
+    # TODO maybe remove year requirements, just let user decide
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -476,6 +477,7 @@ def search_sql_text(report, start_year, end_year,
         for sub_clause in clause:
             sub_clauses_text.append(
                 sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
+                # TODO make parameterized query
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'

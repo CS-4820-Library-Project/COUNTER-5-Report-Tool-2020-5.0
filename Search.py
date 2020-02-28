@@ -88,6 +88,8 @@ class SearchController:
             if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'])
 
+        # TODO make value check for type
+
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
@@ -124,6 +126,7 @@ class SearchController:
                 comparison_parameter = or_widget.findChild(QComboBox,
                                                            'search_comparison_parameter_combobox').currentText()
                 value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
+                # TODO check for special characters
                 or_clauses.append(
                     {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
             search_parameters.append(or_clauses)
@@ -138,23 +141,27 @@ class SearchController:
 
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setNameFilter('TSV files (*.tsv)')
         if dialog.exec_():
             file_name = dialog.selectedFiles()[0]
+            if file_name[-4:].lower() != '.tsv' and file_name != '':
+                file_name += '.tsv'
             connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, sql_text)
                 results.insert(0, headers)
                 print(results)
                 with open(file_name, 'w', newline="", encoding='utf-8') as output:
-                    tsv_output = csv.writer(output, delimiter='\t')
+                    output = csv.writer(output, delimiter='\t')
                     for row in results:
-                        tsv_output.writerow(row)
+                        output.writerow(row)
+
+                    open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
+                                          # TODO check file_name for special characters and quote
+                                          'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
+                    open_file_switcher[os.name]()
+
                 connection.close()
-
-                open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                      'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-
-                open_file_switcher[os.name]()
             else:
                 print('Error, no connection')
         else:

@@ -1126,13 +1126,3 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("mainWindow", "Visual"))
         self.helpButton.setText(_translate("mainWindow", "Help"))
 
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    mainWindow = QtWidgets.QMainWindow()
-    ui = Ui_mainWindow()
-    ui.setupUi(mainWindow)
-    mainWindow.show()
-    sys.exit(app.exec_())
-
