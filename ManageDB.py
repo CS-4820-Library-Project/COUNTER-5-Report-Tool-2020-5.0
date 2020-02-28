@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import csv
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -36,7 +37,7 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
 ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
-                       'options': ('NOT NULL', 'CHECK(item <> \"\")'),
+                       'options': ('NOT NULL',),
                        'reports': ('IR', 'IR_A1', 'IR_M1')},
                       {'name': 'publisher',
                        'type': 'TEXT',
@@ -279,6 +280,9 @@ ALL_REPORT_FIELDS = ({'name': 'metric_type',
                       'options': ('NOT NULL', 'CHECK(metric > 0)')},
                      {'name': 'updated_on',
                       'type': 'TEXT',
+                      'options': ('NOT NULL',)},
+                     {'name': 'file',
+                      'type': 'TEXT',
                       'options': ('NOT NULL',)})
 
 # TODO add cost tables
@@ -301,7 +305,7 @@ FIELDS_NOT_IN_SEARCH = ('year',)
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
-FILE_LOCATION = r'./all_data/normal_tsv_files/'
+FILE_LOCATION = r'./all_data/yearly_files/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 
 HEADER_ROWS = 12
@@ -404,47 +408,50 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
     return {'sql': sql_text, 'data': values}
 
 
-def read_report_file(file_name,
-                     vendor):  # reads a specific csv/tsv file and returns the report type and the values for inserting
+def read_report_file(file_name, vendor,
+                     year):  # reads a specific csv/tsv file and returns the report type and the values for inserting
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8')
+    reader = csv.reader(file, delimiter='\t', quotechar='\"')
     results = {}
     if file.mode == 'r':
-        lines = file.readlines()
         header = {}
-        for line in lines[:HEADER_ROWS - 1]:  # reads header row data
-            cells = line.strip().split(delimiter)
-            key = cells[0].strip().lower()
+        for row in range(HEADER_ROWS):  # reads header row data
+            cells = next(reader)
+            key = cells[0].lower()
             if len(cells) > 1:
                 header[key] = cells[1].strip()
             else:
                 header[key] = None
         print(header)
         results['report'] = header['report_id']
-        column_headers = lines[HEADER_ROWS + BLANK_ROWS].strip().lower().split(delimiter)
+        for row in range(BLANK_ROWS):
+            next(reader)
+        column_headers = next(reader)
+        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        print(column_headers)
         values = []
-        for line in lines[HEADER_ROWS + BLANK_ROWS + 1:]:
-            cells = line.strip().split(delimiter)
-            month = 1
-            for column in range(len(MONTHS)):  # makes value from each month with metric > 0 for each row
-                # TODO make months columns dynamically found
-                current_column = len(column_headers) - len(MONTHS) + month - 1
-                metric = int(cells[current_column])
-                if metric > 0:
-                    value = {}
-                    for i in range(len(column_headers) - len(MONTHS) - 1):  # read rows before months
-                        value[column_headers[i]] = cells[i]  # TODO remove quotes from around strings?
-                    if not value['metric_type']:  # if no metric type column, use the metric type from header
-                        value['metric_type'] = header['metric_types']
-                    current_header = column_headers[current_column]
-                    # additional fields
-                    value['year'] = int(current_header[-4:])
-                    value['month'] = month
-                    value['metric'] = int(cells[current_column])
-                    value['vendor'] = vendor
-                    value['updated_on'] = header['created']
-                    values.append(value)
-                month += 1
+        for cells in list(reader):
+            for month in MONTHS:  # makes value from each month with metric > 0 for each row
+                month_header = MONTHS[month][:3].lower() + '-' + str(year)
+                if month_header in column_headers:
+                    current_month = column_headers.index(month_header)
+                    metric = int(cells[current_month])
+                    if metric > 0:
+                        value = {}
+                        last_column = column_headers.index(YEAR_TOTAL)
+                        for i in range(last_column):  # read rows before months
+                            value[column_headers[i]] = cells[i]
+                        if not value['metric_type']:  # if no metric type column, use the metric type from header
+                            value['metric_type'] = header['metric_types']
+                        # additional fields
+                        value['year'] = year
+                        value['month'] = month
+                        value['metric'] = int(cells[current_month])
+                        value['vendor'] = vendor
+                        value['updated_on'] = header['created']
+                        value['file'] = os.path.basename(file.name)
+                        values.append(value)
         results['values'] = values
         return results
     else:
@@ -459,7 +466,10 @@ def insert_all_files():
             directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
                               FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
             for file in os.scandir(lower_directory):
-                data.append(read_report_file(file.path, directory_data['vendor']))  # read file
+                if file.name[-4:] in DELIMITERS:
+                    print(file.name)  # testing
+                    data.append(
+                        read_report_file(file.path, directory_data['vendor'], directory_data['year']))  # read file
     replace = []
     for datum in data:  # get sql strings
         results = replace_sql_text(datum['report'], datum['values'])
@@ -477,7 +487,6 @@ def insert_all_files():
 
 def search_sql_text(report, start_year, end_year,
                     search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
-    # TODO maybe remove year requirements, just let user decide
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -490,7 +499,7 @@ def search_sql_text(report, start_year, end_year,
         for sub_clause in clause:
             sub_clauses_text.append(
                 sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-                # TODO make parameterized query
+            # TODO make parameterized query
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
@@ -540,14 +549,14 @@ def setup_database(drop_tables):
     if not os.path.exists(DATABASE_FOLDER):
         os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
-    sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
-    sql_texts.update(create_view_sql_texts(ITEM_REPORTS))
-    sql_texts.update(create_table_sql_texts(TITLE_REPORTS))
-    sql_texts.update(create_view_sql_texts(TITLE_REPORTS))
     sql_texts.update(create_table_sql_texts(DATABASE_REPORTS))
     sql_texts.update(create_view_sql_texts(DATABASE_REPORTS))
+    sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
+    sql_texts.update(create_view_sql_texts(ITEM_REPORTS))
     sql_texts.update(create_table_sql_texts(PLATFORM_REPORTS))
     sql_texts.update(create_view_sql_texts(PLATFORM_REPORTS))
+    sql_texts.update(create_table_sql_texts(TITLE_REPORTS))
+    sql_texts.update(create_view_sql_texts(TITLE_REPORTS))
     for key in sorted(sql_texts):  # testing
         print(sql_texts[key])
 

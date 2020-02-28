@@ -45,6 +45,7 @@ class SearchController:
         def restore_database():
             ManageDB.setup_database(True)
             ManageDB.insert_all_files()
+            print('done')
 
         self.restore_database_button = main_window_ui.search_restore_database_button
         self.restore_database_button.clicked.connect(restore_database)
@@ -110,12 +111,9 @@ class SearchController:
         # add to parent and clause's layout
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
-
     # TODO add import search parameters
 
-
     # TODO add export search parameters
-
 
     def search(self):  # submit search result to database and open results
         # get report type
@@ -164,8 +162,9 @@ class SearchController:
                 results = ManageDB.run_select_sql(connection, sql_text)
                 results.insert(0, headers)
                 print(results)
-                with open(file_name, 'w', newline="", encoding='utf-8') as output:
-                    output = csv.writer(output, delimiter='\t')
+                file = open(file_name, 'w', newline="", encoding='utf-8')
+                if file.mode == 'w':
+                    output = csv.writer(file, delimiter='\t', quotechar='\"')
                     for row in results:
                         output.writerow(row)
 
@@ -173,6 +172,8 @@ class SearchController:
                                           # TODO check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
                     open_file_switcher[os.name]()
+                else:
+                    print('Error: could not open file ' + file_name)
 
                 connection.close()
             else:
