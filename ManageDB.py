@@ -30,7 +30,7 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
                           {'name': 'access_method',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
-                           'reports': ('DR',)},)
+                           'reports': ('DR',)})
 
 # item report definitions
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
@@ -183,6 +183,21 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
                        'options': ('NOT NULL',),
                        'reports': ('IR',)})
 
+# platform report definitions
+PLATFORM_REPORTS = ('PR', 'PR_P1')
+PLATFORM_REPORT_FIELDS = ({'name': 'platform',
+                           'type': 'TEXT',
+                           'options': ('NOT NULL',),
+                           'reports': ('PR', 'PR_P1')},
+                          {'name': 'data_type',
+                           'type': 'TEXT',
+                           'options': ('NOT NULL',),
+                           'reports': ('PR',)},
+                          {'name': 'access_type',
+                           'type': 'TEXT',
+                           'options': ('NOT NULL',),
+                           'reports': ('PR',)})
+
 # title report definitions
 TITLE_REPORTS = ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')
 TITLE_REPORT_FIELDS = ({'name': 'title',
@@ -268,6 +283,7 @@ ALL_REPORT_FIELDS = ({'name': 'metric_type',
 
 REPORT_TYPE_SWITCHER = {'DR': {'reports': DATABASE_REPORTS, 'report_fields': DATABASE_REPORT_FIELDS},
                         'IR': {'reports': ITEM_REPORTS, 'report_fields': ITEM_REPORT_FIELDS},
+                        'PR': {'reports': PLATFORM_REPORTS, 'report_fields': PLATFORM_REPORT_FIELDS},
                         'TR': {'reports': TITLE_REPORTS, 'report_fields': TITLE_REPORT_FIELDS}}
 
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
@@ -284,10 +300,11 @@ FIELDS_NOT_IN_SEARCH = ('year',)
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 FILE_LOCATION = r'./all_data/normal_tsv_files/'
+FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 
 HEADER_ROWS = 12
 BLANK_ROWS = 1
-DELIMITERS = {'tsv': '\t', 'csv': ','}
+DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 
 def get_report_fields_list(report, is_view):
@@ -300,10 +317,12 @@ def get_report_fields_list(report, is_view):
         if not is_view or field['name'] not in FIELDS_NOT_IN_VIEWS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     if is_view:
-        fields.append({'name': YEAR_TOTAL, 'calculation': 'SUM(' + 'metric' + ')'})  # year total column
+        # year total column
+        fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'calculation': 'SUM(' + 'metric' + ')'})
         for key in sorted(MONTHS):  # month columns
-            fields.append({'name': MONTHS[key], 'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
-                key) + ' THEN ' + 'metric' + ' END), 0)'})
+            fields.append({'name': MONTHS[key], 'type': 'INTEGER',
+                           'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
+                               key) + ' THEN ' + 'metric' + ' END), 0)'})
     return fields
 
 
@@ -355,28 +374,27 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
         types[field['name']] = field['type']
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
-    values_texts = []
-    for row in data:
-        values = []
+    placeholders = []
+    for key in fields:  # gets parameter slots
+        placeholders.append('?')
+    sql_text += '(' + ', '.join(placeholders) + ');'
+    values = []
+    for row in data:  # gets data to fill parameters
+        row_values = []
         for key in fields:
             value = None
             if row.get(key):
-                if types[key] == 'TEXT':
-                    value = '\"' + row.get(key) + '\"'
-                else:
-                    value = str(row.get(key))
+                value = row.get(key)
             else:
-                value = '\"\"'
-            values.append(value)
-        values_texts.append('(' + ', '.join(values) + ')')
-    sql_text += '\n\t' + ', \n\t'.join(values_texts)
-    sql_text += ';'
-    return sql_text
+                value = ''  # if empty, use empty string
+            row_values.append(value)
+        values.append(row_values)
+    return {'sql': sql_text, 'data': values}
 
 
 def read_report_file(file_name,
                      vendor):  # reads a specific csv/tsv file and returns the report type and the values for inserting
-    delimiter = DELIMITERS[file_name[-3:]]
+    delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8')
     results = {}
     if file.mode == 'r':
@@ -402,7 +420,7 @@ def read_report_file(file_name,
                 if metric > 0:
                     value = {}
                     for i in range(len(column_headers) - len(MONTHS) - 1):  # read rows before months
-                        value[column_headers[i]] = cells[i]
+                        value[column_headers[i]] = cells[i]  # TODO remove quotes from around strings?
                     if not value['metric_type']:  # if no metric type column, use the metric type from header
                         value['metric_type'] = header['metric_types']
                     current_header = column_headers[current_column]
@@ -421,8 +439,32 @@ def read_report_file(file_name,
         return None
 
 
+def insert_all_files():
+    data = []
+    for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
+        for lower_directory in os.scandir(upper_directory):
+            directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
+                              FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
+            for file in os.scandir(lower_directory):
+                data.append(read_report_file(file.path, directory_data['vendor']))  # read file
+    replace = []
+    for datum in data:  # get sql strings
+        results = replace_sql_text(datum['report'], datum['values'])
+        replace.append(results)
+    print(replace)  # testing
+
+    connection = create_connection(DATABASE_LOCATION)  # run sql
+    if connection is not None:
+        for result in replace:
+            run_insert_sql(connection, result['sql'], result['data'])
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
 def search_sql_text(report, start_year, end_year,
                     search_parameters):  # makes the sql statement to search the database; search_parameters in POS form
+    # TODO maybe remove year requirements, just let user decide
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -435,6 +477,7 @@ def search_sql_text(report, start_year, end_year,
         for sub_clause in clause:
             sub_clauses_text.append(
                 sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
+                # TODO make parameterized query
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
@@ -461,6 +504,15 @@ def run_sql(connection, sql_text):
         print(error)
 
 
+def run_insert_sql(connection, sql_text, data):
+    try:
+        cursor = connection.cursor()
+        cursor.executemany(sql_text, data)
+        connection.commit()
+    except sqlite3.Error as error:
+        print(error)
+
+
 def run_select_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
@@ -472,7 +524,7 @@ def run_select_sql(connection, sql_text):
 
 
 def setup_database(drop_tables):
-    if not os.path.isfile(DATABASE_FOLDER):
+    if not os.path.exists(DATABASE_FOLDER):
         os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ITEM_REPORTS))
@@ -481,6 +533,8 @@ def setup_database(drop_tables):
     sql_texts.update(create_view_sql_texts(TITLE_REPORTS))
     sql_texts.update(create_table_sql_texts(DATABASE_REPORTS))
     sql_texts.update(create_view_sql_texts(DATABASE_REPORTS))
+    sql_texts.update(create_table_sql_texts(PLATFORM_REPORTS))
+    sql_texts.update(create_view_sql_texts(PLATFORM_REPORTS))
     for key in sorted(sql_texts):  # testing
         print(sql_texts[key])
 
@@ -495,7 +549,7 @@ def setup_database(drop_tables):
             run_sql(connection, sql_texts[key])
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 
 def test_insert():
@@ -504,16 +558,16 @@ def test_insert():
     replace = []
     for datum in data:
         replace.append(replace_sql_text(datum['report'], datum['values']))
-    print(replace)  # testing
+    for result in replace:
+        print(result['sql'])  # testing
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for sql in replace:
-            run_sql(connection, sql)
-        connection.commit()
+        for result in replace:
+            run_insert_sql(connection, result['sql'], result['data'])
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 
 def test_search():
@@ -528,9 +582,9 @@ def test_search():
         print(run_select_sql(connection, search))
         connection.close()
     else:
-        print("Error, no connection")
-
+        print('Error, no connection')
 
 # setup_database(True)
 # test_insert()
 # test_search()
+# insert_all_files()

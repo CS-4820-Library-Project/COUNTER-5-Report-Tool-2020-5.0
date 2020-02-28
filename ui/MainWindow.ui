@@ -1482,8 +1482,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>918</width>
-                <height>314</height>
+                <width>858</width>
+                <height>50</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1522,6 +1522,13 @@
           </property>
           <property name="text">
            <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="search_restore_database_button">
+          <property name="text">
+           <string>Restore Database</string>
           </property>
          </widget>
         </item>
