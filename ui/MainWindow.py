@@ -1014,10 +1014,13 @@ class Ui_mainWindow(object):
         self.label_40.setAlignment(QtCore.Qt.AlignCenter)
         self.label_40.setObjectName("label_40")
         self.tabWidget.addTab(self.tab, "")
-        self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.tabWidget, 2, 0, 1, 1)
+        self.helpButton = QtWidgets.QPushButton(self.centralwidget)
+        self.helpButton.setObjectName("helpButton")
+        self.gridLayout.addWidget(self.helpButton, 1, 0, 1, 1, QtCore.Qt.AlignRight)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 47))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1000, 22))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -1121,4 +1124,15 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), _translate("mainWindow", "Settings"))
         self.label_40.setText(_translate("mainWindow", "PAGE IS IN DEVELOPMENT"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("mainWindow", "Visual"))
+        self.helpButton.setText(_translate("mainWindow", "Help"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    mainWindow = QtWidgets.QMainWindow()
+    ui = Ui_mainWindow()
+    ui.setupUi(mainWindow)
+    mainWindow.show()
+    sys.exit(app.exec_())
 
