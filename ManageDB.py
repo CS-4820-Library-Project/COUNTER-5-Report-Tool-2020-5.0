@@ -281,6 +281,8 @@ ALL_REPORT_FIELDS = ({'name': 'metric_type',
                       'type': 'TEXT',
                       'options': ('NOT NULL',)})
 
+# TODO add cost tables
+
 REPORT_TYPE_SWITCHER = {'DR': {'reports': DATABASE_REPORTS, 'report_fields': DATABASE_REPORT_FIELDS},
                         'IR': {'reports': ITEM_REPORTS, 'report_fields': ITEM_REPORT_FIELDS},
                         'PR': {'reports': PLATFORM_REPORTS, 'report_fields': PLATFORM_REPORT_FIELDS},
@@ -323,6 +325,7 @@ def get_report_fields_list(report, is_view):
             fields.append({'name': MONTHS[key], 'type': 'INTEGER',
                            'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
                                key) + ' THEN ' + 'metric' + ' END), 0)'})
+    # TODO add cost table fields
     return fields
 
 
@@ -362,6 +365,15 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
+
+
+# TODO add create cost tables
+
+
+# TODO add create combined cost table views
+
+
+# TODO add create visualisation views
 
 
 def replace_sql_text(report, data):  # makes the sql statement to 'replace or insert' data into a table
@@ -415,6 +427,7 @@ def read_report_file(file_name,
             cells = line.strip().split(delimiter)
             month = 1
             for column in range(len(MONTHS)):  # makes value from each month with metric > 0 for each row
+                # TODO make months columns dynamically found
                 current_column = len(column_headers) - len(MONTHS) + month - 1
                 metric = int(cells[current_column])
                 if metric > 0:

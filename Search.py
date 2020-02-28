@@ -1,8 +1,14 @@
-import sip, csv, os, shlex
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 from datetime import date
+
+import csv
+import os
+import shlex
+import sip
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
+
 import ManageDB
 from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
+
 
 class SearchController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
@@ -103,6 +109,13 @@ class SearchController:
 
         # add to parent and clause's layout
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
+
+
+    # TODO add import search parameters
+
+
+    # TODO add export search parameters
+
 
     def search(self):  # submit search result to database and open results
         # get report type
