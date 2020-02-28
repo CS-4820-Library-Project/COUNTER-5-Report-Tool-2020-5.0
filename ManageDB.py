@@ -317,10 +317,12 @@ def get_report_fields_list(report, is_view):
         if not is_view or field['name'] not in FIELDS_NOT_IN_VIEWS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     if is_view:
-        fields.append({'name': YEAR_TOTAL, 'calculation': 'SUM(' + 'metric' + ')'})  # year total column
+        # year total column
+        fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'calculation': 'SUM(' + 'metric' + ')'})
         for key in sorted(MONTHS):  # month columns
-            fields.append({'name': MONTHS[key], 'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
-                key) + ' THEN ' + 'metric' + ' END), 0)'})
+            fields.append({'name': MONTHS[key], 'type': 'INTEGER',
+                           'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
+                               key) + ' THEN ' + 'metric' + ' END), 0)'})
     return fields
 
 
@@ -373,18 +375,18 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
     placeholders = []
-    for key in fields:
+    for key in fields:  # gets parameter slots
         placeholders.append('?')
     sql_text += '(' + ', '.join(placeholders) + ');'
     values = []
-    for row in data:
+    for row in data:  # gets data to fill parameters
         row_values = []
         for key in fields:
             value = None
             if row.get(key):
                 value = row.get(key)
             else:
-                value = ''
+                value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
     return {'sql': sql_text, 'data': values}
@@ -439,19 +441,19 @@ def read_report_file(file_name,
 
 def insert_all_files():
     data = []
-    for upper_directory in os.scandir(FILE_LOCATION):
+    for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         for lower_directory in os.scandir(upper_directory):
             directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
-                              FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}
+                              FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
             for file in os.scandir(lower_directory):
-                data.append(read_report_file(file.path, directory_data['vendor']))
+                data.append(read_report_file(file.path, directory_data['vendor']))  # read file
     replace = []
-    for datum in data:
+    for datum in data:  # get sql strings
         results = replace_sql_text(datum['report'], datum['values'])
         replace.append(results)
     print(replace)  # testing
 
-    connection = create_connection(DATABASE_LOCATION)
+    connection = create_connection(DATABASE_LOCATION)  # run sql
     if connection is not None:
         for result in replace:
             run_insert_sql(connection, result['sql'], result['data'])
@@ -579,7 +581,6 @@ def test_search():
         connection.close()
     else:
         print("Error, no connection")
-
 
 # setup_database(True)
 # test_insert()
