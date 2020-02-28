@@ -459,7 +459,7 @@ def insert_all_files():
             run_insert_sql(connection, result['sql'], result['data'])
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 
 def search_sql_text(report, start_year, end_year,
@@ -547,7 +547,7 @@ def setup_database(drop_tables):
             run_sql(connection, sql_texts[key])
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 
 def test_insert():
@@ -565,7 +565,7 @@ def test_insert():
             run_insert_sql(connection, result['sql'], result['data'])
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 
 def test_search():
@@ -580,7 +580,7 @@ def test_search():
         print(run_select_sql(connection, search))
         connection.close()
     else:
-        print("Error, no connection")
+        print('Error, no connection')
 
 # setup_database(True)
 # test_insert()

@@ -1,5 +1,5 @@
 import sip, csv, os, shlex
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 from datetime import date
 import ManageDB
 from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
@@ -136,22 +136,26 @@ class SearchController:
         for field in ManageDB.get_report_fields_list(report, True):
             headers.append(field['name'])
 
-        # get results
-        file_name = 'output.tsv'
-        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
-        if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text)
-            results.insert(0, headers)
-            print(results)
-            with open(file_name, 'w', newline="", encoding='utf-8') as output:
-                tsv_output = csv.writer(output, delimiter='\t')
-                for row in results:
-                    tsv_output.writerow(row)
-            connection.close()
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.AnyFile)
+        if dialog.exec_():
+            file_name = dialog.selectedFiles()[0]
+            connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+            if connection is not None:
+                results = ManageDB.run_select_sql(connection, sql_text)
+                results.insert(0, headers)
+                print(results)
+                with open(file_name, 'w', newline="", encoding='utf-8') as output:
+                    tsv_output = csv.writer(output, delimiter='\t')
+                    for row in results:
+                        tsv_output.writerow(row)
+                connection.close()
+
+                open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
+                                      'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
+
+                open_file_switcher[os.name]()
+            else:
+                print('Error, no connection')
         else:
-            print("Error, no connection")
-
-        open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                              'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-
-        open_file_switcher[os.name]()
+            print('Error, no file location selected')
