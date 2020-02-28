@@ -372,23 +372,22 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
         types[field['name']] = field['type']
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
-    values_texts = []
+    placeholders = []
+    for key in fields:
+        placeholders.append('?')
+    sql_text += '(' + ', '.join(placeholders) + ');'
+    values = []
     for row in data:
-        values = []
+        row_values = []
         for key in fields:
             value = None
             if row.get(key):
-                if types[key] == 'TEXT':
-                    value = '\"' + row.get(key) + '\"'
-                else:
-                    value = str(row.get(key))
+                value = row.get(key)
             else:
-                value = '\"\"'
-            values.append(value)
-        values_texts.append('(' + ', '.join(values) + ')')
-    sql_text += '\n\t' + ', \n\t'.join(values_texts)
-    sql_text += ';'
-    return sql_text
+                value = ''
+            row_values.append(value)
+        values.append(row_values)
+    return {'sql': sql_text, 'data': values}
 
 
 def read_report_file(file_name,
@@ -441,25 +440,21 @@ def read_report_file(file_name,
 def insert_all_files():
     data = []
     for upper_directory in os.scandir(FILE_LOCATION):
-        print(upper_directory.path)
-        print(upper_directory.name)
         for lower_directory in os.scandir(upper_directory):
-            print(lower_directory.path)
-            print(lower_directory.name)
             directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
                               FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}
             for file in os.scandir(lower_directory):
                 data.append(read_report_file(file.path, directory_data['vendor']))
     replace = []
     for datum in data:
-        replace.append(replace_sql_text(datum['report'], datum['values']))
+        results = replace_sql_text(datum['report'], datum['values'])
+        replace.append(results)
     print(replace)  # testing
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for sql in replace:
-            run_sql(connection, sql)
-        connection.commit()
+        for result in replace:
+            run_insert_sql(connection, result['sql'], result['data'])
         connection.close()
     else:
         print("Error, no connection")
@@ -501,6 +496,15 @@ def run_sql(connection, sql_text):
     try:
         cursor = connection.cursor()
         cursor.execute(sql_text)
+    except sqlite3.Error as error:
+        print(error)
+
+
+def run_insert_sql(connection, sql_text, data):
+    try:
+        cursor = connection.cursor()
+        cursor.executemany(sql_text, data)
+        connection.commit()
     except sqlite3.Error as error:
         print(error)
 
@@ -550,13 +554,13 @@ def test_insert():
     replace = []
     for datum in data:
         replace.append(replace_sql_text(datum['report'], datum['values']))
-    print(replace)  # testing
+    for result in replace:
+        print(result['sql'])  # testing
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for sql in replace:
-            run_sql(connection, sql)
-        connection.commit()
+        for result in replace:
+            run_insert_sql(connection, result['sql'], result['data'])
         connection.close()
     else:
         print("Error, no connection")
