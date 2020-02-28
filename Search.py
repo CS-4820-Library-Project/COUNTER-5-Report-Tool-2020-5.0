@@ -11,6 +11,7 @@ class SearchController:
         self.report_parameter = main_window_ui.search_report_parameter_combobox
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
+        self.report_parameter.addItems(ManageDB.PLATFORM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
 
         # set up start year dateedit
@@ -35,6 +36,13 @@ class SearchController:
         # set up search button
         self.search_button = main_window_ui.search_button
         self.search_button.clicked.connect(self.search)
+
+        def restore_database():
+            ManageDB.setup_database(True)
+            ManageDB.insert_all_files()
+
+        self.restore_database_button = main_window_ui.search_restore_database_button
+        self.restore_database_button.clicked.connect(restore_database)
 
         # set up add and clause button
         self.add_and_button = main_window_ui.search_add_and_button

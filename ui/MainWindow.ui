@@ -1473,7 +1473,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>858</width>
-                <height>83</height>
+                <height>50</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1512,6 +1512,13 @@
           </property>
           <property name="text">
            <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="search_restore_database_button">
+          <property name="text">
+           <string>Restore Database</string>
           </property>
          </widget>
         </item>
@@ -1951,7 +1958,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>47</height>
     </rect>
    </property>
   </widget>
