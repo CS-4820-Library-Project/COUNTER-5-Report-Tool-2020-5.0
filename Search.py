@@ -1,4 +1,4 @@
-import sip, csv, os
+import sip, csv, os, shlex
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit
 from datetime import date
 import ManageDB
@@ -155,4 +155,3 @@ class SearchController:
                               'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
 
         open_file_switcher[os.name]()
-
