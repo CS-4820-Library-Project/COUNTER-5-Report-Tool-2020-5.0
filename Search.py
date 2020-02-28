@@ -1,9 +1,8 @@
-import sip, csv
+import sip, csv, os
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit
 from datetime import date
 import ManageDB
 from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
-
 
 class SearchController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
@@ -138,15 +137,22 @@ class SearchController:
             headers.append(field['name'])
 
         # get results
+        file_name = 'output.tsv'
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text)
             results.insert(0, headers)
             print(results)
-            with open('output.tsv', 'w', newline="") as output:
+            with open(file_name, 'w', newline="", encoding='utf-8') as output:
                 tsv_output = csv.writer(output, delimiter='\t')
                 for row in results:
                     tsv_output.writerow(row)
             connection.close()
         else:
             print("Error, no connection")
+
+        open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
+                              'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
+
+        open_file_switcher[os.name]()
+
