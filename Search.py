@@ -1,13 +1,13 @@
-from datetime import date
-
 import csv
 import os
 import shlex
 import sip
 import json
+from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 
 import ManageDB
+import DataStorage
 from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
 
 
@@ -24,11 +24,11 @@ class SearchController:
 
         # set up start year dateedit
         self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
-        self.start_year_parameter.setDate(date.today())
+        self.start_year_parameter.setDate(QDate.currentDate())
 
         # set up end year dateedit
         self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
-        self.end_year_parameter.setDate(date.today())
+        self.end_year_parameter.setDate(QDate.currentDate())
 
         # set up the search clauses
         self.and_clause_parameters = None
@@ -132,8 +132,46 @@ class SearchController:
                 json.dump(parameters, file)
 
     def import_parameters(self):
-        self.refresh_clauses()
-        # TODO add import search parameters
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilter('JSON files (*.dat)')
+        if dialog.exec_():
+            fields = json.loads(DataStorage.read_json_file(dialog.selectedFiles()[0]))
+            print(fields)
+            self.report_parameter.setCurrentText(fields['report'])
+            self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))
+            self.end_year_parameter.setDate(QDate(fields['end_year'], 1, 1))
+            search_parameters = fields['search_parameters']
+            print(search_parameters)
+            # TODO search parameters
+
+            '''clauses_texts = []
+            for clause in clauses:
+                sub_clauses_text = []
+                for sub_clause in clause:
+                    sub_clauses_text.append(
+                        sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
+                    # TODO make parameterized query
+                clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
+            sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)'''
+
+            '''for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+                # iterate over and clauses
+                print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
+                or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
+                or_clauses = []
+                for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
+                    # iterate over child or clauses
+                    print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
+                    # get parameters for clause
+                    field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
+                    comparison_parameter = or_widget.findChild(QComboBox,
+                                                               'search_comparison_parameter_combobox').currentText()
+                    value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
+                    # TODO check for special characters
+                    or_clauses.append(
+                        {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
+                search_parameters.append(or_clauses)'''
 
     def search(self):  # submit search result to database and open results
         parameters = self.get_search_parameters()
@@ -184,9 +222,9 @@ class SearchController:
         # get report type
         report = self.report_parameter.currentText()
         # get start year
-        start_year = self.start_year_parameter.text()
+        start_year = int(self.start_year_parameter.text())
         # get end year
-        end_year = self.end_year_parameter.text()
+        end_year = int(self.end_year_parameter.text())
 
         search_parameters = []
         for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
