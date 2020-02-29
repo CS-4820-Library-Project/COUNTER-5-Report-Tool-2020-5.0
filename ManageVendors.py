@@ -1,5 +1,5 @@
 import csv
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
@@ -66,11 +66,19 @@ class ManageVendorsController(QObject):
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
         self.remove_vendor_button = main_window_ui.removeVendorButton
         self.add_vendor_button = main_window_ui.addVendorButton
+        self.export_vendors_button = main_window_ui.exportVendorsButton
+        # TODO(Ziheng): add export_vendors_button
+        self.import_vendors_button = main_window_ui.importVendorsButton
+        # TODO(Ziheng): add import_vendors_button
 
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
+        self.export_vendors_button.clicked.connect(self.open_custom_folder_select_dialog)
+        # TODO(Ziheng): add connection to dialog for export_vendors_button to export dir path
+        self.import_vendors_button.clicked.connect(self.open_file_select_dialog)
+        # TODO(Ziheng): add connection to dialog for import_vendors_button to import file
 
         self.vendor_list_view = main_window_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
@@ -305,3 +313,20 @@ class ManageVendorsController(QObject):
 
         except Exception as e:
             print(f"File export failed: {e}")
+
+    def open_file_select_dialog(self):
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_():
+            selected_file_path = dialog.selectedFiles()[0]
+        self.import_vendors_tsv(selected_file_path)
+        # TODO(Ziheng): add method to open dialog to choose and import vendors file. Pass selected_file_path to import_vendors_tsv()
+
+
+    def open_custom_folder_select_dialog(self):
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+        self.export_vendors_tsv(directory)
+        # TODO(Ziheng): add method to open dialog to export the vendor data. Pass directory to export_vendors_tsv()
