@@ -4,6 +4,7 @@ import csv
 import os
 import shlex
 import sip
+import json
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 
 import ManageDB
@@ -42,6 +43,33 @@ class SearchController:
         self.search_button = main_window_ui.search_button
         self.search_button.clicked.connect(self.search)
 
+        # set up export button
+        def export_parameters():
+            parameters = self.get_search_parameters()
+            print(parameters)
+            dialog = QFileDialog()
+            dialog.setFileMode(QFileDialog.AnyFile)
+            dialog.setAcceptMode(QFileDialog.AcceptSave)
+            dialog.setNameFilter('JSON files (*.dat)')
+            if dialog.exec_():
+                file_name = dialog.selectedFiles()[0]
+                if file_name[-4:].lower() != '.dat' and file_name != '':
+                    file_name += '.tsv'
+                file = open(file_name, 'w', encoding='utf-8')
+                if file.mode == 'w':
+                    json.dump(parameters, file)
+
+        self.export_button = main_window_ui.search_export_button
+        self.export_button.clicked.connect(export_parameters)
+
+        # set up import button
+        def import_parameters():
+            self.refresh_clauses(main_window_ui)  # TODO set search parameters to those in file
+
+        self.import_button = main_window_ui.search_import_button
+        self.import_button.clicked.connect(import_parameters)
+
+        # set up restore database button
         def restore_database():
             ManageDB.setup_database(True)
             ManageDB.insert_all_files()
@@ -116,42 +144,20 @@ class SearchController:
     # TODO add export search parameters
 
     def search(self):  # submit search result to database and open results
-        # get report type
-        report = self.report_parameter.currentText()
-        # get start year
-        start_year = self.start_year_parameter.text()
-        # get end year
-        end_year = self.end_year_parameter.text()
-
-        search_parameters = []
-        for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
-            # iterate over and clauses
-            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
-            or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
-            or_clauses = []
-            for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
-                # iterate over child or clauses
-                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
-                # get parameters for clause
-                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
-                comparison_parameter = or_widget.findChild(QComboBox,
-                                                           'search_comparison_parameter_combobox').currentText()
-                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
-                # TODO check for special characters
-                or_clauses.append(
-                    {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
-            search_parameters.append(or_clauses)
+        parameters = self.get_search_parameters()
 
         # sql query to get search results
-        sql_text = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
+        sql_text = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+                                            parameters['end_year'], parameters['search_parameters'])
         print(sql_text)  # testing
 
         headers = []
-        for field in ManageDB.get_report_fields_list(report, True):
+        for field in ManageDB.get_report_fields_list(parameters['report'], True):
             headers.append(field['name'])
 
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
         dialog.setNameFilter('TSV files (*.tsv)')
         if dialog.exec_():
             file_name = dialog.selectedFiles()[0]
@@ -180,3 +186,33 @@ class SearchController:
                 print('Error, no connection')
         else:
             print('Error, no file location selected')
+
+    def get_search_parameters(self):
+        # get report type
+        report = self.report_parameter.currentText()
+        # get start year
+        start_year = self.start_year_parameter.text()
+        # get end year
+        end_year = self.end_year_parameter.text()
+
+        search_parameters = []
+        for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+            # iterate over and clauses
+            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
+            or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
+            or_clauses = []
+            for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
+                # iterate over child or clauses
+                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
+                # get parameters for clause
+                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
+                comparison_parameter = or_widget.findChild(QComboBox,
+                                                           'search_comparison_parameter_combobox').currentText()
+                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
+                # TODO check for special characters
+                or_clauses.append(
+                    {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
+            search_parameters.append(or_clauses)
+
+        return {'report': report, 'start_year': start_year, 'end_year': end_year,
+                'search_parameters': search_parameters}

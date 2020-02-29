@@ -27,6 +27,13 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0" alignment="Qt::AlignRight">
+     <widget class="QPushButton" name="helpButton">
+      <property name="text">
+       <string>Help</string>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="enabled">
@@ -48,7 +55,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -1482,8 +1489,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>858</width>
-                <height>50</height>
+                <width>815</width>
+                <height>44</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1513,23 +1520,65 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="search_button">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QFrame" name="frame_14">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="text">
-           <string>Search</string>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="search_restore_database_button">
-          <property name="text">
-           <string>Restore Database</string>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="2" column="5">
+            <widget class="QCheckBox" name="search_open_results_checkbox">
+             <property name="text">
+              <string>Open Results</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="search_export_button">
+             <property name="text">
+              <string>Export Search</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="5">
+            <widget class="QPushButton" name="search_restore_database_button">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Restore Database</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="search_import_button">
+             <property name="text">
+              <string>Import Search</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="2">
+            <widget class="QPushButton" name="search_button">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Search</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1960,13 +2009,6 @@
       </widget>
      </widget>
     </item>
-    <item row="1" column="0" alignment="Qt::AlignRight">
-     <widget class="QPushButton" name="helpButton">
-      <property name="text">
-       <string>Help</string>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1975,7 +2017,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>47</height>
     </rect>
    </property>
   </widget>
