@@ -118,6 +118,9 @@ class ManageVendorsController(QObject):
         if self.selected_index < 0:
             print("No vendor selected")
             return
+        if self.name_line_edit.text() == "":
+            self.show_message("Require a name for vendor")
+            return
 
         # Check if changing name to another vendor's name
         name = self.name_line_edit.text()
@@ -160,7 +163,10 @@ class ManageVendorsController(QObject):
         companies_edit = vendor_dialog_ui.companiesEdit
 
         def attempt_add_vendor():
-            vendor = Vendor(name_edit.text(),
+            if name_edit.text() == "":
+                self.show_message("Require a name for vendor")
+            else:
+                vendor = Vendor(name_edit.text(),
                             customer_id_edit.text(),
                             base_url_edit.text(),
                             requestor_id_edit.text(),
@@ -170,19 +176,19 @@ class ManageVendorsController(QObject):
                             description_edit.toPlainText(),
                             companies_edit.toPlainText())
 
-            if self.add_vendor(vendor):
-                self.sort_vendors()
-                self.selected_index = -1
-                self.update_vendors_ui()
-                self.populate_edit_vendor_view()
-                self.vendors_changed_signal.emit(self.vendors)
-                self.save_all_vendors_to_disk()
-            else:
-                print(f"Vendor '{vendor.name}' already exists")
+                if self.add_vendor(vendor):
+                    self.sort_vendors()
+                    self.selected_index = -1
+                    self.update_vendors_ui()
+                    self.populate_edit_vendor_view()
+                    self.vendors_changed_signal.emit(self.vendors)
+                    self.save_all_vendors_to_disk()
+
+                else:
+                    print(f"Vendor '{vendor.name}' already exists")
 
         button_box = vendor_dialog_ui.buttonBox
         button_box.accepted.connect(attempt_add_vendor)
-
         vendor_dialog.exec_()
 
     # TODO(Ziheng) add method to open dialog to choose vendors file to import. Pass file path to import_vendors_tsv()
