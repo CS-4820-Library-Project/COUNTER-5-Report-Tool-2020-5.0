@@ -196,7 +196,7 @@ class ManageVendorsController(QObject):
         dialog.setFileMode(QFileDialog.ExistingFile)
         if dialog.exec_():
             selected_file_path = dialog.selectedFiles()[0]
-        self.import_vendors_tsv(selected_file_path)
+            self.import_vendors_tsv(selected_file_path)
     # TODO(Ziheng) add method to open dialog to choose vendors file to import. Pass file path to import_vendors_tsv()
 
     def open_custom_folder_select_dialog(self):
@@ -204,7 +204,7 @@ class ManageVendorsController(QObject):
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
-        self.export_vendors_tsv(directory)
+            self.export_vendors_tsv(directory)
     # TODO(Ziheng) add method to open dialog to choose where to export the vendor. Pass directory path to export_vendors_tsv()
 
     def populate_edit_vendor_view(self):
