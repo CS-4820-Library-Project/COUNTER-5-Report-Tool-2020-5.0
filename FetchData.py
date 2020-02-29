@@ -1,6 +1,5 @@
 from enum import Enum
-from os import path, makedirs
-import os
+from os import path, makedirs, system
 import csv
 import json
 import requests
@@ -910,7 +909,7 @@ class FetchReportsAbstract:
             if(platform.system()=="Windows"):
                 webbrowser.open(path.realpath(file_path))
             elif(platform.system()=="Darwin"):
-                os.system("open " + shlex.quote(file_path))
+                system("open " + shlex.quote(file_path))
         else:
             show_message(f"\'{file_path}\' does not exist")
 
