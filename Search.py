@@ -13,6 +13,8 @@ from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
 
 class SearchController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+        self.main_window = main_window_ui
+
         # set up report types combobox
         self.report_parameter = main_window_ui.search_report_parameter_combobox
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
@@ -30,14 +32,10 @@ class SearchController:
 
         # set up the search clauses
         self.and_clause_parameters = None
-
-        def refresh_clauses():
-            self.refresh_clauses(main_window_ui)
-
-        refresh_clauses()
+        self.refresh_clauses()
 
         # resets the search clauses when the report type is changed
-        self.report_parameter.currentTextChanged.connect(refresh_clauses)
+        self.report_parameter.currentTextChanged.connect(self.refresh_clauses)
 
         # set up search button
         self.search_button = main_window_ui.search_button
@@ -46,48 +44,25 @@ class SearchController:
         self.open_results_checkbox = main_window_ui.search_open_results_checkbox
 
         # set up export button
-        def export_parameters():
-            parameters = self.get_search_parameters()
-            print(parameters)
-            dialog = QFileDialog()
-            dialog.setFileMode(QFileDialog.AnyFile)
-            dialog.setAcceptMode(QFileDialog.AcceptSave)
-            dialog.setNameFilter('JSON files (*.dat)')
-            if dialog.exec_():
-                file_name = dialog.selectedFiles()[0]
-                if file_name[-4:].lower() != '.dat' and file_name != '':
-                    file_name += '.tsv'
-                file = open(file_name, 'w', encoding='utf-8')
-                if file.mode == 'w':
-                    json.dump(parameters, file)
-
         self.export_button = main_window_ui.search_export_button
-        self.export_button.clicked.connect(export_parameters)
+        self.export_button.clicked.connect(self.export_parameters)
 
         # set up import button
-        def import_parameters():
-            self.refresh_clauses(main_window_ui)  # TODO set search parameters to those in file
-
         self.import_button = main_window_ui.search_import_button
-        self.import_button.clicked.connect(import_parameters)
+        self.import_button.clicked.connect(self.import_parameters)
 
         # set up restore database button
-        def restore_database():
-            ManageDB.setup_database(True)
-            ManageDB.insert_all_files()
-            print('done')
-
         self.restore_database_button = main_window_ui.search_restore_database_button
-        self.restore_database_button.clicked.connect(restore_database)
+        self.restore_database_button.clicked.connect(self.restore_database)
 
         # set up add and clause button
         self.add_and_button = main_window_ui.search_add_and_button
         self.add_and_button.clicked.connect(self.add_and_clause)
 
-    def refresh_clauses(self, main_window_ui: MainWindow.Ui_mainWindow):  # resets the search clauses
+    def refresh_clauses(self):  # resets the search clauses
         self.and_clause_parameters = QFrame()
         self.and_clause_parameters.setLayout(QVBoxLayout())
-        main_window_ui.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
+        self.main_window.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
         self.add_and_clause()
 
     def add_and_clause(self):
@@ -141,9 +116,24 @@ class SearchController:
         # add to parent and clause's layout
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
-    # TODO add import search parameters
+    def export_parameters(self):
+        parameters = self.get_search_parameters()
+        print(parameters)
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setNameFilter('JSON files (*.dat)')
+        if dialog.exec_():
+            file_name = dialog.selectedFiles()[0]
+            if file_name[-4:].lower() != '.dat' and file_name != '':
+                file_name += '.tsv'
+            file = open(file_name, 'w', encoding='utf-8')
+            if file.mode == 'w':
+                json.dump(parameters, file)
 
-    # TODO add export search parameters
+    def import_parameters(self):
+        self.refresh_clauses()
+        # TODO add import search parameters
 
     def search(self):  # submit search result to database and open results
         parameters = self.get_search_parameters()
@@ -219,3 +209,7 @@ class SearchController:
 
         return {'report': report, 'start_year': start_year, 'end_year': end_year,
                 'search_parameters': search_parameters}
+
+    def restore_database(self):
+        ManageDB.insert_all_files()
+        print('done')
