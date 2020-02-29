@@ -43,6 +43,8 @@ class SearchController:
         self.search_button = main_window_ui.search_button
         self.search_button.clicked.connect(self.search)
 
+        self.open_results_checkbox = main_window_ui.search_open_results_checkbox
+
         # set up export button
         def export_parameters():
             parameters = self.get_search_parameters()
@@ -177,7 +179,8 @@ class SearchController:
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
                                           # TODO check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    open_file_switcher[os.name]()
+                    if self.open_results_checkbox.isChecked():
+                        open_file_switcher[os.name]()
                 else:
                     print('Error: could not open file ' + file_name)
 
