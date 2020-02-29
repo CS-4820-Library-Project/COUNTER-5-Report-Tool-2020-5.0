@@ -322,7 +322,6 @@ class ManageVendorsController(QObject):
         self.import_vendors_tsv(selected_file_path)
         # TODO(Ziheng): add method to open dialog to choose and import vendors file. Pass selected_file_path to import_vendors_tsv()
 
-
     def open_custom_folder_select_dialog(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
