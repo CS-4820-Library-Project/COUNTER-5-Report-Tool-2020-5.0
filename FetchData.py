@@ -1,9 +1,11 @@
 from enum import Enum
 from os import path, makedirs
+import os
 import csv
 import json
 import requests
 import webbrowser
+import shlex
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
@@ -904,7 +906,7 @@ class FetchReportsAbstract:
 
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
-            webbrowser.open(path.realpath(file_path))
+            os.system("open " + shlex.quote(file_path))
         else:
             show_message(f"\'{file_path}\' does not exist")
 
