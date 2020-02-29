@@ -1,6 +1,6 @@
 import shutil
 import webbrowser
-from os import path, makedirs
+from os import path, makedirs, system
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
@@ -9,6 +9,8 @@ from ui import MainWindow, MessageDialog, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
+import platform
+import shlex
 
 
 class ProcessResult:
@@ -200,7 +202,10 @@ class ImportFileController:
 
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
-            webbrowser.open(path.realpath(file_path))
+            if(platform.system()=="Windows"):
+                webbrowser.open(path.realpath(file_path))
+            elif(platform.system()=="Darwin"):
+                system("open " + shlex.quote(file_path))
         else:
             self.show_message(f"\'{file_path}\' does not exist")
 
