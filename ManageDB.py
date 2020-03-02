@@ -470,18 +470,16 @@ def insert_all_files():
             for file in os.scandir(lower_directory):
                 if file.name[-4:] in DELIMITERS:
                     print(file.name)  # testing
-                    data.append(
-                        read_report_file(file.path, directory_data['vendor'], directory_data['year']))  # read file
-    replace = []
-    for datum in data:  # get sql strings
-        results = replace_sql_text(datum['file'], datum['report'], datum['values'])
-        replace.append(results)
-    print(replace)  # testing
+                    insert_single_file(file.path, directory_data['vendor'], directory_data['year'])
 
-    connection = create_connection(DATABASE_LOCATION)  # run sql
+
+def insert_single_file(file_path, vendor, year):
+    data = read_report_file(file_path, vendor, year)
+    replace = replace_sql_text(data['file'], data['report'], data['values'])
+
+    connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for result in replace:
-            run_insert_sql(connection, result['sql_delete'], result['sql_replace'], result['data'])
+        run_insert_sql(connection, replace['sql_delete'], replace['sql_replace'], replace['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -579,22 +577,6 @@ def setup_database(drop_tables):
         print('Error, no connection')
 
 
-def test_insert():  # testing
-    data = [read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO', 2019),
-            read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_TR_B2.tsv', 'EBSCO', 2019)]
-    replace = []
-    for datum in data:
-        replace.append(replace_sql_text(datum['file'], datum['report'], datum['values']))
-
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        for result in replace:
-            run_insert_sql(connection, result['sql_delete'], result['sql_replace'], result['data'])
-        connection.close()
-    else:
-        print('Error, no connection')
-
-
 def test_search():  # testing
     search = search_sql_text('DR_D1', 2019, 2019,
                              [[{'field': 'database', 'comparison': 'like', 'value': '19th Century%'}],
@@ -610,6 +592,5 @@ def test_search():  # testing
         print('Error, no connection')
 
 # setup_database(True)
-# test_insert()
 # test_search()
 # insert_all_files()
