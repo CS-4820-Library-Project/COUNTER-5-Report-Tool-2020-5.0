@@ -30,13 +30,6 @@ class SearchController:
         self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
         self.end_year_parameter.setDate(QDate.currentDate())
 
-        # set up the search clauses
-        self.and_clause_parameters = None
-        self.refresh_clauses()
-
-        # resets the search clauses when the report type is changed
-        self.report_parameter.currentTextChanged.connect(self.refresh_clauses)
-
         # set up search button
         self.search_button = main_window_ui.search_button
         self.search_button.clicked.connect(self.search)
@@ -56,22 +49,31 @@ class SearchController:
         self.restore_database_button.clicked.connect(self.restore_database)
 
         # set up add and clause button
+        def add_and_and_or_clause():
+            and_clause = self.add_and_clause()
+            self.add_or_clause(and_clause)
+
         self.add_and_button = main_window_ui.search_add_and_button
-        self.add_and_button.clicked.connect(self.add_and_clause)
+        self.add_and_button.clicked.connect(add_and_and_or_clause)
+
+        # resets the search clauses when the report type is changed
+        def refresh_and_add_clauses():
+            self.refresh_clauses()
+            add_and_and_or_clause()
+        self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
+
+        self.and_clause_parameters = None
+        refresh_and_add_clauses()
 
     def refresh_clauses(self):  # resets the search clauses
         self.and_clause_parameters = QFrame()
         self.and_clause_parameters.setLayout(QVBoxLayout())
         self.main_window.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
-        self.add_and_clause()
 
     def add_and_clause(self):
         and_clause = QFrame()
         and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
-
-        # add one blank clause
-        self.add_or_clause(and_clause_ui)
 
         # set up add or clause button
         def add_or_to_this_and():
@@ -88,6 +90,8 @@ class SearchController:
 
         # add to the layout
         self.and_clause_parameters.layout().addWidget(and_clause)
+
+        return and_clause_ui
 
     def add_or_clause(self, and_clause):
         or_clause = QFrame()
@@ -116,7 +120,9 @@ class SearchController:
         # add to parent and clause's layout
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
-    def export_parameters(self):
+        return or_clause_ui
+
+    def export_parameters(self): # export current search parameters to selected file
         parameters = self.get_search_parameters()
         print(parameters)
         dialog = QFileDialog()
@@ -131,7 +137,7 @@ class SearchController:
             if file.mode == 'w':
                 json.dump(parameters, file)
 
-    def import_parameters(self):
+    def import_parameters(self): # import search parameters from selected file
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilter('JSON files (*.dat)')
@@ -141,37 +147,16 @@ class SearchController:
             self.report_parameter.setCurrentText(fields['report'])
             self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))
             self.end_year_parameter.setDate(QDate(fields['end_year'], 1, 1))
-            search_parameters = fields['search_parameters']
-            print(search_parameters)
-            # TODO search parameters
-
-            '''clauses_texts = []
+            clauses = fields['search_parameters']
+            print(clauses)
+            self.refresh_clauses()
             for clause in clauses:
-                sub_clauses_text = []
+                and_clause = self.add_and_clause()
                 for sub_clause in clause:
-                    sub_clauses_text.append(
-                        sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-                    # TODO make parameterized query
-                clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
-            sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)'''
-
-            '''for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
-                # iterate over and clauses
-                print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
-                or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
-                or_clauses = []
-                for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
-                    # iterate over child or clauses
-                    print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
-                    # get parameters for clause
-                    field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
-                    comparison_parameter = or_widget.findChild(QComboBox,
-                                                               'search_comparison_parameter_combobox').currentText()
-                    value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
-                    # TODO check for special characters
-                    or_clauses.append(
-                        {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
-                search_parameters.append(or_clauses)'''
+                    or_clause = self.add_or_clause(and_clause)
+                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'])
+                    or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause['comparison'])
+                    or_clause.search_value_parameter_lineedit.setText(sub_clause['value'])
 
     def search(self):  # submit search result to database and open results
         parameters = self.get_search_parameters()
