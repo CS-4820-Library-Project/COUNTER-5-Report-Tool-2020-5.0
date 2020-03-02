@@ -461,16 +461,17 @@ def read_report_file(file_name, vendor,
         return None
 
 
-def insert_all_files():
-    data = []
+def get_all_reports():
+    reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         for lower_directory in os.scandir(upper_directory):
             directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
                               FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
             for file in os.scandir(lower_directory):
                 if file.name[-4:] in DELIMITERS:
-                    print(file.name)  # testing
-                    insert_single_file(file.path, directory_data['vendor'], directory_data['year'])
+                    reports.append({'file': file.path, 'vendor': directory_data['vendor'],
+                                  'year': directory_data['year']})
+    return reports
 
 
 def insert_single_file(file_path, vendor, year):
@@ -590,7 +591,3 @@ def test_search():  # testing
         connection.close()
     else:
         print('Error, no connection')
-
-# setup_database(True)
-# test_search()
-# insert_all_files()

@@ -234,5 +234,9 @@ class SearchController:
                 'search_parameters': search_parameters}
 
     def restore_database(self):
-        ManageDB.insert_all_files()
+        ManageDB.setup_database(True)
+        reports = ManageDB.get_all_reports()
+        for report in reports:
+            print(os.path.basename(report['file']))
+            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
         print('done')
