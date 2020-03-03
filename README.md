@@ -5,7 +5,7 @@ The required packages are PyQt5 and requests.
 
 The project's UI is developed using PyQt
 
-# Setup Instructions
+# Setup Instructions (Windows)
 - Install Python 3.8.2 [https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe]
 ### Add Python to environment variables [https://datatofish.com/add-python-to-windows-path/]
 - Open control panel
