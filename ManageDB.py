@@ -380,20 +380,20 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
 # TODO add create visualisation views
 
 
-def replace_sql_text(report, data):  # makes the sql statement to 'replace or insert' data into a table
-    sql_text = 'REPLACE INTO ' + report + '('
+def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
+    sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report, False)
     fields = []
     types = {}
     for field in report_fields:  # fields specific to this report
         fields.append(field['name'])
         types[field['name']] = field['type']
-    sql_text += ', '.join(fields) + ')'
-    sql_text += '\nVALUES'
+    sql_replace_text += ', '.join(fields) + ')'
+    sql_replace_text += '\nVALUES'
     placeholders = []
     for key in fields:  # gets parameter slots
         placeholders.append('?')
-    sql_text += '(' + ', '.join(placeholders) + ');'
+    sql_replace_text += '(' + ', '.join(placeholders) + ');'
     values = []
     for row in data:  # gets data to fill parameters
         row_values = []
@@ -405,14 +405,15 @@ def replace_sql_text(report, data):  # makes the sql statement to 'replace or in
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql': sql_text, 'data': values}
+    sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = \"' + file_name + '\";'
+    return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
 
 
 def read_report_file(file_name, vendor,
                      year):  # reads a specific csv/tsv file and returns the report type and the values for inserting
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8')
-    reader = csv.reader(file, delimiter='\t', quotechar='\"')
+    reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     results = {}
     if file.mode == 'r':
         header = {}
@@ -424,6 +425,7 @@ def read_report_file(file_name, vendor,
             else:
                 header[key] = None
         print(header)
+        results['file'] = os.path.basename(file.name)
         results['report'] = header['report_id']
         for row in range(BLANK_ROWS):
             next(reader)
@@ -459,27 +461,26 @@ def read_report_file(file_name, vendor,
         return None
 
 
-def insert_all_files():
-    data = []
+def get_all_reports():
+    reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         for lower_directory in os.scandir(upper_directory):
             directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
                               FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
             for file in os.scandir(lower_directory):
                 if file.name[-4:] in DELIMITERS:
-                    print(file.name)  # testing
-                    data.append(
-                        read_report_file(file.path, directory_data['vendor'], directory_data['year']))  # read file
-    replace = []
-    for datum in data:  # get sql strings
-        results = replace_sql_text(datum['report'], datum['values'])
-        replace.append(results)
-    print(replace)  # testing
+                    reports.append({'file': file.path, 'vendor': directory_data['vendor'],
+                                  'year': directory_data['year']})
+    return reports
 
-    connection = create_connection(DATABASE_LOCATION)  # run sql
+
+def insert_single_file(file_path, vendor, year):
+    data = read_report_file(file_path, vendor, year)
+    replace = replace_sql_text(data['file'], data['report'], data['values'])
+
+    connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for result in replace:
-            run_insert_sql(connection, result['sql'], result['data'])
+        run_insert_sql(connection, replace['sql_delete'], replace['sql_replace'], replace['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -526,10 +527,13 @@ def run_sql(connection, sql_text):
         print(error)
 
 
-def run_insert_sql(connection, sql_text, data):
+def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
     try:
         cursor = connection.cursor()
-        cursor.executemany(sql_text, data)
+        print(sql_delete_text)
+        cursor.execute(sql_delete_text)
+        print(sql_insert_text)
+        cursor.executemany(sql_insert_text, data)
         connection.commit()
     except sqlite3.Error as error:
         print(error)
@@ -574,25 +578,7 @@ def setup_database(drop_tables):
         print('Error, no connection')
 
 
-def test_insert():
-    data = [read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_DR_D1.tsv', 'EBSCO'),
-            read_report_file(FILE_LOCATION + '2019/EBSCO/2019_EBSCO_TR_B2.tsv', 'EBSCO')]
-    replace = []
-    for datum in data:
-        replace.append(replace_sql_text(datum['report'], datum['values']))
-    for result in replace:
-        print(result['sql'])  # testing
-
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        for result in replace:
-            run_insert_sql(connection, result['sql'], result['data'])
-        connection.close()
-    else:
-        print('Error, no connection')
-
-
-def test_search():
+def test_search():  # testing
     search = search_sql_text('DR_D1', 2019, 2019,
                              [[{'field': 'database', 'comparison': 'like', 'value': '19th Century%'}],
                               [{'field': 'publisher', 'comparison': '=', 'value': 'JSTOR'},
@@ -605,8 +591,3 @@ def test_search():
         connection.close()
     else:
         print('Error, no connection')
-
-# setup_database(True)
-# test_insert()
-# test_search()
-# insert_all_files()

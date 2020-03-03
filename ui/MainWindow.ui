@@ -1496,8 +1496,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>936</width>
-                <height>290</height>
+                <width>815</width>
+                <height>44</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1527,23 +1527,65 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="search_button">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <widget class="QFrame" name="frame_14">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="text">
-           <string>Search</string>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="search_restore_database_button">
-          <property name="text">
-           <string>Restore Database</string>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="2" column="5">
+            <widget class="QCheckBox" name="search_open_results_checkbox">
+             <property name="text">
+              <string>Open Results</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="search_export_button">
+             <property name="text">
+              <string>Export Search</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="5">
+            <widget class="QPushButton" name="search_restore_database_button">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Restore Database</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="search_import_button">
+             <property name="text">
+              <string>Import Search</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="2">
+            <widget class="QPushButton" name="search_button">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Search</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
