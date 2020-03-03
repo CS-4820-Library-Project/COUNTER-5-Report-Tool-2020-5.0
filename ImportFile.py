@@ -12,6 +12,8 @@ from Settings import SettingsModel
 import platform
 import shlex
 
+import ManageDB
+
 
 class ProcessResult:
     def __init__(self, vendor: Vendor, report_type: str):
@@ -132,6 +134,9 @@ class ImportFileController:
 
             self.verify_path_exists(dest_file_dir)
             self.copy_file(self.selected_file_path, dest_file_path)
+
+            # Add file to database
+            ManageDB.insert_single_file(dest_file_path, vendor.name, int(self.date.toString('yyyy')))
 
             process_result.file_dir = dest_file_dir
             process_result.file_name = dest_file_name

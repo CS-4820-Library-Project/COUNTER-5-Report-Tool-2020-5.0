@@ -470,7 +470,7 @@ def get_all_reports():
             for file in os.scandir(lower_directory):
                 if file.name[-4:] in DELIMITERS:
                     reports.append({'file': file.path, 'vendor': directory_data['vendor'],
-                                  'year': directory_data['year']})
+                                    'year': directory_data['year']})
     return reports
 
 
