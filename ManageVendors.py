@@ -1,9 +1,10 @@
 import csv
-from PyQt5.QtWidgets import QDialog, QFileDialog
+import json
+import validators
+from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
-import json
 import DataStorage
 import webbrowser
 from JsonUtils import JsonModel
@@ -64,6 +65,11 @@ class ManageVendorsController(QObject):
         self.description_text_edit = main_window_ui.descriptionEdit
         self.companies_text_edit = main_window_ui.companiesEdit
 
+        self.name_validation_label = main_window_ui.name_validation_label
+        self.name_validation_label.hide()
+        self.url_validation_label = main_window_ui.url_validation_label
+        self.url_validation_label.hide()
+
         self.help_button = main_window_ui.helpButton
         self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
@@ -90,17 +96,62 @@ class ManageVendorsController(QObject):
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
 
         self.vendors = []
+        self.vendor_names = set()  # Hash set for faster operations
         vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
             vendor = Vendor.from_json(json_dict)
             self.vendors.append(vendor)
+            self.vendor_names.add(vendor.name.lower())
 
         self.update_vendors_ui()
 
     def on_vendor_selected(self, model_index: QModelIndex):
         self.selected_index = model_index.row()
         self.populate_edit_vendor_view()
+
+    def on_name_text_changed(self, new_name: str, original_name: str, validation_label: QLabel, validate: bool = True):
+        if not validate:
+            validation_label.hide()
+            return
+
+        is_valid, message = self.validate_new_name(new_name, original_name)
+        if is_valid:
+            validation_label.hide()
+        else:
+            validation_label.show()
+            validation_label.setText(message)
+
+    def on_url_text_changed(self, url: str, validation_label: QLabel, validate: bool = True):
+        if not validate:
+            validation_label.hide()
+            return
+
+        is_valid, message = self.validate_url(url)
+        if is_valid:
+            validation_label.hide()
+        else:
+            validation_label.show()
+            validation_label.setText(message)
+
+    def validate_new_name(self, new_name: str, original_name: str = "") -> (bool, str):
+        if not new_name:
+            return False, "Vendor name can't be empty"
+        elif new_name.lower() in self.vendor_names:
+            if original_name and original_name.lower() == new_name.lower():
+                return True, ""
+            else:
+                return False, "Duplicate vendor name"
+        else:
+            return True, ""
+
+    def validate_url(self, url: str) -> (bool, str):
+        if not validators.url(url):
+            return False, "Invalid Url"
+        elif not url.endswith("/reports"):
+            return False, "URL must end with '/reports'"
+        else:
+            return True, ""
 
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
@@ -111,33 +162,53 @@ class ManageVendorsController(QObject):
 
         self.populate_edit_vendor_view()
 
-    def add_vendor(self, new_vendor: Vendor) -> bool:
-        # Check if vendor already exists
+    def update_vendor_names(self):
+        self.vendor_names.clear()
         for vendor in self.vendors:
-            if vendor.name.lower() == new_vendor.name.lower():
-                return False
+            self.vendor_names.add(vendor.name.lower())
+
+    def add_vendor(self, new_vendor: Vendor) -> (bool, str):
+        # Check if vendor is valid
+        is_valid, message = self.validate_new_name(new_vendor.name)
+        if not is_valid:
+            return is_valid, message
+
+        if not new_vendor.is_local:
+            is_valid, message = self.validate_url(new_vendor.base_url)
+            if not is_valid:
+                return is_valid, message
 
         self.vendors.append(new_vendor)
-        return True
+        self.vendor_names.add(new_vendor.name.lower())
+
+        return True, ""
 
     def modify_vendor(self):
         if self.selected_index < 0:
             print("No vendor selected")
             return
 
-        # Check if changing name to another vendor's name
-        name = self.name_line_edit.text()
         selected_vendor = self.vendors[self.selected_index]
-        for vendor in self.vendors:
-            if vendor.name.lower() == name.lower():
-                if name.lower() != selected_vendor.name.lower():
-                    self.show_message("Vendor already exists")
-                    return
 
-        # Modify vendor
+        # Check if entries are valid
+        new_name = self.name_line_edit.text()
+        original_name = selected_vendor.name
+        is_valid, message = self.validate_new_name(new_name, original_name)
+        if not is_valid:
+            self.show_message(message)
+            return
+
+        if not self.local_only_check_box.isChecked():
+            url = self.base_url_line_edit.text()
+            is_valid, message = self.validate_url(url)
+            if not is_valid:
+                self.show_message(message)
+                return
+
+        # Apply Changes
         selected_vendor.name = self.name_line_edit.text()
-        selected_vendor.customer_id = self.customer_id_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
+        selected_vendor.customer_id = self.customer_id_line_edit.text()
         selected_vendor.requestor_id = self.requestor_id_line_edit.text()
         selected_vendor.api_key = self.api_key_line_edit.text()
         selected_vendor.platform = self.platform_line_edit.text()
@@ -146,6 +217,7 @@ class ManageVendorsController(QObject):
         selected_vendor.companies = self.companies_text_edit.toPlainText()
 
         self.update_vendors_ui()
+        self.update_vendor_names()
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
         self.show_message("Changes Saved!")
@@ -156,14 +228,24 @@ class ManageVendorsController(QObject):
         vendor_dialog_ui.setupUi(vendor_dialog)
 
         name_edit = vendor_dialog_ui.nameEdit
-        customer_id_edit = vendor_dialog_ui.customerIdEdit
         base_url_edit = vendor_dialog_ui.baseUrlEdit
+        customer_id_edit = vendor_dialog_ui.customerIdEdit
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
         local_only_check_box = vendor_dialog_ui.local_only_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
         companies_edit = vendor_dialog_ui.companiesEdit
+
+        name_validation_label = vendor_dialog_ui.name_validation_label
+        name_validation_label.hide()
+        url_validation_label = vendor_dialog_ui.url_validation_label
+        url_validation_label.hide()
+
+        name_edit.textChanged.connect(
+            lambda new_name: self.on_name_text_changed(new_name, "", name_validation_label))
+        base_url_edit.textChanged.connect(
+            lambda url: self.on_url_text_changed(url, url_validation_label))
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(),
@@ -176,18 +258,23 @@ class ManageVendorsController(QObject):
                             description_edit.toPlainText(),
                             companies_edit.toPlainText())
 
-            if self.add_vendor(vendor):
+            is_valid, message = self.add_vendor(vendor)
+            if is_valid:
                 self.sort_vendors()
                 self.selected_index = -1
                 self.update_vendors_ui()
                 self.populate_edit_vendor_view()
                 self.vendors_changed_signal.emit(self.vendors)
                 self.save_all_vendors_to_disk()
+                vendor_dialog.close()
             else:
-                print(f"Vendor '{vendor.name}' already exists")
+                self.show_message(message)
 
         button_box = vendor_dialog_ui.buttonBox
-        button_box.accepted.connect(attempt_add_vendor)
+        ok_button = button_box.button(QDialogButtonBox.Ok)
+        ok_button.clicked.connect(attempt_add_vendor)
+        cancel_button = button_box.button(QDialogButtonBox.Cancel)
+        cancel_button.clicked.connect(lambda: vendor_dialog.close())
 
         vendor_dialog.exec_()
 
@@ -197,7 +284,6 @@ class ManageVendorsController(QObject):
         if dialog.exec_():
             selected_file_path = dialog.selectedFiles()[0]
             self.import_vendors_tsv(selected_file_path)
-    # TODO(Ziheng) add method to open dialog to choose vendors file to import. Pass file path to import_vendors_tsv()
 
     def open_custom_folder_select_dialog(self):
         dialog = QFileDialog()
@@ -205,14 +291,20 @@ class ManageVendorsController(QObject):
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
             self.export_vendors_tsv(directory)
-    # TODO(Ziheng) add method to open dialog to choose where to export the vendor. Pass directory path to export_vendors_tsv()
 
     def populate_edit_vendor_view(self):
         if self.selected_index >= 0:
             selected_vendor = self.vendors[self.selected_index]
+
+            self.name_line_edit.textChanged.connect(
+                lambda new_name: self.on_name_text_changed(new_name, selected_vendor.name, self.name_validation_label))
             self.name_line_edit.setText(selected_vendor.name)
-            self.customer_id_line_edit.setText(selected_vendor.customer_id)
+
+            self.base_url_line_edit.textChanged.connect(
+                lambda url: self.on_url_text_changed(url, self.url_validation_label))
             self.base_url_line_edit.setText(selected_vendor.base_url)
+
+            self.customer_id_line_edit.setText(selected_vendor.customer_id)
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
@@ -222,7 +314,16 @@ class ManageVendorsController(QObject):
 
             self.set_edit_vendor_view_state(True)
         else:
+            self.name_line_edit.textChanged.connect(
+                lambda new_name: self.on_name_text_changed(new_name, "", self.name_validation_label, False))
             self.name_line_edit.setText("")
+            self.name_line_edit.textChanged.emit("")  # Hide validation_label if showing
+
+            self.base_url_line_edit.textChanged.connect(
+                lambda url: self.on_url_text_changed(url, self.url_validation_label, False))
+            self.base_url_line_edit.setText("")
+            self.base_url_line_edit.textChanged.emit("")
+
             self.customer_id_line_edit.setText("")
             self.base_url_line_edit.setText("")
             self.requestor_id_line_edit.setText("")
@@ -253,6 +354,7 @@ class ManageVendorsController(QObject):
                 self.selected_index = -1
 
                 self.update_vendors_ui()
+                self.update_vendor_names()
                 self.populate_edit_vendor_view()
                 self.vendors_changed_signal.emit(self.vendors)
                 self.save_all_vendors_to_disk()
@@ -283,27 +385,30 @@ class ManageVendorsController(QObject):
             tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
             reader = csv.DictReader(tsv_file, delimiter='\t')
             for row in reader:
-                is_local = row['is_local'].lower() == "true"
-                vendor = Vendor(row['name'],
-                                row['customer_id'],
-                                row['base_url'],
-                                row['requestor_id'],
-                                row['api_key'],
-                                row['platform'],
-                                is_local,
-                                row['description'],
-                                row['companies'])
-
-                if self.add_vendor(vendor):
-                    print(f"Vendor '{vendor.name}' added")
+                if 'is_local' in row:
+                    is_local = row['is_local'].lower() == "true"
                 else:
-                    print(f"Vendor '{vendor.name}' already exists")
+                    is_local = False
+                vendor = Vendor(row['name'] if 'name' in row else "",
+                                row['customer_id'] if 'customer_id' in row else "",
+                                row['base_url'] if 'base_url' in row else "",
+                                row['requestor_id'] if 'requestor_id' in row else "",
+                                row['api_key'] if 'api_key' in row else "",
+                                row['platform'] if 'platform' in row else "",
+                                is_local,
+                                row['description'] if 'description' in row else "",
+                                row['companies'] if 'companies' in row else "")
+
+                is_valid, message = self.add_vendor(vendor)
+                if not is_valid:
+                    print(message)
 
             tsv_file.close()
 
             self.sort_vendors()
             self.selected_index = -1
             self.update_vendors_ui()
+            self.update_vendor_names()
             self.populate_edit_vendor_view()
             self.vendors_changed_signal.emit(self.vendors)
             self.save_all_vendors_to_disk()
