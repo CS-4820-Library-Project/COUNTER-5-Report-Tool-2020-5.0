@@ -5,6 +5,8 @@ from ui import MainWindow, MessageDialog
 from JsonUtils import JsonModel
 import json
 import DataStorage
+import ManageDB
+import os
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
@@ -40,6 +42,8 @@ class SettingsModel(JsonModel):
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
+
+
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -80,6 +84,11 @@ class SettingsController:
         json_dict = json.loads(json_string)
         self.settings = SettingsModel.from_json(json_dict)
         # endregion
+
+        # set up restore database button
+        self.restore_database_button2 = main_window_ui.search_restore_database_button2
+        self.restore_database_button2.clicked.connect(self.restore_database2)
+        # TODO(Ziheng): move the button from Search.py to Setting.py
 
         # region Reports
         self.yearly_dir_edit = main_window_ui.yearly_directory_edit
@@ -164,3 +173,12 @@ class SettingsController:
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
+
+    def restore_database2(self):
+        ManageDB.setup_database(True)
+        reports = ManageDB.get_all_reports()
+        for report in reports:
+            print(os.path.basename(report['file']))
+            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
+        print('done')
+        # TODO(Ziheng): move the method from Search.py to Setting.py
