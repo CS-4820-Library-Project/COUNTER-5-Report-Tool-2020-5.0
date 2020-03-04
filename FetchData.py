@@ -1489,6 +1489,8 @@ class ReportWorker(QObject):
         self.save_dir = request_data.save_location
         self.attributes = request_data.attributes
 
+        self.is_yearly_dir = self.save_dir == request_data.settings.yearly_directory
+
         self.process_result = ProcessResult(self.vendor, self.report_type)
         self.retried_request = False
 
@@ -1548,7 +1550,7 @@ class ReportWorker(QObject):
     def process_response(self, response: requests.Response):
         try:
             json_string = response.text
-            self.save_json_file(self.report_type, json_string)
+            if self.is_yearly_dir: self.save_json_file(json_string)
 
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
@@ -1897,8 +1899,12 @@ class ReportWorker(QObject):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        if self.is_yearly_dir:
+            file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        else:
+            file_dir = self.save_dir
+            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
         file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):
@@ -2307,9 +2313,9 @@ class ReportWorker(QObject):
         self.process_result.file_dir = file_dir
         self.process_result.file_path = file_path
 
-    def save_json_file(self, report_type: str, json_string: str):
-        file_dir = f"{self.save_dir}json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+    def save_json_file(self, json_string: str):
+        file_dir = f"{self.save_dir}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{self.report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):
