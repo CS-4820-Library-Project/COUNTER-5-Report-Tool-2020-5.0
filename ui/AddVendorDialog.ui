@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>464</height>
+    <height>548</height>
    </rect>
   </property>
   <property name="font">
@@ -31,13 +31,17 @@
    </item>
    <item row="0" column="0">
     <widget class="QFrame" name="frame">
-     <layout class="QFormLayout" name="formLayout">
-      <property name="horizontalSpacing">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="spacing">
        <number>20</number>
       </property>
-      <property name="verticalSpacing">
-       <number>20</number>
-      </property>
+      <item row="1" column="1">
+       <widget class="QLabel" name="name_validation_label">
+        <property name="text">
+         <string>Validation label</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -45,10 +49,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="baseUrlEdit"/>
+      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="nameEdit"/>
       </item>
-      <item row="1" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Customer ID</string>
@@ -62,63 +69,77 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Requestor ID (oprtional)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>API Key (optional)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Platform (optional)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="customerIdEdit"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="baseUrlEdit"/>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="requestorIdEdit"/>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="apiKeyEdit"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="platformEdit"/>
-      </item>
-      <item row="7" column="0">
+      <item row="9" column="0" alignment="Qt::AlignTop">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Description</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QPlainTextEdit" name="descriptionEdit"/>
+      <item row="10" column="1">
+       <widget class="QPlainTextEdit" name="companiesEdit"/>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Platform (optional)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0" alignment="Qt::AlignTop">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>External Companies</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="customerIdEdit"/>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="apiKeyEdit"/>
       </item>
       <item row="6" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>API Key (optional)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="platformEdit"/>
+      </item>
+      <item row="9" column="1">
+       <widget class="QPlainTextEdit" name="descriptionEdit"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="requestorIdEdit"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Requestor ID (oprtional)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>Local Only Vendor</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="local_only_check_box">
         <property name="text">
          <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="url_validation_label">
+        <property name="text">
+         <string>Validation label</string>
         </property>
        </widget>
       </item>
@@ -128,38 +149,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>addVendorDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>addVendorDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

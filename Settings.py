@@ -1,3 +1,4 @@
+from enum import Enum
 from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from ui import MainWindow, MessageDialog
@@ -8,51 +9,57 @@ import DataStorage
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
 
+
+class Setting(Enum):
+    YEARLY_DIR = 0
+    OTHER_DIR = 1
+    REQUEST_INTERVAL = 2
+    REQUEST_TIMEOUT = 3
+    CONCURRENT_VENDORS = 4
+    CONCURRENT_REPORTS = 5
+    EMPTY_CELL = 6
+
+
 # Default Settings
-GENERAL_TSV_DIR = "./all_data/general_tsv_files/"
-SPECIAL_TSV_DIR = "./all_data/special_tsv_files/"
-GENERAL_JSON_DIR = "./all_data/general_json_files/"
-SPECIAL_JSON_DIR = "./all_data/special_json_files/"
+YEARLY_DIR = "./all_data/yearly_files/"
+OTHER_DIR = "./all_data/other_files/"
 REQUEST_INTERVAL = 3  # Seconds
-CONCURRENT_VENDOR_PROCESSES = 5
-CONCURRENT_REPORT_PROCESSES = 5
+REQUEST_TIMEOUT = 120  # Seconds
+CONCURRENT_VENDORS = 5
+CONCURRENT_REPORTS = 5
 EMPTY_CELL = ""
 
 
 class SettingsModel(JsonModel):
-    def __init__(self, general_tsv_directory: str, special_tsv_directory: str, general_json_directory: str,
-                 special_json_directory: str, request_interval: int, concurrent_vendors: int,
-                 concurrent_reports: int, empty_cell: str):
-        self.general_tsv_directory = general_tsv_directory
-        self.special_tsv_directory = special_tsv_directory
-        self.general_json_directory = general_json_directory
-        self.special_json_directory = special_json_directory
+    def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
+                 concurrent_vendors: int, concurrent_reports: int, empty_cell: str):
+        self.yearly_directory = yearly_directory
+        self.other_directory = other_directory
         self.request_interval = request_interval
+        self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
 
     @classmethod
     def from_json(cls, json_dict: dict):
-        general_tsv_directory = json_dict["general_tsv_directory"]\
-            if "general_tsv_directory" in json_dict else GENERAL_TSV_DIR
-        special_tsv_directory = json_dict["special_tsv_directory"]\
-            if "special_tsv_directory" in json_dict else SPECIAL_TSV_DIR
-        general_json_directory = json_dict["general_json_directory"]\
-            if "general_json_directory" in json_dict else GENERAL_JSON_DIR
-        special_json_directory = json_dict["special_json_directory"]\
-            if "special_json_directory" in json_dict else SPECIAL_JSON_DIR
+        yearly_directory = json_dict["yearly_directory"]\
+            if "yearly_directory" in json_dict else YEARLY_DIR
+        other_directory = json_dict["other_directory"]\
+            if "other_directory" in json_dict else OTHER_DIR
         request_interval = int(json_dict["request_interval"])\
             if "request_interval" in json_dict else REQUEST_INTERVAL
+        request_timeout = int(json_dict["request_timeout"])\
+            if "request_timeout" in json_dict else REQUEST_TIMEOUT
         concurrent_vendors = int(json_dict["concurrent_vendors"])\
-            if "concurrent_vendors" in json_dict else CONCURRENT_VENDOR_PROCESSES
+            if "concurrent_vendors" in json_dict else CONCURRENT_VENDORS
         concurrent_reports = int(json_dict["concurrent_reports"])\
-            if "concurrent_reports" in json_dict else CONCURRENT_REPORT_PROCESSES
+            if "concurrent_reports" in json_dict else CONCURRENT_REPORTS
         empty_cell = json_dict["empty_cell"]\
             if "empty_cell" in json_dict else EMPTY_CELL
 
-        return cls(general_tsv_directory, special_tsv_directory, general_json_directory, special_json_directory,
-                   request_interval, concurrent_vendors, concurrent_reports, empty_cell)
+        return cls(yearly_directory, other_directory, request_interval, request_timeout, concurrent_vendors,
+                   concurrent_reports, empty_cell)
 
 
 def show_message(message: str):
@@ -69,64 +76,53 @@ def show_message(message: str):
 class SettingsController:
     def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
         # region General
-        settings_json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
-        settings_dict = json.loads(settings_json_string)
-        self.settings = SettingsModel.from_json(settings_dict)
+        json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
+        json_dict = json.loads(json_string)
+        self.settings = SettingsModel.from_json(json_dict)
         # endregion
 
         # region Reports
-        self.general_tsv_dir_edit = main_window_ui.general_tsv_directory_edit
-        self.special_tsv_dir_edit = main_window_ui.special_tsv_directory_edit
-        self.general_json_dir_edit = main_window_ui.general_json_directory_edit
-        self.special_json_dir_edit = main_window_ui.special_json_directory_edit
+        self.yearly_dir_edit = main_window_ui.yearly_directory_edit
+        self.other_dir_edit = main_window_ui.other_directory_edit
 
-        main_window_ui.general_tsv_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog("general_tsv_directory"))
-        main_window_ui.special_tsv_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog("special_tsv_directory"))
-        main_window_ui.general_json_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog("general_json_directory"))
-        main_window_ui.special_json_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog("special_json_directory"))
+        main_window_ui.yearly_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog(Setting.YEARLY_DIR))
+        main_window_ui.other_directory_button.clicked.connect(
+            lambda: self.open_file_select_dialog(Setting.OTHER_DIR))
 
-        self.general_tsv_dir_edit.setText(self.settings.general_tsv_directory)
-        self.special_tsv_dir_edit.setText(self.settings.special_tsv_directory)
-        self.general_json_dir_edit.setText(self.settings.general_json_directory)
-        self.special_json_dir_edit.setText(self.settings.special_json_directory)
-        main_window_ui.request_interval_edit.setText(str(self.settings.request_interval))
-        main_window_ui.concurrent_vendors_edit.setText(str(self.settings.concurrent_vendors))
-        main_window_ui.concurrent_reports_edit.setText(str(self.settings.concurrent_reports))
+        self.yearly_dir_edit.setText(self.settings.yearly_directory)
+        self.other_dir_edit.setText(self.settings.other_directory)
+        main_window_ui.request_interval_spin_box.setValue(self.settings.request_interval)
+        main_window_ui.request_timeout_spin_box.setValue(self.settings.request_timeout)
+        main_window_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
+        main_window_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
         main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
 
-        self.general_tsv_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("general_tsv_directory", text))
-        self.special_tsv_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("special_tsv_directory", text))
-        self.general_json_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("general_json_directory", text))
-        self.special_json_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("special_json_directory", text))
-        main_window_ui.request_interval_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("request_interval", text))
-        main_window_ui.concurrent_vendors_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("concurrent_vendors", text))
-        main_window_ui.concurrent_reports_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("concurrent_reports", text))
+        self.yearly_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed(Setting.YEARLY_DIR, text))
+        self.other_dir_edit.textEdited.connect(
+            lambda text: self.on_setting_changed(Setting.OTHER_DIR, text))
+        main_window_ui.request_interval_spin_box.valueChanged.connect(
+            lambda value: self.on_setting_changed(Setting.REQUEST_INTERVAL, value))
+        main_window_ui.request_timeout_spin_box.valueChanged.connect(
+            lambda value: self.on_setting_changed(Setting.REQUEST_TIMEOUT, value))
+        main_window_ui.concurrent_vendors_spin_box.valueChanged.connect(
+            lambda value: self.on_setting_changed(Setting.CONCURRENT_VENDORS, value))
+        main_window_ui.concurrent_reports_spin_box.valueChanged.connect(
+            lambda value: self.on_setting_changed(Setting.CONCURRENT_REPORTS, value))
         main_window_ui.empty_cell_edit.textEdited.connect(
-            lambda text: self.on_setting_changed("empty_cell", text))
+            lambda text: self.on_setting_changed(Setting.EMPTY_CELL, text))
         # endregion
 
         # region Reports Help Messages
-        main_window_ui.general_tsv_directory_help_button.clicked.connect(
-            lambda: show_message("This is where reports from the 'Fetch Reports' tab will be saved by default"))
-        main_window_ui.special_tsv_directory_help_button.clicked.connect(
-            lambda: show_message("This is where reports from the 'Fetch Special Reports' tab will be saved by default"))
-        main_window_ui.general_json_directory_help_button.clicked.connect(
-            lambda: show_message("This is where JSON from the 'Fetch Reports' tab will be saved by default"))
-        main_window_ui.special_json_directory_help_button.clicked.connect(
-            lambda: show_message("This is where JSON from the 'Fetch Special Reports' tab will be saved by default"))
+        main_window_ui.yearly_directory_help_button.clicked.connect(
+            lambda: show_message("This is where yearly files will be saved by default"))
+        main_window_ui.other_directory_help_button.clicked.connect(
+            lambda: show_message("This is where special and non-yearly files will be saved by default"))
         main_window_ui.request_interval_help_button.clicked.connect(
-            lambda: show_message("The amount of time to wait between each vendor's requests"))
+            lambda: show_message("The amount of time to wait between a vendor's report requests"))
+        main_window_ui.request_timeout_help_button.clicked.connect(
+            lambda: show_message("The amount of time to wait before cancelling a request"))
         main_window_ui.concurrent_vendors_help_button.clicked.connect(
             lambda: show_message("The maximum number of vendors to work on at the same time"))
         main_window_ui.concurrent_reports_help_button.clicked.connect(
@@ -135,39 +131,33 @@ class SettingsController:
             lambda: show_message("Empty cells will be replaced by whatever is in here"))
         # endregion
 
-    def on_setting_changed(self, setting_key: str, setting_value: str):
-        if setting_key == "general_tsv_directory":
-            self.settings.general_tsv_directory = setting_value
-        elif setting_key == "special_tsv_directory":
-            self.settings.special_tsv_directory = setting_value
-        if setting_key == "general_json_directory":
-            self.settings.general_json_directory = setting_value
-        elif setting_key == "special_json_directory":
-            self.settings.special_json_directory = setting_value
-        elif setting_key == "request_interval":
+    def on_setting_changed(self, setting: Setting, setting_value):
+        if setting == Setting.YEARLY_DIR:
+            self.settings.yearly_directory = setting_value
+        elif setting == Setting.OTHER_DIR:
+            self.settings.other_directory = setting_value
+        elif setting == Setting.REQUEST_INTERVAL:
             self.settings.request_interval = int(setting_value)
-        elif setting_key == "concurrent_vendors":
+        elif setting == Setting.REQUEST_TIMEOUT:
+            self.settings.request_timeout = int(setting_value)
+        elif setting == Setting.CONCURRENT_VENDORS:
             self.settings.concurrent_vendors = int(setting_value)
-        elif setting_key == "concurrent_reports":
+        elif setting == Setting.CONCURRENT_REPORTS:
             self.settings.concurrent_reports = int(setting_value)
-        elif setting_key == "empty_cell":
+        elif setting == Setting.EMPTY_CELL:
             self.settings.empty_cell = setting_value
 
         self.save_settings_to_disk()
 
-    def open_file_select_dialog(self, setting: str):
+    def open_file_select_dialog(self, setting: Setting):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
-            if setting == "general_tsv_directory":
-                self.general_tsv_dir_edit.setText(directory)
-            elif setting == "special_tsv_directory":
-                self.special_tsv_dir_edit.setText(directory)
-            if setting == "general_json_directory":
-                self.general_json_dir_edit.setText(directory)
-            elif setting == "special_json_directory":
-                self.special_json_dir_edit.setText(directory)
+            if setting == Setting.YEARLY_DIR:
+                self.yearly_dir_edit.setText(directory)
+            elif setting == Setting.OTHER_DIR:
+                self.other_dir_edit.setText(directory)
 
             self.on_setting_changed(setting, directory)
 
