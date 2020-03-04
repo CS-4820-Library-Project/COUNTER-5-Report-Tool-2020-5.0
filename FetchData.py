@@ -670,6 +670,8 @@ class FetchReportsAbstract:
         self.total_processes = 0
         self.begin_date = QDate()
         self.end_date = QDate()
+        self.selected_attributes = None
+        self.save_dir = ""
         self.is_cancelling = False
         self.settings = settings
         # endregion
@@ -870,8 +872,8 @@ class FetchReportsAbstract:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.fetch_type,
-                                       self.settings)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.save_dir,
+                                       self.settings, self.selected_attributes)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog(progress__window_title)
@@ -1089,12 +1091,13 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
+        self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
             if self.vendors[i].is_local: continue
 
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       self.settings.yearly_directory, self.settings)
+                                       self.save_dir, self.settings)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -1138,11 +1141,12 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
-        save_dir = custom_dir if custom_dir else self.settings.yearly_directory
+        use_custom_dir = not self.is_yearly_range(self.adv_begin_date, self.adv_end_date) and custom_dir
+        self.save_dir = custom_dir if use_custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           save_dir, self.settings)
+                                           self.save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1317,10 +1321,11 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
+        self.save_dir = self.settings.other_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.other_directory, self.settings, self.selected_attributes)
+                                           self.save_dir, self.settings, self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
