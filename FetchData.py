@@ -966,7 +966,6 @@ class FetchReportsController(FetchReportsAbstract):
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         self.tool_button = main_window_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
-        self.save_checkbox = main_window_ui.save_checkbox
 
         # endregion
 
@@ -998,6 +997,16 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
+        # region Custom Date Range
+        self.custom_dir_frame = main_window_ui.custom_dir_frame
+        self.custom_dir_frame.hide()
+        self.custom_dir_edit = main_window_ui.custom_dir_edit
+        self.custom_dir_edit.setText(self.settings.other_directory)
+        self.custom_dir_button = main_window_ui.custom_dir_button
+        self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
+
+        # endregion
+
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
@@ -1009,55 +1018,18 @@ class FetchReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
             self.adv_begin_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
 
         elif date_type == "adv_end":
             self.adv_end_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
 
         elif date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1113,10 +1085,6 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
-        custom_dir = ""
-        if self.save_checkbox.isChecked():
-            custom_dir = self.open_custom_dir_dialog()
-
         if self.total_processes > 0:
             show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
@@ -1141,6 +1109,7 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
+        custom_dir = self.custom_dir_edit.text()
         use_custom_dir = not self.is_yearly_range(self.adv_begin_date, self.adv_end_date) and custom_dir
         self.save_dir = custom_dir if use_custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
@@ -1171,13 +1140,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         disclaimer_dialog.exec_()
 
-    def open_custom_dir_dialog(self) -> str:
+    def open_dir_select_dialog(self) -> str:
         directory = ""
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
         return directory
+
+    def update_custom_dir(self, directory: str):
+        if directory: self.custom_dir_edit.setText(directory)
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
