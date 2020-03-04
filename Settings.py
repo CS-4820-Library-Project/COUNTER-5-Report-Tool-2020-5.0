@@ -86,8 +86,8 @@ class SettingsController:
         # endregion
 
         # set up restore database button
-        self.restore_database_button2 = main_window_ui.search_restore_database_button2
-        self.restore_database_button2.clicked.connect(self.restore_database2)
+        self.restore_database_button = main_window_ui.search_restore_database_button
+        self.restore_database_button.clicked.connect(self.restore_database)
         # TODO(Ziheng): move the button from Search.py to Setting.py
 
         # region Reports
@@ -174,7 +174,7 @@ class SettingsController:
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
-    def restore_database2(self):
+    def restore_database(self):
         ManageDB.setup_database(True)
         reports = ManageDB.get_all_reports()
         for report in reports:
