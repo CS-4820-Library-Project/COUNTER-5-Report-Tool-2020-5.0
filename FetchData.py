@@ -50,6 +50,8 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
+PROTECTED_DIR = "./all_data/.DO_NOT_DELETE/"  # All yearly reports tsv and json are saved here in original condition as backup
+
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
@@ -1808,10 +1810,10 @@ class ReportWorker(QObject):
             for row in row_dict.values():
                 report_rows.append(row)
 
-        self.merge_sort(report_rows, major_report_type)
-        self.save_tsv_file(report_model.report_header, report_rows)
+        self.merge_sort_rows(report_rows, major_report_type)
+        self.save_tsv_files(report_model.report_header, report_rows)
 
-    def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
+    def merge_sort_rows(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
         if n < 2:
             return
@@ -1828,8 +1830,8 @@ class ReportWorker(QObject):
             number = report_rows[i]
             right.append(number)
 
-        self.merge_sort(left, major_report_type)
-        self.merge_sort(right, major_report_type)
+        self.merge_sort_rows(left, major_report_type)
+        self.merge_sort_rows(right, major_report_type)
 
         self.merge(left, right, report_rows, major_report_type)
 
@@ -1896,28 +1898,46 @@ class ReportWorker(QObject):
             j = j + 1
             k = k + 1
 
-    def save_tsv_file(self, report_header, report_rows: list):
+    def save_tsv_files(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
         if self.is_yearly_dir:
             file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        elif self.is_special:
-            file_dir = self.save_dir
-            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}_S.tsv"
         else:
             file_dir = self.save_dir
             file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
-        file_path = f"{file_dir}{file_name}"
 
+        # Save user tsv file
         if not path.isdir(file_dir):
             makedirs(file_dir)
 
+        file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
+        self.add_report_header_to_file(report_header, file)
 
-        # region Report Header
+        if not self.add_report_rows_to_file(report_type, report_rows, file):
+            self.process_result.completion_status = CompletionStatus.WARNING
 
+        file.close()
+        self.process_result.file_name = file_name
+        self.process_result.file_dir = file_dir
+        self.process_result.file_path = file_path
+
+        # Save protected tsv file
+        if self.is_yearly_dir:
+            protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
+                makedirs(protectec_file_dir)
+
+            protected_file_path = f"{protectec_file_dir}{file_name}"
+            protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
+            self.add_report_header_to_file(report_header, protected_file)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file)
+            protected_file.close()
+
+    def add_report_header_to_file(self, report_header: ReportHeaderModel, file):
         tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
         tsv_writer.writerow(["Report_ID", report_header.report_id])
@@ -1957,10 +1977,7 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-        # endregion
-
-        # region Report Body
-
+    def add_report_rows_to_file(self, report_type: str, report_rows: list, file) -> bool:
         column_names = []
         row_dicts = []
 
@@ -2301,24 +2318,13 @@ class ReportWorker(QObject):
         tsv_dict_writer.writeheader()
 
         if len(row_dicts) == 0:
-            file.close()
-            self.process_result.completion_status = CompletionStatus.WARNING
-            self.process_result.file_name = file_name
-            self.process_result.file_dir = file_dir
-            self.process_result.file_path = file_path
-            return
+            return False
 
         tsv_dict_writer.writerows(row_dicts)
-
-        # endregion
-
-        file.close()
-        self.process_result.file_name = file_name
-        self.process_result.file_dir = file_dir
-        self.process_result.file_path = file_path
+        return True
 
     def save_json_file(self, json_string: str):
-        file_dir = f"{self.save_dir}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{PROTECTED_DIR}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{self.report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
