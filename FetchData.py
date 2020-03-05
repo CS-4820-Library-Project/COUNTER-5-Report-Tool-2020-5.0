@@ -50,7 +50,7 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-PROTECTED_DIR = "./all_data/.DO_NOT_DELETE/"  # All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
 
 
 class MajorReportType(Enum):
