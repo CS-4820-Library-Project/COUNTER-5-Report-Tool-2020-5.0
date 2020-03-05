@@ -1329,6 +1329,7 @@ class VendorWorker(QObject):
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
         self.request_timeout = request_data.settings.request_timeout
+        self.user_agent = request_data.settings.user_agent
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1350,8 +1351,8 @@ class VendorWorker(QObject):
         request_url = self.vendor.base_url
 
         try:
-            # Some vendors only work if they think a web browser is making the request...(JSTOR...)
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            # Some vendors only work if they think a web browser is making the request...
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
@@ -1488,6 +1489,7 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
+        self.user_agent = request_data.settings.user_agent
         self.save_dir = request_data.save_location
         self.attributes = request_data.attributes
 
@@ -1532,7 +1534,7 @@ class ReportWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:

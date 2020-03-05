@@ -1786,6 +1786,34 @@
                  <property name="horizontalSpacing">
                   <number>10</number>
                  </property>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Report Request Interval</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="other_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_25">
+                   <property name="text">
+                    <string>Yearly Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>Other Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="7" column="2">
                   <widget class="QPushButton" name="concurrent_vendors_help_button">
                    <property name="sizePolicy">
@@ -1812,20 +1840,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="other_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_25">
-                   <property name="text">
-                    <string>Yearly Reports Directory</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="2">
                   <widget class="QPushButton" name="yearly_directory_button">
                    <property name="text">
@@ -1833,10 +1847,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="1">
-                  <widget class="QSpinBox" name="concurrent_reports_spin_box">
-                   <property name="maximum">
-                    <number>999</number>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="yearly_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -1847,10 +1861,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="yearly_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
+                 <item row="8" column="1">
+                  <widget class="QSpinBox" name="concurrent_reports_spin_box">
+                   <property name="maximum">
+                    <number>999</number>
                    </property>
                   </widget>
                  </item>
@@ -1870,13 +1884,6 @@
                    </property>
                    <property name="text">
                     <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_29">
-                   <property name="text">
-                    <string>Other Reports Directory</string>
                    </property>
                   </widget>
                  </item>
@@ -1925,46 +1932,13 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_30">
-                   <property name="text">
-                    <string>Report Request Interval</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="1">
-                  <widget class="QLineEdit" name="empty_cell_edit"/>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QPushButton" name="other_directory_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_31">
-                   <property name="text">
-                    <string>Concurrent Vendors</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QSpinBox" name="concurrent_vendors_spin_box">
+                 <item row="6" column="1">
+                  <widget class="QSpinBox" name="request_timeout_spin_box">
                    <property name="maximum">
-                    <number>999</number>
+                    <number>9999</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>30</number>
                    </property>
                   </widget>
                  </item>
@@ -1994,6 +1968,35 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="other_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="1">
+                  <widget class="QLineEdit" name="empty_cell_edit"/>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_31">
+                   <property name="text">
+                    <string>Concurrent Vendors</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="6" column="0">
                   <widget class="QLabel" name="label_37">
                    <property name="text">
@@ -2001,18 +2004,44 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
-                  <widget class="QSpinBox" name="request_timeout_spin_box">
-                   <property name="maximum">
-                    <number>9999</number>
+                 <item row="6" column="2">
+                  <widget class="QPushButton" name="request_timeout_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
                    </property>
-                   <property name="singleStep">
-                    <number>30</number>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="2">
-                  <widget class="QPushButton" name="request_timeout_help_button">
+                 <item row="7" column="1">
+                  <widget class="QSpinBox" name="concurrent_vendors_spin_box">
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="0">
+                  <widget class="QLabel" name="label_73">
+                   <property name="text">
+                    <string>User Agent</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="1">
+                  <widget class="QLineEdit" name="user_agent_edit"/>
+                 </item>
+                 <item row="11" column="2">
+                  <widget class="QPushButton" name="user_agent_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
