@@ -193,6 +193,7 @@ class SettingsController:
             files = ManageDB.get_all_reports()
             self.database_worker = ManageDB.UpdateDatabaseWorker(self.restore_database_progress_dialog, files, True)
             self.database_worker.moveToThread(self.restore_database_thread)
+            self.database_worker.worker_finished_signal.connect(self.restore_database_thread.quit)
             self.restore_database_thread.started.connect(self.database_worker.work)
             self.restore_database_thread.start()
         else:

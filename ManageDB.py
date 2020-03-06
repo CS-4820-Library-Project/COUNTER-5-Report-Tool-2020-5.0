@@ -640,7 +640,7 @@ def test_chart_search():
 
 class UpdateDatabaseWorker(QObject):
 
-    worker_finished_signal = pyqtSignal(str)
+    worker_finished_signal = pyqtSignal()
 
     def __init__(self, dialog, files, recreate_tables):
         super().__init__()
@@ -654,8 +654,8 @@ class UpdateDatabaseWorker(QObject):
     def work(self):
         status = self.dialog_ui.status_label
         progress = self.dialog_ui.progressbar
-        # scrollarea = self.dialog_ui.scrollarea
-        # scrollarea.setLayout(QVBoxLayout())
+        scrollarea = self.dialog_ui.scrollarea
+        scrollarea.setLayout(QVBoxLayout())
 
         current = 0
         if self.recreate_tables:
@@ -664,7 +664,7 @@ class UpdateDatabaseWorker(QObject):
             setup_database(True)
             current += 1
             progress.setValue(current)
-            # scrollarea.layout().addWidget(QLabel('Recreated tables'))
+            scrollarea.layout().addWidget(QLabel('Recreated tables'))
         else:
             progress.setMaximum(len(self.files))
 
@@ -673,12 +673,10 @@ class UpdateDatabaseWorker(QObject):
             filename = os.path.basename(file['file'])
             print(filename)
             insert_single_file(file['file'], file['vendor'], file['year'])
-            # scrollarea.layout().addWidget(QLabel(filename))
+            scrollarea.layout().addWidget(QLabel(filename))
             current += 1
             progress.setValue(current)
 
         status.setText('Done')
         print('done')
-
-    def notify_worker_finished(self):
-        self.worker_finished_signal.emit(self.worker_id)
+        self.worker_finished_signal.emit()
