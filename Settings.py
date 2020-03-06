@@ -3,8 +3,10 @@ from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from ui import MainWindow, MessageDialog
 from JsonUtils import JsonModel
+import os
 import json
 import DataStorage
+import ManageDB
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
@@ -142,6 +144,10 @@ class SettingsController:
                                  "error codes. Values should be separated by a space"))
         # endregion
 
+        # set up restore database button
+        self.restore_database_button = main_window_ui.settings_restore_database_button
+        self.restore_database_button.clicked.connect(self.restore_database)
+
     def on_setting_changed(self, setting: Setting, setting_value):
         if setting == Setting.YEARLY_DIR:
             self.settings.yearly_directory = setting_value
@@ -177,3 +183,12 @@ class SettingsController:
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
+
+    def restore_database(self):
+        # TODO add progress dialog
+        ManageDB.setup_database(True)
+        reports = ManageDB.get_all_reports()
+        for report in reports:
+            print(os.path.basename(report['file']))
+            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
+        print('done')

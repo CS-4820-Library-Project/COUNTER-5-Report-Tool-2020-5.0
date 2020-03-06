@@ -41,10 +41,6 @@ class SearchController:
         self.import_button = main_window_ui.search_import_button
         self.import_button.clicked.connect(self.import_parameters)
 
-        # set up restore database button
-        self.restore_database_button = main_window_ui.search_restore_database_button
-        self.restore_database_button.clicked.connect(self.restore_database)
-
         # set up add and clause button
         def add_and_and_or_clause():
             and_clause = self.add_and_clause()
@@ -229,12 +225,3 @@ class SearchController:
 
         return {'report': report, 'start_year': start_year, 'end_year': end_year,
                 'search_parameters': search_parameters}
-
-    def restore_database(self):
-        # TODO add progress dialog
-        ManageDB.setup_database(True)
-        reports = ManageDB.get_all_reports()
-        for report in reports:
-            print(os.path.basename(report['file']))
-            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
-        print('done')
