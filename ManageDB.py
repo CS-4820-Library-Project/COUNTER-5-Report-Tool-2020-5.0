@@ -1,6 +1,10 @@
 import sqlite3
 import os
 import csv
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QVBoxLayout, QLabel
+
+from ui import RestoreDatabaseProgressDialog
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -584,3 +588,43 @@ def setup_database(drop_tables):
         connection.close()
     else:
         print('Error, no connection')
+
+
+class UpdateDatabaseWorker(QObject):
+
+    def __init__(self, dialog, files, recreate_tables):
+        super().__init__()
+        self.recreate_tables = recreate_tables
+        self.dialog = dialog
+        self.files = files
+        self.dialog_ui = RestoreDatabaseProgressDialog.Ui_restore_database_dialog()
+        self.dialog_ui.setupUi(self.dialog)
+        self.dialog.show()
+
+    def work(self):
+        status = self.dialog_ui.status_label
+        progress = self.dialog_ui.progressbar
+        scrollarea = self.dialog_ui.scrollarea
+        scrollarea.setLayout(QVBoxLayout())
+
+        current = 0
+        if self.recreate_tables:
+            status.setText('Recreating tables...')
+            progress.setMaximum(len(self.files) + 1)
+            setup_database(True)
+            current += 1
+            scrollarea.layout().addWidget(QLabel('Recreated tables'))
+        else:
+            progress.setMaximum(len(self.files))
+
+        status.setText('Filling tables...')
+        for file in self.files:
+            filename = os.path.basename(file['file'])
+            print(filename)
+            insert_single_file(file['file'], file['vendor'], file['year'])
+            scrollarea.layout().addWidget(QLabel(filename))
+            current += 1
+            progress.setValue(current)
+
+        status.setText('Done')
+        print('done')

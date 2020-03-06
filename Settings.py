@@ -1,9 +1,8 @@
 from enum import Enum
-from PyQt5.QtCore import Qt, QObject, pyqtSignal
+from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from ui import MainWindow, MessageDialog
 from JsonUtils import JsonModel
-import os
 import json
 import DataStorage
 import ManageDB
@@ -146,7 +145,10 @@ class SettingsController:
 
         # set up restore database button
         self.restore_database_button = main_window_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.restore_database)
+        self.restore_database_progress_dialog = None
+        self.restore_database_thread = None
+        self.database_worker = None
+        self.restore_database_button.clicked.connect(self.run_restore_database_thread)
 
     def on_setting_changed(self, setting: Setting, setting_value):
         if setting == Setting.YEARLY_DIR:
@@ -184,11 +186,14 @@ class SettingsController:
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
-    def restore_database(self):
-        # TODO add progress dialog
-        ManageDB.setup_database(True)
-        reports = ManageDB.get_all_reports()
-        for report in reports:
-            print(os.path.basename(report['file']))
-            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
-        print('done')
+    def run_restore_database_thread(self):
+        if self.restore_database_thread is None:
+            self.restore_database_thread = QThread()
+            self.restore_database_progress_dialog = QDialog()
+            files = ManageDB.get_all_reports()
+            self.database_worker = ManageDB.UpdateDatabaseWorker(self.restore_database_progress_dialog, files, True)
+            self.database_worker.moveToThread(self.restore_database_thread)
+            self.restore_database_thread.started.connect(self.database_worker.work)
+            self.restore_database_thread.start()
+        else:
+            print('Error, already running')
