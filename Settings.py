@@ -187,14 +187,32 @@ class SettingsController:
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
     def run_restore_database_thread(self):
-        if self.restore_database_thread is None:
-            self.restore_database_thread = QThread()
-            self.restore_database_progress_dialog = QDialog()
-            files = ManageDB.get_all_reports()
+        if self.restore_database_thread is None:  # check if already running
+            self.restore_database_thread = QThread()  # create thread
+
+            self.restore_database_progress_dialog = QDialog()  # create dialog
+
+            files = ManageDB.get_all_reports()  # get list of all files
+
+            # create database worker
             self.database_worker = ManageDB.UpdateDatabaseWorker(self.restore_database_progress_dialog, files, True)
-            self.database_worker.moveToThread(self.restore_database_thread)
-            self.database_worker.worker_finished_signal.connect(self.restore_database_thread.quit)
+
+            self.database_worker.moveToThread(self.restore_database_thread)  # move database worker to thread
+
+            # set up finished signal
+            self.database_worker.worker_finished_signal.connect(self.on_restore_database_thread_finish)
+
+            # start worker on thread start
             self.restore_database_thread.started.connect(self.database_worker.work)
-            self.restore_database_thread.start()
+
+            self.restore_database_thread.start()  # start the thread
         else:
             print('Error, already running')
+
+    def on_restore_database_thread_finish(self, code):
+        print(code)  # testing
+
+        # exit thread
+        self.restore_database_thread.quit()
+        self.restore_database_thread.wait()
+        self.restore_database_thread = None

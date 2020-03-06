@@ -4,7 +4,7 @@ import csv
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QVBoxLayout, QLabel
 
-from ui import RestoreDatabaseProgressDialog
+from ui import UpdateDatabaseProgressDialog
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -640,14 +640,14 @@ def test_chart_search():
 
 class UpdateDatabaseWorker(QObject):
 
-    worker_finished_signal = pyqtSignal()
+    worker_finished_signal = pyqtSignal(int)
 
     def __init__(self, dialog, files, recreate_tables):
         super().__init__()
         self.recreate_tables = recreate_tables
         self.dialog = dialog
         self.files = files
-        self.dialog_ui = RestoreDatabaseProgressDialog.Ui_restore_database_dialog()
+        self.dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
         self.dialog_ui.setupUi(self.dialog)
         self.dialog.show()
 
@@ -679,4 +679,4 @@ class UpdateDatabaseWorker(QObject):
 
         status.setText('Done')
         print('done')
-        self.worker_finished_signal.emit()
+        self.worker_finished_signal.emit(0)
