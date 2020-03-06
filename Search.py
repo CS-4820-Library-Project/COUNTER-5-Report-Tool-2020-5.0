@@ -17,10 +17,7 @@ class SearchController:
 
         # set up report types combobox
         self.report_parameter = main_window_ui.search_report_parameter_combobox
-        self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
-        self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
-        self.report_parameter.addItems(ManageDB.PLATFORM_REPORTS)
-        self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
+        self.report_parameter.addItems(ManageDB.ALL_REPORTS)
 
         # set up start year dateedit
         self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
@@ -100,7 +97,7 @@ class SearchController:
 
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
-        for field in ManageDB.get_report_fields_list(self.report_parameter.currentText(), True):
+        for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
             if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'])
 
@@ -167,7 +164,7 @@ class SearchController:
         print(sql_text)  # testing
 
         headers = []
-        for field in ManageDB.get_report_fields_list(parameters['report'], True):
+        for field in ManageDB.get_view_report_fields_list(parameters['report']):
             headers.append(field['name'])
 
         dialog = QFileDialog()
@@ -234,6 +231,7 @@ class SearchController:
                 'search_parameters': search_parameters}
 
     def restore_database(self):
+        # TODO add progress dialog
         ManageDB.setup_database(True)
         reports = ManageDB.get_all_reports()
         for report in reports:
