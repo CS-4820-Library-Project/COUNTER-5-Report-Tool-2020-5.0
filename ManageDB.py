@@ -464,13 +464,15 @@ def read_report_file(file_name, vendor,
 def get_all_reports():
     reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
-        for lower_directory in os.scandir(upper_directory):
-            directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
-                              FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
-            for file in os.scandir(lower_directory):
-                if file.name[-4:] in DELIMITERS:
-                    reports.append({'file': file.path, 'vendor': directory_data['vendor'],
-                                    'year': directory_data['year']})
+        if upper_directory.is_dir():
+            for lower_directory in os.scandir(upper_directory):
+                if lower_directory.is_dir():
+                    directory_data = {FILE_SUBDIRECTORY_ORDER[0]: upper_directory.name,
+                                      FILE_SUBDIRECTORY_ORDER[1]: lower_directory.name}  # get data from directory names
+                    for file in os.scandir(lower_directory):
+                        if file.name[-4:] in DELIMITERS:
+                            reports.append({'file': file.path, 'vendor': directory_data['vendor'],
+                                            'year': directory_data['year']})
     return reports
 
 

@@ -234,6 +234,7 @@ class SearchController:
                 'search_parameters': search_parameters}
 
     def restore_database(self):
+        # TODO add progress dialog
         ManageDB.setup_database(True)
         reports = ManageDB.get_all_reports()
         for report in reports:
