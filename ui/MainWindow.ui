@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>640</height>
+    <height>721</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -178,35 +178,12 @@
               </item>
               <item>
                <widget class="QFrame" name="edit_vendor_details_frame">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <layout class="QFormLayout" name="formLayout">
-                 <property name="horizontalSpacing">
+                <layout class="QGridLayout" name="gridLayout_5">
+                 <property name="spacing">
                   <number>20</number>
                  </property>
-                 <property name="verticalSpacing">
-                  <number>20</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>Name</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="nameEdit"/>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Customer ID</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="customerIdEdit"/>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="baseUrlEdit"/>
                  </item>
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_3">
@@ -215,57 +192,81 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="baseUrlEdit"/>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_4">
+                 <item row="1" column="1">
+                  <widget class="QLabel" name="name_validation_label">
                    <property name="text">
-                    <string>Requestor ID</string>
+                    <string>Validation label</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="requestorIdEdit"/>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="customerIdEdit"/>
                  </item>
-                 <item row="4" column="0">
+                 <item row="8" column="0">
                   <widget class="QLabel" name="label_5">
                    <property name="text">
                     <string>API Key</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="apiKeyEdit"/>
-                 </item>
-                 <item row="5" column="0">
+                 <item row="9" column="0">
                   <widget class="QLabel" name="label_6">
                    <property name="text">
                     <string>Platform</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
+                 <item row="9" column="1">
                   <widget class="QLineEdit" name="platformEdit"/>
                  </item>
-                 <item row="6" column="0">
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Customer ID</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Name</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>Requestor ID</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="nameEdit"/>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="apiKeyEdit"/>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLineEdit" name="requestorIdEdit"/>
+                 </item>
+                 <item row="12" column="0" alignment="Qt::AlignTop">
+                  <widget class="QLabel" name="companiesText">
+                   <property name="text">
+                    <string>External Companies</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="0">
                   <widget class="QLabel" name="label_39">
                    <property name="text">
                     <string>Local Only Vendor</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
-                  <widget class="QCheckBox" name="local_only_check_box"/>
+                 <item row="12" column="1">
+                  <widget class="QPlainTextEdit" name="companiesEdit"/>
                  </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_28">
-                   <property name="text">
-                    <string>Description</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
+                 <item row="11" column="1">
                   <widget class="QPlainTextEdit" name="descriptionEdit">
                    <property name="autoFillBackground">
                     <bool>false</bool>
@@ -287,15 +288,22 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="0">
-                  <widget class="QLabel" name="companiesText">
+                 <item row="10" column="1">
+                  <widget class="QCheckBox" name="local_only_check_box"/>
+                 </item>
+                 <item row="11" column="0" alignment="Qt::AlignTop">
+                  <widget class="QLabel" name="label_28">
                    <property name="text">
-                    <string>External Companies</string>
+                    <string>Description</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="1">
-                  <widget class="QPlainTextEdit" name="companiesEdit"/>
+                 <item row="3" column="1">
+                  <widget class="QLabel" name="url_validation_label">
+                   <property name="text">
+                    <string>Validation label</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -725,6 +733,18 @@
                     <property name="verticalSpacing">
                      <number>20</number>
                     </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_9">
                       <property name="text">
@@ -777,6 +797,69 @@
                   </widget>
                  </item>
                  <item>
+                  <widget class="QFrame" name="custom_dir_frame">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_26">
+                    <item>
+                     <widget class="QLabel" name="label_38">
+                      <property name="text">
+                       <string>Not a yearly date range</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_41">
+                      <property name="text">
+                       <string>Report(s) will be saved to:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QFrame" name="frame_39">
+                      <layout class="QHBoxLayout" name="horizontalLayout_7">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QLineEdit" name="custom_dir_edit"/>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="custom_dir_button">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="text">
+                          <string>Change</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
                   <widget class="QFrame" name="frame_13">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -788,7 +871,7 @@
                     <enum>QFrame::StyledPanel</enum>
                    </property>
                    <layout class="QGridLayout" name="gridLayout_2">
-                    <item row="2" column="1">
+                    <item row="1" column="1">
                      <widget class="QPushButton" name="fetch_advanced_button">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -804,13 +887,6 @@
                       </property>
                       <property name="text">
                        <string>Fetch Selected Reports</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QCheckBox" name="save_checkbox">
-                      <property name="text">
-                       <string>Save Elsewhere</string>
                       </property>
                      </widget>
                     </item>
@@ -1133,25 +1209,6 @@
         <string>Import File</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_21">
-        <item>
-         <widget class="QLabel" name="label_8">
-          <property name="font">
-           <font>
-            <family>Segoe UI</family>
-            <pointsize>14</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-            <underline>true</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>PAGE IS IN DEVELOPMENT</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignHCenter|Qt::AlignTop</set>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QFrame" name="frame_3">
           <property name="frameShape">
@@ -1496,8 +1553,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>815</width>
-                <height>44</height>
+                <width>936</width>
+                <height>355</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -1729,6 +1786,34 @@
                  <property name="horizontalSpacing">
                   <number>10</number>
                  </property>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_30">
+                   <property name="text">
+                    <string>Report Request Interval</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="other_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_25">
+                   <property name="text">
+                    <string>Yearly Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>Other Reports Directory</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="7" column="2">
                   <widget class="QPushButton" name="concurrent_vendors_help_button">
                    <property name="sizePolicy">
@@ -1755,20 +1840,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="other_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_25">
-                   <property name="text">
-                    <string>Yearly Reports Directory</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="2">
                   <widget class="QPushButton" name="yearly_directory_button">
                    <property name="text">
@@ -1776,10 +1847,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="1">
-                  <widget class="QSpinBox" name="concurrent_reports_spin_box">
-                   <property name="maximum">
-                    <number>999</number>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="yearly_directory_edit">
+                   <property name="readOnly">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -1790,10 +1861,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="yearly_directory_edit">
-                   <property name="readOnly">
-                    <bool>true</bool>
+                 <item row="8" column="1">
+                  <widget class="QSpinBox" name="concurrent_reports_spin_box">
+                   <property name="maximum">
+                    <number>999</number>
                    </property>
                   </widget>
                  </item>
@@ -1813,13 +1884,6 @@
                    </property>
                    <property name="text">
                     <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_29">
-                   <property name="text">
-                    <string>Other Reports Directory</string>
                    </property>
                   </widget>
                  </item>
@@ -1868,46 +1932,13 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_30">
-                   <property name="text">
-                    <string>Report Request Interval</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="1">
-                  <widget class="QLineEdit" name="empty_cell_edit"/>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QPushButton" name="other_directory_help_button">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>25</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>?</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_31">
-                   <property name="text">
-                    <string>Concurrent Vendors</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QSpinBox" name="concurrent_vendors_spin_box">
+                 <item row="6" column="1">
+                  <widget class="QSpinBox" name="request_timeout_spin_box">
                    <property name="maximum">
-                    <number>999</number>
+                    <number>9999</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>30</number>
                    </property>
                   </widget>
                  </item>
@@ -1937,6 +1968,35 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="1" column="3">
+                  <widget class="QPushButton" name="other_directory_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="1">
+                  <widget class="QLineEdit" name="empty_cell_edit"/>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="label_31">
+                   <property name="text">
+                    <string>Concurrent Vendors</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="6" column="0">
                   <widget class="QLabel" name="label_37">
                    <property name="text">
@@ -1944,18 +2004,44 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
-                  <widget class="QSpinBox" name="request_timeout_spin_box">
-                   <property name="maximum">
-                    <number>9999</number>
+                 <item row="6" column="2">
+                  <widget class="QPushButton" name="request_timeout_help_button">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
                    </property>
-                   <property name="singleStep">
-                    <number>30</number>
+                   <property name="maximumSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>?</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="2">
-                  <widget class="QPushButton" name="request_timeout_help_button">
+                 <item row="7" column="1">
+                  <widget class="QSpinBox" name="concurrent_vendors_spin_box">
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="0">
+                  <widget class="QLabel" name="label_73">
+                   <property name="text">
+                    <string>User Agent</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="11" column="1">
+                  <widget class="QLineEdit" name="user_agent_edit"/>
+                 </item>
+                 <item row="11" column="2">
+                  <widget class="QPushButton" name="user_agent_help_button">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -2031,7 +2117,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

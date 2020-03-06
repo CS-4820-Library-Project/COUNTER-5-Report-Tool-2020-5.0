@@ -50,6 +50,8 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
+PROTECTED_DIR = "./all_data/DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
+
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
@@ -670,6 +672,8 @@ class FetchReportsAbstract:
         self.total_processes = 0
         self.begin_date = QDate()
         self.end_date = QDate()
+        self.selected_attributes = None
+        self.save_dir = ""
         self.is_cancelling = False
         self.settings = settings
         # endregion
@@ -870,8 +874,8 @@ class FetchReportsAbstract:
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.fetch_type,
-                                       self.settings)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.save_dir,
+                                       self.settings, self.selected_attributes)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog(progress__window_title)
@@ -964,7 +968,6 @@ class FetchReportsController(FetchReportsAbstract):
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         self.tool_button = main_window_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
-        self.save_checkbox = main_window_ui.save_checkbox
 
         # endregion
 
@@ -996,6 +999,16 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
+        # region Custom Date Range
+        self.custom_dir_frame = main_window_ui.custom_dir_frame
+        self.custom_dir_frame.hide()
+        self.custom_dir_edit = main_window_ui.custom_dir_edit
+        self.custom_dir_edit.setText(self.settings.other_directory)
+        self.custom_dir_button = main_window_ui.custom_dir_button
+        self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
+
+        # endregion
+
     def update_vendors_ui(self):
         self.vendor_list_model.clear()
         for vendor in self.vendors:
@@ -1007,55 +1020,18 @@ class FetchReportsController(FetchReportsAbstract):
     def on_date_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
             self.adv_begin_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
 
         elif date_type == "adv_end":
             self.adv_end_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
 
         elif date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1089,12 +1065,13 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
+        self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
             if self.vendors[i].is_local: continue
 
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       self.settings.yearly_directory, self.settings)
+                                       self.save_dir, self.settings)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -1110,10 +1087,6 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
-        custom_dir = ""
-        if self.save_checkbox.isChecked():
-            custom_dir = self.open_custom_dir_dialog()
-
         if self.total_processes > 0:
             show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
@@ -1138,11 +1111,13 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
-        save_dir = custom_dir if custom_dir else self.settings.yearly_directory
+        custom_dir = self.custom_dir_edit.text()
+        use_custom_dir = not self.is_yearly_range(self.adv_begin_date, self.adv_end_date) and custom_dir
+        self.save_dir = custom_dir if use_custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           save_dir, self.settings)
+                                           self.save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1167,13 +1142,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         disclaimer_dialog.exec_()
 
-    def open_custom_dir_dialog(self) -> str:
+    def open_dir_select_dialog(self) -> str:
         directory = ""
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
         return directory
+
+    def update_custom_dir(self, directory: str):
+        if directory: self.custom_dir_edit.setText(directory)
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
@@ -1317,10 +1295,11 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
+        self.save_dir = self.settings.other_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.other_directory, self.settings, self.selected_attributes)
+                                           self.save_dir, self.settings, self.selected_attributes)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
             show_message("No vendor selected")
@@ -1350,6 +1329,7 @@ class VendorWorker(QObject):
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
         self.request_timeout = request_data.settings.request_timeout
+        self.user_agent = request_data.settings.user_agent
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1371,8 +1351,8 @@ class VendorWorker(QObject):
         request_url = self.vendor.base_url
 
         try:
-            # Some vendors only work if they think a web browser is making the request...(JSTOR...)
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            # Some vendors only work if they think a web browser is making the request...
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
@@ -1509,8 +1489,12 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
+        self.user_agent = request_data.settings.user_agent
         self.save_dir = request_data.save_location
         self.attributes = request_data.attributes
+
+        self.is_yearly_dir = self.save_dir == request_data.settings.yearly_directory
+        self.is_special = self.attributes is not None
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
         self.retried_request = False
@@ -1550,7 +1534,7 @@ class ReportWorker(QObject):
 
         try:
             # Some vendors only work if they think a web browser is making the request...
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
@@ -1571,7 +1555,7 @@ class ReportWorker(QObject):
     def process_response(self, response: requests.Response):
         try:
             json_string = response.text
-            self.save_json_file(self.report_type, json_string)
+            if self.is_yearly_dir: self.save_json_file(json_string)
 
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
@@ -1828,10 +1812,10 @@ class ReportWorker(QObject):
             for row in row_dict.values():
                 report_rows.append(row)
 
-        self.merge_sort(report_rows, major_report_type)
-        self.save_tsv_file(report_model.report_header, report_rows)
+        self.merge_sort_rows(report_rows, major_report_type)
+        self.save_tsv_files(report_model.report_header, report_rows)
 
-    def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
+    def merge_sort_rows(self, report_rows: list, major_report_type: MajorReportType):
         n = len(report_rows)
         if n < 2:
             return
@@ -1848,8 +1832,8 @@ class ReportWorker(QObject):
             number = report_rows[i]
             right.append(number)
 
-        self.merge_sort(left, major_report_type)
-        self.merge_sort(right, major_report_type)
+        self.merge_sort_rows(left, major_report_type)
+        self.merge_sort_rows(right, major_report_type)
 
         self.merge(left, right, report_rows, major_report_type)
 
@@ -1916,21 +1900,46 @@ class ReportWorker(QObject):
             j = j + 1
             k = k + 1
 
-    def save_tsv_file(self, report_header, report_rows: list):
+    def save_tsv_files(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}{file_name}"
+        if self.is_yearly_dir:
+            file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        else:
+            file_dir = self.save_dir
+            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
 
+        # Save user tsv file
         if not path.isdir(file_dir):
             makedirs(file_dir)
 
+        file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
+        self.add_report_header_to_file(report_header, file)
 
-        # region Report Header
+        if not self.add_report_rows_to_file(report_type, report_rows, file):
+            self.process_result.completion_status = CompletionStatus.WARNING
 
+        file.close()
+        self.process_result.file_name = file_name
+        self.process_result.file_dir = file_dir
+        self.process_result.file_path = file_path
+
+        # Save protected tsv file
+        if self.is_yearly_dir:
+            protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
+                makedirs(protectec_file_dir)
+
+            protected_file_path = f"{protectec_file_dir}{file_name}"
+            protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
+            self.add_report_header_to_file(report_header, protected_file)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file)
+            protected_file.close()
+
+    def add_report_header_to_file(self, report_header: ReportHeaderModel, file):
         tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
         tsv_writer.writerow(["Report_ID", report_header.report_id])
@@ -1970,10 +1979,7 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-        # endregion
-
-        # region Report Body
-
+    def add_report_rows_to_file(self, report_type: str, report_rows: list, file) -> bool:
         column_names = []
         row_dicts = []
 
@@ -2314,25 +2320,14 @@ class ReportWorker(QObject):
         tsv_dict_writer.writeheader()
 
         if len(row_dicts) == 0:
-            file.close()
-            self.process_result.completion_status = CompletionStatus.WARNING
-            self.process_result.file_name = file_name
-            self.process_result.file_dir = file_dir
-            self.process_result.file_path = file_path
-            return
+            return False
 
         tsv_dict_writer.writerows(row_dicts)
+        return True
 
-        # endregion
-
-        file.close()
-        self.process_result.file_name = file_name
-        self.process_result.file_dir = file_dir
-        self.process_result.file_path = file_path
-
-    def save_json_file(self, report_type: str, json_string: str):
-        file_dir = f"{self.save_dir}json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+    def save_json_file(self, json_string: str):
+        file_dir = f"{PROTECTED_DIR}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{self.report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):

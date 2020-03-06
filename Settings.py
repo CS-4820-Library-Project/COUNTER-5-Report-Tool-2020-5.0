@@ -18,6 +18,7 @@ class Setting(Enum):
     CONCURRENT_VENDORS = 4
     CONCURRENT_REPORTS = 5
     EMPTY_CELL = 6
+    USER_AGENT = 7
 
 
 # Default Settings
@@ -28,11 +29,12 @@ REQUEST_TIMEOUT = 120  # Seconds
 CONCURRENT_VENDORS = 5
 CONCURRENT_REPORTS = 5
 EMPTY_CELL = ""
+USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 
 
 class SettingsModel(JsonModel):
     def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
-                 concurrent_vendors: int, concurrent_reports: int, empty_cell: str):
+                 concurrent_vendors: int, concurrent_reports: int, empty_cell: str, user_agent: str):
         self.yearly_directory = yearly_directory
         self.other_directory = other_directory
         self.request_interval = request_interval
@@ -40,6 +42,7 @@ class SettingsModel(JsonModel):
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
+        self.user_agent = user_agent
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -57,9 +60,11 @@ class SettingsModel(JsonModel):
             if "concurrent_reports" in json_dict else CONCURRENT_REPORTS
         empty_cell = json_dict["empty_cell"]\
             if "empty_cell" in json_dict else EMPTY_CELL
+        user_agent = json_dict["user_agent"]\
+            if "user_agent" in json_dict else USER_AGENT
 
         return cls(yearly_directory, other_directory, request_interval, request_timeout, concurrent_vendors,
-                   concurrent_reports, empty_cell)
+                   concurrent_reports, empty_cell, user_agent)
 
 
 def show_message(message: str):
@@ -97,6 +102,7 @@ class SettingsController:
         main_window_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
         main_window_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
         main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
+        main_window_ui.user_agent_edit.setText(self.settings.user_agent)
 
         self.yearly_dir_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.YEARLY_DIR, text))
@@ -112,6 +118,8 @@ class SettingsController:
             lambda value: self.on_setting_changed(Setting.CONCURRENT_REPORTS, value))
         main_window_ui.empty_cell_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.EMPTY_CELL, text))
+        main_window_ui.user_agent_edit.textEdited.connect(
+            lambda text: self.on_setting_changed(Setting.USER_AGENT, text))
         # endregion
 
         # region Reports Help Messages
@@ -129,6 +137,9 @@ class SettingsController:
             lambda: show_message("The maximum number of reports to work on at the same time, per vendor"))
         main_window_ui.empty_cell_help_button.clicked.connect(
             lambda: show_message("Empty cells will be replaced by whatever is in here"))
+        main_window_ui.user_agent_help_button.clicked.connect(
+            lambda: show_message("Some vendors only support specific user-agents otherwise, they return error HTTP "
+                                 "error codes. Values should be separated by a space"))
         # endregion
 
     def on_setting_changed(self, setting: Setting, setting_value):
@@ -146,6 +157,8 @@ class SettingsController:
             self.settings.concurrent_reports = int(setting_value)
         elif setting == Setting.EMPTY_CELL:
             self.settings.empty_cell = setting_value
+        elif setting == Setting.USER_AGENT:
+            self.settings.user_agent = setting_value
 
         self.save_settings_to_disk()
 
