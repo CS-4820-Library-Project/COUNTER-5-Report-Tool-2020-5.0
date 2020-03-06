@@ -632,6 +632,3 @@ def test_chart_search():
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
         print(results)
-
-
-test_chart_search()
