@@ -342,6 +342,20 @@ def get_view_report_fields_list(report):
     return fields
 
 
+def get_chart_report_fields_list(report):
+    fields = []
+    name_field = REPORT_TYPE_SWITCHER[report[:2]]['report_fields'][0]
+    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if field['name'] not in FIELDS_NOT_IN_VIEWS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    for key in sorted(MONTHS):  # month columns
+        fields.append({'name': MONTHS[key], 'type': 'INTEGER',
+                       'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
+                           key) + ' THEN ' + 'metric' + ' END), 0)'})
+    return fields
+
+
 # TODO add cost table fields
 
 
@@ -387,9 +401,6 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
 
 
 # TODO add create combined cost table views
-
-
-# TODO add create visualisation views
 
 
 def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
@@ -521,6 +532,30 @@ def search_sql_text(report, start_year, end_year,
     return sql_text
 
 
+def chart_search_sql_text(report, start_year, end_year,
+                    name, metric_type):  # makes the sql statement to search the database for chart data
+    sql_text = 'SELECT'
+    chart_fields = get_chart_report_fields_list(report)
+    fields = []
+    for field in chart_fields:
+        fields.append(field['name'])
+    sql_text += '\n\t' + ', '.join(fields)
+    sql_text += '\nFROM ' + report + VIEW_SUFFIX
+    sql_text += '\nWHERE'
+    clauses = [{'field': 'year', 'comparison': '>=', 'value': start_year},
+               {'field': 'year', 'comparison': '<=', 'value': end_year},
+               {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
+               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
+    print(clauses)
+    clauses_texts = []
+    for clause in clauses:
+        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
+        # TODO make parameterized query
+    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
+    sql_text += ';'
+    return sql_text
+
+
 def create_connection(db_file):
     connection = None
     try:
@@ -584,3 +619,16 @@ def setup_database(drop_tables):
         connection.close()
     else:
         print('Error, no connection')
+
+
+def test_chart_search():
+    headers = []
+    for field in get_chart_report_fields_list('DR_D1'):
+        headers.append(field['name'])
+    sql_text = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
+    print(sql_text)
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        results = run_select_sql(connection, sql_text)
+        results.insert(0, headers)
+        print(results)
