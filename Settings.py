@@ -187,6 +187,7 @@ class SettingsController:
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
     def run_restore_database_thread(self):
+        print('run_restore_database_thread')
         if self.restore_database_thread is None:  # check if already running
             self.restore_database_thread = QThread()  # create thread
 
@@ -210,9 +211,10 @@ class SettingsController:
             print('Error, already running')
 
     def on_restore_database_thread_finish(self, code):
+        print('on_restore_database_thread_finish')
         print(code)  # testing
 
         # exit thread
         self.restore_database_thread.quit()
         self.restore_database_thread.wait()
-        self.restore_database_thread = None
+        # self.restore_database_thread = None
