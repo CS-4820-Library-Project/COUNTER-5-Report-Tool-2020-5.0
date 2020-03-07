@@ -641,44 +641,37 @@ def test_chart_search():
 class UpdateDatabaseWorker(QObject):
 
     worker_finished_signal = pyqtSignal(int)
+    status_changed_signal = pyqtSignal(str)
+    progress_changed_signal = pyqtSignal(int)
 
-    def __init__(self, dialog, files, recreate_tables):
+    def __init__(self, files, recreate_tables):
         super().__init__()
         print('__init__')
         self.recreate_tables = recreate_tables
-        self.dialog = dialog
         self.files = files
-        self.dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
-        self.dialog_ui.setupUi(self.dialog)
-        self.dialog.show()
 
     def work(self):
         print('work')
-        status = self.dialog_ui.status_label
-        progress = self.dialog_ui.progressbar
         # scrollarea = self.dialog_ui.scrollarea
         # scrollarea.setLayout(QVBoxLayout())
-
         current = 0
         if self.recreate_tables:
-            status.setText('Recreating tables...')
-            progress.setMaximum(len(self.files) + 1)
+            self.status_changed_signal.emit('Recreating tables...')
             setup_database(True)
             current += 1
-            progress.setValue(current)
+            self.progress_changed_signal.emit(current)
             # scrollarea.layout().addWidget(QLabel('Recreated tables'))
         else:
-            progress.setMaximum(len(self.files))
-
-        status.setText('Filling tables...')
+            self.progress_changed_signal.emit(len(self.files))
+        self.status_changed_signal.emit('Filling tables...')
         for file in self.files:
             filename = os.path.basename(file['file'])
             print('READ ' + filename)
             insert_single_file(file['file'], file['vendor'], file['year'])
             # scrollarea.layout().addWidget(QLabel(filename))
             current += 1
-            progress.setValue(current)
-
-        status.setText('Done')
+            self.progress_changed_signal.emit(current)
+        self.status_changed_signal.emit('Done')
         print('done')
         self.worker_finished_signal.emit(0)
+
