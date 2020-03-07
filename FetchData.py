@@ -989,13 +989,13 @@ class FetchReportsAbstract:
         self.update_task_finished_scrollarea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.update_task_finished_scrollarea.setWidget(self.update_task_finished_widget)
 
-        self.update_progress_bar.setMaximum(len(files) + 1)
+        self.update_progress_bar.setMaximum(len(files))
 
         self.update_database_progress_dialog.show()
 
         self.update_database_thread = QThread()
 
-        self.database_worker = ManageDB.UpdateDatabaseWorker(files, True)
+        self.database_worker = ManageDB.UpdateDatabaseWorker(files, False)
 
         self.database_worker.status_changed_signal.connect(lambda status: on_status_changed(status))
         self.database_worker.progress_changed_signal.connect(lambda progress: on_progress_changed(progress))
