@@ -639,6 +639,7 @@ class ProcessResult:
         self.file_name = ""
         self.file_dir = ""
         self.file_path = ""
+        self.year = ""
 
 
 class RetryLaterException(Exception):
@@ -676,6 +677,7 @@ class FetchReportsAbstract:
         self.save_dir = ""
         self.is_cancelling = False
         self.settings = settings
+        self.database_report_data = []
         # endregion
 
         # region Fetch Progress Dialog
@@ -810,6 +812,15 @@ class FetchReportsAbstract:
         worker, thread = self.vendor_workers[worker_id]
         self.update_results_ui(worker.vendor, worker.process_result, worker.report_process_results)
 
+        process_result: ProcessResult
+        for process_result in worker.report_process_results:
+            if process_result.completion_status != CompletionStatus.SUCCESSFUL:
+                continue
+
+            self.database_report_data.append({'file': process_result.file_path,
+                                              'vendor': process_result.vendor.name,
+                                              'year': process_result.year})
+
         thread.quit()
         thread.wait()
         self.vendor_workers.pop(worker_id, None)
@@ -894,6 +905,10 @@ class FetchReportsAbstract:
         self.retry_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
         self.status_label.setText("Done!")
+
+        # Update database...
+        # Reset database data
+        self.database_report_data = []
 
         self.started_processes = 0
         self.completed_processes = 0
@@ -1926,6 +1941,7 @@ class ReportWorker(QObject):
         self.process_result.file_name = file_name
         self.process_result.file_dir = file_dir
         self.process_result.file_path = file_path
+        self.process_result.year = self.begin_date.toString('yyyy')
 
         # Save protected tsv file
         if self.is_yearly_dir:
