@@ -1,6 +1,6 @@
 from enum import Enum
 from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtWidgets import QDialog, QFileDialog, QLabel, QVBoxLayout
 from ui import MainWindow, MessageDialog
 from JsonUtils import JsonModel
 import json
@@ -150,6 +150,7 @@ class SettingsController:
         self.database_worker = None
         self.restore_status_label = None
         self.restore_progress_bar = None
+        self.restore_task_finished_scrollarea = None
         self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
         self.is_restoring_database = False
 
@@ -190,7 +191,6 @@ class SettingsController:
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
     def on_restore_database_clicked(self):
-        print('on_restore_database_clicked')
         if not self.is_restoring_database:  # check if already running
             self.is_restoring_database = True
             self.restore_database()
@@ -205,12 +205,15 @@ class SettingsController:
         dialog_ui.setupUi(self.restore_database_progress_dialog)
         self.restore_status_label = dialog_ui.status_label
         self.restore_progress_bar = dialog_ui.progressbar
+        self.restore_task_finished_scrollarea = dialog_ui.scrollarea
+        self.restore_task_finished_scrollarea.setLayout(QVBoxLayout())
         self.restore_progress_bar.setMaximum(len(files) + 1)
         self.restore_database_progress_dialog.show()
         self.restore_database_thread = QThread()
         self.database_worker = ManageDB.UpdateDatabaseWorker(files, True)
         self.database_worker.status_changed_signal.connect(lambda status: on_status_changed(status))
         self.database_worker.progress_changed_signal.connect(lambda progress: on_progress_changed(progress))
+        self.database_worker.task_finished_signal.connect(lambda task: on_task_finished(task))
         self.database_worker.worker_finished_signal.connect(lambda code: on_thread_finish(code))
         self.database_worker.moveToThread(self.restore_database_thread)
         self.restore_database_thread.started.connect(self.database_worker.work)
@@ -222,8 +225,10 @@ class SettingsController:
         def on_progress_changed(progress: int):
             self.restore_progress_bar.setValue(progress)
 
+        def on_task_finished(task: str):
+            self.restore_task_finished_scrollarea.layout().addWidget(QLabel(task))
+
         def on_thread_finish(code):
-            print('on_thread_finish')
             print(code)  # testing
             # exit thread
             self.restore_database_thread.quit()

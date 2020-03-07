@@ -643,24 +643,21 @@ class UpdateDatabaseWorker(QObject):
     worker_finished_signal = pyqtSignal(int)
     status_changed_signal = pyqtSignal(str)
     progress_changed_signal = pyqtSignal(int)
+    task_finished_signal = pyqtSignal(str)
 
     def __init__(self, files, recreate_tables):
         super().__init__()
-        print('__init__')
         self.recreate_tables = recreate_tables
         self.files = files
 
     def work(self):
-        print('work')
-        # scrollarea = self.dialog_ui.scrollarea
-        # scrollarea.setLayout(QVBoxLayout())
         current = 0
         if self.recreate_tables:
             self.status_changed_signal.emit('Recreating tables...')
             setup_database(True)
             current += 1
             self.progress_changed_signal.emit(current)
-            # scrollarea.layout().addWidget(QLabel('Recreated tables'))
+            self.task_finished_signal.emit('Recreated tables')
         else:
             self.progress_changed_signal.emit(len(self.files))
         self.status_changed_signal.emit('Filling tables...')
@@ -668,10 +665,9 @@ class UpdateDatabaseWorker(QObject):
             filename = os.path.basename(file['file'])
             print('READ ' + filename)
             insert_single_file(file['file'], file['vendor'], file['year'])
-            # scrollarea.layout().addWidget(QLabel(filename))
+            self.task_finished_signal.emit(filename)
             current += 1
             self.progress_changed_signal.emit(current)
         self.status_changed_signal.emit('Done')
-        print('done')
         self.worker_finished_signal.emit(0)
 
