@@ -1,7 +1,7 @@
 from enum import Enum
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtWidgets import QDialog, QFileDialog, QLabel, QVBoxLayout, QSizePolicy, QWidget
-from ui import MainWindow, MessageDialog
+from ui import MainWindow, MessageDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 import json
 import DataStorage
@@ -210,7 +210,7 @@ class SettingsController:
 
         self.restore_database_progress_dialog = QDialog()
 
-        dialog_ui = ManageDB.UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
+        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
         dialog_ui.setupUi(self.restore_database_progress_dialog)
 
         self.restore_status_label = dialog_ui.status_label
