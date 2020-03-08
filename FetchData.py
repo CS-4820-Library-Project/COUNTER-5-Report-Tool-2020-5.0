@@ -836,7 +836,7 @@ class FetchReportsAbstract:
     def start_progress_dialog(self, window_title: str):
         self.vendor_result_widgets = {}
 
-        self.fetch_progress_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        self.fetch_progress_dialog = QDialog(flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         fetch_progress_ui = FetchProgressDialog.Ui_FetchProgressDialog()
         fetch_progress_ui.setupUi(self.fetch_progress_dialog)
         self.fetch_progress_dialog.setWindowTitle(window_title)
