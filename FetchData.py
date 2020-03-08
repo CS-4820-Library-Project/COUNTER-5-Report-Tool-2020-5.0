@@ -1394,7 +1394,11 @@ class VendorWorker(QObject):
 
         try:
             json_response = response.json()
-            self.check_for_exception(json_response)
+            exceptions = self.check_for_exception(json_response)
+            if len(exceptions) > 0:
+                self.process_result.message = exception_models_to_message(exceptions)
+                self.process_result.completion_status = CompletionStatus.FAILED
+                return
 
             json_dicts = []
             if type(json_response) is dict:  # This should never be a dict by the standard, but some vendors......
@@ -1456,15 +1460,29 @@ class VendorWorker(QObject):
         report_thread.started.connect(report_worker.work)
         report_thread.start()
 
-    def check_for_exception(self, json_response):
+    def check_for_exception(self, json_response) -> list:
+        exceptions = []
+
         if type(json_response) is dict:
             if "Exception" in json_response:
-                exception = ExceptionModel.from_json(json_response["Exception"])
-                raise Exception(f"Code: {exception.code}, Message: {exception.message}")
+                exceptions.append(ExceptionModel.from_json(json_response["Exception"]))
+                # raise Exception(f"Code: {exception.code}, Message: {exception.message}")
 
-            code = int(json_response["Code"]) if "Code" in json_response else None
-            message = json_response["Message"] if "Message" in json_response else None
-            if code is not None: raise Exception(f"Code: {code}, Message: {message}")
+            code = int(json_response["Code"]) if "Code" in json_response else ""
+            message = json_response["Message"] if "Message" in json_response else ""
+            data = json_response["Data"] if "Data" in json_response else ""
+            severity = json_response["Severity"] if "Severity" in json_response else ""
+            if code:
+                exceptions.append(ExceptionModel(code, message, severity, data))
+
+        elif type(json_response) is list:
+            for json_dict in json_response:
+                exception = ExceptionModel.from_json(json_dict)
+                if exception.code:
+                    exceptions.append(exception)
+
+        return exceptions
+
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.vendor.name)
