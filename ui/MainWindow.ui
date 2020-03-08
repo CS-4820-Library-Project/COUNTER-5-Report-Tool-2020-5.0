@@ -1471,6 +1471,9 @@
                  </item>
                  <item>
                   <widget class="QFrame" name="frame_19">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
                    <layout class="QHBoxLayout" name="horizontalLayout_13">
                     <item>
                      <spacer name="horizontalSpacer">
@@ -1554,6 +1557,9 @@
                  </item>
                  <item>
                   <widget class="QFrame" name="frame_38">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
                    <layout class="QHBoxLayout" name="horizontalLayout_15">
                     <item>
                      <widget class="QLineEdit" name="selected_file_edit">
