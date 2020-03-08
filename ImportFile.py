@@ -67,7 +67,7 @@ class ImportFileController:
         self.select_file_btn = main_window_ui.select_file_button
         self.select_file_btn.clicked.connect(self.open_file_select_dialog)
 
-        self.selected_file_label = main_window_ui.selected_file_label
+        self.selected_file_edit = main_window_ui.selected_file_edit
 
         self.import_file_button = main_window_ui.import_file_button
         self.import_file_button.clicked.connect(self.on_import_clicked)
@@ -105,7 +105,7 @@ class ImportFileController:
             self.selected_file_path = dialog.selectedFiles()[0]
             arr = self.selected_file_path.split("/")
             self.selected_file_name = arr[max(len(arr), 1) - 1]
-            self.selected_file_label.setText(self.selected_file_name)
+            self.selected_file_edit.setText(self.selected_file_name)
 
     def on_import_clicked(self):
         if self.selected_vendor_index == -1:
