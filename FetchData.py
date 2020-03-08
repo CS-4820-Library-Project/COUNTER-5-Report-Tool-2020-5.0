@@ -676,6 +676,7 @@ class FetchReportsAbstract:
         self.selected_attributes = None
         self.save_dir = ""
         self.is_cancelling = False
+        self.is_yearly_fetch = False
         self.settings = settings
         self.database_report_data = []
         # endregion
@@ -1080,6 +1081,7 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
+        self.is_yearly_fetch = True
         self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
@@ -1126,9 +1128,10 @@ class FetchReportsController(FetchReportsAbstract):
             show_message("No report type selected")
             return
 
+        self.is_yearly_fetch = self.is_yearly_range(self.adv_begin_date, self.adv_end_date)
         custom_dir = self.custom_dir_edit.text()
-        use_custom_dir = not self.is_yearly_range(self.adv_begin_date, self.adv_end_date) and custom_dir
-        self.save_dir = custom_dir if use_custom_dir else self.settings.yearly_directory
+        if not custom_dir: custom_dir = self.settings.other_directory
+        self.save_dir = custom_dir if not self.is_yearly_fetch else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
@@ -1310,6 +1313,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
+        self.is_yearly_fetch = False
         self.save_dir = self.settings.other_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
