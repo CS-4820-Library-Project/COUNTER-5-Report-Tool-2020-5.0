@@ -11,6 +11,7 @@ from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
 import platform
 import shlex
+from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 import ManageDB
 
@@ -71,6 +72,10 @@ class ImportFileController:
         self.import_file_button = main_window_ui.import_file_button
         self.import_file_button.clicked.connect(self.on_import_clicked)
         # endregion
+
+        # set up restore database button
+        self.is_restoring_database = False
+        self.update_database_dialog = UpdateDatabaseProgressDialogController()
 
     def on_vendors_changed(self, vendors: list):
         self.selected_vendor_index = -1
@@ -133,7 +138,12 @@ class ImportFileController:
             self.copy_file(self.selected_file_path, dest_file_path)
 
             # Add file to database
-            ManageDB.insert_single_file(dest_file_path, vendor.name, int(self.date.toString('yyyy')))
+            self.is_restoring_database = True
+            self.update_database_dialog.update_database([{'file': dest_file_path,
+                                                          'vendor': vendor.name,
+                                                          'year': int(self.date.toString('yyyy'))}],
+                                                        False)
+            self.is_restoring_database = False
 
             process_result.file_dir = dest_file_dir
             process_result.file_name = dest_file_name

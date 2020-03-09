@@ -1,7 +1,6 @@
 import sqlite3
 import os
 import csv
-from PyQt5.QtCore import QObject, pyqtSignal
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -729,36 +728,3 @@ def test_chart_search():
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
         print(results)
-
-
-class UpdateDatabaseWorker(QObject):
-    worker_finished_signal = pyqtSignal(int)
-    status_changed_signal = pyqtSignal(str)
-    progress_changed_signal = pyqtSignal(int)
-    task_finished_signal = pyqtSignal(str)
-
-    def __init__(self, files, recreate_tables):
-        super().__init__()
-        self.recreate_tables = recreate_tables
-        self.files = files
-
-    def work(self):
-        current = 0
-        if self.recreate_tables:
-            self.status_changed_signal.emit('Recreating tables...')
-            setup_database(True)
-            current += 1
-            self.progress_changed_signal.emit(current)
-            self.task_finished_signal.emit('Recreated tables')
-        else:
-            self.progress_changed_signal.emit(len(self.files))
-        self.status_changed_signal.emit('Filling tables...')
-        for file in self.files:
-            filename = os.path.basename(file['file'])
-            print('READ ' + filename)
-            insert_single_file(file['file'], file['vendor'], file['year'])
-            self.task_finished_signal.emit(filename)
-            current += 1
-            self.progress_changed_signal.emit(current)
-        self.status_changed_signal.emit('Done')
-        self.worker_finished_signal.emit(0)

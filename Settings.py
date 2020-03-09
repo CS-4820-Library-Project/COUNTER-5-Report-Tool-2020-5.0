@@ -6,6 +6,7 @@ from JsonUtils import JsonModel
 import json
 import DataStorage
 import ManageDB
+from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
@@ -144,22 +145,10 @@ class SettingsController:
         # endregion
 
         # set up restore database button
-        self.restore_database_button = main_window_ui.settings_restore_database_button
-
-        self.restore_database_progress_dialog = None
-
-        self.restore_database_thread = None
-
-        self.database_worker = None
-
-        self.restore_status_label = None
-        self.restore_progress_bar = None
-        self.restore_task_finished_widget = None
-        self.restore_task_finished_scrollarea = None
-
-        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
-
         self.is_restoring_database = False
+        self.update_database_dialog = UpdateDatabaseProgressDialogController()
+        self.restore_database_button = main_window_ui.settings_restore_database_button
+        self.restore_database_button.clicked.connect(self.on_restore_database)
 
     def on_setting_changed(self, setting: Setting, setting_value):
         if setting == Setting.YEARLY_DIR:
@@ -197,64 +186,10 @@ class SettingsController:
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
-    def on_restore_database_clicked(self):
+    def on_restore_database(self):
         if not self.is_restoring_database:  # check if already running
             self.is_restoring_database = True
-            self.restore_database()
+            self.update_database_dialog.update_database(ManageDB.get_all_reports(), True)
             self.is_restoring_database = False
         else:
             print('Error, already running')
-
-    def restore_database(self):
-        files = ManageDB.get_all_reports()  # get list of all files
-
-        self.restore_database_progress_dialog = QDialog()
-
-        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
-        dialog_ui.setupUi(self.restore_database_progress_dialog)
-
-        self.restore_status_label = dialog_ui.status_label
-        self.restore_progress_bar = dialog_ui.progressbar
-        self.restore_task_finished_scrollarea = dialog_ui.scrollarea
-
-        self.restore_task_finished_widget = QWidget()
-        self.restore_task_finished_widget.setLayout(QVBoxLayout())
-        self.restore_task_finished_scrollarea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.restore_task_finished_scrollarea.setWidget(self.restore_task_finished_widget)
-
-        self.restore_progress_bar.setMaximum(len(files) + 1)
-
-        self.restore_database_progress_dialog.show()
-
-        self.restore_database_thread = QThread()
-
-        self.database_worker = ManageDB.UpdateDatabaseWorker(files, True)
-
-        self.database_worker.status_changed_signal.connect(lambda status: on_status_changed(status))
-        self.database_worker.progress_changed_signal.connect(lambda progress: on_progress_changed(progress))
-        self.database_worker.task_finished_signal.connect(lambda task: on_task_finished(task))
-        self.database_worker.worker_finished_signal.connect(lambda code: on_thread_finish(code))
-
-        self.database_worker.moveToThread(self.restore_database_thread)
-
-        self.restore_database_thread.started.connect(self.database_worker.work)
-
-        self.restore_database_thread.start()
-
-        def on_status_changed(status: str):
-            self.restore_status_label.setText(status)
-
-        def on_progress_changed(progress: int):
-            self.restore_progress_bar.setValue(progress)
-
-        def on_task_finished(task: str):
-            label = QLabel(task)
-            label.setMinimumSize(label.sizeHint())
-            label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.restore_task_finished_widget.layout().addWidget(label)
-
-        def on_thread_finish(code):
-            print(code)  # testing
-            # exit thread
-            self.restore_database_thread.quit()
-            self.restore_database_thread.wait()
