@@ -21,7 +21,12 @@ class Ui_message_dialog(object):
         self.message_label.setAlignment(QtCore.Qt.AlignCenter)
         self.message_label.setObjectName("message_label")
         self.verticalLayout.addWidget(self.message_label)
+        self.buttonBox = QtWidgets.QDialogButtonBox(message_dialog)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
 
+        self.buttonBox.accepted.connect(message_dialog.accept)
         self.retranslateUi(message_dialog)
         QtCore.QMetaObject.connectSlotsByName(message_dialog)
 
