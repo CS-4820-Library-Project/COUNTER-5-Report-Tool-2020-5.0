@@ -41,7 +41,8 @@ def settings() -> Settings.SettingsModel:
                                   Settings.REQUEST_TIMEOUT,
                                   Settings.CONCURRENT_VENDORS,
                                   Settings.CONCURRENT_REPORTS,
-                                  Settings.EMPTY_CELL)
+                                  Settings.EMPTY_CELL,
+                                  Settings.USER_AGENT)
 
 
 @pytest.fixture
