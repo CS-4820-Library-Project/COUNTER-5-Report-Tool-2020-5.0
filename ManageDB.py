@@ -310,7 +310,7 @@ FIELDS_NOT_IN_SEARCH = ('year',)
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
-FILE_LOCATION = r'./all_data/yearly_files/'
+FILE_LOCATION = r'./all_data/DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 
 HEADER_ROWS = 12

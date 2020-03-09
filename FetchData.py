@@ -1048,8 +1048,6 @@ class FetchReportsAbstract:
 
         def on_task_finished(task: str):
             label = QLabel(task)
-            label.setMinimumSize(label.sizeHint())
-            label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.update_task_finished_widget.layout().addWidget(label)
 
         def on_thread_finish(code):
