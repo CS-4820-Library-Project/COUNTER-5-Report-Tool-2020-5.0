@@ -5,6 +5,7 @@ import ui.MainWindow
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
+from Costs import CostsController
 from Search import SearchController
 from Settings import SettingsController
 
@@ -41,6 +42,7 @@ if __name__ == "__main__":
                                                       main_window_ui)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
                                                                      settings_controller.settings, main_window_ui)
+    costs_controller = CostsController(main_window_ui)
     search_controller = SearchController(main_window_ui)
     import_file_controller = ImportFileController(manage_vendors_controller.vendors, settings_controller.settings,
                                                   main_window_ui)
