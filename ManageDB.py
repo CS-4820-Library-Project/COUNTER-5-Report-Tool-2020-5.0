@@ -468,8 +468,6 @@ def create_cost_table_sql_texts(report_types):
                 key_fields.append(field['name'])
         sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
         sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + ')'
-        sql_text += ',\n\tFOREIGN KEY(' + ', '.join(key_fields) + ') REFERENCES '
-        sql_text += report_type + '(' + ', '.join(key_fields) + '));'
         sql_texts[report_type + COST_TABLE_SUFFIX] = sql_text
     return sql_texts
 
@@ -737,4 +735,3 @@ class UpdateDatabaseWorker(QObject):
             self.progress_changed_signal.emit(current)
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
-
