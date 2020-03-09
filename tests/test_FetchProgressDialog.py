@@ -10,7 +10,7 @@ fetch_progress_dialog_ui = FetchProgressDialog.Ui_FetchProgressDialog()
 fetch_progress_dialog_ui.setupUi(fetch_progress_dialog)
 
 
-class MyTestCase(unittest.TestCase):
+class FetchProgressDialogTests(unittest.TestCase):
     def test_defaults(self):
         '''Test the defaults'''
         self.assertEqual(fetch_progress_dialog_ui.status_label.text(), "Fetching...")
