@@ -467,7 +467,7 @@ def create_cost_table_sql_texts(report_types):
             if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
                 key_fields.append(field['name'])
         sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
-        sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + ')'
+        sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
         sql_texts[report_type + COST_TABLE_SUFFIX] = sql_text
     return sql_texts
 
@@ -499,6 +499,34 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
         values.append(row_values)
     sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = \"' + file_name + '\";'
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
+
+
+def replace_cost_sql_text(report, data):
+    sql_replace_text = 'REPLACE INTO ' + report + COST_TABLE_SUFFIX + '('
+    report_fields = get_cost_fields_list(report)
+    fields = []
+    types = {}
+    for field in report_fields:  # fields specific to this report
+        fields.append(field['name'])
+        types[field['name']] = field['type']
+    sql_replace_text += ', '.join(fields) + ')'
+    sql_replace_text += '\nVALUES'
+    placeholders = []
+    for key in fields:  # gets parameter slots
+        placeholders.append('?')
+    sql_replace_text += '(' + ', '.join(placeholders) + ');'
+    values = []
+    for row in data:  # gets data to fill parameters
+        row_values = []
+        for key in fields:
+            value = None
+            if row.get(key):
+                value = row.get(key)
+            else:
+                value = ''  # if empty, use empty string
+            row_values.append(value)
+        values.append(row_values)
+    return {'sql_replace': sql_replace_text, 'data': values}
 
 
 def read_report_file(file_name, vendor,
@@ -648,9 +676,8 @@ def run_sql(connection, sql_text):
 def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
     try:
         cursor = connection.cursor()
-        # print(sql_delete_text)
-        cursor.execute(sql_delete_text)
-        # print(sql_insert_text)
+        if sql_delete_text:
+            cursor.execute(sql_delete_text)
         cursor.executemany(sql_insert_text, data)
         connection.commit()
     except sqlite3.Error as error:
