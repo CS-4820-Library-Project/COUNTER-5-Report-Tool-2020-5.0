@@ -62,29 +62,30 @@ def get_major_report_type(report_type: str) -> MajorReportType:
         return MajorReportType.ITEM
 
 
-SPECIAL_REPORT_OPTIONS = {MajorReportType.PLATFORM: [("data_type", str),
-                                                     ("access_method", str),
-                                                     ("exclude_monthly_details", bool)],
-                          MajorReportType.DATABASE: [("data_type", str),
-                                                     ("access_method", str),
-                                                     ("exclude_monthly_details", bool)],
-                          MajorReportType.TITLE: [("data_type", str),
-                                                  ("section_type", str),
-                                                  ("yop", str),
-                                                  ("access_type", str),
-                                                  ("access_method", str),
-                                                  ("exclude_monthly_details", bool)],
-                          MajorReportType.ITEM: [("authors", str),
-                                                 ("publication_date", str),
-                                                 ("article_version", str),
-                                                 ("data_type", str),
-                                                 ("yop", str),
-                                                 ("access_type", str),
-                                                 ("access_method", str),
-                                                 ("include_component_details", bool),
-                                                 ("include_parent_details", bool),
-                                                 ("exclude_monthly_details", bool)]
-                          }
+SPECIAL_REPORT_OPTIONS = {
+    MajorReportType.PLATFORM: [("Data_Type", str),
+                               ("Access_Method", str),
+                               ("Exclude_Monthly_Details", bool)],
+    MajorReportType.DATABASE: [("Data_Type", str),
+                               ("Access_Method", str),
+                               ("Exclude_Monthly_Details", bool)],
+    MajorReportType.TITLE: [("Data_Type", str),
+                            ("Section_Type", str),
+                            ("YOP", str),
+                            ("Access_Type", str),
+                            ("Access_Method", str),
+                            ("Exclude_Monthly_Details", bool)],
+    MajorReportType.ITEM: [("Authors", str),
+                           ("Publication_Date", str),
+                           ("Article_Version", str),
+                           ("Data_Type", str),
+                           ("YOP", str),
+                           ("Access_Type", str),
+                           ("Access_Method", str),
+                           ("Include_Component_Details", bool),
+                           ("Include_Parent_Details", bool),
+                           ("Exclude_Monthly_Details", bool)]
+}
 
 DEFAULT_SPECIAL_OPTION_VALUE = "all"
 
@@ -631,18 +632,18 @@ def get_month_years(begin_date: QDate, end_date: QDate) -> list:
 class SpecialReportOptions:
     def __init__(self):
         # PR, DR, TR, IR
-        self.data_type = False, DEFAULT_SPECIAL_OPTION_VALUE
-        self.access_method = False, DEFAULT_SPECIAL_OPTION_VALUE
+        self.data_type = False, "Data_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        self.access_method = False, "Access_Method", DEFAULT_SPECIAL_OPTION_VALUE
         self.exclude_monthly_details = False
         # TR, IR
-        self.yop = False, DEFAULT_SPECIAL_OPTION_VALUE
-        self.access_type = False, DEFAULT_SPECIAL_OPTION_VALUE
+        self.yop = False, "YOP", DEFAULT_SPECIAL_OPTION_VALUE
+        self.access_type = False, "Access_Type", DEFAULT_SPECIAL_OPTION_VALUE
         # TR
-        self.section_type = False, DEFAULT_SPECIAL_OPTION_VALUE
+        self.section_type = False, "Section_Type", DEFAULT_SPECIAL_OPTION_VALUE
         # IR
-        self.authors = False, DEFAULT_SPECIAL_OPTION_VALUE
-        self.publication_date = False, DEFAULT_SPECIAL_OPTION_VALUE
-        self.article_version = False, DEFAULT_SPECIAL_OPTION_VALUE
+        self.authors = False, "Authors", DEFAULT_SPECIAL_OPTION_VALUE
+        self.publication_date = False, "Publication_Date", DEFAULT_SPECIAL_OPTION_VALUE
+        self.article_version = False, "Article_Version", DEFAULT_SPECIAL_OPTION_VALUE
         self.include_component_details = False
         self.include_parent_details = False
 
@@ -1057,7 +1058,6 @@ class FetchReportsAbstract:
             self.update_database_thread.wait()
 
 
-
 class FetchReportsController(FetchReportsAbstract):
     def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
         super().__init__(vendors, settings)
@@ -1395,17 +1395,19 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                 self.options_layout.addWidget(line_edit, i, 1)
 
     def on_special_option_toggled(self, is_checked: bool, option: str, field_type: str):
+        option = option.lower()
         if field_type is bool:
             self.selected_options.__setattr__(option, is_checked)
         elif field_type is str:
-            selected, value = self.selected_options.__getattribute__(option)
+            selected, attrib_name, value = self.selected_options.__getattribute__(option)
             if not value: value = DEFAULT_SPECIAL_OPTION_VALUE
-            self.selected_options.__setattr__(option, (is_checked, value))
+            self.selected_options.__setattr__(option, (is_checked, attrib_name, value))
 
     def on_special_option_text_changed(self, text: str, option: str):
-        selected, value = self.selected_options.__getattribute__(option)
+        option = option.lower()
+        selected, attrib_name, value = self.selected_options.__getattribute__(option)
         if not text: text = DEFAULT_SPECIAL_OPTION_VALUE
-        self.selected_options.__setattr__(option, (selected, text.lower()))
+        self.selected_options.__setattr__(option, (selected, attrib_name, text.lower()))
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1679,14 +1681,14 @@ class ReportWorker(QObject):
             for option in special_options_dict.keys():
                 value = special_options_dict[option]
                 if type(value) is tuple:
-                    is_selected, text = value
+                    is_selected, attrib_name, text = value
                     if is_selected:
                         if text != DEFAULT_SPECIAL_OPTION_VALUE: request_query[option] = text
                         if attr_count == 0:
-                            attributes_to_show += option
+                            attributes_to_show += attrib_name
                             attr_count += 1
                         elif attr_count > 0:
-                            attributes_to_show += f"|{option}"
+                            attributes_to_show += f"|{attrib_name}"
                             attr_count += 1
 
                 elif type(value) is bool:
