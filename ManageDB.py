@@ -317,8 +317,9 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_COSTS = ('metric_type', 'month', 'metric', 'updated_on', 'file')
 FIELDS_NOT_IN_SEARCH = ('year',)
+
+COSTS_KEY_FIELDS = ('vendor', 'year')
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
@@ -346,10 +347,13 @@ def get_view_report_fields_list(report):
     fields = []
     for field in report_fields:  # fields specific to this report
         if report in field['reports']:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] not in FIELDS_NOT_IN_VIEWS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+    for field in COST_FIELDS:  # cost table fields
+        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
+                       'source': report[:2] + COST_TABLE_SUFFIX})
     fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'calculation': 'SUM(' + 'metric' + ')'})
     for key in sorted(MONTHS):  # month columns
         fields.append({'name': MONTHS[key], 'type': 'INTEGER',
@@ -377,7 +381,7 @@ def get_cost_fields_list(report):
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_COSTS:
+        if field['name'] in COSTS_KEY_FIELDS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in COST_FIELDS:
         fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
@@ -420,17 +424,28 @@ def create_table_sql_texts(reports):  # makes the SQL statements to create the t
 def create_view_sql_texts(reports):  # makes the SQL statements to create the views from the table definition
     sql_texts = {}
     for report in reports:
+        name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
         sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
         report_fields = get_view_report_fields_list(report)
         fields = []
         calcs = []
+        key_fields = []
         for field in report_fields:  # fields specific to this report
             if 'calculation' not in field.keys():
-                fields.append(field['name'])
+                field_text = ''
+                if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+                    key_fields.append(field['name'])
+                    field_text = report + '.'
+                field_text += field['name']
+                fields.append(field_text)
             else:
                 calcs.append(field['calculation'] + ' AS ' + field['name'])
         sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-        sql_text += '\nFROM ' + report
+        sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
+        join_clauses = []
+        for key_field in key_fields:
+            join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
+        sql_text += ' ON ' + ' AND '.join(join_clauses)
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
@@ -440,12 +455,23 @@ def create_cost_table_sql_texts(report_types):
     sql_texts = {}
     for report_type in report_types:
         sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
-        sql_text += ');'
+        report_fields = get_cost_fields_list(report_type)
+        name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
+        fields_and_options = []
+        key_fields = []
+        for field in report_fields:
+            field_text = field['name'] + ' ' + field['type']
+            if field['options']:
+                field_text += ' ' + ' '.join(field['options'])
+            fields_and_options.append(field_text)
+            if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+                key_fields.append(field['name'])
+        sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
+        sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + ')'
+        sql_text += ',\n\tFOREIGN KEY(' + ', '.join(key_fields) + ') REFERENCES '
+        sql_text += report_type + '(' + ', '.join(key_fields) + '));'
         sql_texts[report_type + COST_TABLE_SUFFIX] = sql_text
     return sql_texts
-
-
-# TODO add create combined cost table views
 
 
 def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
@@ -578,7 +604,7 @@ def search_sql_text(report, start_year, end_year,
 
 
 def chart_search_sql_text(report, start_year, end_year,
-                    name, metric_type):  # makes the sql statement to search the database for chart data
+                          name, metric_type):  # makes the sql statement to search the database for chart data
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -648,9 +674,10 @@ def setup_database(drop_tables):
         os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
+    sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
     sql_texts.update(create_view_sql_texts(ALL_REPORTS))
-    # for key in sorted(sql_texts):  # testing
-        # print(sql_texts[key])
+    for key in sql_texts:  # testing
+        print(sql_texts[key])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -680,7 +707,6 @@ def test_chart_search():
 
 
 class UpdateDatabaseWorker(QObject):
-
     worker_finished_signal = pyqtSignal(int)
     status_changed_signal = pyqtSignal(str)
     progress_changed_signal = pyqtSignal(int)
@@ -712,13 +738,3 @@ class UpdateDatabaseWorker(QObject):
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
 
-
-def test_cost_data():
-    for report_type in REPORT_TYPE_SWITCHER.keys():
-        print(get_cost_fields_list(report_type))
-    sql_texts = create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys())
-    for key in sorted(sql_texts):
-        print(sql_texts[key])
-
-
-test_cost_data()
