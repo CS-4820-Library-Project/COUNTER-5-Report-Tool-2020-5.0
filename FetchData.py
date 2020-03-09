@@ -10,7 +10,7 @@ import platform
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog, QSizePolicy
+    QCheckBox, QFileDialog, QSizePolicy, QLineEdit
 
 from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, \
     DisclaimerDialog, UpdateDatabaseProgressDialog
@@ -694,8 +694,10 @@ class FetchReportsAbstract:
 
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
-        
+
         # region Update Database Dialog
+        self.add_to_database = True
+
         self.update_database_progress_dialog = None
 
         self.update_database_thread = None
@@ -834,9 +836,10 @@ class FetchReportsAbstract:
             if process_result.completion_status != CompletionStatus.SUCCESSFUL:
                 continue
 
-            self.database_report_data.append({'file': process_result.file_path,
-                                              'vendor': process_result.vendor.name,
-                                              'year': process_result.year})
+            if self.add_to_database:
+                self.database_report_data.append({'file': process_result.file_path,
+                                                  'vendor': process_result.vendor.name,
+                                                  'year': process_result.year})
 
         thread.quit()
         thread.wait()
@@ -924,7 +927,8 @@ class FetchReportsAbstract:
         self.status_label.setText("Done!")
 
         # Update database...
-        self.on_update_database(self.database_report_data)
+        if self.add_to_database:
+            self.on_update_database(self.database_report_data)
 
         # Reset database data
         self.database_report_data = []
@@ -1208,6 +1212,9 @@ class FetchReportsController(FetchReportsAbstract):
 
         custom_dir = self.custom_dir_edit.text()
         use_custom_dir = not self.is_yearly_range(self.adv_begin_date, self.adv_end_date) and custom_dir
+
+        self.add_to_database = not use_custom_dir  # add files to the database if they are saved in the normal structure
+
         self.save_dir = custom_dir if use_custom_dir else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
