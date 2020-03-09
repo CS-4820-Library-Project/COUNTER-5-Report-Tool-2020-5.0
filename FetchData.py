@@ -12,10 +12,12 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QFileDialog, QLineEdit
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
+from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, \
+    DisclaimerDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
+import ManageDB
 
 SHOW_DEBUG_MESSAGES = False
 
@@ -722,6 +724,23 @@ class FetchReportsAbstract:
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
         # endregion
 
+        # region Update Database Dialog
+        self.add_to_database = True
+
+        self.update_database_progress_dialog = None
+
+        self.update_database_thread = None
+
+        self.database_worker = None
+
+        self.update_status_label = None
+        self.update_progress_bar = None
+        self.update_task_finished_widget = None
+        self.update_task_finished_scrollarea = None
+
+        self.is_updating_database = False
+        # endregion
+
     def on_vendors_changed(self, vendors: list):
         self.update_vendors(vendors)
         self.update_vendors_ui()
@@ -936,6 +955,9 @@ class FetchReportsAbstract:
         self.status_label.setText("Done!")
 
         # Update database...
+        if self.is_yearly_fetch:
+            self.on_update_database(self.database_report_data)
+
         # Reset database data
         self.database_report_data = []
 
@@ -975,6 +997,65 @@ class FetchReportsAbstract:
                 return True
 
         return False
+
+    def on_update_database(self, files):
+        if not self.is_updating_database:  # check if already running
+            self.is_updating_database = True
+            self.update_database(files)
+            self.is_updating_database = False
+        else:
+            print('Error, already running')
+
+    def update_database(self, files):
+        self.update_database_progress_dialog = QDialog()
+
+        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
+        dialog_ui.setupUi(self.update_database_progress_dialog)
+
+        self.update_status_label = dialog_ui.status_label
+        self.update_progress_bar = dialog_ui.progressbar
+        self.update_task_finished_scrollarea = dialog_ui.scrollarea
+
+        self.update_task_finished_widget = QWidget()
+        self.update_task_finished_widget.setLayout(QVBoxLayout())
+        self.update_task_finished_scrollarea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.update_task_finished_scrollarea.setWidget(self.update_task_finished_widget)
+
+        self.update_progress_bar.setMaximum(len(files))
+
+        self.update_database_progress_dialog.show()
+
+        self.update_database_thread = QThread()
+
+        self.database_worker = ManageDB.UpdateDatabaseWorker(files, False)
+
+        self.database_worker.status_changed_signal.connect(lambda status: on_status_changed(status))
+        self.database_worker.progress_changed_signal.connect(lambda progress: on_progress_changed(progress))
+        self.database_worker.task_finished_signal.connect(lambda task: on_task_finished(task))
+        self.database_worker.worker_finished_signal.connect(lambda code: on_thread_finish(code))
+
+        self.database_worker.moveToThread(self.update_database_thread)
+
+        self.update_database_thread.started.connect(self.database_worker.work)
+
+        self.update_database_thread.start()
+
+        def on_status_changed(status: str):
+            self.update_status_label.setText(status)
+
+        def on_progress_changed(progress: int):
+            self.update_progress_bar.setValue(progress)
+
+        def on_task_finished(task: str):
+            label = QLabel(task)
+            self.update_task_finished_widget.layout().addWidget(label)
+
+        def on_thread_finish(code):
+            print(code)  # testing
+            # exit thread
+            self.update_database_thread.quit()
+            self.update_database_thread.wait()
+
 
 
 class FetchReportsController(FetchReportsAbstract):
