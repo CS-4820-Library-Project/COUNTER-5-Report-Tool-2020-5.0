@@ -979,7 +979,7 @@ class FetchReportsAbstract:
             if(platform.system()=="Darwin"):
                 system("open " + shlex.quote(file_path))
             else:
-                webbrowser.open_new_tab(file_path)
+                webbrowser.open_new_tab(path.realpath(file_path))
         else:
             show_message(f"\'{file_path}\' does not exist")
 
