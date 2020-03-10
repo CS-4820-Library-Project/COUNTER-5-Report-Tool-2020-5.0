@@ -55,7 +55,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>6</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -1560,8 +1560,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>815</width>
-                <height>44</height>
+                <width>918</width>
+                <height>335</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -2075,30 +2075,495 @@
        <attribute name="title">
         <string>Visual</string>
        </attribute>
-       <widget class="QLabel" name="label_40">
+       <widget class="QFrame" name="search_parameters_frame_2">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>10</y>
+          <x>10</x>
+          <y>0</y>
           <width>946</width>
-          <height>17</height>
+          <height>101</height>
          </rect>
         </property>
-        <property name="font">
-         <font>
-          <family>Segoe UI</family>
-          <pointsize>14</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-          <underline>true</underline>
-         </font>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
         </property>
-        <property name="text">
-         <string>PAGE IS IN DEVELOPMENT</string>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+        <layout class="QVBoxLayout" name="verticalLayout_22">
+         <item>
+          <widget class="QFrame" name="search_initial_parameters_frame_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="1">
+             <widget class="QLabel" name="search_start_year_parameter_label_2">
+              <property name="text">
+               <string>Start Year</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="search_report_parameter_label_2">
+              <property name="text">
+               <string>Report</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="search_end_year_parameter_label_2">
+              <property name="text">
+               <string>End year</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" rowspan="2">
+             <widget class="QComboBox" name="search_report_parameter_combobox_2"/>
+            </item>
+            <item row="1" column="1" rowspan="2">
+             <widget class="QDateEdit" name="search_start_year_parameter_dateedit_2">
+              <property name="displayFormat">
+               <string>yyyy</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2" rowspan="2">
+             <widget class="QDateEdit" name="search_end_year_parameter_dateedit_2">
+              <property name="currentSection">
+               <enum>QDateTimeEdit::YearSection</enum>
+              </property>
+              <property name="displayFormat">
+               <string>yyyy</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QFrame" name="search_control_frame_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>500</y>
+          <width>946</width>
+          <height>80</height>
+         </rect>
         </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_12">
+         <item row="2" column="1" colspan="2">
+          <widget class="QPushButton" name="create_chart_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Create Chart</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QFrame" name="frame_14">
+        <property name="geometry">
+         <rect>
+          <x>9</x>
+          <y>110</y>
+          <width>946</width>
+          <height>381</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QFrame" name="frame_15">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>460</width>
+           <height>361</height>
+          </rect>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLineEdit" name="name_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>30</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_8">
+          <property name="geometry">
+           <rect>
+            <x>80</x>
+            <y>30</y>
+            <width>71</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name *   :</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_14">
+          <property name="geometry">
+           <rect>
+            <x>50</x>
+            <y>70</y>
+            <width>101</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Metric Type *   :</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="metric_type_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>70</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_15">
+          <property name="geometry">
+           <rect>
+            <x>280</x>
+            <y>0</y>
+            <width>121</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Required fields*</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="frame_17">
+          <property name="geometry">
+           <rect>
+            <x>40</x>
+            <y>210</y>
+            <width>391</width>
+            <height>141</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLabel" name="label_46">
+           <property name="geometry">
+            <rect>
+             <x>160</x>
+             <y>10</y>
+             <width>111</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>IMPORTANT</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_47">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>30</y>
+             <width>301</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string> Name must correspond to Report:</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_48">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>60</y>
+             <width>341</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Examples : Report is PR, Name must be a Platform</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_49">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>80</y>
+             <width>271</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Report is DR, Name must be a Database</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_50">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>100</y>
+             <width>271</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Report is TR, Name must be a Title</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QFrame" name="frame_18">
+          <property name="geometry">
+           <rect>
+            <x>40</x>
+            <y>120</y>
+            <width>391</width>
+            <height>80</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLabel" name="label_45">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>10</y>
+             <width>121</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="font">
+            <font>
+             <family>Arial</family>
+            </font>
+           </property>
+           <property name="text">
+            <string>Select Chart Type</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::AutoText</enum>
+           </property>
+          </widget>
+          <widget class="QRadioButton" name="radioButton">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>40</y>
+             <width>121</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Horizontal Bar</string>
+           </property>
+          </widget>
+          <widget class="QRadioButton" name="radioButton_3">
+           <property name="geometry">
+            <rect>
+             <x>140</x>
+             <y>40</y>
+             <width>121</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Vertical Bar</string>
+           </property>
+          </widget>
+          <widget class="QRadioButton" name="radioButton_4">
+           <property name="geometry">
+            <rect>
+             <x>240</x>
+             <y>40</y>
+             <width>121</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Line</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="frame_16">
+         <property name="geometry">
+          <rect>
+           <x>480</x>
+           <y>10</y>
+           <width>460</width>
+           <height>361</height>
+          </rect>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLineEdit" name="file_name_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>40</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_16">
+          <property name="geometry">
+           <rect>
+            <x>69</x>
+            <y>40</y>
+            <width>101</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>File Name     :</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_36">
+          <property name="geometry">
+           <rect>
+            <x>70</x>
+            <y>90</y>
+            <width>91</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Chart Title    :</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="chart_title_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>90</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_40">
+          <property name="geometry">
+           <rect>
+            <x>340</x>
+            <y>0</y>
+            <width>121</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Required fields*</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_42">
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>0</y>
+            <width>111</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Customize Chart</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_43">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>140</y>
+            <width>151</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Horizontal Axis Title     :</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_44">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>180</y>
+            <width>131</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Vertical Axis Title    :</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="horizontal_axis_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>140</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="vertical_axis_lineEdit">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>180</y>
+            <width>271</width>
+            <height>21</height>
+           </rect>
+          </property>
+         </widget>
+        </widget>
        </widget>
       </widget>
      </widget>
@@ -2111,7 +2576,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>47</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
