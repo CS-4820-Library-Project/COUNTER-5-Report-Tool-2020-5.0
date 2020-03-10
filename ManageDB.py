@@ -500,9 +500,9 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
 
 
-def replace_cost_sql_text(report, data):
-    sql_replace_text = 'REPLACE INTO ' + report + COST_TABLE_SUFFIX + '('
-    report_fields = get_cost_fields_list(report)
+def replace_cost_sql_text(report_type, data):
+    sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
+    report_fields = get_cost_fields_list(report_type)
     fields = []
     types = {}
     for field in report_fields:  # fields specific to this report
@@ -580,7 +580,7 @@ def read_report_file(file_name, vendor,
         return None
 
 
-def get_all_reports():
+def get_all_reports():  # TODO make safer; only look for vendors in the vendor list
     reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
@@ -649,6 +649,13 @@ def chart_search_sql_text(report, start_year, end_year,
         # TODO make parameterized query
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
+    return sql_text
+
+
+def get_names_sql_text(report_type, vendor):
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
+               + ' WHERE ' + 'vendor' + ' LIKE \"' + vendor + '\";'
     return sql_text
 
 

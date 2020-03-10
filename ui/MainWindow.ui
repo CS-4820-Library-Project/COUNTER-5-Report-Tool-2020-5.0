@@ -1627,8 +1627,68 @@
        <attribute name="title">
         <string>Costs</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_12">
-        <item row="0" column="1">
+       <layout class="QVBoxLayout" name="verticalLayout_18">
+        <item>
+         <widget class="QFrame" name="costs_parameters_frame">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QFormLayout" name="formLayout_3">
+           <item row="0" column="0">
+            <widget class="QLabel" name="costs_report_parameter_label">
+             <property name="text">
+              <string>Report</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="costs_report_parameter_combobox"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="costs_vendor_parameter_label">
+             <property name="text">
+              <string>Vendor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="costs_vendor_parameter_combobox"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="costs_year_parameter_label">
+             <property name="text">
+              <string>Year</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDateEdit" name="costs_year_parameter_dateedit">
+             <property name="displayFormat">
+              <string>yyyy</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="costs_name_parameter_label">
+             <property name="text">
+              <string>Name</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QComboBox" name="costs_name_parameter_combobox">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <widget class="QFrame" name="costs_values_frame">
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
@@ -1699,67 +1759,7 @@
           </layout>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QFrame" name="costs_parameters_frame">
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QFormLayout" name="formLayout_3">
-           <item row="0" column="0">
-            <widget class="QLabel" name="costs_report_parameter_label">
-             <property name="text">
-              <string>Report</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QComboBox" name="costs_report_parameter_combobox"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="costs_vendor_parameter_label">
-             <property name="text">
-              <string>Vendor</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="costs_vendor_parameter_combobox"/>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="costs_year_parameter_label">
-             <property name="text">
-              <string>Year</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QDateEdit" name="costs_year_parameter_dateedit">
-             <property name="displayFormat">
-              <string>yyyy</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="costs_name_parameter_label">
-             <property name="text">
-              <string>Name</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QComboBox" name="costs_name_parameter_combobox">
-             <property name="editable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
+        <item>
          <widget class="QFrame" name="costs_control_frame">
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
@@ -1980,8 +1980,8 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item row="1" column="0">
-            <widget class="QFrame" name="frame_35">
+           <item row="2" column="0">
+            <widget class="QFrame" name="settings_database_frame">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1991,9 +1991,16 @@
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_20">
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QLabel" name="label_26">
+             <layout class="QGridLayout" name="gridLayout_12">
+              <item row="1" column="0">
+               <widget class="QPushButton" name="settings_restore_database_button">
+                <property name="text">
+                 <string>Restore Report Database</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="settings_database_label">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -2009,44 +2016,8 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Search</string>
+                 <string>Database</string>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="settings_restore_database_button">
-                <property name="text">
-                 <string>Restore Database</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QFrame" name="frame_36">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <layout class="QFormLayout" name="formLayout_7">
-                 <property name="horizontalSpacing">
-                  <number>50</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_27">
-                   <property name="text">
-                    <string>[In Development]</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="save_location_edit_fetch_2">
-                   <property name="text">
-                    <string>[In Development]</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
                </widget>
               </item>
              </layout>
