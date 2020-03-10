@@ -1,17 +1,9 @@
-import csv
-import random
-import bold as bold
-import numpy as np
-import matplotlib.pyplot as plt
-from ui import MainWindow
-import pandas as pd
 import xlsxwriter
 from datetime import date
 import csv
 import os
 import shlex
-import sip
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QFileDialog
 import ManageDB
 from ui import MainWindow
 
@@ -85,9 +77,6 @@ class VisualController:
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text)
                 self.results.insert(0, headers)
-                print(self.results)
-                print(self.results[1][5])
-                # horizontal_bar_chart()
                 file = open(file_name, 'w', newline="", encoding='utf-8')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')
@@ -98,7 +87,6 @@ class VisualController:
                                           # TODO check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
                     open_file_switcher[os.name]()
-                    print(self.results[1][0])
                 else:
                     print('Error: could not open file ' + file_name)
 
@@ -110,9 +98,6 @@ class VisualController:
 
         self.process_data()
 
-        # Check chart type selected by user
-        #self.chart_type()
-
     def process_data(self):
         m = len(self.results)
         for i in range(0, m):
@@ -122,11 +107,12 @@ class VisualController:
             for j in range(5, n):
                 data1.append(self.results[i][j])
             self.data.append(data1)
+        #testing to make sure its working good
         print(self.data[0])
         print(self.data[1])
+        #print(self.data[2])
         print(len(self.data))
         self.chart_type()
-
 
     def chart_type(self):
         if self.h_bar_radio.isChecked():
@@ -146,7 +132,11 @@ class VisualController:
         horizontal_axis_title = self.horizontal_axis_edit.text()
         vertical_axis_title = self.vertical_axis_edit.text()
 
-        self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_hbar.xlsx')
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+        self.workbook = xlsxwriter.Workbook(directory + file_name + '_hbar.xlsx')
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
@@ -154,7 +144,7 @@ class VisualController:
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
         self.worksheet.write_column('B2', self.data[1])
-        #self.worksheet.write_column('C2', self.data[2])
+        # self.worksheet.write_column('C2', self.data[2])
         # Create a new bar chart.
         chart1 = self.workbook.add_chart({'type': 'bar'})
 
@@ -191,7 +181,12 @@ class VisualController:
         horizontal_axis_title = self.horizontal_axis_edit.text()
         vertical_axis_title = self.vertical_axis_edit.text()
 
-        self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_vbar.xlsx')
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+        self.workbook = xlsxwriter.Workbook(directory + file_name + '_vbar.xlsx')
+        #self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_vbar.xlsx')
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
@@ -236,7 +231,12 @@ class VisualController:
         horizontal_axis_title = self.horizontal_axis_edit.text()
         vertical_axis_title = self.vertical_axis_edit.text()
 
-        self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_line.xlsx')
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.Directory)
+        if dialog.exec_():
+            directory = dialog.selectedFiles()[0] + "/"
+        self.workbook = xlsxwriter.Workbook(directory + file_name + '_line.xlsx')
+        #self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_line.xlsx')
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
