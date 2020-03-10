@@ -976,10 +976,10 @@ class FetchReportsAbstract:
 
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
-            if(platform.system()=="Windows"):
-                webbrowser.open(path.realpath(file_path))
-            elif(platform.system()=="Darwin"):
+            if(platform.system()=="Darwin"):
                 system("open " + shlex.quote(file_path))
+            else:
+                webbrowser.open_new_tab(path.realpath(file_path))
         else:
             show_message(f"\'{file_path}\' does not exist")
 
