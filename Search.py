@@ -55,13 +55,14 @@ class SearchController:
             add_and_and_or_clause()
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
-        self.and_clause_parameters = None
+        self.and_clause_parameters = main_window_ui.search_and_clause_parameters_scrollarea
+        self.and_clause_parameters.setLayout(QVBoxLayout())
         refresh_and_add_clauses()
 
     def refresh_clauses(self):  # resets the search clauses
-        self.and_clause_parameters = QFrame()
-        self.and_clause_parameters.setLayout(QVBoxLayout())
-        self.main_window.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
+        for widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+            self.and_clause_parameters.layout().removeWidget(widget)
+            sip.delete(widget)
 
     def add_and_clause(self):
         and_clause = QFrame()

@@ -1,6 +1,10 @@
 import sqlite3
 import os
 import csv
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QVBoxLayout, QLabel
+
+from ui import UpdateDatabaseProgressDialog
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -306,7 +310,7 @@ FIELDS_NOT_IN_SEARCH = ('year',)
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
-FILE_LOCATION = r'./all_data/yearly_files/'
+FILE_LOCATION = r'./all_data/DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 
 HEADER_ROWS = 12
@@ -447,14 +451,14 @@ def read_report_file(file_name, vendor,
                 header[key] = cells[1].strip()
             else:
                 header[key] = None
-        print(header)
+        # print(header)
         results['file'] = os.path.basename(file.name)
         results['report'] = header['report_id']
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
-        print(column_headers)
+        # print(column_headers)
         values = []
         for cells in list(reader):
             for month in MONTHS:  # makes value from each month with metric > 0 for each row
@@ -560,7 +564,7 @@ def create_connection(db_file):
     connection = None
     try:
         connection = sqlite3.connect(db_file)
-        print(sqlite3.version)
+        # print(sqlite3.version)
         return connection
     except sqlite3.Error as error:
         print(error)
@@ -579,9 +583,9 @@ def run_sql(connection, sql_text):
 def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
     try:
         cursor = connection.cursor()
-        print(sql_delete_text)
+        # print(sql_delete_text)
         cursor.execute(sql_delete_text)
-        print(sql_insert_text)
+        # print(sql_insert_text)
         cursor.executemany(sql_insert_text, data)
         connection.commit()
     except sqlite3.Error as error:
@@ -604,12 +608,12 @@ def setup_database(drop_tables):
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
     sql_texts.update(create_view_sql_texts(ALL_REPORTS))
-    for key in sorted(sql_texts):  # testing
-        print(sql_texts[key])
+    # for key in sorted(sql_texts):  # testing
+        # print(sql_texts[key])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for key in sorted(sql_texts):
+        for key in sql_texts:
             if drop_tables:
                 print('DROP ' + key)
                 run_sql(connection,
@@ -632,3 +636,38 @@ def test_chart_search():
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
         print(results)
+
+
+class UpdateDatabaseWorker(QObject):
+
+    worker_finished_signal = pyqtSignal(int)
+    status_changed_signal = pyqtSignal(str)
+    progress_changed_signal = pyqtSignal(int)
+    task_finished_signal = pyqtSignal(str)
+
+    def __init__(self, files, recreate_tables):
+        super().__init__()
+        self.recreate_tables = recreate_tables
+        self.files = files
+
+    def work(self):
+        current = 0
+        if self.recreate_tables:
+            self.status_changed_signal.emit('Recreating tables...')
+            setup_database(True)
+            current += 1
+            self.progress_changed_signal.emit(current)
+            self.task_finished_signal.emit('Recreated tables')
+        else:
+            self.progress_changed_signal.emit(len(self.files))
+        self.status_changed_signal.emit('Filling tables...')
+        for file in self.files:
+            filename = os.path.basename(file['file'])
+            print('READ ' + filename)
+            insert_single_file(file['file'], file['vendor'], file['year'])
+            self.task_finished_signal.emit(filename)
+            current += 1
+            self.progress_changed_signal.emit(current)
+        self.status_changed_signal.emit('Done')
+        self.worker_finished_signal.emit(0)
+
