@@ -2,7 +2,7 @@ import sys
 import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
-from ui import MainWindow, ManageVendorsTab
+from ui import MainWindow, ManageVendorsTab, SettingsTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
@@ -48,6 +48,11 @@ if __name__ == "__main__":
     manage_vendors_ui.setupUi(manage_vendors_tab)
     manage_vendors_controller = ManageVendorsController(manage_vendors_ui)
 
+    settings_tab = QWidget(main_window)
+    settings_ui = SettingsTab.Ui_settings_tab()
+    settings_ui.setupUi(settings_tab)
+    settings_controller = SettingsController(settings_ui)
+
     # settings_controller = SettingsController(main_window_ui)
     # fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
     #                                                   main_window_ui)
@@ -66,6 +71,7 @@ if __name__ == "__main__":
     # # endregion
 
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
+    main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     # Status Bar
     status_bar = main_window_ui.statusbar
