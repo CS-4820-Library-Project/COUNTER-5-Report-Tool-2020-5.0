@@ -22,10 +22,8 @@ class Ui_mainWindow(object):
         self.centralwidget = QtWidgets.QWidget(mainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setContentsMargins(-1, -1, -1, 0)
         self.gridLayout.setObjectName("gridLayout")
-        self.helpButton = QtWidgets.QPushButton(self.centralwidget)
-        self.helpButton.setObjectName("helpButton")
-        self.gridLayout.addWidget(self.helpButton, 1, 0, 1, 1, QtCore.Qt.AlignRight)
         self.tab_widget = QtWidgets.QTabWidget(self.centralwidget)
         self.tab_widget.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -37,7 +35,7 @@ class Ui_mainWindow(object):
         self.tab_widget.setTabPosition(QtWidgets.QTabWidget.North)
         self.tab_widget.setElideMode(QtCore.Qt.ElideNone)
         self.tab_widget.setObjectName("tab_widget")
-        self.gridLayout.addWidget(self.tab_widget, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.tab_widget, 1, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1200, 21))
@@ -54,4 +52,3 @@ class Ui_mainWindow(object):
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
         mainWindow.setWindowTitle(_translate("mainWindow", "Libly"))
-        self.helpButton.setText(_translate("mainWindow", "Help"))

@@ -27,14 +27,10 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" alignment="Qt::AlignRight">
-     <widget class="QPushButton" name="helpButton">
-      <property name="text">
-       <string>Help</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item row="1" column="0">
      <widget class="QTabWidget" name="tab_widget">
       <property name="enabled">
        <bool>true</bool>
