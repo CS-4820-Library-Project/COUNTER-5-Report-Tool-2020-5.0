@@ -13,8 +13,8 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QFileDialog, QLineEdit
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, \
-    DisclaimerDialog, UpdateDatabaseProgressDialog
+from ui import MainWindow, FetchReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
+    VendorResultsWidget, DisclaimerDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
@@ -1060,7 +1060,7 @@ class FetchReportsAbstract:
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel, fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1075,30 +1075,30 @@ class FetchReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Buttons
-        self.fetch_all_btn = main_window_ui.fetch_all_data_button
+        self.fetch_all_btn = fetch_reports_ui.fetch_all_data_button
         self.fetch_all_btn.clicked.connect(self.fetch_all_basic_data)
 
-        self.fetch_adv_btn = main_window_ui.fetch_advanced_button
+        self.fetch_adv_btn = fetch_reports_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_fetch
+        self.vendor_list_view = fetch_reports_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
+        self.select_vendors_btn = fetch_reports_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
+        self.deselect_vendors_btn = fetch_reports_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
-        self.tool_button = main_window_ui.toolButton
+        self.tool_button = fetch_reports_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
 
         # endregion
 
         # region Report Types
-        self.report_type_list_view = main_window_ui.report_types_list_view
+        self.report_type_list_view = fetch_reports_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         for report_type in REPORT_TYPES:
@@ -1107,30 +1107,30 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.select_report_types_btn = main_window_ui.select_report_types_button_fetch
+        self.select_report_types_btn = fetch_reports_ui.select_report_types_button_fetch
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
-        self.deselect_report_types_btn = main_window_ui.deselect_report_types_button_fetch
+        self.deselect_report_types_btn = fetch_reports_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
         # endregion
 
         # region Date Edits
-        self.all_date_edit = main_window_ui.All_reports_edit_fetch
+        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
         self.all_date_edit.setDate(self.basic_begin_date)
         self.all_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "all_date"))
-        self.begin_date_edit = main_window_ui.begin_date_edit_fetch
+        self.begin_date_edit = fetch_reports_ui.begin_date_edit_fetch
         self.begin_date_edit.setDate(self.adv_begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = main_window_ui.end_date_edit_fetch
+        self.end_date_edit = fetch_reports_ui.end_date_edit_fetch
         self.end_date_edit.setDate(self.adv_end_date)
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
         # endregion
 
         # region Custom Date Range
-        self.custom_dir_frame = main_window_ui.custom_dir_frame
+        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
-        self.custom_dir_edit = main_window_ui.custom_dir_edit
+        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
-        self.custom_dir_button = main_window_ui.custom_dir_button
+        self.custom_dir_button = fetch_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
 
         # endregion
