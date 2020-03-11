@@ -1,10 +1,6 @@
 import sqlite3
 import os
 import csv
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QVBoxLayout, QLabel
-
-from ui import UpdateDatabaseProgressDialog
 
 # database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
@@ -289,13 +285,26 @@ ALL_REPORT_FIELDS = ({'name': 'metric_type',
                       'type': 'TEXT',
                       'options': ('NOT NULL',)})
 
-# TODO add cost tables
+# cost table fields
+COST_FIELDS = ({'name': 'cost_in_original_currency',
+                'type': 'REAL',
+                'options': ('NOT NULL', 'CHECK(cost_in_original_currency >= 0)')},
+               {'name': 'original_currency',
+                'type': 'TEXT',
+                'options': ('NOT NULL', 'CHECK(original_currency <> \"\")')},
+               {'name': 'cost_in_local_currency',
+                'type': 'REAL',
+                'options': ('NOT NULL', 'CHECK(cost_in_local_currency >= 0)')},
+               {'name': 'cost_in_local_currency_with_tax',
+                'type': 'REAL',
+                'options': ('NOT NULL', 'CHECK(cost_in_local_currency_with_tax >= 0)')})
 
 ALL_REPORTS = DATABASE_REPORTS + ITEM_REPORTS + PLATFORM_REPORTS + TITLE_REPORTS
 REPORT_TYPE_SWITCHER = {'DR': {'reports': DATABASE_REPORTS, 'report_fields': DATABASE_REPORT_FIELDS},
                         'IR': {'reports': ITEM_REPORTS, 'report_fields': ITEM_REPORT_FIELDS},
                         'PR': {'reports': PLATFORM_REPORTS, 'report_fields': PLATFORM_REPORT_FIELDS},
                         'TR': {'reports': TITLE_REPORTS, 'report_fields': TITLE_REPORT_FIELDS}}
+NAME_FIELD_SWITCHER = {'DR': 'database', 'IR': 'item', 'PR': 'platform', 'TR': 'title'}
 
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
@@ -303,10 +312,14 @@ MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'jun
 YEAR_TOTAL = 'reporting_period_total'
 
 VIEW_SUFFIX = '_view'
+COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year',)
+FIELDS_NOT_IN_SEARCH = ('year', 'cost_in_original_currency', 'original_currency', 'cost_in_local_currency',
+                        'cost_in_local_currency_with_tax')
+
+COSTS_KEY_FIELDS = ('vendor', 'year')
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
@@ -334,10 +347,13 @@ def get_view_report_fields_list(report):
     fields = []
     for field in report_fields:  # fields specific to this report
         if report in field['reports']:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] not in FIELDS_NOT_IN_VIEWS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+    for field in COST_FIELDS:  # cost table fields
+        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
+                       'source': report[:2] + COST_TABLE_SUFFIX})
     fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'calculation': 'SUM(' + 'metric' + ')'})
     for key in sorted(MONTHS):  # month columns
         fields.append({'name': MONTHS[key], 'type': 'INTEGER',
@@ -348,7 +364,7 @@ def get_view_report_fields_list(report):
 
 def get_chart_report_fields_list(report):
     fields = []
-    name_field = REPORT_TYPE_SWITCHER[report[:2]]['report_fields'][0]
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] not in FIELDS_NOT_IN_VIEWS:
@@ -360,7 +376,30 @@ def get_chart_report_fields_list(report):
     return fields
 
 
-# TODO add cost table fields
+def get_cost_fields_list(report):
+    fields = []
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if field['name'] in COSTS_KEY_FIELDS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    for field in COST_FIELDS:
+        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    return fields
+
+
+def get_field_attributes(report, field_name):
+    report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
+    for field in report_fields:
+        if field['name'] == field_name:
+            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+    for field in ALL_REPORT_FIELDS:
+        if field['name'] == field_name:
+            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+    for field in COST_FIELDS:
+        if field['name'] == field_name:
+            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+    return None
 
 
 def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
@@ -385,41 +424,63 @@ def create_table_sql_texts(reports):  # makes the SQL statements to create the t
 def create_view_sql_texts(reports):  # makes the SQL statements to create the views from the table definition
     sql_texts = {}
     for report in reports:
+        name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
         sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
         report_fields = get_view_report_fields_list(report)
         fields = []
         calcs = []
+        key_fields = []
         for field in report_fields:  # fields specific to this report
             if 'calculation' not in field.keys():
-                fields.append(field['name'])
+                field_text = ''
+                if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+                    key_fields.append(field['name'])
+                    field_text = report + '.'
+                field_text += field['name']
+                fields.append(field_text)
             else:
                 calcs.append(field['calculation'] + ' AS ' + field['name'])
         sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-        sql_text += '\nFROM ' + report
+        sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
+        join_clauses = []
+        for key_field in key_fields:
+            join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
+        sql_text += ' ON ' + ' AND '.join(join_clauses)
         sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
         sql_texts[report + VIEW_SUFFIX] = sql_text
     return sql_texts
 
 
-# TODO add create cost tables
-
-
-# TODO add create combined cost table views
+def create_cost_table_sql_texts(report_types):
+    sql_texts = {}
+    for report_type in report_types:
+        sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
+        report_fields = get_cost_fields_list(report_type)
+        name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
+        fields_and_options = []
+        key_fields = []
+        for field in report_fields:
+            field_text = field['name'] + ' ' + field['type']
+            if field['options']:
+                field_text += ' ' + ' '.join(field['options'])
+            fields_and_options.append(field_text)
+            if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+                key_fields.append(field['name'])
+        sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
+        sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
+        sql_texts[report_type + COST_TABLE_SUFFIX] = sql_text
+    return sql_texts
 
 
 def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
-    types = {}
     for field in report_fields:  # fields specific to this report
         fields.append(field['name'])
-        types[field['name']] = field['type']
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
-    placeholders = []
-    for key in fields:  # gets parameter slots
-        placeholders.append('?')
+    placeholders = ['?'] * len(fields)
     sql_replace_text += '(' + ', '.join(placeholders) + ');'
     values = []
     for row in data:  # gets data to fill parameters
@@ -434,6 +495,30 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
         values.append(row_values)
     sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = \"' + file_name + '\";'
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
+
+
+def replace_cost_sql_text(report_type, data):
+    sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
+    report_fields = get_cost_fields_list(report_type)
+    fields = []
+    for field in report_fields:  # fields specific to this report
+        fields.append(field['name'])
+    sql_replace_text += ', '.join(fields) + ')'
+    sql_replace_text += '\nVALUES'
+    placeholders = ['?'] * len(fields)
+    sql_replace_text += '(' + ', '.join(placeholders) + ');'
+    values = []
+    for row in data:  # gets data to fill parameters
+        row_values = []
+        for key in fields:
+            value = None
+            if row.get(key):
+                value = row.get(key)
+            else:
+                value = ''  # if empty, use empty string
+            row_values.append(value)
+        values.append(row_values)
+    return {'sql_replace': sql_replace_text, 'data': values}
 
 
 def read_report_file(file_name, vendor,
@@ -489,6 +574,7 @@ def read_report_file(file_name, vendor,
 
 
 def get_all_reports():
+    # TODO (Chandler): make safer; only look for vendors in the vendor list
     reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
@@ -529,7 +615,7 @@ def search_sql_text(report, start_year, end_year,
         for sub_clause in clause:
             sub_clauses_text.append(
                 sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-            # TODO make parameterized query
+            # TODO (Chandler): make parameterized query
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
@@ -537,7 +623,7 @@ def search_sql_text(report, start_year, end_year,
 
 
 def chart_search_sql_text(report, start_year, end_year,
-                    name, metric_type):  # makes the sql statement to search the database for chart data
+                          name, metric_type):  # makes the sql statement to search the database for chart data
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -550,13 +636,20 @@ def chart_search_sql_text(report, start_year, end_year,
                {'field': 'year', 'comparison': '<=', 'value': end_year},
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
-    print(clauses)
     clauses_texts = []
     for clause in clauses:
         clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
-        # TODO make parameterized query
+        # TODO (Chandler): make parameterized query
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
+    return sql_text
+
+
+def get_names_sql_text(report_type, vendor):
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
+               + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE \"' + vendor + '\"' \
+               + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
     return sql_text
 
 
@@ -583,9 +676,8 @@ def run_sql(connection, sql_text):
 def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
     try:
         cursor = connection.cursor()
-        # print(sql_delete_text)
-        cursor.execute(sql_delete_text)
-        # print(sql_insert_text)
+        if sql_delete_text:
+            cursor.execute(sql_delete_text)
         cursor.executemany(sql_insert_text, data)
         connection.commit()
     except sqlite3.Error as error:
@@ -607,9 +699,10 @@ def setup_database(drop_tables):
         os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
+    sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
     sql_texts.update(create_view_sql_texts(ALL_REPORTS))
-    # for key in sorted(sql_texts):  # testing
-        # print(sql_texts[key])
+    for key in sql_texts:  # testing
+        print(sql_texts[key])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -636,38 +729,3 @@ def test_chart_search():
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
         print(results)
-
-
-class UpdateDatabaseWorker(QObject):
-
-    worker_finished_signal = pyqtSignal(int)
-    status_changed_signal = pyqtSignal(str)
-    progress_changed_signal = pyqtSignal(int)
-    task_finished_signal = pyqtSignal(str)
-
-    def __init__(self, files, recreate_tables):
-        super().__init__()
-        self.recreate_tables = recreate_tables
-        self.files = files
-
-    def work(self):
-        current = 0
-        if self.recreate_tables:
-            self.status_changed_signal.emit('Recreating tables...')
-            setup_database(True)
-            current += 1
-            self.progress_changed_signal.emit(current)
-            self.task_finished_signal.emit('Recreated tables')
-        else:
-            self.progress_changed_signal.emit(len(self.files))
-        self.status_changed_signal.emit('Filling tables...')
-        for file in self.files:
-            filename = os.path.basename(file['file'])
-            print('READ ' + filename)
-            insert_single_file(file['file'], file['vendor'], file['year'])
-            self.task_finished_signal.emit(filename)
-            current += 1
-            self.progress_changed_signal.emit(current)
-        self.status_changed_signal.emit('Done')
-        self.worker_finished_signal.emit(0)
-
