@@ -82,14 +82,13 @@ if __name__ == "__main__":
     visual_ui = VisualTab.Ui_visual_tab()
     visual_ui.setupUi(visual_tab)
     visual_controller = VisualController(visual_ui)
+    # # endregion
 
-    # # endregion
-    #
-    # # region Connect Signals
-    # manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
-    # manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
-    # manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_changed)
-    # # endregion
+    # region Connect Signals
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
+    # endregion
 
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
