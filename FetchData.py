@@ -13,7 +13,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QFileDialog, QLineEdit
 
-from ui import MainWindow, FetchReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
+from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget, DisclaimerDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
@@ -1283,7 +1283,8 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel,
+                 fetch_special_reports_ui: FetchSpecialReportsTab.Ui_fetch_special_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1295,32 +1296,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Button
-        self.fetch_special_btn = main_window_ui.fetch_special_data_button
+        self.fetch_special_btn = fetch_special_reports_ui.fetch_special_data_button
         self.fetch_special_btn.clicked.connect(self.fetch_special_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_special
+        self.vendor_list_view = fetch_special_reports_ui.vendors_list_view_special
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_special
+        self.select_vendors_btn = fetch_special_reports_ui.select_vendors_button_special
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_special
+        self.deselect_vendors_btn = fetch_special_reports_ui.deselect_vendors_button_special
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         # endregion
 
         # region Options
-        self.options_frame = main_window_ui.options_frame
+        self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
         # endregion
 
         # region Report Types
-        self.pr_radio_button = main_window_ui.pr_radio_button
-        self.dr_radio_button = main_window_ui.dr_radio_button
-        self.tr_radio_button = main_window_ui.tr_radio_button
-        self.ir_radio_button = main_window_ui.ir_radio_button
+        self.pr_radio_button = fetch_special_reports_ui.pr_radio_button
+        self.dr_radio_button = fetch_special_reports_ui.dr_radio_button
+        self.tr_radio_button = fetch_special_reports_ui.tr_radio_button
+        self.ir_radio_button = fetch_special_reports_ui.ir_radio_button
 
         self.pr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.PLATFORM))
         self.dr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.DATABASE))
@@ -1333,10 +1334,10 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = main_window_ui.begin_date_edit_special
+        self.begin_date_edit = fetch_special_reports_ui.begin_date_edit_special
         self.begin_date_edit.setDate(self.begin_date)
         self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "begin_date"))
-        self.end_date_edit = main_window_ui.end_date_edit_special
+        self.end_date_edit = fetch_special_reports_ui.end_date_edit_special
         self.end_date_edit.setDate(self.end_date)
         self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
         # endregion

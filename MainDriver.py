@@ -2,7 +2,7 @@ import sys
 import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
-from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab
+from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
@@ -59,6 +59,13 @@ if __name__ == "__main__":
     fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
                                                       fetch_reports_ui)
 
+    fetch_special_reports_tab = QWidget(main_window)
+    fetch_special_reports_ui = FetchSpecialReportsTab.Ui_fetch_special_reports_tab()
+    fetch_special_reports_ui.setupUi(fetch_special_reports_tab)
+    fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
+                                                                     settings_controller.settings,
+                                                                     fetch_special_reports_ui)
+
     # fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
     #                                                   main_window_ui)
     # fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
@@ -77,6 +84,7 @@ if __name__ == "__main__":
 
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
+    main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     # Status Bar
