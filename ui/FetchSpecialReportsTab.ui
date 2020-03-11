@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>630</width>
-    <height>300</height>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -259,7 +259,7 @@
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_23">
+        <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QLabel" name="label_15">
            <property name="sizePolicy">
@@ -281,6 +281,12 @@
          </item>
          <item>
           <widget class="QFrame" name="frame_31">
+           <property name="maximumSize">
+            <size>
+             <width>362</width>
+             <height>230</height>
+            </size>
+           </property>
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
            </property>
@@ -304,24 +310,58 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="2" column="0">
              <widget class="QLabel" name="label_23">
               <property name="text">
                <string>End Date</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QDateEdit" name="begin_date_edit_special">
+            <item row="1" column="0">
+             <widget class="QDateEdit" name="begin_date_edit_special_year">
+              <property name="dateTime">
+               <datetime>
+                <hour>0</hour>
+                <minute>0</minute>
+                <second>0</second>
+                <year>2020</year>
+                <month>1</month>
+                <day>1</day>
+               </datetime>
+              </property>
               <property name="displayFormat">
-               <string>yyyy-MM</string>
+               <string>yyyy</string>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QDateEdit" name="end_date_edit_special">
+             <widget class="QDateEdit" name="begin_date_edit_special_month">
               <property name="displayFormat">
-               <string>yyyy-MM</string>
+               <string>MM</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QDateEdit" name="end_date_edit_special_year">
+              <property name="dateTime">
+               <datetime>
+                <hour>0</hour>
+                <minute>0</minute>
+                <second>0</second>
+                <year>2020</year>
+                <month>1</month>
+                <day>1</day>
+               </datetime>
+              </property>
+              <property name="displayFormat">
+               <string>yyyy</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QDateEdit" name="end_date_edit_special_month">
+              <property name="displayFormat">
+               <string>MM</string>
               </property>
              </widget>
             </item>
