@@ -5,51 +5,51 @@ from PyQt5.QtCore import QDate
 import DataStorage
 import ManageDB
 import ManageVendors
-from ui import MainWindow
+from ui import CostsTab
 
 
 class CostsController:
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
-        self.main_window = main_window_ui
+    def __init__(self, costs_ui: CostsTab.Ui_costs_tab):
+        self.costs_ui = costs_ui
 
         # set parameters
-        self.report_parameter_combobox = main_window_ui.costs_report_parameter_combobox
+        self.report_parameter_combobox = costs_ui.costs_report_parameter_combobox
         self.report_parameter_combobox.addItems(ManageDB.REPORT_TYPE_SWITCHER.keys())
         self.report_parameter = None
 
-        self.vendor_parameter_combobox = main_window_ui.costs_vendor_parameter_combobox
+        self.vendor_parameter_combobox = costs_ui.costs_vendor_parameter_combobox
         vendors_json_string = DataStorage.read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
         self.vendor_parameter = None
 
-        self.year_parameter_dateedit = main_window_ui.costs_year_parameter_dateedit
+        self.year_parameter_dateedit = costs_ui.costs_year_parameter_dateedit
         self.year_parameter_dateedit.setDate(QDate.currentDate())
         self.year_parameter = None
 
-        self.name_label = main_window_ui.costs_name_parameter_label
-        self.name_parameter_combobox = main_window_ui.costs_name_parameter_combobox
+        self.name_label = costs_ui.costs_name_parameter_label
+        self.name_parameter_combobox = costs_ui.costs_name_parameter_combobox
         self.name_parameter = None
 
         # set up values
-        self.cost_in_original_currency_doublespinbox = main_window_ui.costs_cost_in_original_currency_doublespinbox
+        self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
         self.cost_in_original_currency = None
 
-        self.original_currency_combobox = main_window_ui.costs_original_currency_value_combobox
+        self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
         self.original_currency = None
 
-        self.cost_in_local_currency_doublespinbox = main_window_ui.costs_cost_in_local_currency_doublespinbox
+        self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
         self.cost_in_local_currency = None
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
-            main_window_ui.costs_cost_in_local_currency_with_tax_doublespinbox
+            costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
         self.cost_in_local_currency_with_tax = None
 
         # set up buttons
-        self.insert_button = main_window_ui.costs_insert_button
+        self.insert_button = costs_ui.costs_insert_button
         self.insert_button.clicked.connect(self.insert_costs)
 
-        self.load_button = main_window_ui.costs_load_button
+        self.load_button = costs_ui.costs_load_button
         self.load_button.clicked.connect(self.load_costs)
 
         self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)

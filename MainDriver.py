@@ -3,7 +3,7 @@ import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
 from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
-    SearchTab, VisualTab
+    SearchTab, VisualTab, CostsTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
@@ -65,9 +65,14 @@ if __name__ == "__main__":
     fetch_special_reports_ui = FetchSpecialReportsTab.Ui_fetch_special_reports_tab()
     fetch_special_reports_ui.setupUi(fetch_special_reports_tab)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
-                                                                     settings_controller.settings, main_window_ui)
-    costs_controller = CostsController(main_window_ui)
-    
+                                                                     settings_controller.settings,
+                                                                     fetch_special_reports_ui)
+
+    costs_tab = QWidget(main_window)
+    costs_tab_ui = CostsTab.Ui_costs_tab()
+    costs_tab_ui.setupUi(costs_tab)
+    costs_controller = CostsController(costs_tab_ui)
+
     import_report_tab = QWidget(main_window)
     import_report_ui = ImportReportTab.Ui_import_report_tab()
     import_report_ui.setupUi(import_report_tab)
@@ -96,6 +101,7 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
     main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
+    main_window_ui.tab_widget.addTab(costs_tab, "Costs")
     main_window_ui.tab_widget.addTab(search_tab, "Search")
     main_window_ui.tab_widget.addTab(visual_tab, "Visual")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")

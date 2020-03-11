@@ -147,7 +147,7 @@ class SettingsController:
         # set up restore database button
         self.is_restoring_database = False
         self.update_database_dialog = UpdateDatabaseProgressDialogController()
-        self.restore_database_button = main_window_ui.settings_restore_database_button
+        self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
 
     def on_setting_changed(self, setting: Setting, setting_value):
