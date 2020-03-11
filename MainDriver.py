@@ -2,7 +2,8 @@ import sys
 import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
-from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab
+from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
+    SearchTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
@@ -72,9 +73,11 @@ if __name__ == "__main__":
     import_report_controller = ImportReportController(manage_vendors_controller.vendors, settings_controller.settings,
                                                       import_report_ui)
 
-    # search_controller = SearchController(main_window_ui)
-    # import_file_controller = ImportFileController(manage_vendors_controller.vendors, settings_controller.settings,
-    #                                               main_window_ui)
+    search_tab = QWidget(main_window)
+    search_ui = SearchTab.Ui_search_tab()
+    search_ui.setupUi(search_tab)
+    search_controller = SearchController(search_ui)
+
     # visual_controller = VisualController(main_window_ui)
     # # endregion
     #
@@ -88,6 +91,7 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
     main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
+    main_window_ui.tab_widget.addTab(search_tab, "Search")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     # Status Bar
