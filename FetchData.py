@@ -1117,13 +1117,28 @@ class FetchReportsController(FetchReportsAbstract):
         # region Date Edits
         self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
         self.all_date_edit.setDate(self.basic_begin_date)
-        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "all_date"))
-        self.begin_date_edit = fetch_reports_ui.begin_date_edit_fetch
-        self.begin_date_edit.setDate(self.adv_begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = fetch_reports_ui.end_date_edit_fetch
-        self.end_date_edit.setDate(self.adv_end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
+        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_all_changed(date, "all_date"))
+        # TODO:(ziheng huang): change the name of the method on_data_changed to on_date_all_changed
+
+        self.begin_date_edit_year = main_window_ui.begin_date_edit_fetch_year
+        self.begin_date_edit_year.setDate(self.adv_begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
+        # TODO:(ziheng huang): change the name: self.begin_date_edit to self.begin_date_edit_year, call the method on_date_year_changed
+
+        self.begin_date_edit_month = main_window_ui.begin_date_edit_fetch_month
+        self.begin_date_edit_month.setDate(self.adv_begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_begin"))
+        # TODO:(ziheng huang): change the name: self.begin_date_edit to self.begin_date_edit_month, call the method on_date_month_changed
+
+        self.end_date_edit_year = main_window_ui.end_date_edit_fetch_year
+        self.end_date_edit_year.setDate(self.adv_end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
+        # TODO:(ziheng huang):change the name: self.end_date_edit to self.end_date_edit_year, call the method on_date_year_changed
+
+        self.end_date_edit_month = main_window_ui.end_date_edit_fetch_month
+        self.end_date_edit_month.setDate(self.adv_end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
+        # TODO:(ziheng huang):change the name: self.end_date_edit to self.end_date_edit_month, call the method on_date_month_changed
         # endregion
 
         # region Custom Date Range
@@ -1144,21 +1159,47 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
-        if date_type == "adv_begin":
-            self.adv_begin_date = date
-
-        elif date_type == "adv_end":
-            self.adv_end_date = date
-
-        elif date_type == "all_date":
+    def on_date_all_changed(self, date: QDate, date_type: str):
+        if date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
+        # TODO:(ziheng huang): delete the if statement for str = adv_begin or adv_end
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+
+    def on_date_year_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(date.year(),self.adv_begin_date.month(),self.adv_begin_date.day())
+            print(self.adv_begin_date)
+
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(date.year(),self.adv_end_date.month(),self.adv_end_date.day())
+            print(self.adv_end_date)
+
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
         else:
             self.custom_dir_frame.show()
+        # TODO:(ziheng huang): add a new method to change the year
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(self.adv_begin_date.year(),date.month(),self.adv_begin_date.day())
+            print(self.adv_begin_date)
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(self.adv_end_date.year(),date.month(),self.adv_end_date.day())
+            print(self.adv_end_date)
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+        # TODO:(ziheng huang): add a new method to change the month
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1335,12 +1376,23 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = fetch_special_reports_ui.begin_date_edit_special
-        self.begin_date_edit.setDate(self.begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "begin_date"))
-        self.end_date_edit = fetch_special_reports_ui.end_date_edit_special
-        self.end_date_edit.setDate(self.end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
+        self.begin_date_edit_year = main_window_ui.begin_date_edit_special_year
+        self.begin_date_edit_year.setDate(self.begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
+
+        self.begin_date_edit_month = main_window_ui.begin_date_edit_special_month
+        self.begin_date_edit_month.setDate(self.begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "begin_date"))
+        # TODO:(ziheng huang): change the name and add month selecter
+
+        self.end_date_edit_year = main_window_ui.end_date_edit_special_year
+        self.end_date_edit_year.setDate(self.end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "end_date"))
+
+        self.end_date_edit_month = main_window_ui.end_date_edit_special_month
+        self.end_date_edit_month.setDate(self.end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
+        # TODO:(ziheng huang):change the name and add month selecter
         # endregion
 
     def update_vendors_ui(self):
@@ -1351,21 +1403,39 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
+    def on_date_year_changed(self, date: QDate, date_type: str):
         if date_type == "begin_date":
-            self.begin_date = date
+            self.begin_date = QDate(date.year(),self.begin_date.month(),self.begin_date.day())
             # if self.begin_date.year() != self.end_date.year():
             #     self.end_date.setDate(self.begin_date.year(),
             #                           self.end_date.month(),
             #                           self.end_date.day())
             #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
-            self.end_date = date
+            self.end_date = QDate(date.year(),self.end_date.month(),self.end_date.day())
             # if self.end_date.year() != self.begin_date.year():
             #     self.begin_date.setDate(self.end_date.year(),
             #                             self.begin_date.month(),
             #                             self.begin_date.day())
             #     self.begin_date_edit.setDate(self.begin_date)
+        # TODO:(ziheng huang): add a new method for year selecter which is only for special report
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "begin_date":
+            self.begin_date = QDate(self.begin_date.year(),date.month(),self.begin_date.day())
+            # if self.begin_date.year() != self.end_date.year():
+            #     self.end_date.setDate(self.begin_date.year(),
+            #                           self.end_date.month(),
+            #                           self.end_date.day())
+            #     self.end_date_edit.setDate(self.end_date)
+        elif date_type == "end_date":
+            self.end_date = QDate(self.end_date.year(),date.month(),self.end_date.day())
+            # if self.end_date.year() != self.begin_date.year():
+            #     self.begin_date.setDate(self.end_date.year(),
+            #                             self.begin_date.month(),
+            #                             self.begin_date.day())
+            #     self.begin_date_edit.setDate(self.begin_date)
+        # TODO:(ziheng huang): add a new method for month selecter which is only for special report
 
     def on_report_type_selected(self, major_report_type: MajorReportType):
         if major_report_type == self.selected_report_type: return

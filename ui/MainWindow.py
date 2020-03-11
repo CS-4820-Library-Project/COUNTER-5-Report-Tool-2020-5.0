@@ -38,7 +38,7 @@ class Ui_mainWindow(object):
         self.gridLayout.addWidget(self.tab_widget, 1, 0, 1, 1)
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1200, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1200, 23))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
