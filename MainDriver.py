@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow
-import ui.MainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from ui import MainWindow, ManageVendorsTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportFileController
@@ -32,11 +32,15 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     main_window = QMainWindow()
-    main_window_ui = ui.MainWindow.Ui_mainWindow()
+    main_window_ui = MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
     # # region Setup Tab Controllers
-    # manage_vendors_controller = ManageVendorsController(main_window_ui)
+    manage_vendors_tab = QWidget(main_window)
+    manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
+    manage_vendors_ui.setupUi(manage_vendors_tab)
+    manage_vendors_controller = ManageVendorsController(manage_vendors_ui)
+
     # settings_controller = SettingsController(main_window_ui)
     # fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
     #                                                   main_window_ui)
@@ -53,6 +57,8 @@ if __name__ == "__main__":
     # manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
     # manage_vendors_controller.vendors_changed_signal.connect(import_file_controller.on_vendors_changed)
     # # endregion
+
+    main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
 
     main_window.show()
     sys.exit(app.exec_())

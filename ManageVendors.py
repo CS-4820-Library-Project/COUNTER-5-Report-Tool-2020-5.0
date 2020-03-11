@@ -4,7 +4,7 @@ import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
+from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDialog
 import DataStorage
 import webbrowser
 from JsonUtils import JsonModel
@@ -48,39 +48,39 @@ class Vendor(JsonModel):
 class ManageVendorsController(QObject):
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
         super().__init__()
         self.selected_index = -1
 
-        self.edit_vendor_details_frame = main_window_ui.edit_vendor_details_frame
-        self.edit_vendor_options_frame = main_window_ui.edit_vendor_options_frame
+        self.edit_vendor_details_frame = manage_vendors_ui.edit_vendor_details_frame
+        self.edit_vendor_options_frame = manage_vendors_ui.edit_vendor_options_frame
 
-        self.name_line_edit = main_window_ui.nameEdit
-        self.customer_id_line_edit = main_window_ui.customerIdEdit
-        self.base_url_line_edit = main_window_ui.baseUrlEdit
-        self.requestor_id_line_edit = main_window_ui.requestorIdEdit
-        self.api_key_line_edit = main_window_ui.apiKeyEdit
-        self.platform_line_edit = main_window_ui.platformEdit
-        self.local_only_check_box = main_window_ui.local_only_check_box
-        self.description_text_edit = main_window_ui.descriptionEdit
-        self.companies_text_edit = main_window_ui.companiesEdit
+        self.name_line_edit = manage_vendors_ui.nameEdit
+        self.customer_id_line_edit = manage_vendors_ui.customerIdEdit
+        self.base_url_line_edit = manage_vendors_ui.baseUrlEdit
+        self.requestor_id_line_edit = manage_vendors_ui.requestorIdEdit
+        self.api_key_line_edit = manage_vendors_ui.apiKeyEdit
+        self.platform_line_edit = manage_vendors_ui.platformEdit
+        self.local_only_check_box = manage_vendors_ui.local_only_check_box
+        self.description_text_edit = manage_vendors_ui.descriptionEdit
+        self.companies_text_edit = manage_vendors_ui.companiesEdit
 
-        self.name_validation_label = main_window_ui.name_validation_label
+        self.name_validation_label = manage_vendors_ui.name_validation_label
         self.name_validation_label.hide()
-        self.url_validation_label = main_window_ui.url_validation_label
+        self.url_validation_label = manage_vendors_ui.url_validation_label
         self.url_validation_label.hide()
 
-        self.help_button = main_window_ui.helpButton
-        self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
-        self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
-        self.remove_vendor_button = main_window_ui.removeVendorButton
-        self.add_vendor_button = main_window_ui.addVendorButton
-        self.export_vendors_button = main_window_ui.exportVendorsButton
+        # self.help_button = manage_vendors_ui.helpButton
+        self.save_vendor_changes_button = manage_vendors_ui.saveVendorChangesButton
+        self.undo_vendor_changes_button = manage_vendors_ui.undoVendorChangesButton
+        self.remove_vendor_button = manage_vendors_ui.removeVendorButton
+        self.add_vendor_button = manage_vendors_ui.addVendorButton
+        self.export_vendors_button = manage_vendors_ui.exportVendorsButton
         # TODO(Ziheng): add export_vendors_button
-        self.import_vendors_button = main_window_ui.importVendorsButton
+        self.import_vendors_button = manage_vendors_ui.importVendorsButton
         # TODO(Ziheng): add import_vendors_button
 
-        self.help_button.clicked.connect(self.help_method)
+        # self.help_button.clicked.connect(self.help_method)
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
@@ -90,7 +90,7 @@ class ManageVendorsController(QObject):
         self.import_vendors_button.clicked.connect(self.open_file_select_dialog)
         # TODO(Ziheng): add connection to dialog for import_vendors_button to import file
 
-        self.vendor_list_view = main_window_ui.vendorsListView
+        self.vendor_list_view = manage_vendors_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
