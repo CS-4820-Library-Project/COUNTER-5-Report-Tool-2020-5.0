@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QStandardItemModel
 from ui import MainWindow
-from ImportFile import ImportFileController
+from ImportFile import ImportReportController
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 import Settings
@@ -51,7 +51,7 @@ def controller(qtbot, settings):  # ImportFileController without populated vendo
     window_ui = MainWindow.Ui_mainWindow()
     window_ui.setupUi(window)
 
-    c = ImportFileController([], settings, window_ui)
+    c = ImportReportController([], settings, window_ui)
     yield c
 
 
@@ -61,7 +61,7 @@ def controller_v(qtbot, vendors, settings):  # ImportFileController with populat
     window_ui = MainWindow.Ui_mainWindow()
     window_ui.setupUi(window)
 
-    c = ImportFileController(vendors, settings, window_ui)
+    c = ImportReportController(vendors, settings, window_ui)
     yield c
 
 
@@ -156,15 +156,15 @@ def test_import_file(controller_v):
     file_path = file_dir + file_name
 
     # No file selected
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Invalid file selected
     controller_v.selected_file_path = "./data/invalid_file"
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Valid file selected
     controller_v.selected_file_path = "./data/test_file_for_import.tsv"
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
     assert path.isfile(file_path)
 
 

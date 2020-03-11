@@ -7,14 +7,15 @@ import webbrowser
 import shlex
 import platform
 import copy
+import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QFileDialog, QLineEdit
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, \
-    DisclaimerDialog
+from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
+    VendorResultsWidget, DisclaimerDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
@@ -104,7 +105,7 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-PROTECTED_DIR = "./all_data/DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
 
 
 class CompletionStatus(Enum):
@@ -1002,7 +1003,7 @@ class FetchReportsAbstract:
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel, fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1017,30 +1018,30 @@ class FetchReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Buttons
-        self.fetch_all_btn = main_window_ui.fetch_all_data_button
+        self.fetch_all_btn = fetch_reports_ui.fetch_all_data_button
         self.fetch_all_btn.clicked.connect(self.fetch_all_basic_data)
 
-        self.fetch_adv_btn = main_window_ui.fetch_advanced_button
+        self.fetch_adv_btn = fetch_reports_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_fetch
+        self.vendor_list_view = fetch_reports_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
+        self.select_vendors_btn = fetch_reports_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
+        self.deselect_vendors_btn = fetch_reports_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
-        self.tool_button = main_window_ui.toolButton
+        self.tool_button = fetch_reports_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
 
         # endregion
 
         # region Report Types
-        self.report_type_list_view = main_window_ui.report_types_list_view
+        self.report_type_list_view = fetch_reports_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         for report_type in REPORT_TYPES:
@@ -1049,30 +1050,40 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.select_report_types_btn = main_window_ui.select_report_types_button_fetch
+        self.select_report_types_btn = fetch_reports_ui.select_report_types_button_fetch
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
-        self.deselect_report_types_btn = main_window_ui.deselect_report_types_button_fetch
+        self.deselect_report_types_btn = fetch_reports_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
         # endregion
 
         # region Date Edits
-        self.all_date_edit = main_window_ui.All_reports_edit_fetch
+        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
         self.all_date_edit.setDate(self.basic_begin_date)
-        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "all_date"))
-        self.begin_date_edit = main_window_ui.begin_date_edit_fetch
-        self.begin_date_edit.setDate(self.adv_begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = main_window_ui.end_date_edit_fetch
-        self.end_date_edit.setDate(self.adv_end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
+        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_all_changed(date, "all_date"))
+
+        self.begin_date_edit_year = fetch_reports_ui.begin_date_edit_fetch_year
+        self.begin_date_edit_year.setDate(self.adv_begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
+
+        self.begin_date_edit_month = fetch_reports_ui.begin_date_edit_fetch_month
+        self.begin_date_edit_month.setDate(self.adv_begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_begin"))
+
+        self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
+        self.end_date_edit_year.setDate(self.adv_end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
+
+        self.end_date_edit_month = fetch_reports_ui.end_date_edit_fetch_month
+        self.end_date_edit_month.setDate(self.adv_end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
         # endregion
 
         # region Custom Date Range
-        self.custom_dir_frame = main_window_ui.custom_dir_frame
+        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
-        self.custom_dir_edit = main_window_ui.custom_dir_edit
+        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
-        self.custom_dir_button = main_window_ui.custom_dir_button
+        self.custom_dir_button = fetch_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
 
         # endregion
@@ -1085,16 +1096,39 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
-        if date_type == "adv_begin":
-            self.adv_begin_date = date
-
-        elif date_type == "adv_end":
-            self.adv_end_date = date
-
-        elif date_type == "all_date":
+    def on_date_all_changed(self, date: QDate, date_type: str):
+        if date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+
+    def on_date_year_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(date.year(),self.adv_begin_date.month(),self.adv_begin_date.day())
+            print(self.adv_begin_date)
+
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(date.year(),self.adv_end_date.month(),self.adv_end_date.day())
+            print(self.adv_end_date)
+
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(self.adv_begin_date.year(),date.month(),self.adv_begin_date.day())
+            print(self.adv_begin_date)
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(self.adv_end_date.year(),date.month(),self.adv_end_date.day())
+            print(self.adv_end_date)
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
@@ -1225,7 +1259,8 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel,
+                 fetch_special_reports_ui: FetchSpecialReportsTab.Ui_fetch_special_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1237,32 +1272,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Button
-        self.fetch_special_btn = main_window_ui.fetch_special_data_button
+        self.fetch_special_btn = fetch_special_reports_ui.fetch_special_data_button
         self.fetch_special_btn.clicked.connect(self.fetch_special_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_special
+        self.vendor_list_view = fetch_special_reports_ui.vendors_list_view_special
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_special
+        self.select_vendors_btn = fetch_special_reports_ui.select_vendors_button_special
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_special
+        self.deselect_vendors_btn = fetch_special_reports_ui.deselect_vendors_button_special
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         # endregion
 
         # region Options
-        self.options_frame = main_window_ui.options_frame
+        self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
         # endregion
 
         # region Report Types
-        self.pr_radio_button = main_window_ui.pr_radio_button
-        self.dr_radio_button = main_window_ui.dr_radio_button
-        self.tr_radio_button = main_window_ui.tr_radio_button
-        self.ir_radio_button = main_window_ui.ir_radio_button
+        self.pr_radio_button = fetch_special_reports_ui.pr_radio_button
+        self.dr_radio_button = fetch_special_reports_ui.dr_radio_button
+        self.tr_radio_button = fetch_special_reports_ui.tr_radio_button
+        self.ir_radio_button = fetch_special_reports_ui.ir_radio_button
 
         self.pr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.PLATFORM))
         self.dr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.DATABASE))
@@ -1275,12 +1310,21 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = main_window_ui.begin_date_edit_special
-        self.begin_date_edit.setDate(self.begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "begin_date"))
-        self.end_date_edit = main_window_ui.end_date_edit_special
-        self.end_date_edit.setDate(self.end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
+        self.begin_date_edit_year = fetch_special_reports_ui.begin_date_edit_special_year
+        self.begin_date_edit_year.setDate(self.begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
+
+        self.begin_date_edit_month = fetch_special_reports_ui.begin_date_edit_special_month
+        self.begin_date_edit_month.setDate(self.begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "begin_date"))
+
+        self.end_date_edit_year = fetch_special_reports_ui.end_date_edit_special_year
+        self.end_date_edit_year.setDate(self.end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "end_date"))
+
+        self.end_date_edit_month = fetch_special_reports_ui.end_date_edit_special_month
+        self.end_date_edit_month.setDate(self.end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
         # endregion
 
     def update_vendors_ui(self):
@@ -1291,16 +1335,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
+    def on_date_year_changed(self, date: QDate, date_type: str):
         if date_type == "begin_date":
-            self.begin_date = date
+            self.begin_date = QDate(date.year(),self.begin_date.month(),self.begin_date.day())
             # if self.begin_date.year() != self.end_date.year():
             #     self.end_date.setDate(self.begin_date.year(),
             #                           self.end_date.month(),
             #                           self.end_date.day())
             #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
-            self.end_date = date
+            self.end_date = QDate(date.year(),self.end_date.month(),self.end_date.day())
+            # if self.end_date.year() != self.begin_date.year():
+            #     self.begin_date.setDate(self.end_date.year(),
+            #                             self.begin_date.month(),
+            #                             self.begin_date.day())
+            #     self.begin_date_edit.setDate(self.begin_date)
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "begin_date":
+            self.begin_date = QDate(self.begin_date.year(),date.month(),self.begin_date.day())
+            # if self.begin_date.year() != self.end_date.year():
+            #     self.end_date.setDate(self.begin_date.year(),
+            #                           self.end_date.month(),
+            #                           self.end_date.day())
+            #     self.end_date_edit.setDate(self.end_date)
+        elif date_type == "end_date":
+            self.end_date = QDate(self.end_date.year(),date.month(),self.end_date.day())
             # if self.end_date.year() != self.begin_date.year():
             #     self.begin_date.setDate(self.end_date.year(),
             #                             self.begin_date.month(),
@@ -2126,6 +2186,8 @@ class ReportWorker(QObject):
             protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
                 makedirs(protectec_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protectec_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')

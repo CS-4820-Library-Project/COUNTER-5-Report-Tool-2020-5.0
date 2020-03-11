@@ -1,7 +1,7 @@
 from enum import Enum
 from PyQt5.QtCore import Qt, QThread
 from PyQt5.QtWidgets import QDialog, QFileDialog, QLabel, QVBoxLayout, QSizePolicy, QWidget
-from ui import MainWindow, MessageDialog, UpdateDatabaseProgressDialog
+from ui import SettingsTab, MessageDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 import json
 import DataStorage
@@ -81,7 +81,7 @@ def show_message(message: str):
 
 
 class SettingsController:
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         json_dict = json.loads(json_string)
@@ -89,57 +89,57 @@ class SettingsController:
         # endregion
 
         # region Reports
-        self.yearly_dir_edit = main_window_ui.yearly_directory_edit
-        self.other_dir_edit = main_window_ui.other_directory_edit
+        self.yearly_dir_edit = settings_ui.yearly_directory_edit
+        self.other_dir_edit = settings_ui.other_directory_edit
 
-        main_window_ui.yearly_directory_button.clicked.connect(
+        settings_ui.yearly_directory_button.clicked.connect(
             lambda: self.open_file_select_dialog(Setting.YEARLY_DIR))
-        main_window_ui.other_directory_button.clicked.connect(
+        settings_ui.other_directory_button.clicked.connect(
             lambda: self.open_file_select_dialog(Setting.OTHER_DIR))
 
         self.yearly_dir_edit.setText(self.settings.yearly_directory)
         self.other_dir_edit.setText(self.settings.other_directory)
-        main_window_ui.request_interval_spin_box.setValue(self.settings.request_interval)
-        main_window_ui.request_timeout_spin_box.setValue(self.settings.request_timeout)
-        main_window_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
-        main_window_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
-        main_window_ui.empty_cell_edit.setText(self.settings.empty_cell)
-        main_window_ui.user_agent_edit.setText(self.settings.user_agent)
+        settings_ui.request_interval_spin_box.setValue(self.settings.request_interval)
+        settings_ui.request_timeout_spin_box.setValue(self.settings.request_timeout)
+        settings_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
+        settings_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
+        settings_ui.empty_cell_edit.setText(self.settings.empty_cell)
+        settings_ui.user_agent_edit.setText(self.settings.user_agent)
 
         self.yearly_dir_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.YEARLY_DIR, text))
         self.other_dir_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.OTHER_DIR, text))
-        main_window_ui.request_interval_spin_box.valueChanged.connect(
+        settings_ui.request_interval_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.REQUEST_INTERVAL, value))
-        main_window_ui.request_timeout_spin_box.valueChanged.connect(
+        settings_ui.request_timeout_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.REQUEST_TIMEOUT, value))
-        main_window_ui.concurrent_vendors_spin_box.valueChanged.connect(
+        settings_ui.concurrent_vendors_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.CONCURRENT_VENDORS, value))
-        main_window_ui.concurrent_reports_spin_box.valueChanged.connect(
+        settings_ui.concurrent_reports_spin_box.valueChanged.connect(
             lambda value: self.on_setting_changed(Setting.CONCURRENT_REPORTS, value))
-        main_window_ui.empty_cell_edit.textEdited.connect(
+        settings_ui.empty_cell_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.EMPTY_CELL, text))
-        main_window_ui.user_agent_edit.textEdited.connect(
+        settings_ui.user_agent_edit.textEdited.connect(
             lambda text: self.on_setting_changed(Setting.USER_AGENT, text))
         # endregion
 
         # region Reports Help Messages
-        main_window_ui.yearly_directory_help_button.clicked.connect(
+        settings_ui.yearly_directory_help_button.clicked.connect(
             lambda: show_message("This is where yearly files will be saved by default"))
-        main_window_ui.other_directory_help_button.clicked.connect(
+        settings_ui.other_directory_help_button.clicked.connect(
             lambda: show_message("This is where special and non-yearly files will be saved by default"))
-        main_window_ui.request_interval_help_button.clicked.connect(
+        settings_ui.request_interval_help_button.clicked.connect(
             lambda: show_message("The amount of time to wait between a vendor's report requests"))
-        main_window_ui.request_timeout_help_button.clicked.connect(
+        settings_ui.request_timeout_help_button.clicked.connect(
             lambda: show_message("The amount of time to wait before cancelling a request"))
-        main_window_ui.concurrent_vendors_help_button.clicked.connect(
+        settings_ui.concurrent_vendors_help_button.clicked.connect(
             lambda: show_message("The maximum number of vendors to work on at the same time"))
-        main_window_ui.concurrent_reports_help_button.clicked.connect(
+        settings_ui.concurrent_reports_help_button.clicked.connect(
             lambda: show_message("The maximum number of reports to work on at the same time, per vendor"))
-        main_window_ui.empty_cell_help_button.clicked.connect(
+        settings_ui.empty_cell_help_button.clicked.connect(
             lambda: show_message("Empty cells will be replaced by whatever is in here"))
-        main_window_ui.user_agent_help_button.clicked.connect(
+        settings_ui.user_agent_help_button.clicked.connect(
             lambda: show_message("Some vendors only support specific user-agents otherwise, they return error HTTP "
                                  "error codes. Values should be separated by a space"))
         # endregion

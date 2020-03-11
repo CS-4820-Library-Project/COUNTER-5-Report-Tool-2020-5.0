@@ -8,37 +8,37 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDial
 
 import ManageDB
 import DataStorage
-from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
+from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
 
 
 class SearchController:
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
-        self.main_window = main_window_ui
+    def __init__(self, search_ui: SearchTab.Ui_search_tab):
+        self.main_window = search_ui
 
         # set up report types combobox
-        self.report_parameter = main_window_ui.search_report_parameter_combobox
+        self.report_parameter = search_ui.search_report_parameter_combobox
         self.report_parameter.addItems(ManageDB.ALL_REPORTS)
 
         # set up start year dateedit
-        self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
+        self.start_year_parameter = search_ui.search_start_year_parameter_dateedit
         self.start_year_parameter.setDate(QDate.currentDate())
 
         # set up end year dateedit
-        self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
+        self.end_year_parameter = search_ui.search_end_year_parameter_dateedit
         self.end_year_parameter.setDate(QDate.currentDate())
 
         # set up search button
-        self.search_button = main_window_ui.search_button
+        self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_checkbox = main_window_ui.search_open_results_checkbox
+        self.open_results_checkbox = search_ui.search_open_results_checkbox
 
         # set up export button
-        self.export_button = main_window_ui.search_export_button
+        self.export_button = search_ui.search_export_button
         self.export_button.clicked.connect(self.export_parameters)
 
         # set up import button
-        self.import_button = main_window_ui.search_import_button
+        self.import_button = search_ui.search_import_button
         self.import_button.clicked.connect(self.import_parameters)
 
         # set up add and clause button
@@ -46,7 +46,7 @@ class SearchController:
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
 
-        self.add_and_button = main_window_ui.search_add_and_button
+        self.add_and_button = search_ui.search_add_and_button
         self.add_and_button.clicked.connect(add_and_and_or_clause)
 
         # resets the search clauses when the report type is changed
@@ -55,7 +55,7 @@ class SearchController:
             add_and_and_or_clause()
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
-        self.and_clause_parameters = main_window_ui.search_and_clause_parameters_scrollarea
+        self.and_clause_parameters = search_ui.search_and_clause_parameters_scrollarea
         self.and_clause_parameters.setLayout(QVBoxLayout())
         refresh_and_add_clauses()
 
