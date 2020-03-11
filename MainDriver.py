@@ -2,10 +2,10 @@ import sys
 import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
-from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab
+from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
-from ImportFile import ImportFileController
+from ImportFile import ImportReportController
 from Search import SearchController
 from Settings import SettingsController
 from Visual import VisualController
@@ -66,10 +66,12 @@ if __name__ == "__main__":
                                                                      settings_controller.settings,
                                                                      fetch_special_reports_ui)
 
-    # fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
-    #                                                   main_window_ui)
-    # fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
-    #                                                                  settings_controller.settings, main_window_ui)
+    import_report_tab = QWidget(main_window)
+    import_report_ui = ImportReportTab.Ui_import_report_tab()
+    import_report_ui.setupUi(import_report_tab)
+    import_report_controller = ImportReportController(manage_vendors_controller.vendors, settings_controller.settings,
+                                                      import_report_ui)
+
     # search_controller = SearchController(main_window_ui)
     # import_file_controller = ImportFileController(manage_vendors_controller.vendors, settings_controller.settings,
     #                                               main_window_ui)
@@ -85,6 +87,7 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
+    main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     # Status Bar

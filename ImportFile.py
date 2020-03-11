@@ -5,7 +5,7 @@ from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
-from ui import MainWindow, MessageDialog, ReportResultWidget
+from ui import ImportReportTab, MessageDialog, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
@@ -26,8 +26,8 @@ class ProcessResult:
         self.file_path = ""
 
 
-class ImportFileController:
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+class ImportReportController:
+    def __init__(self, vendors: list, settings: SettingsModel, import_report_ui: ImportReportTab.Ui_import_report_tab):
 
         # region General
         self.vendors = vendors
@@ -40,7 +40,7 @@ class ImportFileController:
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_import
+        self.vendor_list_view = import_report_ui.vendors_list_view_import
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
@@ -48,7 +48,7 @@ class ImportFileController:
         # endregion
 
         # region Report Types
-        self.report_type_list_view = main_window_ui.report_types_list_view_import
+        self.report_type_list_view = import_report_ui.report_types_list_view_import
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         self.report_type_list_view.clicked.connect(self.on_report_type_selected)
@@ -59,17 +59,17 @@ class ImportFileController:
         # endregion
 
         # region Others
-        self.year_date_edit = main_window_ui.report_year_date_edit
+        self.year_date_edit = import_report_ui.report_year_date_edit
         self.year_date_edit.setDate(self.date)
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
 
-        self.select_file_btn = main_window_ui.select_file_button
+        self.select_file_btn = import_report_ui.select_file_button
         self.select_file_btn.clicked.connect(self.open_file_select_dialog)
 
-        self.selected_file_edit = main_window_ui.selected_file_edit
+        self.selected_file_edit = import_report_ui.selected_file_edit
 
-        self.import_file_button = main_window_ui.import_file_button
-        self.import_file_button.clicked.connect(self.on_import_clicked)
+        self.import_report_button = import_report_ui.import_report_button
+        self.import_report_button.clicked.connect(self.on_import_clicked)
         # endregion
 
     def on_vendors_changed(self, vendors: list):
@@ -118,10 +118,10 @@ class ImportFileController:
         vendor = self.vendors[self.selected_vendor_index]
         report_type = REPORT_TYPES[self.selected_report_type_index]
 
-        process_result = self.import_file(vendor, report_type)
+        process_result = self.import_report(vendor, report_type)
         self.show_result(process_result)
 
-    def import_file(self, vendor: Vendor, report_type: str) -> ProcessResult:
+    def import_report(self, vendor: Vendor, report_type: str) -> ProcessResult:
         process_result = ProcessResult(vendor, report_type)
 
         try:
