@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>838</width>
-    <height>408</height>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -370,7 +370,7 @@
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
                 <widget class="QLabel" name="label_8">
                  <property name="sizePolicy">
@@ -427,32 +427,35 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QDateEdit" name="begin_date_edit_fetch">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2020</year>
-                      <month>1</month>
-                      <day>1</day>
-                     </datetime>
-                    </property>
-                    <property name="displayFormat">
-                     <string>yyyy-MM</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
+                  <item row="2" column="0">
                    <widget class="QLabel" name="label_10">
                     <property name="text">
                      <string>End Date</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="1" column="0">
+                   <widget class="QDateEdit" name="begin_date_edit_fetch_year">
+                    <property name="dateTime">
+                     <datetime>
+                      <hour>0</hour>
+                      <minute>0</minute>
+                      <second>0</second>
+                      <year>2020</year>
+                      <month>1</month>
+                      <day>1</day>
+                     </datetime>
+                    </property>
+                    <property name="currentSection">
+                     <enum>QDateTimeEdit::YearSection</enum>
+                    </property>
+                    <property name="displayFormat">
+                     <string>yyyy</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="1">
-                   <widget class="QDateEdit" name="end_date_edit_fetch">
+                   <widget class="QDateEdit" name="begin_date_edit_fetch_month">
                     <property name="dateTime">
                      <datetime>
                       <hour>0</hour>
@@ -464,7 +467,41 @@
                      </datetime>
                     </property>
                     <property name="displayFormat">
-                     <string>yyyy-MM</string>
+                     <string>MM</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QDateEdit" name="end_date_edit_fetch_year">
+                    <property name="dateTime">
+                     <datetime>
+                      <hour>0</hour>
+                      <minute>0</minute>
+                      <second>0</second>
+                      <year>2020</year>
+                      <month>1</month>
+                      <day>1</day>
+                     </datetime>
+                    </property>
+                    <property name="displayFormat">
+                     <string>yyyy</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QDateEdit" name="end_date_edit_fetch_month">
+                    <property name="dateTime">
+                     <datetime>
+                      <hour>0</hour>
+                      <minute>0</minute>
+                      <second>0</second>
+                      <year>2020</year>
+                      <month>1</month>
+                      <day>1</day>
+                     </datetime>
+                    </property>
+                    <property name="displayFormat">
+                     <string>MM</string>
                     </property>
                    </widget>
                   </item>
