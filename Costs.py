@@ -52,7 +52,7 @@ class CostsController:
         self.on_vendor_parameter_changed()
         self.on_year_parameter_changed()
 
-    # TODO enable cost fields when others are filled
+    # TODO (Chandler): enable cost fields when others are filled
 
     def on_report_parameter_changed(self):
         print('on_report_parameter_changed')
@@ -89,8 +89,10 @@ class CostsController:
 
     def insert_costs(self):
         print('insert_costs')
-        # TODO insert into database
+        # TODO (Chandler): insert into database
 
     def load_costs(self):
         print('load_costs')
-        # TODO load from database
+        # TODO (Chandler): load from database
+
+    # TODO (Chandler): import/export tsv file with costs

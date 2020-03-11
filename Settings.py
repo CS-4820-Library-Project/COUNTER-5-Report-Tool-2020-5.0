@@ -193,3 +193,5 @@ class SettingsController:
             self.is_restoring_database = False
         else:
             print('Error, already running')
+
+    # TODO (Chandler): backup and restore costs

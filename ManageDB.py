@@ -580,7 +580,8 @@ def read_report_file(file_name, vendor,
         return None
 
 
-def get_all_reports():  # TODO make safer; only look for vendors in the vendor list
+def get_all_reports():
+    # TODO (Chandler): make safer; only look for vendors in the vendor list
     reports = []
     for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
@@ -621,7 +622,7 @@ def search_sql_text(report, start_year, end_year,
         for sub_clause in clause:
             sub_clauses_text.append(
                 sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-            # TODO make parameterized query
+            # TODO (Chandler): make parameterized query
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
@@ -646,7 +647,7 @@ def chart_search_sql_text(report, start_year, end_year,
     clauses_texts = []
     for clause in clauses:
         clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
-        # TODO make parameterized query
+        # TODO (Chandler): make parameterized query
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
     return sql_text
