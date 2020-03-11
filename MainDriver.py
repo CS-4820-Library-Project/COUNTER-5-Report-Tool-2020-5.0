@@ -3,7 +3,7 @@ import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
 from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
-    SearchTab
+    SearchTab, VisualTab
 from ManageVendors import ManageVendorsController
 from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
@@ -78,7 +78,11 @@ if __name__ == "__main__":
     search_ui.setupUi(search_tab)
     search_controller = SearchController(search_ui)
 
-    # visual_controller = VisualController(main_window_ui)
+    visual_tab = QWidget(main_window)
+    visual_ui = VisualTab.Ui_visual_tab()
+    visual_ui.setupUi(visual_tab)
+    visual_controller = VisualController(visual_ui)
+
     # # endregion
     #
     # # region Connect Signals
@@ -92,6 +96,7 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
     main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
     main_window_ui.tab_widget.addTab(search_tab, "Search")
+    main_window_ui.tab_widget.addTab(visual_tab, "Visual")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     # Status Bar
