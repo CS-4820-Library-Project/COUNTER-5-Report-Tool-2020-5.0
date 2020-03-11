@@ -7,6 +7,7 @@ import webbrowser
 import shlex
 import platform
 import copy
+import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
@@ -104,7 +105,7 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-PROTECTED_DIR = "./all_data/DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
 
 
 class CompletionStatus(Enum):
@@ -2185,6 +2186,8 @@ class ReportWorker(QObject):
             protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
                 makedirs(protectec_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protectec_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
