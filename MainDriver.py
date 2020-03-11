@@ -90,6 +90,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
     # endregion
 
+    # Add tabs to main window
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
@@ -97,6 +98,8 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(search_tab, "Search")
     main_window_ui.tab_widget.addTab(visual_tab, "Visual")
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
+
+    main_window_ui.tab_widget.setCurrentIndex(1)
 
     # Status Bar
     status_bar = main_window_ui.statusbar
