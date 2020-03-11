@@ -6,14 +6,16 @@ import requests
 import webbrowser
 import shlex
 import platform
+import copy
+import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QFileDialog, QLineEdit
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, \
-    DisclaimerDialog, UpdateDatabaseProgressDialog
+from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
+    VendorResultsWidget, DisclaimerDialog, UpdateDatabaseProgressDialog
 from JsonUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
@@ -103,7 +105,7 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-PROTECTED_DIR = "./all_data/DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
 
 
 class CompletionStatus(Enum):
@@ -1059,7 +1061,7 @@ class FetchReportsAbstract:
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel, fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1074,30 +1076,30 @@ class FetchReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Buttons
-        self.fetch_all_btn = main_window_ui.fetch_all_data_button
+        self.fetch_all_btn = fetch_reports_ui.fetch_all_data_button
         self.fetch_all_btn.clicked.connect(self.fetch_all_basic_data)
 
-        self.fetch_adv_btn = main_window_ui.fetch_advanced_button
+        self.fetch_adv_btn = fetch_reports_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_fetch
+        self.vendor_list_view = fetch_reports_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
+        self.select_vendors_btn = fetch_reports_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
+        self.deselect_vendors_btn = fetch_reports_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
-        self.tool_button = main_window_ui.toolButton
+        self.tool_button = fetch_reports_ui.toolButton
         self.tool_button.clicked.connect(self.tool_button_click)
 
         # endregion
 
         # region Report Types
-        self.report_type_list_view = main_window_ui.report_types_list_view
+        self.report_type_list_view = fetch_reports_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         for report_type in REPORT_TYPES:
@@ -1106,14 +1108,14 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.select_report_types_btn = main_window_ui.select_report_types_button_fetch
+        self.select_report_types_btn = fetch_reports_ui.select_report_types_button_fetch
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
-        self.deselect_report_types_btn = main_window_ui.deselect_report_types_button_fetch
+        self.deselect_report_types_btn = fetch_reports_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
         # endregion
 
         # region Date Edits
-        self.all_date_edit = main_window_ui.All_reports_edit_fetch
+        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
         self.all_date_edit.setDate(self.basic_begin_date)
         self.all_date_edit.dateChanged.connect(lambda date: self.on_date_all_changed(date, "all_date"))
         # TODO:(ziheng huang): change the name of the method on_data_changed to on_date_all_changed
@@ -1140,11 +1142,11 @@ class FetchReportsController(FetchReportsAbstract):
         # endregion
 
         # region Custom Date Range
-        self.custom_dir_frame = main_window_ui.custom_dir_frame
+        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
-        self.custom_dir_edit = main_window_ui.custom_dir_edit
+        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
-        self.custom_dir_button = main_window_ui.custom_dir_button
+        self.custom_dir_button = fetch_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
 
         # endregion
@@ -1323,7 +1325,8 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, vendors: list, settings: SettingsModel,
+                 fetch_special_reports_ui: FetchSpecialReportsTab.Ui_fetch_special_reports_tab):
         super().__init__(vendors, settings)
 
         # region General
@@ -1335,32 +1338,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Button
-        self.fetch_special_btn = main_window_ui.fetch_special_data_button
+        self.fetch_special_btn = fetch_special_reports_ui.fetch_special_data_button
         self.fetch_special_btn.clicked.connect(self.fetch_special_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_special
+        self.vendor_list_view = fetch_special_reports_ui.vendors_list_view_special
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_special
+        self.select_vendors_btn = fetch_special_reports_ui.select_vendors_button_special
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_special
+        self.deselect_vendors_btn = fetch_special_reports_ui.deselect_vendors_button_special
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         # endregion
 
         # region Options
-        self.options_frame = main_window_ui.options_frame
+        self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
         # endregion
 
         # region Report Types
-        self.pr_radio_button = main_window_ui.pr_radio_button
-        self.dr_radio_button = main_window_ui.dr_radio_button
-        self.tr_radio_button = main_window_ui.tr_radio_button
-        self.ir_radio_button = main_window_ui.ir_radio_button
+        self.pr_radio_button = fetch_special_reports_ui.pr_radio_button
+        self.dr_radio_button = fetch_special_reports_ui.dr_radio_button
+        self.tr_radio_button = fetch_special_reports_ui.tr_radio_button
+        self.ir_radio_button = fetch_special_reports_ui.ir_radio_button
 
         self.pr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.PLATFORM))
         self.dr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.DATABASE))
@@ -1390,7 +1393,6 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit_month.setDate(self.end_date)
         self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
         # TODO:(ziheng huang):change the name and add month selecter
-
         # endregion
 
     def update_vendors_ui(self):
@@ -1856,7 +1858,9 @@ class ReportWorker(QObject):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Processing report")
 
         for report_item in report_items:
-            row_dict = {}  # <k = metric_type, v = ReportRow>
+            metric_row_dict = {}  # <k = metric_type, v = ReportRow> Some metric_types have a list of components
+            # Some Item report metric_types have a list of components
+            components = []  # list({component_values_as_dict})
 
             performance: PerformanceModel
             for performance in report_item.performances:
@@ -1865,83 +1869,137 @@ class ReportWorker(QObject):
                 instance: InstanceModel
                 for instance in performance.instances:
                     metric_type = instance.metric_type
-                    if metric_type not in row_dict:
-                        report_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
-                        report_row.metric_type = metric_type
+                    if metric_type not in metric_row_dict:
+                        metric_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
+                        metric_row.metric_type = metric_type
 
-                        if major_report_type == MajorReportType.PLATFORM:
-                            report_item: PlatformReportItemModel
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                        metric_row_dict[metric_type] = metric_row
+                    else:
+                        metric_row = metric_row_dict[metric_type]
 
-                        elif major_report_type == MajorReportType.DATABASE:
-                            report_item: DatabaseReportItemModel
-                            if report_item.database != "": report_row.database = report_item.database
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                    if major_report_type == MajorReportType.PLATFORM:
+                        report_item: PlatformReportItemModel
+                        if report_item.platform != "": metric_row.platform = report_item.platform
+                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
+                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
 
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.DATABASE:
+                        report_item: DatabaseReportItemModel
+                        if report_item.database != "": metric_row.database = report_item.database
+                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
+                        if report_item.platform != "": metric_row.platform = report_item.platform
+                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
+                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
 
-                            for item_id in report_item.item_ids:
-                                if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
 
-                        elif major_report_type == MajorReportType.TITLE:
-                            report_item: TitleReportItemModel
-                            if report_item.title != "": report_row.title = report_item.title
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.section_type != "": report_row.section_type = report_item.section_type
-                            if report_item.yop != "": report_row.yop = report_item.yop
-                            if report_item.access_type != "": report_row.access_type = report_item.access_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                        for item_id in report_item.item_ids:
+                            if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
 
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.TITLE:
+                        report_item: TitleReportItemModel
+                        if report_item.title != "": metric_row.title = report_item.title
+                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
+                        if report_item.platform != "": metric_row.platform = report_item.platform
+                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
+                        if report_item.section_type != "": metric_row.section_type = report_item.section_type
+                        if report_item.yop != "": metric_row.yop = report_item.yop
+                        if report_item.access_type != "": metric_row.access_type = report_item.access_type
+                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
 
-                            item_id: TypeValueModel
-                            for item_id in report_item.item_ids:
-                                item_type = item_id.item_type
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
 
-                                if item_type == "DOI":
-                                    report_row.doi = item_id.value
-                                elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
-                                elif item_type == "ISBN":
-                                    report_row.isbn = item_id.value
-                                elif item_type == "Print_ISSN":
-                                    report_row.print_issn = item_id.value
-                                elif item_type == "Online_ISSN":
-                                    report_row.online_issn = item_id.value
-                                elif item_type == "Linking_ISSN":
-                                    report_row.linking_issn = item_id.value
-                                elif item_type == "URI":
-                                    report_row.uri = item_id.value
+                        item_id: TypeValueModel
+                        for item_id in report_item.item_ids:
+                            item_type = item_id.item_type
 
-                        elif major_report_type == MajorReportType.ITEM:
-                            report_item: ItemReportItemModel
-                            if report_item.item != "": report_row.item = report_item.item
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.yop != "": report_row.yop = report_item.yop
-                            if report_item.access_type != "": report_row.access_type = report_item.access_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                            if item_type == "DOI":
+                                metric_row.doi = item_id.value
+                            elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
+                            elif item_type == "ISBN":
+                                metric_row.isbn = item_id.value
+                            elif item_type == "Print_ISSN":
+                                metric_row.print_issn = item_id.value
+                            elif item_type == "Online_ISSN":
+                                metric_row.online_issn = item_id.value
+                            elif item_type == "Linking_ISSN":
+                                metric_row.linking_issn = item_id.value
+                            elif item_type == "URI":
+                                metric_row.uri = item_id.value
 
-                            # Publisher ID
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.ITEM:
+                        report_item: ItemReportItemModel
+                        if report_item.item != "": metric_row.item = report_item.item
+                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
+                        if report_item.platform != "": metric_row.platform = report_item.platform
+                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
+                        if report_item.yop != "": metric_row.yop = report_item.yop
+                        if report_item.access_type != "": metric_row.access_type = report_item.access_type
+                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
+
+                        # Publisher ID
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
+
+                        # Authors
+                        authors_str = ""
+                        item_contributor: ItemContributorModel
+                        for item_contributor in report_item.item_contributors:
+                            if item_contributor.item_type == "Author":
+                                authors_str += f"{item_contributor.name}"
+                                if item_contributor.identifier:
+                                    authors_str += f" ({item_contributor.identifier})"
+                                authors_str += "; "
+                        if authors_str != "": metric_row.authors = authors_str.rstrip("; ")
+
+                        # Publication date
+                        item_date: TypeValueModel
+                        for item_date in report_item.item_dates:
+                            if item_date.item_type == "Publication_Date":
+                                metric_row.publication_date = item_date.value
+
+                        # Article version
+                        item_attribute: TypeValueModel
+                        for item_attribute in report_item.item_attributes:
+                            if item_attribute.item_type == "Article_Version":
+                                metric_row.article_version = item_attribute.value
+
+                        # Base IDs
+                        item_id: TypeValueModel
+                        for item_id in report_item.item_ids:
+                            item_type = item_id.item_type
+
+                            if item_type == "DOI":
+                                metric_row.doi = item_id.value
+                            elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
+                            elif item_type == "ISBN":
+                                metric_row.isbn = item_id.value
+                            elif item_type == "Print_ISSN":
+                                metric_row.print_issn = item_id.value
+                            elif item_type == "Online_ISSN":
+                                metric_row.online_issn = item_id.value
+                            elif item_type == "Linking_ISSN":
+                                metric_row.linking_issn = item_id.value
+                            elif item_type == "URI":
+                                metric_row.uri = item_id.value
+
+                        # Parent
+                        if report_item.item_parent is not None:
+                            item_parent: ItemParentModel
+                            item_parent = report_item.item_parent
+                            if item_parent.item_name != "": metric_row.parent_title = item_parent.item_name
+                            if item_parent.data_type != "": metric_row.parent_data_type = item_parent.data_type
 
                             # Authors
                             authors_str = ""
@@ -1952,102 +2010,130 @@ class ReportWorker(QObject):
                                     if item_contributor.identifier:
                                         authors_str += f" ({item_contributor.identifier})"
                                     authors_str += "; "
-                            if authors_str != "": report_row.authors = authors_str.rstrip("; ")
+                            authors_str.rstrip("; ")
+                            if authors_str != "": metric_row.authors = authors_str
 
                             # Publication date
                             item_date: TypeValueModel
-                            for item_date in report_item.item_dates:
-                                if item_date.item_type == "Publication_Date":
-                                    report_row.publication_date = item_date.value
+                            for item_date in item_parent.item_dates:
+                                if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
+                                    metric_row.parent_publication_date = item_date.value
 
                             # Article version
                             item_attribute: TypeValueModel
-                            for item_attribute in report_item.item_attributes:
+                            for item_attribute in item_parent.item_attributes:
                                 if item_attribute.item_type == "Article_Version":
-                                    report_row.article_version = item_attribute.value
+                                    metric_row.parent_article_version = item_attribute.value
 
-                            # Base IDs
+                            # Parent IDs
                             item_id: TypeValueModel
-                            for item_id in report_item.item_ids:
+                            for item_id in item_parent.item_ids:
                                 item_type = item_id.item_type
 
                                 if item_type == "DOI":
-                                    report_row.doi = item_id.value
+                                    metric_row.parent_doi = item_id.value
                                 elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
+                                    metric_row.parent_proprietary_id = item_id.value
                                 elif item_type == "ISBN":
-                                    report_row.isbn = item_id.value
+                                    metric_row.parent_isbn = item_id.value
                                 elif item_type == "Print_ISSN":
-                                    report_row.print_issn = item_id.value
+                                    metric_row.parent_print_issn = item_id.value
                                 elif item_type == "Online_ISSN":
-                                    report_row.online_issn = item_id.value
-                                elif item_type == "Linking_ISSN":
-                                    report_row.linking_issn = item_id.value
+                                    metric_row.parent_online_issn = item_id.value
                                 elif item_type == "URI":
-                                    report_row.uri = item_id.value
+                                    metric_row.parent_uri = item_id.value
 
-                            # Parent
-                            if report_item.item_parent is not None:
-                                item_parent: ItemParentModel
-                                item_parent = report_item.item_parent
-                                if item_parent.item_name != "": report_row.parent_title = item_parent.item_name
-                                if item_parent.data_type != "": report_row.parent_data_type = item_parent.data_type
+                    else:
+                        if SHOW_DEBUG_MESSAGES: print(
+                            f"{self.vendor.name}-{self.report_type}: Unexpected report type")
 
-                                # Authors
-                                authors_str = ""
-                                item_contributor: ItemContributorModel
-                                for item_contributor in report_item.item_contributors:
-                                    if item_contributor.item_type == "Author":
-                                        authors_str += f"{item_contributor.name}"
-                                        if item_contributor.identifier:
-                                            authors_str += f" ({item_contributor.identifier})"
-                                        authors_str += "; "
-                                authors_str.rstrip("; ")
-                                if authors_str != "": report_row.authors = authors_str
-
-                                # Publication date
-                                item_date: TypeValueModel
-                                for item_date in item_parent.item_dates:
-                                    if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
-                                        report_row.parent_publication_date = item_date.value
-
-                                # Article version
-                                item_attribute: TypeValueModel
-                                for item_attribute in item_parent.item_attributes:
-                                    if item_attribute.item_type == "Article_Version":
-                                        report_row.parent_article_version = item_attribute.value
-
-                                # Parent IDs
-                                item_id: TypeValueModel
-                                for item_id in item_parent.item_ids:
-                                    item_type = item_id.item_type
-
-                                    if item_type == "DOI":
-                                        report_row.parent_doi = item_id.value
-                                    elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                        report_row.parent_proprietary_id = item_id.value
-                                    elif item_type == "ISBN":
-                                        report_row.parent_isbn = item_id.value
-                                    elif item_type == "Print_ISSN":
-                                        report_row.parent_print_issn = item_id.value
-                                    elif item_type == "Online_ISSN":
-                                        report_row.parent_online_issn = item_id.value
-                                    elif item_type == "URI":
-                                        report_row.parent_uri = item_id.value
-
-                        else:
-                            if SHOW_DEBUG_MESSAGES: print(
-                                f"Unexpected report type while processing instance of {report_type} for {self.vendor.name}")
-
-                        row_dict[metric_type] = report_row
-
-                    month_counts = row_dict[metric_type].month_counts
+                    month_counts = metric_row.month_counts
                     month_counts[begin_month] += instance.count
 
-                    row_dict[metric_type].total_count += instance.count
+                    metric_row.total_count += instance.count
 
-            for row in row_dict.values():
-                report_rows.append(row)
+            if major_report_type == MajorReportType.ITEM:
+                # Item Components
+
+                item_component: ItemComponentModel
+                for item_component in report_item.item_components:
+                    component_dict = {
+                        "component_title": self.empty_cell,
+                        "component_authors": self.empty_cell,
+                        "component_publication_date": self.empty_cell,
+                        "component_data_type": self.empty_cell,
+                        "component_doi": self.empty_cell,
+                        "component_proprietary_id": self.empty_cell,
+                        "component_isbn": self.empty_cell,
+                        "component_print_issn": self.empty_cell,
+                        "component_online_issn": self.empty_cell,
+                        "component_uri": ""
+                    }
+
+                    if item_component.item_name: component_dict["component_title"] = item_component.item_name
+                    if item_component.data_type: component_dict["component_data_type"] = item_component.data_type
+
+                    # Authors
+                    authors_str = ""
+                    item_contributor: ItemContributorModel
+                    for item_contributor in item_component.item_contributors:
+                        if item_contributor.item_type == "Author":
+                            authors_str += f"{item_contributor.name}"
+                            if item_contributor.identifier:
+                                authors_str += f" ({item_contributor.identifier})"
+                            authors_str += "; "
+                    authors_str.rstrip("; ")
+                    if authors_str != "": component_dict["component_authors"] = authors_str
+
+                    # Publication date
+                    item_date: TypeValueModel
+                    for item_date in item_component.item_dates:
+                        if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
+                            component_dict["component_publication_date"] = item_date.value
+
+                    # Component IDs
+                    item_id: TypeValueModel
+                    for item_id in item_component.item_ids:
+                        item_type = item_id.item_type
+
+                        if item_type == "DOI":
+                            component_dict["component_doi"] = item_id.value
+                        elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                            component_dict["component_proprietary_id"] = item_id.value
+                        elif item_type == "ISBN":
+                            component_dict["component_isbn"] = item_id.value
+                        elif item_type == "Print_ISSN":
+                            component_dict["component_print_issn"] = item_id.value
+                        elif item_type == "Online_ISSN":
+                            component_dict["component_online_issn"] = item_id.value
+                        elif item_type == "URI":
+                            component_dict["component_uri"] = item_id.value
+
+                    components.append(component_dict)
+
+            for metric_type in metric_row_dict:
+                metric_row = metric_row_dict[metric_type]
+
+                if major_report_type == MajorReportType.ITEM:
+                    if len(components) > 0 and \
+                            (metric_type == "Total_Item_Investigations" or metric_type == "Total_Item_Requests"):
+                        for component in components:
+                            row = copy.copy(metric_row)
+                            row.component_title = component["component_title"]
+                            row.component_authors = component["component_authors"]
+                            row.component_publication_date = component["component_publication_date"]
+                            row.component_data_type = component["component_data_type"]
+                            row.component_doi = component["component_doi"]
+                            row.component_proprietary_id = component["component_proprietary_id"]
+                            row.component_isbn = component["component_isbn"]
+                            row.component_print_issn = component["component_print_issn"]
+                            row.component_online_issn = component["component_online_issn"]
+                            row.component_uri = component["component_uri"]
+                            report_rows.append(row)
+                    else:
+                        report_rows.append(metric_row)
+                else:
+                    report_rows.append(metric_row)
 
         self.merge_sort_rows(report_rows, major_report_type)
         self.save_tsv_files(report_model.report_header, report_rows)
@@ -2170,6 +2256,8 @@ class ReportWorker(QObject):
             protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
                 makedirs(protectec_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protectec_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
@@ -2470,6 +2558,10 @@ class ReportWorker(QObject):
                                      "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
                                      "Parent_Proprietary_ID", "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN",
                                      "Parent_URI"]
+                if special_options_dict["include_component_details"]:
+                    column_names += ["Component_Title", "Component_Authors", "Component_Publication_Date",
+                                     "Component_Data_Type", "Component_DOI", "Component_Proprietary_ID",
+                                     "Component_ISBN", "Component_Print_ISSN", "Component_Online_ISSN", "Component_URI"]
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["yop"][0]: column_names.append("YOP")
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
@@ -2498,13 +2590,24 @@ class ReportWorker(QObject):
                                          "Parent_Authors": row.parent_authors,
                                          "Parent_Publication_Date": row.parent_publication_date,
                                          "Parent_Article_Version": row.parent_article_version,
-                                         "Parent_Data_Type": row.uri,
+                                         "Parent_Data_Type": row.data_type,
                                          "Parent_DOI": row.parent_doi,
                                          "Parent_Proprietary_ID": row.parent_proprietary_id,
                                          "Parent_ISBN": row.parent_isbn,
                                          "Parent_Print_ISSN": row.parent_print_issn,
                                          "Parent_Online_ISSN": row.parent_online_issn,
                                          "Parent_URI": row.parent_uri})
+                    if special_options_dict["include_component_details"]:
+                        row_dict.update({"Component_Title": row.component_title,
+                                         "Component_Authors": row.component_authors,
+                                         "Component_Publication_Date": row.component_publication_date,
+                                         "Component_Data_Type": row.component_data_type,
+                                         "Component_DOI": row.component_doi,
+                                         "Component_Proprietary_ID": row.component_proprietary_id,
+                                         "Component_ISBN": row.component_isbn,
+                                         "Component_Print_ISSN": row.component_print_issn,
+                                         "Component_Online_ISSN": row.component_online_issn,
+                                         "Component_URI": row.component_uri})
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["yop"][0]: row_dict["YOP"] = row.yop
                     if special_options_dict["access_type"][0]: row_dict["Access_Type"] = row.access_type
