@@ -70,25 +70,19 @@ class ManageVendorsController(QObject):
         self.url_validation_label = manage_vendors_ui.url_validation_label
         self.url_validation_label.hide()
 
-        # self.help_button = manage_vendors_ui.helpButton
         self.save_vendor_changes_button = manage_vendors_ui.saveVendorChangesButton
         self.undo_vendor_changes_button = manage_vendors_ui.undoVendorChangesButton
         self.remove_vendor_button = manage_vendors_ui.removeVendorButton
         self.add_vendor_button = manage_vendors_ui.addVendorButton
         self.export_vendors_button = manage_vendors_ui.exportVendorsButton
-        # TODO(Ziheng): add export_vendors_button
         self.import_vendors_button = manage_vendors_ui.importVendorsButton
-        # TODO(Ziheng): add import_vendors_button
 
-        # self.help_button.clicked.connect(self.help_method)
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
         self.export_vendors_button.clicked.connect(self.open_custom_folder_select_dialog)
-        # TODO(Ziheng): add connection to dialog for export_vendors_button to export dir path
         self.import_vendors_button.clicked.connect(self.open_file_select_dialog)
-        # TODO(Ziheng): add connection to dialog for import_vendors_button to import file
 
         self.vendor_list_view = manage_vendors_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
@@ -281,6 +275,7 @@ class ManageVendorsController(QObject):
     def open_file_select_dialog(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilter("All TSV files (*.tsv)")
         if dialog.exec_():
             selected_file_path = dialog.selectedFiles()[0]
             self.import_vendors_tsv(selected_file_path)
@@ -440,7 +435,4 @@ class ManageVendorsController(QObject):
 
         except Exception as e:
             print(f"File export failed: {e}")
-
-    def help_method(self):
-        webbrowser.open(help_site, 2, True)
 
