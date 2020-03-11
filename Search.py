@@ -142,7 +142,6 @@ class SearchController:
             self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))
             self.end_year_parameter.setDate(QDate(fields['end_year'], 1, 1))
             clauses = fields['search_parameters']
-            print(clauses)
             self.refresh_clauses()
             for clause in clauses:
                 and_clause = self.add_and_clause()
@@ -208,12 +207,10 @@ class SearchController:
         search_parameters = []
         for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
             # iterate over and clauses
-            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
             or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
             or_clauses = []
             for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
                 # iterate over child or clauses
-                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
                 # get parameters for clause
                 field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
                 comparison_parameter = or_widget.findChild(QComboBox,

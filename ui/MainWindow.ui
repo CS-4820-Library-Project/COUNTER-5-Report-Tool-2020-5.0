@@ -1704,13 +1704,6 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="costs_cost_in_original_currency_lineedit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QLabel" name="costs_original_currency_label">
              <property name="text">
@@ -1735,13 +1728,6 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="costs_cost_in_local_currency_lineedit">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="0">
             <widget class="QLabel" name="costs_cost_in_local_currency_with_tax_label">
              <property name="text">
@@ -1749,8 +1735,22 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_doublespinbox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="1">
-            <widget class="QLineEdit" name="costs_cost_in_local_currency_with_tax_lineedit">
+            <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_with_tax_doublespinbox">
              <property name="enabled">
               <bool>false</bool>
              </property>

@@ -316,7 +316,8 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year',)
+FIELDS_NOT_IN_SEARCH = ('year', 'cost_in_original_currency', 'original_currency', 'cost_in_local_currency',
+                        'cost_in_local_currency_with_tax')
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 
@@ -475,15 +476,11 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
-    types = {}
     for field in report_fields:  # fields specific to this report
         fields.append(field['name'])
-        types[field['name']] = field['type']
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
-    placeholders = []
-    for key in fields:  # gets parameter slots
-        placeholders.append('?')
+    placeholders = ['?'] * len(fields)
     sql_replace_text += '(' + ', '.join(placeholders) + ');'
     values = []
     for row in data:  # gets data to fill parameters
@@ -504,15 +501,11 @@ def replace_cost_sql_text(report_type, data):
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
-    types = {}
     for field in report_fields:  # fields specific to this report
         fields.append(field['name'])
-        types[field['name']] = field['type']
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
-    placeholders = []
-    for key in fields:  # gets parameter slots
-        placeholders.append('?')
+    placeholders = ['?'] * len(fields)
     sql_replace_text += '(' + ', '.join(placeholders) + ');'
     values = []
     for row in data:  # gets data to fill parameters
@@ -643,7 +636,6 @@ def chart_search_sql_text(report, start_year, end_year,
                {'field': 'year', 'comparison': '<=', 'value': end_year},
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
-    print(clauses)
     clauses_texts = []
     for clause in clauses:
         clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
@@ -656,7 +648,8 @@ def chart_search_sql_text(report, start_year, end_year,
 def get_names_sql_text(report_type, vendor):
     name_field = NAME_FIELD_SWITCHER[report_type]
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
-               + ' WHERE ' + 'vendor' + ' LIKE \"' + vendor + '\";'
+               + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE \"' + vendor + '\"' \
+               + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
     return sql_text
 
 
