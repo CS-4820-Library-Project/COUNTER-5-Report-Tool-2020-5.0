@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>838</width>
-    <height>474</height>
+    <width>1259</width>
+    <height>820</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -407,35 +407,80 @@
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
-                 <layout class="QFormLayout" name="formLayout_2">
-                  <property name="fieldGrowthPolicy">
-                   <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-                  </property>
-                  <property name="formAlignment">
-                   <set>Qt::AlignCenter</set>
-                  </property>
-                  <property name="horizontalSpacing">
+                 <layout class="QGridLayout" name="gridLayout">
+                  <property name="spacing">
                    <number>20</number>
                   </property>
-                  <property name="verticalSpacing">
-                   <number>20</number>
-                  </property>
-                  <item row="0" column="0">
+                  <item row="3" column="3">
+                   <widget class="QDateEdit" name="end_date_edit_fetch_month">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="dateTime">
+                     <datetime>
+                      <hour>0</hour>
+                      <minute>0</minute>
+                      <second>0</second>
+                      <year>2020</year>
+                      <month>1</month>
+                      <day>1</day>
+                     </datetime>
+                    </property>
+                    <property name="displayFormat">
+                     <string>MM</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
                    <widget class="QLabel" name="label_9">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="text">
                      <string>Begin Date</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>End Date</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="1" column="0">
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="0" column="1">
+                   <spacer name="verticalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="2">
                    <widget class="QDateEdit" name="begin_date_edit_fetch_year">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="dateTime">
                      <datetime>
                       <hour>0</hour>
@@ -454,25 +499,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="1">
-                   <widget class="QDateEdit" name="begin_date_edit_fetch_month">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2020</year>
-                      <month>1</month>
-                      <day>1</day>
-                     </datetime>
-                    </property>
-                    <property name="displayFormat">
-                     <string>MM</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
+                  <item row="3" column="2">
                    <widget class="QDateEdit" name="end_date_edit_fetch_year">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="dateTime">
                      <datetime>
                       <hour>0</hour>
@@ -488,8 +522,27 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="1">
-                   <widget class="QDateEdit" name="end_date_edit_fetch_month">
+                  <item row="1" column="4">
+                   <spacer name="horizontalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="1" column="3">
+                   <widget class="QDateEdit" name="begin_date_edit_fetch_month">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="dateTime">
                      <datetime>
                       <hour>0</hour>
@@ -504,6 +557,32 @@
                      <string>MM</string>
                     </property>
                    </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QLabel" name="label_10">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>End Date</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <spacer name="verticalSpacer_2">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>
