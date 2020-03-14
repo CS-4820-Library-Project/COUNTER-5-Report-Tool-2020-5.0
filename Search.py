@@ -55,14 +55,14 @@ class SearchController:
             add_and_and_or_clause()
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
-        self.and_clause_parameters = search_ui.search_and_clause_parameters_scrollarea
-        self.and_clause_parameters.setLayout(QVBoxLayout())
+        self.and_clause_parameters_scrollarea = search_ui.search_and_clause_parameters_scrollarea
+        self.and_clause_parameters_frame = None
         refresh_and_add_clauses()
 
     def refresh_clauses(self):  # resets the search clauses
-        for widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
-            self.and_clause_parameters.layout().removeWidget(widget)
-            sip.delete(widget)
+        self.and_clause_parameters_frame = QFrame()
+        self.and_clause_parameters_frame.setLayout(QVBoxLayout())
+        self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
     def add_and_clause(self):
         and_clause = QFrame()
@@ -77,13 +77,13 @@ class SearchController:
 
         # set up remove current and clause button
         def remove_this_and():
-            self.and_clause_parameters.layout().removeWidget(and_clause)
+            self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
         # add to the layout
-        self.and_clause_parameters.layout().addWidget(and_clause)
+        self.and_clause_parameters_frame.layout().addWidget(and_clause)
 
         return and_clause_ui
 
@@ -205,7 +205,7 @@ class SearchController:
         end_year = int(self.end_year_parameter.text())
 
         search_parameters = []
-        for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+        for and_widget in self.and_clause_parameters_frame.findChildren(QFrame, 'search_and_clause_parameter_frame'):
             # iterate over and clauses
             or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
             or_clauses = []
