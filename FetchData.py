@@ -334,7 +334,7 @@ class ExceptionModel(JsonModel):
 def exception_models_to_message(exceptions: list) -> str:
     message = ""
     for exception in exceptions:
-        if message: message += "\n"
+        if message: message += "\n\n"
         message += f"Code: {exception.code}" \
                    f"\nMessage: {exception.message}" \
                    f"\nSeverity: {exception.severity}" \
@@ -659,7 +659,7 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 # endregion
 
 
-# region Exceptions
+# region Custom Exceptions
 class RetryLaterException(Exception):
     def __init__(self, exceptions: list):
         self.exceptions = exceptions
@@ -1254,14 +1254,10 @@ class FetchReportsController(FetchReportsAbstract):
 
     def on_date_year_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
-            self.adv_begin_date = QDate(date.year(),self.adv_begin_date.month(),self.adv_begin_date.day())
-            print(self.adv_begin_date)
-
+            self.adv_begin_date = QDate(date.year(), self.adv_begin_date.month(), self.adv_begin_date.day())
 
         elif date_type == "adv_end":
-            self.adv_end_date = QDate(date.year(),self.adv_end_date.month(),self.adv_end_date.day())
-            print(self.adv_end_date)
-
+            self.adv_end_date = QDate(date.year(), self.adv_end_date.month(), self.adv_end_date.day())
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
@@ -1270,12 +1266,10 @@ class FetchReportsController(FetchReportsAbstract):
 
     def on_date_month_changed(self, date: QDate, date_type: str):
         if date_type == "adv_begin":
-            self.adv_begin_date = QDate(self.adv_begin_date.year(),date.month(),self.adv_begin_date.day())
-            print(self.adv_begin_date)
+            self.adv_begin_date = QDate(self.adv_begin_date.year(), date.month(), self.adv_begin_date.day())
 
         elif date_type == "adv_end":
-            self.adv_end_date = QDate(self.adv_end_date.year(),date.month(),self.adv_end_date.day())
-            print(self.adv_end_date)
+            self.adv_end_date = QDate(self.adv_end_date.year(), date.month(), self.adv_end_date.day())
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
@@ -1944,7 +1938,7 @@ class ReportWorker(QObject):
             else:
                 self.process_result.message = "Retry later exception received"
                 message = exception_models_to_message(e.exceptions)
-                if message: self.process_result.message += "\n" + message
+                if message: self.process_result.message += "\n\n" + message
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.retry = True
                 if SHOW_DEBUG_MESSAGES: print(
@@ -1952,14 +1946,14 @@ class ReportWorker(QObject):
         except ReportHeaderMissingException as e:
             self.process_result.message = "Report_Header not received, no file was created"
             message = exception_models_to_message(e.exceptions)
-            if message: self.process_result.message += "\n" + message
+            if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Report Header Missing Exception: {e}")
         except UnacceptableCodeException as e:
             self.process_result.message = "Unsupported exception code received"
             message = exception_models_to_message(e.exceptions)
-            if message: self.process_result.message += "\n" + message
+            if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Unsupported Code Exception: {e}")

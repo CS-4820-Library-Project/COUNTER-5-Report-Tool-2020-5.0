@@ -47,7 +47,7 @@ if __name__ == "__main__":
     main_window_ui = MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
-    # # region Setup Tab Controllers
+    # region Setup Tab Controllers
     manage_vendors_tab = QWidget(main_window)
     manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
     manage_vendors_ui.setupUi(manage_vendors_tab)
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
     # endregion
 
-    # Add tabs to main window
+    # region Add tabs to main window
     main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
     main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
     main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
@@ -111,8 +111,9 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(settings_tab, "Settings")
 
     main_window_ui.tab_widget.setCurrentIndex(1)
+    # endregion
 
-    # Status Bar
+    # region Status Bar
     status_bar = main_window_ui.statusbar
 
     help_frame = QFrame(status_bar)
@@ -124,6 +125,7 @@ if __name__ == "__main__":
     help_frame_layout.addWidget(help_button)
 
     status_bar.addWidget(help_frame)
+    # endregion
 
     main_window.show()
     sys.exit(app.exec_())
