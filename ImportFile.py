@@ -14,8 +14,6 @@ from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
 from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
-import ManageDB
-
 # All yearly reports tsv and json are saved here in original condition as backup
 PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 

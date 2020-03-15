@@ -918,8 +918,6 @@ class FetchReportsAbstract:
                 self.status_label.setText(f"Progress: {self.completed_processes}/{self.total_processes}")
             else:
                 self.status_label.setText(f"Finishing...")
-        else:
-            self.status_label.setText(f"Cancelling...")
 
         if vendor.name in self.vendor_result_widgets:
             vendor_results_widget, vendor_results_ui = self.vendor_result_widgets[vendor.name]
@@ -1112,7 +1110,7 @@ class FetchReportsAbstract:
     def cancel_workers(self):
         self.is_cancelling = True
         self.total_processes = self.started_processes
-        self.status_label.setText(f"Cancelling...")
+        self.status_label.setText(f"Cancelling... (Waiting for started requests to finish)")
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
