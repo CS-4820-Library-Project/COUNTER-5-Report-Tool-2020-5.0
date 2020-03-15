@@ -81,8 +81,10 @@ def show_message(message: str):
 
 
 class SettingsController:
-    def __init__(self, settings_ui: SettingsTab.Ui_settings_tab):
+    def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
+        self.settings_widget = settings_widget
+
         json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         json_dict = json.loads(json_string)
         self.settings = SettingsModel.from_json(json_dict)
@@ -146,7 +148,7 @@ class SettingsController:
 
         # set up restore database button
         self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController()
+        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.settings_widget)
         self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
 

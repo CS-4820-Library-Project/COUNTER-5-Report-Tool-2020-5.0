@@ -843,8 +843,9 @@ class CheckableComboBox(QComboBox):
 
 
 class FetchReportsAbstract:
-    def __init__(self, vendors: list, settings: SettingsModel):
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget):
         # region General
+        self.widget = widget
         self.vendors = []
         self.update_vendors(vendors)
         self.selected_data = []  # List of ReportData Objects
@@ -879,7 +880,7 @@ class FetchReportsAbstract:
         # region Update Database Dialog
         self.is_updating_database = False
         self.add_to_database = True
-        self.update_database_dialog = UpdateDatabaseProgressDialogController()
+        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.widget)
 
         # endregion
 
@@ -1023,7 +1024,7 @@ class FetchReportsAbstract:
     def start_progress_dialog(self, window_title: str):
         self.vendor_result_widgets = {}
 
-        self.fetch_progress_dialog = QDialog(flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
+        self.fetch_progress_dialog = QDialog(self.widget, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         fetch_progress_ui = FetchProgressDialog.Ui_FetchProgressDialog()
         fetch_progress_ui.setupUi(self.fetch_progress_dialog)
         self.fetch_progress_dialog.setWindowTitle(window_title)
@@ -1148,8 +1149,9 @@ class FetchReportsAbstract:
 
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
-        super().__init__(vendors, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget,
+                 fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
+        super().__init__(vendors, settings, widget)
 
         # region General
         current_date = QDate.currentDate()
@@ -1404,9 +1406,9 @@ class FetchReportsController(FetchReportsAbstract):
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel,
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget,
                  fetch_special_reports_ui: FetchSpecialReportsTab.Ui_fetch_special_reports_tab):
-        super().__init__(vendors, settings)
+        super().__init__(vendors, settings, widget)
 
         # region General
         self.selected_report_type = None
@@ -1565,7 +1567,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                 begin_date.dateChanged.connect(lambda date: self.on_special_yop_changed("begin", date))
                 end_date.dateChanged.connect(lambda date: self.on_special_yop_changed("end", date))
 
-                to_label = QLabel(" - ", frame)
+                to_label = QLabel(" to ", frame)
                 to_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
                 layout.addWidget(begin_date)

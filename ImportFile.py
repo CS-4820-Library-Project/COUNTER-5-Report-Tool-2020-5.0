@@ -30,9 +30,11 @@ class ProcessResult:
 
 
 class ImportReportController:
-    def __init__(self, vendors: list, settings: SettingsModel, import_report_ui: ImportReportTab.Ui_import_report_tab):
+    def __init__(self, vendors: list, settings: SettingsModel, import_report_widget: QWidget,
+                 import_report_ui: ImportReportTab.Ui_import_report_tab):
 
         # region General
+        self.import_report_widget = import_report_widget
         self.vendors = vendors
         self.date = QDate.currentDate()
         self.selected_vendor_index = -1
@@ -77,7 +79,7 @@ class ImportReportController:
 
         # set up restore database button
         self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController()
+        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.import_report_widget)
 
     def on_vendors_changed(self, vendors: list):
         self.selected_vendor_index = -1
@@ -176,7 +178,7 @@ class ImportReportController:
         shutil.copy2(origin_path, dest_path)
 
     def show_result(self, process_result: ProcessResult):
-        self.result_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
         vertical_layout.setContentsMargins(5, 5, 5, 5)

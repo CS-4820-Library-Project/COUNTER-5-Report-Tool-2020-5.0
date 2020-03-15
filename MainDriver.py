@@ -56,19 +56,20 @@ if __name__ == "__main__":
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()
     settings_ui.setupUi(settings_tab)
-    settings_controller = SettingsController(settings_ui)
+    settings_controller = SettingsController(settings_tab, settings_ui)
 
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
     fetch_reports_ui.setupUi(fetch_reports_tab)
     fetch_reports_controller = FetchReportsController(manage_vendors_controller.vendors, settings_controller.settings,
-                                                      fetch_reports_ui)
+                                                      fetch_reports_tab, fetch_reports_ui)
 
     fetch_special_reports_tab = QWidget(main_window)
     fetch_special_reports_ui = FetchSpecialReportsTab.Ui_fetch_special_reports_tab()
     fetch_special_reports_ui.setupUi(fetch_special_reports_tab)
     fetch_special_reports_controller = FetchSpecialReportsController(manage_vendors_controller.vendors,
                                                                      settings_controller.settings,
+                                                                     fetch_special_reports_tab,
                                                                      fetch_special_reports_ui)
 
     costs_tab = QWidget(main_window)
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     import_report_ui = ImportReportTab.Ui_import_report_tab()
     import_report_ui.setupUi(import_report_tab)
     import_report_controller = ImportReportController(manage_vendors_controller.vendors, settings_controller.settings,
-                                                      import_report_ui)
+                                                      import_report_tab, import_report_ui)
 
     search_tab = QWidget(main_window)
     search_ui = SearchTab.Ui_search_tab()

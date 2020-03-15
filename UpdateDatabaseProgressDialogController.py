@@ -8,7 +8,8 @@ from ui import UpdateDatabaseProgressDialog
 
 class UpdateDatabaseProgressDialogController:
 
-    def __init__(self):
+    def __init__(self, parent_widget: QObject = None):
+        self.parent_widget = parent_widget
         self.update_database_progress_dialog = None
 
         self.update_database_thread = None
@@ -23,7 +24,7 @@ class UpdateDatabaseProgressDialogController:
         self.is_updating_database = False
 
     def update_database(self, files, recreate_tables):
-        self.update_database_progress_dialog = QDialog()
+        self.update_database_progress_dialog = QDialog(self.parent_widget)
 
         dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
         dialog_ui.setupUi(self.update_database_progress_dialog)
