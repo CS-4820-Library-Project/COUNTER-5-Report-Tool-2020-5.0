@@ -1552,8 +1552,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                 combo.parameters_changed_signal.connect(
                     lambda parameters, option=option_name: self.on_special_option_parameters_changed(option, parameters))
 
-                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
-                self.options_layout.addWidget(combo, i, 1, 1, 1)
+                self.options_layout.addWidget(combo, i, 1)
 
             elif option_type == SpecialOptionType.ADP:
                 frame = QFrame(self.options_frame)
@@ -1575,26 +1574,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                 layout.addWidget(to_label)
                 layout.addWidget(end_date)
 
-                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
-                self.options_layout.addWidget(frame, i, 1, 1, 1)
+                self.options_layout.addWidget(frame, i, 1)
 
-            else:
-                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
-
-            # option_name, field_type = special_options[i]
-            #
-            #
-            # checkbox = QCheckBox(option_name, self.options_frame)
-            # checkbox.toggled.connect(
-            #     lambda is_checked, option=option_name, fld_type=field_type: self.on_special_option_toggled(is_checked,
-            #                                                                                                option,
-            #                                                                                                fld_type))
-            # self.options_layout.addWidget(checkbox, i, 0)
-            # if field_type is str:
-            #     line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
-            #     line_edit.textChanged.connect(
-            #         lambda text, option=option_name: self.on_special_option_text_changed(text, option))
-            #     self.options_layout.addWidget(line_edit, i, 1)
+            self.options_layout.addWidget(checkbox, i, 0)
 
     def on_special_option_toggled(self, option: str, is_checked: bool):
         option = option.lower()
