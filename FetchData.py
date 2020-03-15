@@ -2251,93 +2251,18 @@ class ReportWorker(QObject):
                 else:
                     report_rows.append(metric_row)
 
-        self.merge_sort_rows(report_rows, major_report_type)
+        report_rows = self.sort_rows(report_rows, major_report_type)
         self.save_tsv_files(report_model.report_header, report_rows)
 
-    def merge_sort_rows(self, report_rows: list, major_report_type: MajorReportType):
-        n = len(report_rows)
-        if n < 2:
-            return
-
-        mid = n // 2
-        left = []
-        right = []
-
-        for i in range(mid):
-            number = report_rows[i]
-            left.append(number)
-
-        for i in range(mid, n):
-            number = report_rows[i]
-            right.append(number)
-
-        self.merge_sort_rows(left, major_report_type)
-        self.merge_sort_rows(right, major_report_type)
-
-        self.merge(left, right, report_rows, major_report_type)
-
-    def merge(self, left, right, report_rows, major_report_type: MajorReportType):
-        i = 0
-        j = 0
-        k = 0
-
+    def sort_rows(self, report_rows: list, major_report_type: MajorReportType) -> list:
         if major_report_type == MajorReportType.PLATFORM:
-            while i < len(left) and j < len(right):
-                if left[i].platform.lower() < right[j].platform.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
+            return sorted(report_rows, key=lambda row: row.platform.lower())
         elif major_report_type == MajorReportType.DATABASE:
-            while i < len(left) and j < len(right):
-                if left[i].database.lower() < right[j].database.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
+            return sorted(report_rows, key=lambda row: row.database.lower())
         elif major_report_type == MajorReportType.TITLE:
-            while i < len(left) and j < len(right):
-                if left[i].title.lower() < right[j].title.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                elif left[i].title.lower() == right[j].title.lower():
-                    if left[i].yop < right[j].yop:
-                        report_rows[k] = left[i]
-                        i = i + 1
-                    else:
-                        report_rows[k] = right[j]
-                        j = j + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
+            return sorted(report_rows, key=lambda row: (row.title.lower(), row.yop))
         elif major_report_type == MajorReportType.ITEM:
-            while i < len(left) and j < len(right):
-                if left[i].item.lower() < right[j].item.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
-
-        while i < len(left):
-            report_rows[k] = left[i]
-            i = i + 1
-            k = k + 1
-
-        while j < len(right):
-            report_rows[k] = right[j]
-            j = j + 1
-            k = k + 1
+            return sorted(report_rows, key=lambda row: row.item.lower())
 
     def save_tsv_files(self, report_header, report_rows: list):
         report_type = report_header.report_id
