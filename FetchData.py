@@ -8,12 +8,12 @@ import shlex
 import platform
 import copy
 import ctypes
-import typing
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt, QVariant
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog, QComboBox, QStylePainter, QStyleOptionComboBox, QStyle, QDateEdit, QFrame, QHBoxLayout, QSizePolicy
+    QCheckBox, QFileDialog, QComboBox, QStylePainter, QStyleOptionComboBox, QStyle, QDateEdit, QFrame, QHBoxLayout,\
+    QSizePolicy
 
 from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget, DisclaimerDialog
@@ -2375,13 +2375,13 @@ class ReportWorker(QObject):
 
         # Save protected tsv file
         if self.is_yearly_dir:
-            protectec_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-            if not path.isdir(protectec_file_dir) and self.is_yearly_dir:
-                makedirs(protectec_file_dir)
+            protected_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            if not path.isdir(protected_file_dir):
+                makedirs(protected_file_dir)
                 if platform.system() == "Windows":
                     ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
 
-            protected_file_path = f"{protectec_file_dir}{file_name}"
+            protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
             self.add_report_header_to_file(report_header, protected_file)
             self.add_report_rows_to_file(report_type, report_rows, protected_file)

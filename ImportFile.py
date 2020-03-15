@@ -1,5 +1,8 @@
 import shutil
 import webbrowser
+import platform
+import shlex
+import ctypes
 from os import path, makedirs, system
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
@@ -9,11 +12,12 @@ from ui import ImportReportTab, MessageDialog, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
-import platform
-import shlex
 from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 import ManageDB
+
+# All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 
 class ProcessResult:
@@ -149,6 +153,16 @@ class ImportReportController:
             process_result.file_name = dest_file_name
             process_result.file_path = dest_file_path
             process_result.completion_status = CompletionStatus.SUCCESSFUL
+
+            # Save protected tsv file
+            protected_file_dir = f"{PROTECTED_DIR}{self.date.toString('yyyy')}/{vendor.name}/"
+            if not path.isdir(protected_file_dir):
+                makedirs(protected_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
+
+            protected_file_path = f"{protected_file_dir}{dest_file_name}"
+            self.copy_file(self.selected_file_path, protected_file_path)
 
         except Exception as e:
             process_result.message = f"Exception: {e}"
