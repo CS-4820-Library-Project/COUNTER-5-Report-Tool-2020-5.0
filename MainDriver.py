@@ -39,6 +39,9 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    font = app.font()
+    font.setPointSize(11)
+    app.setFont(font)
 
     main_window = QMainWindow()
     main_window_ui = MainWindow.Ui_mainWindow()
@@ -116,9 +119,6 @@ if __name__ == "__main__":
     help_frame_layout.setContentsMargins(-1, 2, -1, 5)
     help_frame.setLayout(help_frame_layout)
     help_button = QPushButton("Help", help_frame)
-    font = help_button.font()
-    font.setPointSize(11)
-    help_button.setFont(font)
     help_button.clicked.connect(open_help)
     help_frame_layout.addWidget(help_button)
 

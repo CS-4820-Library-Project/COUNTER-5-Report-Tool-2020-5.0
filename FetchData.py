@@ -8,11 +8,12 @@ import shlex
 import platform
 import copy
 import ctypes
+import typing
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt, QVariant
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog, QLineEdit
+    QCheckBox, QFileDialog, QComboBox, QStylePainter, QStyleOptionComboBox, QStyle, QDateEdit, QFrame, QHBoxLayout, QSizePolicy
 
 from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget, DisclaimerDialog
@@ -64,29 +65,136 @@ def get_major_report_type(report_type: str) -> MajorReportType:
         return MajorReportType.ITEM
 
 
+class SpecialOptionType(Enum):
+    TO = 0  # Tabular Only, not included in request url, only used in creating tabular report
+    AP = 1  # Attribute Parameter, in attributes_to_include and has it's own parameters in request url
+    ADP = 2  # Attribute Date Parameter, in attributes_to_include and has it's own date parameters in request url
+    POS = 3  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
+    POB = 3  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
+
+
+class SpecialReportOptions:
+    def __init__(self):
+        # PR, DR, TR, IR
+        self.data_type = False, SpecialOptionType.AP, "Data_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        self.access_method = False, SpecialOptionType.AP, "Access_Method", DEFAULT_SPECIAL_OPTION_VALUE
+        self.metric_type = False, SpecialOptionType.POS, None, DEFAULT_SPECIAL_OPTION_VALUE
+        self.exclude_monthly_details = False, SpecialOptionType.TO, None, None
+        # TR, IR
+        current_date = QDate.currentDate()
+        self.yop = False, SpecialOptionType.ADP, "YOP", f"{current_date.year()}-{current_date.year()}"
+        self.access_type = False, SpecialOptionType.AP, "Access_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        # TR
+        self.section_type = False, SpecialOptionType.AP, "Section_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        # IR
+        self.authors = False, SpecialOptionType.TO, "Authors", DEFAULT_SPECIAL_OPTION_VALUE
+        self.publication_date = False, SpecialOptionType.TO, "Publication_Date", DEFAULT_SPECIAL_OPTION_VALUE
+        self.article_version = False, SpecialOptionType.TO, "Article_Version", DEFAULT_SPECIAL_OPTION_VALUE
+        self.include_component_details = False, SpecialOptionType.POB, None, None
+        self.include_parent_details = False, SpecialOptionType.POB, None, None
+
+
 SPECIAL_REPORT_OPTIONS = {
-    MajorReportType.PLATFORM: [("Data_Type", str),
-                               ("Access_Method", str),
-                               ("Exclude_Monthly_Details", bool)],
-    MajorReportType.DATABASE: [("Data_Type", str),
-                               ("Access_Method", str),
-                               ("Exclude_Monthly_Details", bool)],
-    MajorReportType.TITLE: [("Data_Type", str),
-                            ("Section_Type", str),
-                            ("YOP", str),
-                            ("Access_Type", str),
-                            ("Access_Method", str),
-                            ("Exclude_Monthly_Details", bool)],
-    MajorReportType.ITEM: [("Authors", str),
-                           ("Publication_Date", str),
-                           ("Article_Version", str),
-                           ("Data_Type", str),
-                           ("YOP", str),
-                           ("Access_Type", str),
-                           ("Access_Method", str),
-                           ("Include_Component_Details", bool),
-                           ("Include_Parent_Details", bool),
-                           ("Exclude_Monthly_Details", bool)]
+    MajorReportType.PLATFORM: [(SpecialOptionType.AP, "Data_Type", ["Article",
+                                                                     "Book",
+                                                                     "Book_Segment",
+                                                                     "Database",
+                                                                     "Dataset",
+                                                                     "Journal",
+                                                                     "Multimedia",
+                                                                     "Newspaper_or_Newsletter",
+                                                                     "Other",
+                                                                     "Platform",
+                                                                     "Report",
+                                                                    "Repository_Item",
+                                                                    "Thesis_or_Dissertation"]),
+                               (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                         "TDM"]),
+                               (SpecialOptionType.AP, "Metric_Type", ["Searches_Platform",
+                                                                       "Total_Item_Investigations",
+                                                                       "Total_Item_Requests",
+                                                                       "Unique_Item_Investigations",
+                                                                       "Unique_Item_Requests",
+                                                                       "Unique_Title_Investigations",
+                                                                       "Unique_Title_Requests"]),
+                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.DATABASE: [(SpecialOptionType.AP, "Data_Type", ["Book",
+                                                                     "Database",
+                                                                     "Journal",
+                                                                     "Multimedia",
+                                                                     "Newspaper_or_Newsletter",
+                                                                     "Other",
+                                                                     "Report",
+                                                                     "Repository_Item",
+                                                                     "Thesis_or_Dissertation"]),
+                               (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                         "TDM"]),
+                               (SpecialOptionType.AP, "Metric_Type", ["Searches_Automated",
+                                                                       "Searches_Federated",
+                                                                       "Searches_Regular",
+                                                                       "Total_Item_Investigations",
+                                                                       "Total_Item_Requests",
+                                                                       "Unique_Item_Investigations",
+                                                                       "Unique_Item_Requests",
+                                                                       "Unique_Title_Investigations",
+                                                                       "Unique_Title_Requests",
+                                                                       "Limit_Exceeded",
+                                                                       "No_License"]),
+                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.TITLE: [(SpecialOptionType.AP, "Data_Type", ["Book",
+                                                                  "Journal",
+                                                                  "Newspaper_or_Newsletter",
+                                                                  "Other",
+                                                                  "Report",
+                                                                  "Thesis_or_Dissertation"]),
+                            (SpecialOptionType.AP, "Section_Type", ["Article",
+                                                                     "Book",
+                                                                     "Chapter",
+                                                                     "Other",
+                                                                     "Section"]),
+                            (SpecialOptionType.AP, "Access_Type", ["Controlled",
+                                                                    "OA_Gold"]),
+                            (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                      "TDM"]),
+                            (SpecialOptionType.AP, "Metric_Type", ["Total_Item_Investigations",
+                                                                    "Total_Item_Requests",
+                                                                    "Unique_Item_Investigations",
+                                                                    "Unique_Item_Requests",
+                                                                    "Unique_Title_Investigations",
+                                                                    "Unique_Title_Requests",
+                                                                    "Limit_Exceeded",
+                                                                    "No_License"]),
+                            (SpecialOptionType.ADP, "YOP"),
+                            (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.ITEM: [(SpecialOptionType.AP, "Data_Type", ["Article",
+                                                                 "Book",
+                                                                 "Book_Segment",
+                                                                 "Dataset",
+                                                                 "Journal",
+                                                                 "Multimedia",
+                                                                 "Newspaper_or_Newsletter",
+                                                                 "Other",
+                                                                 "Report",
+                                                                 "Repository_Item",
+                                                                 "Thesis_or_Dissertation"]),
+                           (SpecialOptionType.AP, "Access_Type", ["Controlled",
+                                                                   "OA_Gold",
+                                                                   "Other_Free_To_Read"]),
+                           (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                     "TDM"]),
+                           (SpecialOptionType.AP, "Metric_Type", ["Total_Item_Investigations",
+                                                                   "Total_Item_Requests",
+                                                                   "Unique_Item_Investigations",
+                                                                   "Unique_Item_Requests",
+                                                                   "Limit_Exceeded",
+                                                                   "No_License"]),
+                           (SpecialOptionType.ADP, "YOP"),
+                           (SpecialOptionType.POS, "Authors"),
+                           (SpecialOptionType.POS, "Publication_Date"),
+                           (SpecialOptionType.POS, "Article_Version"),
+                           (SpecialOptionType.TO, "Include_Component_Details"),
+                           (SpecialOptionType.TO, "Include_Parent_Details"),
+                           (SpecialOptionType.TO, "Exclude_Monthly_Details")]
 }
 
 DEFAULT_SPECIAL_OPTION_VALUE = "all"
@@ -105,7 +213,8 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"  # All yearly reports tsv and json are saved here in original condition as backup
+# All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 
 class CompletionStatus(Enum):
@@ -547,6 +656,26 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
     return models
 
 
+# endregion
+
+
+# region Exceptions
+class RetryLaterException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class ReportHeaderMissingException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class UnacceptableCodeException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+# endregion
+
+
 class ReportRow:
     def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
         self.database = empty_cell
@@ -631,25 +760,6 @@ def get_month_years(begin_date: QDate, end_date: QDate) -> list:
     return month_years
 
 
-class SpecialReportOptions:
-    def __init__(self):
-        # PR, DR, TR, IR
-        self.data_type = False, "Data_Type", DEFAULT_SPECIAL_OPTION_VALUE
-        self.access_method = False, "Access_Method", DEFAULT_SPECIAL_OPTION_VALUE
-        self.exclude_monthly_details = False
-        # TR, IR
-        self.yop = False, "YOP", DEFAULT_SPECIAL_OPTION_VALUE
-        self.access_type = False, "Access_Type", DEFAULT_SPECIAL_OPTION_VALUE
-        # TR
-        self.section_type = False, "Section_Type", DEFAULT_SPECIAL_OPTION_VALUE
-        # IR
-        self.authors = False, "Authors", DEFAULT_SPECIAL_OPTION_VALUE
-        self.publication_date = False, "Publication_Date", DEFAULT_SPECIAL_OPTION_VALUE
-        self.article_version = False, "Article_Version", DEFAULT_SPECIAL_OPTION_VALUE
-        self.include_component_details = False
-        self.include_parent_details = False
-
-
 class RequestData:
     def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate,
                  save_location: str, settings: SettingsModel, special_options: SpecialReportOptions = None):
@@ -675,22 +785,61 @@ class ProcessResult:
         self.year = ""
 
 
-class RetryLaterException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
+class CheckableComboBox(QComboBox):
+    parameters_changed_signal = pyqtSignal(str)
 
+    def __init__(self, parent=None, delimiter: str = "|", default_parameter: str = DEFAULT_SPECIAL_OPTION_VALUE):
+        super().__init__(parent)
 
-class ReportHeaderMissingException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
+        self.delimiter = delimiter
+        self.default_parameter = default_parameter
+        self.current_parameters = default_parameter
+        self.view().pressed.connect(self.handleItemPressed)
+        self.is_changed = False
 
+    def handleItemPressed(self, index):
+        item = self.model().itemFromIndex(index)
+        if item.checkState() == Qt.Checked:
+            item.setCheckState(Qt.Unchecked)
+        else:
+            item.setCheckState(Qt.Checked)
 
-class UnacceptableCodeException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
+        self.update_current_parameters()
+        self.parameters_changed_signal.emit(self.current_parameters)
 
+        self.is_changed = True
 
-# endregion
+    def hidePopup(self):
+        if not self.is_changed:
+            super(CheckableComboBox, self).hidePopup()
+        self.is_changed = False
+
+    def paintEvent(self, event):
+
+        painter = QStylePainter(self)
+        opt = QStyleOptionComboBox()
+        self.initStyleOption(opt)
+
+        opt.currentText = self.current_parameters
+
+        painter.drawComplexControl(QStyle.CC_ComboBox, opt)
+        painter.drawControl(QStyle.CE_ComboBoxLabel, opt)
+
+    def update_current_parameters(self):
+        self.current_parameters = ""
+        count = 0
+        model: QStandardItemModel = self.model()
+        for i in range(model.rowCount()):
+            if model.item(i).checkState() == Qt.Checked:
+                if count == 0:
+                    self.current_parameters += model.item(i).text()
+                    count += 1
+                elif count > 0:
+                    self.current_parameters += self.delimiter + model.item(i).text()
+                    count += 1
+
+        if not self.current_parameters:
+            self.current_parameters = self.default_parameter
 
 
 class FetchReportsAbstract:
@@ -998,8 +1147,6 @@ class FetchReportsAbstract:
             self.is_updating_database = False
         else:
             print('Error, already running')
-
-
 
 
 class FetchReportsController(FetchReportsAbstract):
@@ -1384,33 +1531,91 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # Add new options
         special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
         for i in range(len(special_options)):
-            option_name, field_type = special_options[i]
+            option_name = special_options[i][1]
+
             checkbox = QCheckBox(option_name, self.options_frame)
             checkbox.toggled.connect(
-                lambda is_checked, option=option_name, fld_type=field_type: self.on_special_option_toggled(is_checked,
-                                                                                                           option,
-                                                                                                           fld_type))
-            self.options_layout.addWidget(checkbox, i, 0)
-            if field_type is str:
-                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
-                line_edit.textChanged.connect(
-                    lambda text, option=option_name: self.on_special_option_text_changed(text, option))
-                self.options_layout.addWidget(line_edit, i, 1)
+                lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
 
-    def on_special_option_toggled(self, is_checked: bool, option: str, field_type: str):
-        option = option.lower()
-        if field_type is bool:
-            self.selected_options.__setattr__(option, is_checked)
-        elif field_type is str:
-            selected, attrib_name, value = self.selected_options.__getattribute__(option)
-            if not value: value = DEFAULT_SPECIAL_OPTION_VALUE
-            self.selected_options.__setattr__(option, (is_checked, attrib_name, value))
+            option_type: SpecialOptionType = special_options[i][0]
+            if option_type == SpecialOptionType.AP:
+                option_list = special_options[i][2]
 
-    def on_special_option_text_changed(self, text: str, option: str):
+                combo = CheckableComboBox(self.options_frame)
+                model = QStandardItemModel(combo)
+                for j in range(len(option_list)):
+                    item = QStandardItem(option_list[j])
+                    item.setCheckable(True)
+                    model.appendRow(item)
+                combo.setModel(model)
+
+                combo.parameters_changed_signal.connect(
+                    lambda parameters, option=option_name: self.on_special_option_parameters_changed(option, parameters))
+
+                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
+                self.options_layout.addWidget(combo, i, 1, 1, 1)
+
+            elif option_type == SpecialOptionType.ADP:
+                frame = QFrame(self.options_frame)
+                layout = QHBoxLayout(frame)
+                layout.setContentsMargins(0, 0, 0, 0)
+
+                begin_date = QDateEdit(QDate.currentDate(), frame)
+                end_date = QDateEdit(QDate.currentDate(), frame)
+                begin_date.setDisplayFormat("yyyy")
+                end_date.setDisplayFormat("yyyy")
+
+                begin_date.dateChanged.connect(lambda date: self.on_special_yop_changed("begin", date))
+                end_date.dateChanged.connect(lambda date: self.on_special_yop_changed("end", date))
+
+                to_label = QLabel(" - ", frame)
+                to_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+                layout.addWidget(begin_date)
+                layout.addWidget(to_label)
+                layout.addWidget(end_date)
+
+                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
+                self.options_layout.addWidget(frame, i, 1, 1, 1)
+
+            else:
+                self.options_layout.addWidget(checkbox, i, 0, 1, 1)
+
+            # option_name, field_type = special_options[i]
+            #
+            #
+            # checkbox = QCheckBox(option_name, self.options_frame)
+            # checkbox.toggled.connect(
+            #     lambda is_checked, option=option_name, fld_type=field_type: self.on_special_option_toggled(is_checked,
+            #                                                                                                option,
+            #                                                                                                fld_type))
+            # self.options_layout.addWidget(checkbox, i, 0)
+            # if field_type is str:
+            #     line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
+            #     line_edit.textChanged.connect(
+            #         lambda text, option=option_name: self.on_special_option_text_changed(text, option))
+            #     self.options_layout.addWidget(line_edit, i, 1)
+
+    def on_special_option_toggled(self, option: str, is_checked: bool):
         option = option.lower()
-        selected, attrib_name, value = self.selected_options.__getattribute__(option)
-        if not text: text = DEFAULT_SPECIAL_OPTION_VALUE
-        self.selected_options.__setattr__(option, (selected, attrib_name, text.lower()))
+        is_selected, option_type, option_name, curr_params = self.selected_options.__getattribute__(option)
+        self.selected_options.__setattr__(option, (is_checked, option_type, option_name, curr_params))
+
+    def on_special_option_parameters_changed(self, option: str, text: str):
+        option = option.lower()
+        is_selected, option_type, option_name, curr_params = self.selected_options.__getattribute__(option)
+        self.selected_options.__setattr__(option, (is_selected, option_type, option_name, text))
+
+    def on_special_yop_changed(self, date_name: str, date: QDate):
+        is_selected, option_type, option_name, curr_params = self.selected_options.yop
+        curr_dates = curr_params.split("-")
+        new_yop = ""
+        if date_name == "begin":
+            new_yop = f"{date.year()}-{curr_dates[1]}"
+        elif date_name == "end":
+            new_yop = f"{curr_dates[0]}-{date.year()}"
+
+        self.selected_options.yop = is_selected, option_type, option_name, new_yop
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1681,21 +1886,26 @@ class ReportWorker(QObject):
             attributes_to_show = ""
             attr_count = 0
             special_options_dict = self.special_options.__dict__
-            for option in special_options_dict.keys():
+            for option in special_options_dict:
                 value = special_options_dict[option]
-                if type(value) is tuple:
-                    is_selected, attrib_name, text = value
-                    if is_selected:
-                        if text != DEFAULT_SPECIAL_OPTION_VALUE: request_query[option] = text
+                is_selected, option_type, option_name, option_parameters = value
+
+                if is_selected:
+                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP\
+                            or option_type == SpecialOptionType.POS:
+                        if option_parameters != DEFAULT_SPECIAL_OPTION_VALUE:
+                            request_query[option] = option_parameters
+
+                    elif option_type == SpecialOptionType.POB:
+                        request_query[option] = "True"
+
+                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP:
                         if attr_count == 0:
-                            attributes_to_show += attrib_name
+                            attributes_to_show += option_name
                             attr_count += 1
                         elif attr_count > 0:
-                            attributes_to_show += f"|{attrib_name}"
+                            attributes_to_show += f"|{option_name}"
                             attr_count += 1
-
-                elif type(value) is bool:
-                    if value: request_query[option] = str(value).lower()
 
             if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
@@ -2483,12 +2693,12 @@ class ReportWorker(QObject):
             column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
             if self.is_special:
                 special_options_dict = self.special_options.__dict__
-                if special_options_dict["include_parent_details"]:
+                if special_options_dict["include_parent_details"][0]:
                     column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
                                      "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
                                      "Parent_Proprietary_ID", "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN",
                                      "Parent_URI"]
-                if special_options_dict["include_component_details"]:
+                if special_options_dict["include_component_details"][0]:
                     column_names += ["Component_Title", "Component_Authors", "Component_Publication_Date",
                                      "Component_Data_Type", "Component_DOI", "Component_Proprietary_ID",
                                      "Component_ISBN", "Component_Print_ISSN", "Component_Online_ISSN", "Component_URI"]
@@ -2515,19 +2725,19 @@ class ReportWorker(QObject):
                     if special_options_dict["authors"][0]: row_dict["Authors"] = row.authors
                     if special_options_dict["publication_date"][0]: row_dict["Publication_Date"] = row.publication_date
                     if special_options_dict["article_version"][0]: row_dict["Article_version"] = row.article_version
-                    if special_options_dict["include_parent_details"]:
+                    if special_options_dict["include_parent_details"][0]:
                         row_dict.update({"Parent_Title": row.parent_title,
                                          "Parent_Authors": row.parent_authors,
                                          "Parent_Publication_Date": row.parent_publication_date,
                                          "Parent_Article_Version": row.parent_article_version,
-                                         "Parent_Data_Type": row.data_type,
+                                         "Parent_Data_Type": row.parent_data_type,
                                          "Parent_DOI": row.parent_doi,
                                          "Parent_Proprietary_ID": row.parent_proprietary_id,
                                          "Parent_ISBN": row.parent_isbn,
                                          "Parent_Print_ISSN": row.parent_print_issn,
                                          "Parent_Online_ISSN": row.parent_online_issn,
                                          "Parent_URI": row.parent_uri})
-                    if special_options_dict["include_component_details"]:
+                    if special_options_dict["include_component_details"][0]:
                         row_dict.update({"Component_Title": row.component_title,
                                          "Component_Authors": row.component_authors,
                                          "Component_Publication_Date": row.component_publication_date,
