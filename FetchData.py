@@ -1995,22 +1995,22 @@ class ReportWorker(QObject):
 
                     if major_report_type == MajorReportType.PLATFORM:
                         report_item: PlatformReportItemModel
-                        if report_item.platform != "": metric_row.platform = report_item.platform
-                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
-                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
                     elif major_report_type == MajorReportType.DATABASE:
                         report_item: DatabaseReportItemModel
-                        if report_item.database != "": metric_row.database = report_item.database
-                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
-                        if report_item.platform != "": metric_row.platform = report_item.platform
-                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
-                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
+                        if report_item.database: metric_row.database = report_item.database
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
 
                         for item_id in report_item.item_ids:
                             if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
@@ -2018,19 +2018,19 @@ class ReportWorker(QObject):
 
                     elif major_report_type == MajorReportType.TITLE:
                         report_item: TitleReportItemModel
-                        if report_item.title != "": metric_row.title = report_item.title
-                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
-                        if report_item.platform != "": metric_row.platform = report_item.platform
-                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
-                        if report_item.section_type != "": metric_row.section_type = report_item.section_type
-                        if report_item.yop != "": metric_row.yop = report_item.yop
-                        if report_item.access_type != "": metric_row.access_type = report_item.access_type
-                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
+                        if report_item.title: metric_row.title = report_item.title
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.section_type: metric_row.section_type = report_item.section_type
+                        if report_item.yop: metric_row.yop = report_item.yop
+                        if report_item.access_type: metric_row.access_type = report_item.access_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
 
                         item_id: TypeValueModel
                         for item_id in report_item.item_ids:
@@ -2053,19 +2053,19 @@ class ReportWorker(QObject):
 
                     elif major_report_type == MajorReportType.ITEM:
                         report_item: ItemReportItemModel
-                        if report_item.item != "": metric_row.item = report_item.item
-                        if report_item.publisher != "": metric_row.publisher = report_item.publisher
-                        if report_item.platform != "": metric_row.platform = report_item.platform
-                        if report_item.data_type != "": metric_row.data_type = report_item.data_type
-                        if report_item.yop != "": metric_row.yop = report_item.yop
-                        if report_item.access_type != "": metric_row.access_type = report_item.access_type
-                        if report_item.access_method != "": metric_row.access_method = report_item.access_method
+                        if report_item.item: metric_row.item = report_item.item
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.yop: metric_row.yop = report_item.yop
+                        if report_item.access_type: metric_row.access_type = report_item.access_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
                         # Publisher ID
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str != "": metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
 
                         # Authors
                         authors_str = ""
@@ -2076,7 +2076,7 @@ class ReportWorker(QObject):
                                 if item_contributor.identifier:
                                     authors_str += f" ({item_contributor.identifier})"
                                 authors_str += "; "
-                        if authors_str != "": metric_row.authors = authors_str.rstrip("; ")
+                        if authors_str: metric_row.authors = authors_str.rstrip("; ")
 
                         # Publication date
                         item_date: TypeValueModel
@@ -2114,8 +2114,8 @@ class ReportWorker(QObject):
                         if report_item.item_parent is not None:
                             item_parent: ItemParentModel
                             item_parent = report_item.item_parent
-                            if item_parent.item_name != "": metric_row.parent_title = item_parent.item_name
-                            if item_parent.data_type != "": metric_row.parent_data_type = item_parent.data_type
+                            if item_parent.item_name: metric_row.parent_title = item_parent.item_name
+                            if item_parent.data_type: metric_row.parent_data_type = item_parent.data_type
 
                             # Authors
                             authors_str = ""
@@ -2127,7 +2127,7 @@ class ReportWorker(QObject):
                                         authors_str += f" ({item_contributor.identifier})"
                                     authors_str += "; "
                             authors_str.rstrip("; ")
-                            if authors_str != "": metric_row.authors = authors_str
+                            if authors_str: metric_row.authors = authors_str
 
                             # Publication date
                             item_date: TypeValueModel
@@ -2170,7 +2170,6 @@ class ReportWorker(QObject):
 
             if major_report_type == MajorReportType.ITEM:
                 # Item Components
-
                 item_component: ItemComponentModel
                 for item_component in report_item.item_components:
                     component_dict = {
@@ -2199,7 +2198,7 @@ class ReportWorker(QObject):
                                 authors_str += f" ({item_contributor.identifier})"
                             authors_str += "; "
                     authors_str.rstrip("; ")
-                    if authors_str != "": component_dict["component_authors"] = authors_str
+                    if authors_str: component_dict["component_authors"] = authors_str
 
                     # Publication date
                     item_date: TypeValueModel
