@@ -497,6 +497,33 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
 
 
+def update_vendor_name_sql_text(table, old_name, new_name):
+    sql_text = 'UPDATE ' + table + ' SET'
+    sql_text += '\n\t' + 'vendor' + ' = \"' + new_name + '\"'
+    if not table.endswith(COST_TABLE_SUFFIX):
+        sql_text += ',\n\t' + 'file' + ' = ' + 'REPLACE(' + 'file' + ', ' + '\"_' + old_name + '_\"'
+        sql_text += ', ' + '\"_' + new_name + '_\")'
+    sql_text += '\nWHERE ' + 'vendor' + ' = \"' + old_name + '\";'
+    return sql_text
+
+
+def update_vendor_in_all_tables(old_name, new_name):
+    sql_texts = []
+    for table in ALL_REPORTS:
+        sql_texts.append(update_vendor_name_sql_text(table, old_name, new_name))
+    for cost_table in REPORT_TYPE_SWITCHER.keys():
+        sql_texts.append(update_vendor_name_sql_text(cost_table + COST_TABLE_SUFFIX, old_name, new_name))
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        for sql_text in sql_texts:
+            print(sql_text)
+            run_sql(connection, sql_text)
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
 def replace_cost_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
@@ -518,7 +545,7 @@ def replace_cost_sql_text(report_type, data):  # makes the sql statement to 'rep
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_delete': None, 'sql_replace': sql_replace_text, 'data': values}  # sql_delete is not used
+    return {'sql_text': sql_replace_text, 'data': values}  # sql_delete is not used
 
 
 def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql statement to delete data from a cost table
@@ -528,7 +555,7 @@ def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql sta
     sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
     sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
     sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
-    return {'sql_delete': sql_text, 'sql_replace': None, 'data': None}  # sql_replace and data are not used
+    return {'sql_text': sql_text, 'data': None}  # sql_replace and data are not used
 
 
 def read_report_file(file_name, vendor,
@@ -605,7 +632,8 @@ def insert_single_file(file_path, vendor, year):
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_insert_sql(connection, replace['sql_delete'], replace['sql_replace'], replace['data'])
+        run_sql(connection, replace['sql_delete'])
+        run_sql(connection, replace['sql_replace'], replace['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -690,21 +718,13 @@ def create_connection(db_file):
     return connection
 
 
-def run_sql(connection, sql_text):
+def run_sql(connection, sql_text, data=None):
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_text)
-    except sqlite3.Error as error:
-        print(error)
-
-
-def run_insert_sql(connection, sql_delete_text, sql_insert_text, insert_data):
-    try:
-        cursor = connection.cursor()
-        if sql_delete_text:
-            cursor.execute(sql_delete_text)
-        if sql_insert_text:
-            cursor.executemany(sql_insert_text, insert_data)
+        if data is not None:
+            cursor.executemany(sql_text, data)
+        else:
+            cursor.execute(sql_text)
         connection.commit()
     except sqlite3.Error as error:
         print(error)

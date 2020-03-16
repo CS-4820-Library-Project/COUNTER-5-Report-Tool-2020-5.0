@@ -75,7 +75,6 @@ class CostsController:
 
     def on_vendor_parameter_changed(self):
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
-        print(self.vendor_parameter)
         if self.report_parameter:
             self.fill_names()
 
@@ -119,11 +118,6 @@ class CostsController:
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
     def insert_costs(self):
-        print('insert_costs')
-        print(self.cost_in_original_currency)
-        print(self.original_currency)
-        print(self.cost_in_local_currency)
-        print(self.cost_in_local_currency_with_tax)
         sql_text = None
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
@@ -139,23 +133,19 @@ class CostsController:
         else:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)
-        print(sql_text)
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
-            ManageDB.run_insert_sql(connection, sql_text['sql_delete'], sql_text['sql_replace'], sql_text['data'])
+            ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
 
     def load_costs(self):
-        print('load_costs')
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                self.name_parameter)
-        print(sql_text)
         results = []
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
-        print(results)
         values = {}
         index = 0
         for field in ManageDB.COST_FIELDS:
