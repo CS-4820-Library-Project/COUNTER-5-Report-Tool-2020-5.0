@@ -316,9 +316,18 @@
                 </widget>
                </item>
                <item>
-                <widget class="QToolButton" name="toolButton">
-                 <property name="cursor">
-                  <cursorShape>ArrowCursor</cursorShape>
+                <widget class="QPushButton" name="report_types_help_button">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>25</width>
+                   <height>25</height>
+                  </size>
                  </property>
                  <property name="text">
                   <string>?</string>

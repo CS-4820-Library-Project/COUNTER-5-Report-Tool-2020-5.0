@@ -1183,9 +1183,6 @@ class FetchReportsController(FetchReportsAbstract):
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
         self.deselect_vendors_btn = fetch_reports_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
-        self.tool_button = fetch_reports_ui.toolButton
-        self.tool_button.clicked.connect(self.tool_button_click)
-
         # endregion
 
         # region Report Types
@@ -1202,6 +1199,10 @@ class FetchReportsController(FetchReportsAbstract):
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
         self.deselect_report_types_btn = fetch_reports_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
+
+        self.report_types_help_btn = fetch_reports_ui.report_types_help_button
+        self.report_types_help_btn.clicked.connect(
+            lambda: show_message("Only reports supported by selected vendor will be retrieved!"))
         # endregion
 
         # region Date Edits
@@ -1380,13 +1381,6 @@ class FetchReportsController(FetchReportsAbstract):
             request_data = self.selected_data[self.started_processes]
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
-
-    def tool_button_click(self):
-        disclaimer_dialog = QDialog()
-        disclaimer_dialog_ui = DisclaimerDialog.Ui_dialog()
-        disclaimer_dialog_ui.setupUi(disclaimer_dialog)
-
-        disclaimer_dialog.exec_()
 
     def open_dir_select_dialog(self) -> str:
         directory = ""
