@@ -138,6 +138,7 @@ class CostsController:
         else:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)
+            self.clear_costs()
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
