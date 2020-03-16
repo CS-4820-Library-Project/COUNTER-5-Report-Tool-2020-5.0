@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
         costs_tab.setObjectName("costs_tab")
-        costs_tab.resize(400, 309)
+        costs_tab.resize(620, 671)
         self.verticalLayout = QtWidgets.QVBoxLayout(costs_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.costs_parameters_frame = QtWidgets.QFrame(costs_tab)
@@ -93,6 +91,9 @@ class Ui_costs_tab(object):
         self.costs_load_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_load_button.setObjectName("costs_load_button")
         self.horizontalLayout_14.addWidget(self.costs_load_button)
+        self.costs_clear_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_clear_button.setObjectName("costs_clear_button")
+        self.horizontalLayout_14.addWidget(self.costs_clear_button)
         self.costs_insert_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_insert_button.setObjectName("costs_insert_button")
         self.horizontalLayout_14.addWidget(self.costs_insert_button)
@@ -114,4 +115,16 @@ class Ui_costs_tab(object):
         self.costs_cost_in_local_currency_label.setText(_translate("costs_tab", "Cost in Local Currency"))
         self.costs_cost_in_local_currency_with_tax_label.setText(_translate("costs_tab", "Cost in Local Currency with Tax"))
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
+        self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
         self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    costs_tab = QtWidgets.QWidget()
+    ui = Ui_costs_tab()
+    ui.setupUi(costs_tab)
+    costs_tab.show()
+    sys.exit(app.exec_())
+

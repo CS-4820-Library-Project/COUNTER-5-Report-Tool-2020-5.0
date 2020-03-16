@@ -33,17 +33,19 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = 0.0
+        self.cost_in_original_currency = None
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = ''
+        self.original_currency = None
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = 0.0
+        self.cost_in_local_currency = None
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = 0.0
+        self.cost_in_local_currency_with_tax = None
+
+        self.clear_costs()
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -51,6 +53,9 @@ class CostsController:
 
         self.load_button = costs_ui.costs_load_button
         self.load_button.clicked.connect(self.load_costs)
+
+        self.clear_button = costs_ui.costs_clear_button
+        self.clear_button.clicked.connect(self.clear_costs)
 
         self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
         self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
@@ -155,5 +160,12 @@ class CostsController:
         self.original_currency_combobox.setCurrentText(values['original_currency'])
         self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
+
+    def clear_costs(self):
+        self.cost_in_original_currency_doublespinbox.setValue(0.0)
+        self.original_currency_combobox.setCurrentText('')
+        self.cost_in_local_currency_doublespinbox.setValue(0.0)
+        self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
+
 
     # TODO (Chandler): import/export tsv file with costs
