@@ -647,9 +647,24 @@ def chart_search_sql_text(report, start_year, end_year,
 
 def get_names_sql_text(report_type, vendor):
     name_field = NAME_FIELD_SWITCHER[report_type]
+
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
                + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE \"' + vendor + '\"' \
                + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
+    return sql_text
+
+
+def get_costs_sql_text(report_type, vendor, year, name):
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'SELECT'
+    fields = []
+    for field in COST_FIELDS:
+        fields.append(field['name'])
+    sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += '\nWHERE '
+    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
+    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
+    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
     return sql_text
 
 

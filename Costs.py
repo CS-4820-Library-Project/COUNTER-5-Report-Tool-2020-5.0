@@ -135,10 +135,27 @@ class CostsController:
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             ManageDB.run_insert_sql(connection, None, sql_text['sql_replace_text'], sql_text['data'])
-        # TODO (Chandler): insert into database
 
     def load_costs(self):
         print('load_costs')
-        # TODO (Chandler): load from database
+        sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                               self.name_parameter)
+        print(sql_text)
+        results = []
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text)
+            if not results:
+                results.append((0.0, '', 0.0, 0.0))
+        print(results)
+        values = {}
+        index = 0
+        for field in ManageDB.COST_FIELDS:
+            values[field['name']] = results[0][index]
+            index += 1
+        self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
+        self.original_currency_combobox.setCurrentText(values['original_currency'])
+        self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
+        self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
 
     # TODO (Chandler): import/export tsv file with costs
