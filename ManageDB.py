@@ -497,7 +497,7 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
 
 
-def replace_cost_sql_text(report_type, data):
+def replace_cost_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
@@ -518,17 +518,17 @@ def replace_cost_sql_text(report_type, data):
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_delete': None, 'sql_replace': sql_replace_text, 'data': values}
+    return {'sql_delete': None, 'sql_replace': sql_replace_text, 'data': values}  # sql_delete is not used
 
 
-def delete_costs_sql_text(report_type, vendor, year, name):
+def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql statement to delete data from a cost table
     name_field = NAME_FIELD_SWITCHER[report_type]
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
     sql_text += '\nWHERE '
     sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
     sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
     sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
-    return {'sql_delete': sql_text, 'sql_replace': None, 'data': None}
+    return {'sql_delete': sql_text, 'sql_replace': None, 'data': None}  # sql_replace and data are not used
 
 
 def read_report_file(file_name, vendor,

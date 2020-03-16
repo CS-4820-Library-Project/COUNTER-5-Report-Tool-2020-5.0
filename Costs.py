@@ -67,8 +67,6 @@ class CostsController:
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
 
-    # TODO (Chandler): enable cost fields when others are filled
-
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
         self.name_label.setText(ManageDB.NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
