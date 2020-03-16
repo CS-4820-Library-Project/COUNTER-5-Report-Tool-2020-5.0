@@ -288,7 +288,6 @@ class Ui_fetch_reports_tab(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.fetch_advanced_button.sizePolicy().hasHeightForWidth())
         self.fetch_advanced_button.setSizePolicy(sizePolicy)
-        self.fetch_advanced_button.setMaximumSize(QtCore.QSize(180, 16777215))
         self.fetch_advanced_button.setObjectName("fetch_advanced_button")
         self.gridLayout_2.addWidget(self.fetch_advanced_button, 1, 1, 1, 1)
         self.verticalLayout_7.addWidget(self.frame_13)
