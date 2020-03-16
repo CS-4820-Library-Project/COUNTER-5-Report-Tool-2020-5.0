@@ -33,17 +33,17 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = None
+        self.cost_in_original_currency = 0.0
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = None
+        self.original_currency = ''
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = None
+        self.cost_in_local_currency = 0.0
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = None
+        self.cost_in_local_currency_with_tax = 0.0
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -122,19 +122,29 @@ class CostsController:
 
     def insert_costs(self):
         print('insert_costs')
-        sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
-                                                  [{ManageDB.NAME_FIELD_SWITCHER[
-                                                        self.report_parameter]: self.name_parameter,
-                                                    'vendor': self.vendor_parameter, 'year': self.year_parameter,
-                                                    'cost_in_original_currency': self.cost_in_original_currency,
-                                                    'original_currency': self.original_currency,
-                                                    'cost_in_local_currency': self.cost_in_local_currency,
-                                                    'cost_in_local_currency_with_tax':
-                                                        self.cost_in_local_currency_with_tax}])
+        print(self.cost_in_original_currency)
+        print(self.original_currency)
+        print(self.cost_in_local_currency)
+        print(self.cost_in_local_currency_with_tax)
+        sql_text = None
+        if self.cost_in_original_currency > 0 and self.original_currency != '' \
+                and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
+            sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
+                                                      [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                            self.name_parameter,
+                                                        'vendor': self.vendor_parameter, 'year': self.year_parameter,
+                                                        'cost_in_original_currency': self.cost_in_original_currency,
+                                                        'original_currency': self.original_currency,
+                                                        'cost_in_local_currency': self.cost_in_local_currency,
+                                                        'cost_in_local_currency_with_tax':
+                                                            self.cost_in_local_currency_with_tax}])
+        else:
+            sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                                      self.name_parameter)
         print(sql_text)
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
-            ManageDB.run_insert_sql(connection, None, sql_text['sql_replace_text'], sql_text['data'])
+            ManageDB.run_insert_sql(connection, sql_text['sql_delete'], sql_text['sql_replace'], sql_text['data'])
 
     def load_costs(self):
         print('load_costs')

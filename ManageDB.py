@@ -518,7 +518,17 @@ def replace_cost_sql_text(report_type, data):
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_replace_text': sql_replace_text, 'data': values}
+    return {'sql_delete': None, 'sql_replace': sql_replace_text, 'data': values}
+
+
+def delete_costs_sql_text(report_type, vendor, year, name):
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += '\nWHERE '
+    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
+    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
+    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
+    return {'sql_delete': sql_text, 'sql_replace': None, 'data': None}
 
 
 def read_report_file(file_name, vendor,
@@ -688,12 +698,13 @@ def run_sql(connection, sql_text):
         print(error)
 
 
-def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
+def run_insert_sql(connection, sql_delete_text, sql_insert_text, insert_data):
     try:
         cursor = connection.cursor()
         if sql_delete_text:
             cursor.execute(sql_delete_text)
-        cursor.executemany(sql_insert_text, data)
+        if sql_insert_text:
+            cursor.executemany(sql_insert_text, insert_data)
         connection.commit()
     except sqlite3.Error as error:
         print(error)
