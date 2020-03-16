@@ -1,5 +1,8 @@
 import shutil
 import webbrowser
+import platform
+import shlex
+import ctypes
 from os import path, makedirs, system
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
@@ -9,11 +12,10 @@ from ui import ImportReportTab, MessageDialog, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
-import platform
-import shlex
 from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
-import ManageDB
+# All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 
 class ProcessResult:
@@ -28,9 +30,11 @@ class ProcessResult:
 
 
 class ImportReportController:
-    def __init__(self, vendors: list, settings: SettingsModel, import_report_ui: ImportReportTab.Ui_import_report_tab):
+    def __init__(self, vendors: list, settings: SettingsModel, import_report_widget: QWidget,
+                 import_report_ui: ImportReportTab.Ui_import_report_tab):
 
         # region General
+        self.import_report_widget = import_report_widget
         self.vendors = vendors
         self.date = QDate.currentDate()
         self.selected_vendor_index = -1
@@ -75,7 +79,7 @@ class ImportReportController:
 
         # set up restore database button
         self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController()
+        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.import_report_widget)
 
     def on_vendors_changed(self, vendors: list):
         self.selected_vendor_index = -1
@@ -150,6 +154,16 @@ class ImportReportController:
             process_result.file_path = dest_file_path
             process_result.completion_status = CompletionStatus.SUCCESSFUL
 
+            # Save protected tsv file
+            protected_file_dir = f"{PROTECTED_DIR}{self.date.toString('yyyy')}/{vendor.name}/"
+            if not path.isdir(protected_file_dir):
+                makedirs(protected_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
+
+            protected_file_path = f"{protected_file_dir}{dest_file_name}"
+            self.copy_file(self.selected_file_path, protected_file_path)
+
         except Exception as e:
             process_result.message = f"Exception: {e}"
             process_result.completion_status = CompletionStatus.FAILED
@@ -164,7 +178,7 @@ class ImportReportController:
         shutil.copy2(origin_path, dest_path)
 
     def show_result(self, process_result: ProcessResult):
-        self.result_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
         vertical_layout.setContentsMargins(5, 5, 5, 5)
