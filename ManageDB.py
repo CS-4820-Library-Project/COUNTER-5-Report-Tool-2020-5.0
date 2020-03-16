@@ -518,7 +518,7 @@ def replace_cost_sql_text(report_type, data):
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_replace': sql_replace_text, 'data': values}
+    return {'sql_replace_text': sql_replace_text, 'data': values}
 
 
 def read_report_file(file_name, vendor,

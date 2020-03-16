@@ -112,7 +112,7 @@ class CostsController:
         self.cost_in_original_currency = self.cost_in_original_currency_doublespinbox.value()
 
     def on_original_currency_changed(self):
-        self.original_currency = self.original_currency_combobox.text()
+        self.original_currency = self.original_currency_combobox.currentText()
 
     def on_cost_in_local_currency_changed(self):
         self.cost_in_local_currency = self.cost_in_local_currency_doublespinbox.value()
@@ -132,6 +132,9 @@ class CostsController:
                                                     'cost_in_local_currency_with_tax':
                                                         self.cost_in_local_currency_with_tax}])
         print(sql_text)
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            ManageDB.run_insert_sql(connection, None, sql_text['sql_replace_text'], sql_text['data'])
         # TODO (Chandler): insert into database
 
     def load_costs(self):
