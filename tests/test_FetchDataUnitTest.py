@@ -2,7 +2,8 @@ import sys
 import unittest
 import FetchData
 from PyQt5.QtWidgets import QApplication, QDialog
-from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
+from PyQt5.QtCore import QDate
+
 
 from ui import MessageDialog
 
@@ -111,59 +112,187 @@ class FetchDataTest(unittest.TestCase):
         self.assertEqual(test.value, "2020-02-29")
 
     def test_ExceptionModel(self):
-        test = FetchData.ExceptionModel.from_json("")
+        testJson =  {"Code":"123456789","Message":"Test Test","Severity":"Test","Data":"2020-01"}
+        test = FetchData.ExceptionModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.ExceptionModel))
+        self.assertEqual(test.code, 123456789)
+        self.assertEqual(test.message, "Test Test")
+        self.assertEqual(test.severity, "Test")
+        self.assertEqual(test.data, "2020-01")
 
+    def test_exception_models_to_message(self):
+        test = FetchData.exception_models_to_message("")
+        self.assertEqual(test, "")
 
     def test_ReportHeaderModel(self):
-        test = FetchData.ReportHeaderModel.from_json("")
+        testJson = {"Report_Name": "test",
+                    "Report_ID": "test",
+                    "Release": "test",
+                    "Institution_Name": "test",
+                    "Created": "test",
+                    "Created_By": "test",
+                    "Institution_ID": "test",
+                    "Report_Filters": "test",
+                    "Report_Attributes": "test",
+                    "Exceptions": "test"}
+        test = FetchData.ReportHeaderModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.ReportHeaderModel))
-
+        self.assertEqual(test.report_name, "test")
+        self.assertEqual(test.report_id, "TEST")
+        self.assertEqual(test.release,"test")
+        self.assertEqual(test.institution_name, "test")
+        self.assertEqual(test.created, "test")
+        self.assertEqual(test.created_by, "test")
+        self.assertEqual(test.institution_ids, [])
+        self.assertEqual(test.report_filters, [])
+        self.assertEqual(test.report_attributes, [])
+        self.assertEqual(test.exceptions, [])
 
     def test_PlatformReportItemModel(self):
-        test = FetchData.PlatformReportItemModel.from_json("")
+        testJson = {"Platform":"Test","Data_Type":"Test","Access_Method":"Test","Performance":"Test"}
+        test = FetchData.PlatformReportItemModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.PlatformReportItemModel))
+        self.assertEqual(test.platform, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.access_method, "Test")
+        self.assertEqual(test.performances, [])
 
     def test_DatabaseReportItemModel(self):
-        test = FetchData.DatabaseReportItemModel.from_json("")
+        testJson = {"Database":"Test",
+                    "Publisher":"Test",
+                    "Platform":"Test",
+                    "Data_Type":"Test",
+                    "Access_Method":"Test",
+                    "Item_ID":"Test",
+                    "Publisher_ID":"Test",
+                    "Performance":"Test"}
+        test = FetchData.DatabaseReportItemModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.DatabaseReportItemModel))
+        self.assertEqual(test.database, "Test")
+        self.assertEqual(test.publisher, "Test")
+        self.assertEqual(test.platform, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.access_method, "Test")
+        self.assertEqual(test.item_ids, [])
+        self.assertEqual(test.publisher_ids, [])
+        self.assertEqual(test.performances, [])
 
     def test_TitleReportItemModel(self):
-        test = FetchData.TitleReportItemModel.from_json("")
+        testJson = {"Title": "Test",
+                    "Platform": "Test",
+                    "Publisher": "Test",
+                    "Data_Type": "Test",
+                    "Section_Type": "Test",
+                    "YOP": "Test",
+                    "Access_Type": "Test",
+                    "Access_Method": "Test",
+                    "Item_ID":"Test",
+                    "Publisher_ID":"Test",
+                    "Performance":"Test"}
+        test = FetchData.TitleReportItemModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.TitleReportItemModel))
+        self.assertEqual(test.title, "Test")
+        self.assertEqual(test.publisher, "Test")
+        self.assertEqual(test.platform, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.section_type, "Test")
+        self.assertEqual(test.yop, "Test")
+        self.assertEqual(test.access_type, "Test")
+        self.assertEqual(test.access_method, "Test")
+        self.assertEqual(test.item_ids, [])
+        self.assertEqual(test.publisher_ids, [])
+        self.assertEqual(test.performances, [])
 
     def test_ItemContributorModel(self):
-        test = FetchData.ItemContributorModel.from_json("")
+        testJson = {"Type":"Test","Name":"Test","Identifier":"Test"}
+        test = FetchData.ItemContributorModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.ItemContributorModel))
+        self.assertEqual(test.item_type, "Test")
+        self.assertEqual(test.name, "Test")
+        self.assertEqual(test.identifier, "Test")
 
     def test_ItemParentModel(self):
-        test = FetchData.ItemParentModel.from_json("")
+        testJson = {"Item_Name": "Test",
+                    "Data_Type": "Test",
+                    "Item_Contributors": "Test",
+                    "Item_ID": "Test",
+                    "Item_Dates": "Test",
+                    "Item_Attributes": "Test"}
+        test = FetchData.ItemParentModel.from_json(testJson)
         self.assertTrue(isinstance(test,FetchData.ItemParentModel))
+        self.assertEqual(test.item_name, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.item_contributors, [])
+        self.assertEqual(test.item_ids, [])
+        self.assertEqual(test.item_dates, [])
+        self.assertEqual(test.item_attributes, [])
 
     def test_ItemComponentModel(self):
-        test = FetchData.ItemComponentModel.from_json("")
+        testJson = {"Item_Name": "Test",
+                    "Data_Type": "Test",
+                    "Item_Contributors": "Test",
+                    "Item_ID": "Test",
+                    "Item_Dates": "Test",
+                    "Item_Attributes": "Test",
+                    "Performance": "Test"}
+        test = FetchData.ItemComponentModel.from_json(testJson)
         self.assertTrue(isinstance(test, FetchData.ItemComponentModel))
+        self.assertEqual(test.item_name, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.item_contributors, [])
+        self.assertEqual(test.item_ids, [])
+        self.assertEqual(test.item_dates, [])
+        self.assertEqual(test.item_attributes, [])
+        self.assertEqual(test.performances,[])
 
     def test_ItemReportItemModel(self):
-        test = FetchData.ItemReportItemModel.from_json("")
+        testJson = {"Item":"Test",
+                    "Platform": "Test",
+                    "Publisher": "Test",
+                    "Data_Type": "Test",
+                    "YOP": "Test",
+                    "Access_Type": "Test",
+                    "Access_Method": "Test",
+                    "Item_Parent":"Test",
+                    "Item_Contributors": "Test",
+                    "Item_ID": "Test",
+                    "Item_Dates": "Test",
+                    "Item_Attributes": "Test",
+                    "Performance": "Test",
+                    "Publisher_ID:":"Test",
+                    "Item_Component":"Test"}
+        test = FetchData.ItemReportItemModel.from_json(testJson)
         self.assertTrue(isinstance(test, FetchData.ItemReportItemModel))
+        self.assertEqual(test.item, "Test")
+        self.assertEqual(test.publisher, "Test")
+        self.assertEqual(test.platform, "Test")
+        self.assertEqual(test.data_type, "Test")
+        self.assertEqual(test.yop, "Test")
+        self.assertEqual(test.access_type, "Test")
+        self.assertEqual(test.access_method, "Test")
+        self.assertTrue(isinstance(test.item_parent,FetchData.ItemParentModel))
+        self.assertEqual(test.item_ids, [])
+        self.assertEqual(test.publisher_ids, [])
+        self.assertEqual(test.performances, [])
+        self.assertEqual(test.item_dates, [])
+        self.assertEqual(test.item_attributes, [])
+        self.assertEqual(test.item_components, [])
 
     def test_get_models(self):
         test = FetchData.get_models("123",FetchData.TypeValueModel,"None")
         self.assertTrue(isinstance(test, list))
+        self.assertEqual(len(test), 0)
 
     def test_get_month_years(self):
-        now = QDate.currentDate()
-        test = FetchData.get_month_years(now,now)
+        begin = QDate(2020,1,1)
+        end = QDate(2020,12,1)
+        test = FetchData.get_month_years(begin,end)
         self.assertTrue(isinstance(test, list))
-
-    def test_Attributes(self):
-        test = FetchData.Attributes()
-        self.assertTrue(isinstance(test, FetchData.Attributes))
+        self.assertEqual(len(test),12)
 
     def test_RequestData(self):
         now = QDate.currentDate()
-        test = FetchData.RequestData(FetchData.Vendor, FetchData.REPORT_TYPES, now, now, FetchData.FetchType, FetchData.SettingsModel, FetchData.Attributes)
+        test = FetchData.RequestData(FetchData.Vendor, FetchData.REPORT_TYPES, now, now, "", FetchData.SettingsModel, FetchData.SpecialReportOptions)
         self.assertTrue(isinstance(test, FetchData.RequestData))
 
     def test_ProcessResult(self):
@@ -181,15 +310,6 @@ class FetchDataTest(unittest.TestCase):
     def test_UnacceptableCodeException(self):
         test = FetchData.UnacceptableCodeException(Exception)
         self.assertTrue(isinstance(test, Exception))
-
-    #def test_FetchReportsAbstract_init_(self):
-        #test = FetchData.FetchReportsAbstract.__init__(self, ["test1","test2"], FetchData.SearchController, FetchData.SettingsModel)
-        #self.assertEqual(test, None)
-
-    #def test_fetch_vendor_data(self):
-        #now = QDate.currentDate()
-        #data = FetchData.RequestData(self, FetchData.Vendor, FetchData.REPORT_TYPES, now, now, FetchData.FetchType, FetchData.SettingsModel)
-        #test = FetchData.FetchReportsAbstract.fetch_vendor_data(self,data)
 
 
 if __name__ == "__main__":
