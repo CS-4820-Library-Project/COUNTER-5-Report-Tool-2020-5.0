@@ -33,19 +33,17 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = 0.0
+        self.cost_in_original_currency = None
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = ''
+        self.original_currency = None
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = 0.0
+        self.cost_in_local_currency = None
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = 0.0
-
-        self.clear_costs()
+        self.cost_in_local_currency_with_tax = None
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -71,6 +69,8 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.valueChanged.connect(self.on_cost_in_local_currency_changed)
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
+
+        self.clear_costs()
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
@@ -143,6 +143,7 @@ class CostsController:
         if connection is not None:
             ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
             connection.close()
+            ManageDB.backup_costs_data(self.report_parameter)
 
     def load_costs(self):
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
@@ -169,6 +170,5 @@ class CostsController:
         self.original_currency_combobox.setCurrentText('')
         self.cost_in_local_currency_doublespinbox.setValue(0.0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
-
 
     # TODO (Chandler): import/export tsv file with costs

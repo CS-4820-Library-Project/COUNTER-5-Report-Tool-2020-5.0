@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_settings_tab(object):
     def setupUi(self, settings_tab):
         settings_tab.setObjectName("settings_tab")
-        settings_tab.resize(806, 933)
+        settings_tab.resize(806, 1005)
         self.verticalLayout = QtWidgets.QVBoxLayout(settings_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_37 = QtWidgets.QFrame(settings_tab)
@@ -52,9 +52,6 @@ class Ui_settings_tab(object):
         self.settings_restore_database_button = QtWidgets.QPushButton(self.frame_35)
         self.settings_restore_database_button.setObjectName("settings_restore_database_button")
         self.verticalLayout_20.addWidget(self.settings_restore_database_button)
-        self.settings_backup_costs_button = QtWidgets.QPushButton(self.frame_35)
-        self.settings_backup_costs_button.setObjectName("settings_backup_costs_button")
-        self.verticalLayout_20.addWidget(self.settings_backup_costs_button)
         self.frame_36 = QtWidgets.QFrame(self.frame_35)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -252,7 +249,6 @@ class Ui_settings_tab(object):
         settings_tab.setWindowTitle(_translate("settings_tab", "Settings"))
         self.label_26.setText(_translate("settings_tab", "Search"))
         self.settings_restore_database_button.setText(_translate("settings_tab", "Restore Database"))
-        self.settings_backup_costs_button.setText(_translate("settings_tab", "Backup Costs"))
         self.label_27.setText(_translate("settings_tab", "[In Development]"))
         self.save_location_edit_fetch_2.setText(_translate("settings_tab", "[In Development]"))
         self.label_24.setText(_translate("settings_tab", "Reports"))

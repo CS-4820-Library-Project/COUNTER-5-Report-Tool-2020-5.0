@@ -805,25 +805,24 @@ def setup_database(drop_tables):
         print('Error, no connection')
 
 
-def backup_costs_data():
+def backup_costs_data(report_type):
     if not os.path.exists(COSTS_SAVE_FOLDER):
         os.mkdir(COSTS_SAVE_FOLDER)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for report_type in REPORT_TYPE_SWITCHER.keys():
-            headers = []
-            for field in get_cost_fields_list(report_type):
-                headers.append(field['name'])
-            sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
-            sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
-            print(sql_text)
-            results = run_select_sql(connection, sql_text)
-            results.insert(0, headers)
-            file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
-            if file.mode == 'w':
-                output = csv.writer(file, delimiter='\t', quotechar='\"')
-                for row in results:
-                    output.writerow(row)
+        headers = []
+        for field in get_cost_fields_list(report_type):
+            headers.append(field['name'])
+        sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
+        sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
+        print(sql_text)
+        results = run_select_sql(connection, sql_text)
+        results.insert(0, headers)
+        file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
+        if file.mode == 'w':
+            output = csv.writer(file, delimiter='\t', quotechar='\"')
+            for row in results:
+                output.writerow(row)
         connection.close()
     else:
         print('Error, no connection')
