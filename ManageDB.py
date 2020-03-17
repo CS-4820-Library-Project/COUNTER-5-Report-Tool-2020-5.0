@@ -688,16 +688,17 @@ def search_sql_text(report, start_year, end_year,
     clauses.extend(search_parameters)
     print(clauses)
     clauses_texts = []
+    data = []
     for clause in clauses:
         sub_clauses_text = []
         for sub_clause in clause:
             sub_clauses_text.append(
-                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-            # TODO (Chandler): make parameterized query
+                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' ?')
+            data.append(sub_clause['value'])
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def chart_search_sql_text(report, start_year, end_year,
@@ -770,10 +771,13 @@ def run_sql(connection, sql_text, data=None):
         print(error)
 
 
-def run_select_sql(connection, sql_text):
+def run_select_sql(connection, sql_text, data=None):
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_text)
+        if data is not None:
+            cursor.execute(sql_text, data)
+        else:
+            cursor.execute(sql_text)
         return cursor.fetchall()
     except sqlite3.Error as error:
         print(error)

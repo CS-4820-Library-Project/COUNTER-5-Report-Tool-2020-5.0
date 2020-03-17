@@ -155,9 +155,9 @@ class SearchController:
         parameters = self.get_search_parameters()
 
         # sql query to get search results
-        sql_text = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
-                                            parameters['end_year'], parameters['search_parameters'])
-        print(sql_text)  # testing
+        search = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+                                          parameters['end_year'], parameters['search_parameters'])
+        print(search)  # testing
 
         headers = []
         for field in ManageDB.get_view_report_fields_list(parameters['report']):
@@ -173,7 +173,7 @@ class SearchController:
                 file_name += '.tsv'
             connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
             if connection is not None:
-                results = ManageDB.run_select_sql(connection, sql_text)
+                results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
                 results.insert(0, headers)
                 print(results)
                 file = open(file_name, 'w', newline="", encoding='utf-8-sig')
