@@ -95,14 +95,14 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
+            if field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'])
 
         # TODO (Chandler): make value check for type
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE'))
 
         # set up remove current or clause button
         def remove_this_or():
@@ -127,7 +127,7 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.dat' and file_name != '':
                 file_name += '.tsv'
-            file = open(file_name, 'w', encoding='utf-8')
+            file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
 
@@ -176,7 +176,7 @@ class SearchController:
                 results = ManageDB.run_select_sql(connection, sql_text)
                 results.insert(0, headers)
                 print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8')
+                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')
                     for row in results:
