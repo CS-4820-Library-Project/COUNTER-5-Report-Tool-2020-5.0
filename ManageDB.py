@@ -518,14 +518,13 @@ def update_vendor_in_all_tables(old_name, new_name):
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         for sql_text in sql_texts:
-            print(sql_text)
             run_sql(connection, sql_text)
         connection.close()
     else:
         print('Error, no connection')
 
 
-def replace_cost_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
+def replace_costs_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
@@ -592,7 +591,7 @@ def read_report_file(file_name, vendor,
                     if metric > 0:
                         value = {}
                         last_column = column_headers.index(YEAR_TOTAL)
-                        for i in range(last_column):  # read rows before months
+                        for i in range(last_column):  # read columns before months
                             value[column_headers[i]] = cells[i]
                         if not value['metric_type']:  # if no metric type column, use the metric type from header
                             value['metric_type'] = header['metric_types']
@@ -604,6 +603,27 @@ def read_report_file(file_name, vendor,
                         value['updated_on'] = header['created']
                         value['file'] = os.path.basename(file.name)
                         values.append(value)
+        results['values'] = values
+        return results
+    else:
+        print('Error: could not open file ' + file_name)
+        return None
+
+
+def read_costs_file(file_name):
+    delimiter = DELIMITERS[file_name[-4:].lower()]
+    file = open(file_name, 'r', encoding='utf-8-sig')
+    reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
+    results = {'report': os.path.basename(file.name)[:2]}
+    if file.mode == 'r':
+        column_headers = next(reader)
+        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        values = []
+        for cells in list(reader):
+            value = {}
+            for i in range(len(cells)):  # read columns
+                value[column_headers[i]] = cells[i]
+            values.append(value)
         results['values'] = values
         return results
     else:
@@ -631,7 +651,7 @@ def get_all_cost_files():
     files = []
     for file in os.scandir(COSTS_SAVE_FOLDER):
         if file.name[-4:] in DELIMITERS:
-            file.append(file.path)
+            files.append({'file': file.path})
     return files
 
 
@@ -643,6 +663,18 @@ def insert_single_file(file_path, vendor, year):
     if connection is not None:
         run_sql(connection, replace['sql_delete'])
         run_sql(connection, replace['sql_replace'], replace['data'])
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
+def insert_single_cost_file(file_path):
+    data = read_costs_file(file_path)
+    replace = replace_costs_sql_text(data['report'], data['values'])
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        run_sql(connection, replace['sql_text'], replace['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -778,19 +810,23 @@ def backup_costs_data():
         os.mkdir(COSTS_SAVE_FOLDER)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        for report in REPORT_TYPE_SWITCHER.keys():
+        for report_type in REPORT_TYPE_SWITCHER.keys():
             headers = []
-            for field in get_cost_fields_list(report):
+            for field in get_cost_fields_list(report_type):
                 headers.append(field['name'])
-            sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report + COST_TABLE_SUFFIX + ';'
+            sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
+            sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
+            print(sql_text)
             results = run_select_sql(connection, sql_text)
             results.insert(0, headers)
-            file = open(COSTS_SAVE_FOLDER + report + '.tsv', 'w', newline="", encoding='utf-8-sig')
+            file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
             if file.mode == 'w':
                 output = csv.writer(file, delimiter='\t', quotechar='\"')
                 for row in results:
                     output.writerow(row)
         connection.close()
+    else:
+        print('Error, no connection')
 
 
 def test_chart_search():

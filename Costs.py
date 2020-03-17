@@ -33,17 +33,17 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = None
+        self.cost_in_original_currency = 0.0
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = None
+        self.original_currency = ''
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = None
+        self.cost_in_local_currency = 0.0
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = None
+        self.cost_in_local_currency_with_tax = 0.0
 
         self.clear_costs()
 
@@ -126,8 +126,8 @@ class CostsController:
         sql_text = None
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
-            sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
-                                                      [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
+            sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
+                                                       [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
                                                             self.name_parameter,
                                                         'vendor': self.vendor_parameter, 'year': self.year_parameter,
                                                         'cost_in_original_currency': self.cost_in_original_currency,
