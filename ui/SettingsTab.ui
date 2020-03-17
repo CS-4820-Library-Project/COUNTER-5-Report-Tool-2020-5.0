@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>427</height>
+    <width>806</width>
+    <height>933</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,6 +75,13 @@
           <widget class="QPushButton" name="settings_restore_database_button">
            <property name="text">
             <string>Restore Database</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="settings_backup_costs_button">
+           <property name="text">
+            <string>Backup Costs</string>
            </property>
           </widget>
          </item>

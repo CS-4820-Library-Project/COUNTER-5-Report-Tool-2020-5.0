@@ -152,6 +152,10 @@ class SettingsController:
         self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
 
+        # set up costs backup button
+        self.backup_costs_button = settings_ui.settings_backup_costs_button
+        self.backup_costs_button.clicked.connect(self.backup_costs)
+
     def on_setting_changed(self, setting: Setting, setting_value):
         if setting == Setting.YEARLY_DIR:
             self.settings.yearly_directory = setting_value
@@ -196,4 +200,5 @@ class SettingsController:
         else:
             print('Error, already running')
 
-    # TODO (Chandler): backup and restore costs
+    def backup_costs(self):  # TODO (Chandler): backup and restore costs
+        ManageDB.backup_costs_data()

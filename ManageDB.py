@@ -325,6 +325,7 @@ DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 FILE_LOCATION = r'./all_data/DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
+COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
 HEADER_ROWS = 12
 BLANK_ROWS = 1
@@ -561,7 +562,7 @@ def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql sta
 def read_report_file(file_name, vendor,
                      year):  # reads a specific csv/tsv file and returns the report type and the values for inserting
     delimiter = DELIMITERS[file_name[-4:].lower()]
-    file = open(file_name, 'r', encoding='utf-8')
+    file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     results = {}
     if file.mode == 'r':
@@ -624,6 +625,14 @@ def get_all_reports():
                             reports.append({'file': file.path, 'vendor': directory_data['vendor'],
                                             'year': directory_data['year']})
     return reports
+
+
+def get_all_cost_files():
+    files = []
+    for file in os.scandir(COSTS_SAVE_FOLDER):
+        if file.name[-4:] in DELIMITERS:
+            file.append(file.path)
+    return files
 
 
 def insert_single_file(file_path, vendor, year):
@@ -762,6 +771,26 @@ def setup_database(drop_tables):
         connection.close()
     else:
         print('Error, no connection')
+
+
+def backup_costs_data():
+    if not os.path.exists(COSTS_SAVE_FOLDER):
+        os.mkdir(COSTS_SAVE_FOLDER)
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        for report in REPORT_TYPE_SWITCHER.keys():
+            headers = []
+            for field in get_cost_fields_list(report):
+                headers.append(field['name'])
+            sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report + COST_TABLE_SUFFIX + ';'
+            results = run_select_sql(connection, sql_text)
+            results.insert(0, headers)
+            file = open(COSTS_SAVE_FOLDER + report + '.tsv', 'w', newline="", encoding='utf-8-sig')
+            if file.mode == 'w':
+                output = csv.writer(file, delimiter='\t', quotechar='\"')
+                for row in results:
+                    output.writerow(row)
+        connection.close()
 
 
 def test_chart_search():

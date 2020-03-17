@@ -142,6 +142,7 @@ class CostsController:
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
+            connection.close()
 
     def load_costs(self):
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
@@ -152,6 +153,7 @@ class CostsController:
             results = ManageDB.run_select_sql(connection, sql_text)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
+            connection.close()
         values = {}
         index = 0
         for field in ManageDB.COST_FIELDS:
