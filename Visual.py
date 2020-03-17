@@ -7,46 +7,46 @@ import shlex
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import ManageDB
-from ui import MainWindow, MessageDialog
+from ui import MainWindow, MessageDialog, VisualTab
 
 
 class VisualController:
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
         # set up report types combobox
-        self.report_parameter = main_window_ui.search_report_parameter_combobox_2
+        self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
         self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
         self.report_parameter.addItems(ManageDB.PLATFORM_REPORTS)
         self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
 
         # set up radio buttons
-        self.h_bar_radio = main_window_ui.radioButton
-        self.v_bar_radio = main_window_ui.radioButton_3
-        self.line_radio = main_window_ui.radioButton_4
+        self.h_bar_radio = visual_ui.radioButton
+        self.v_bar_radio = visual_ui.radioButton_3
+        self.line_radio = visual_ui.radioButton_4
 
         # set up start year dateedit
-        self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit_2
+        self.start_year_parameter = visual_ui.search_start_year_parameter_dateedit_2
         self.start_year_parameter.setDate(date.today())
 
         # set up end year dateedit
-        self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit_2
+        self.end_year_parameter = visual_ui.search_end_year_parameter_dateedit_2
         self.end_year_parameter.setDate(date.today())
 
-        self.name = main_window_ui.name_lineEdit
-        self.metric = main_window_ui.metric_type_lineEdit
+        self.name = visual_ui.name_lineEdit
+        self.metric = visual_ui.metric_type_lineEdit
 
         # set up the search clauses
         self.and_clause_parameters = None
 
         # set up create chart button
-        self.create_chart_button = main_window_ui.create_chart_button
+        self.create_chart_button = visual_ui.create_chart_button
         self.create_chart_button.clicked.connect(self.createChart)
 
         # set up customize chart field
-        self.chart_title_edit = main_window_ui.chart_title_lineEdit
-        self.file_name_edit = main_window_ui.file_name_lineEdit
-        self.horizontal_axis_edit = main_window_ui.horizontal_axis_lineEdit
-        self.vertical_axis_edit = main_window_ui.vertical_axis_lineEdit
+        self.chart_title_edit = visual_ui.chart_title_lineEdit
+        self.file_name_edit = visual_ui.file_name_lineEdit
+        self.horizontal_axis_edit = visual_ui.horizontal_axis_lineEdit
+        self.vertical_axis_edit = visual_ui.vertical_axis_lineEdit
 
         self.data = []
 
