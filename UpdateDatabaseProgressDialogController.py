@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 
 import ManageDB
 from ui import UpdateDatabaseProgressDialog
+from VariableConstants import *
 
 
 class UpdateDatabaseProgressDialogController:
@@ -99,7 +100,7 @@ class UpdateDatabaseWorker(QObject):
         for file in self.files:
             filename = os.path.basename(file['file'])
             print('READ ' + filename)
-            if not filename[:-4].endswith(ManageDB.COST_TABLE_SUFFIX):
+            if not filename[:-4].endswith(COST_TABLE_SUFFIX):
                 ManageDB.insert_single_file(file['file'], file['vendor'], file['year'])
             else:
                 ManageDB.insert_single_cost_file(file['file'])

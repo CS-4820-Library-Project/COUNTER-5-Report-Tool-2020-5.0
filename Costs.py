@@ -6,8 +6,7 @@ import DataStorage
 import ManageDB
 import ManageVendors
 from ui import CostsTab
-
-CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
+from VariableConstants import *
 
 
 class CostsController:
@@ -16,7 +15,7 @@ class CostsController:
 
         # set parameters
         self.report_parameter_combobox = costs_ui.costs_report_parameter_combobox
-        self.report_parameter_combobox.addItems(ManageDB.REPORT_TYPE_SWITCHER.keys())
+        self.report_parameter_combobox.addItems(REPORT_TYPE_SWITCHER.keys())
         self.report_parameter = None
 
         self.vendor_parameter_combobox = costs_ui.costs_vendor_parameter_combobox
@@ -77,7 +76,7 @@ class CostsController:
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
-        self.name_label.setText(ManageDB.NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
+        self.name_label.setText(NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
         if self.vendor_parameter:
             self.fill_names()
 
@@ -94,7 +93,7 @@ class CostsController:
         results = []
         sql_text = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         print(sql_text)
-        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text)
             print(results)
@@ -130,7 +129,7 @@ class CostsController:
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
             sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
-                                                       [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                       [{NAME_FIELD_SWITCHER[self.report_parameter]:
                                                              self.name_parameter,
                                                          'vendor': self.vendor_parameter, 'year': self.year_parameter,
                                                          'cost_in_original_currency': self.cost_in_original_currency,
@@ -142,7 +141,7 @@ class CostsController:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)
             self.clear_costs()
-        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
             connection.close()
@@ -152,7 +151,7 @@ class CostsController:
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                self.name_parameter)
         results = []
-        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text)
             if not results:
@@ -160,7 +159,7 @@ class CostsController:
             connection.close()
         values = {}
         index = 0
-        for field in ManageDB.COST_FIELDS:
+        for field in COST_FIELDS:
             values[field['name']] = results[0][index]
             index += 1
         self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])

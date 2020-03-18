@@ -12,8 +12,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDial
 import ManageDB
 import DataStorage
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
-
-COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+from VariableConstants import *
 
 
 class SearchController:
@@ -22,7 +21,7 @@ class SearchController:
 
         # set up report types combobox
         self.report_parameter = search_ui.search_report_parameter_combobox
-        self.report_parameter.addItems(ManageDB.ALL_REPORTS)
+        self.report_parameter.addItems(ALL_REPORTS)
 
         # set up start year dateedit
         self.start_year_parameter = search_ui.search_start_year_parameter_dateedit
@@ -103,7 +102,7 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
+            if field['name'] not in FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'], field['type'])
 
         # TODO (Chandler): make value check for type
@@ -196,7 +195,7 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.tsv' and file_name != '':
                 file_name += '.tsv'
-            connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+            connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
                 results.insert(0, headers)

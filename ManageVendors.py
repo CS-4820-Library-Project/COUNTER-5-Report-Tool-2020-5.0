@@ -8,6 +8,7 @@ from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDia
 import DataStorage, ManageDB
 import webbrowser
 from JsonUtils import JsonModel
+from VariableConstants import *
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
@@ -217,7 +218,7 @@ class ManageVendorsController(QObject):
 
         if original_name != new_name:
             ManageDB.update_vendor_in_all_tables(original_name, new_name)
-            for report_type in ManageDB.REPORT_TYPE_SWITCHER.keys():
+            for report_type in REPORT_TYPE_SWITCHER.keys():
                 ManageDB.backup_costs_data(report_type)
 
         self.show_message("Changes Saved!")

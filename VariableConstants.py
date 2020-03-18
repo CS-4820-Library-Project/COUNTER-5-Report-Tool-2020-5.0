@@ -1,6 +1,3 @@
-import sqlite3
-import os
-import csv
 # Variable Constants for ManageDB
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
@@ -329,3 +326,6 @@ HEADER_ROWS = 12
 BLANK_ROWS = 1
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
+COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+
+CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
