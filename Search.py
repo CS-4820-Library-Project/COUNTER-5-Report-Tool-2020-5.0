@@ -148,7 +148,7 @@ class SearchController:
 
         return or_clause_ui
 
-    def export_parameters(self): # export current search parameters to selected file
+    def export_parameters(self):  # export current search parameters to selected file
         parameters = self.get_search_parameters()
         print(parameters)
         dialog = QFileDialog()
@@ -163,7 +163,7 @@ class SearchController:
             if file.mode == 'w':
                 json.dump(parameters, file)
 
-    def import_parameters(self): # import search parameters from selected file
+    def import_parameters(self):  # import search parameters from selected file
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilter('JSON files (*.dat)')
@@ -250,7 +250,7 @@ class SearchController:
                 # get parameters for clause
                 field_parameter_combobox = or_widget.findChild(QComboBox, 'search_field_parameter_combobox')
                 field_parameter = field_parameter_combobox.currentText()
-                comparison_parameter_combobox =  or_widget.findChild(QComboBox, 'search_comparison_parameter_combobox')
+                comparison_parameter_combobox = or_widget.findChild(QComboBox, 'search_comparison_parameter_combobox')
                 comparison_parameter = comparison_parameter_combobox.currentText()
                 value_parameter_lineedit = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit')
                 value_parameter = None
