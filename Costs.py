@@ -36,6 +36,7 @@ class CostsController:
         self.cost_in_original_currency = None
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
+        self.original_currency_combobox.addItems(('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD'))
         self.original_currency = None
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
@@ -96,9 +97,9 @@ class CostsController:
             results = ManageDB.run_select_sql(connection, sql_text)
             print(results)
             connection.close()
+            self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
             print('Error, no connection')
-        self.name_parameter_combobox.addItems([result[0] for result in results])
 
     def on_name_parameter_changed(self):
         self.name_parameter = self.name_parameter_combobox.currentText()
@@ -128,13 +129,13 @@ class CostsController:
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
             sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
                                                        [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
-                                                            self.name_parameter,
-                                                        'vendor': self.vendor_parameter, 'year': self.year_parameter,
-                                                        'cost_in_original_currency': self.cost_in_original_currency,
-                                                        'original_currency': self.original_currency,
-                                                        'cost_in_local_currency': self.cost_in_local_currency,
-                                                        'cost_in_local_currency_with_tax':
-                                                            self.cost_in_local_currency_with_tax}])
+                                                             self.name_parameter,
+                                                         'vendor': self.vendor_parameter, 'year': self.year_parameter,
+                                                         'cost_in_original_currency': self.cost_in_original_currency,
+                                                         'original_currency': self.original_currency,
+                                                         'cost_in_local_currency': self.cost_in_local_currency,
+                                                         'cost_in_local_currency_with_tax':
+                                                             self.cost_in_local_currency_with_tax}])
         else:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)

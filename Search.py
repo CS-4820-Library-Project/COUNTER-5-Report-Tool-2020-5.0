@@ -95,14 +95,14 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
+            if field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'])
 
         # TODO (Chandler): make value check for type
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE'))
 
         # set up remove current or clause button
         def remove_this_or():
@@ -127,7 +127,7 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.dat' and file_name != '':
                 file_name += '.tsv'
-            file = open(file_name, 'w', encoding='utf-8')
+            file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
 
@@ -155,9 +155,9 @@ class SearchController:
         parameters = self.get_search_parameters()
 
         # sql query to get search results
-        sql_text = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
-                                            parameters['end_year'], parameters['search_parameters'])
-        print(sql_text)  # testing
+        search = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+                                          parameters['end_year'], parameters['search_parameters'])
+        print(search)  # testing
 
         headers = []
         for field in ManageDB.get_view_report_fields_list(parameters['report']):
@@ -173,17 +173,16 @@ class SearchController:
                 file_name += '.tsv'
             connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
             if connection is not None:
-                results = ManageDB.run_select_sql(connection, sql_text)
+                results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
                 results.insert(0, headers)
                 print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8')
+                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')
                     for row in results:
                         output.writerow(row)
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                          # TODO (Chandler): check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
                     if self.open_results_checkbox.isChecked():
                         open_file_switcher[os.name]()
@@ -216,7 +215,6 @@ class SearchController:
                 comparison_parameter = or_widget.findChild(QComboBox,
                                                            'search_comparison_parameter_combobox').currentText()
                 value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
-                # TODO (Chandler): check for special characters
                 or_clauses.append(
                     {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
             search_parameters.append(or_clauses)

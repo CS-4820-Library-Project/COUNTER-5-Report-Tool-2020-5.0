@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'SearchTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_search_tab(object):
     def setupUi(self, search_tab):
@@ -119,3 +117,14 @@ class Ui_search_tab(object):
         self.search_export_button.setText(_translate("search_tab", "Export Search"))
         self.search_import_button.setText(_translate("search_tab", "Import Search"))
         self.search_button.setText(_translate("search_tab", "Search"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    search_tab = QtWidgets.QWidget()
+    ui = Ui_search_tab()
+    ui.setupUi(search_tab)
+    search_tab.show()
+    sys.exit(app.exec_())
+

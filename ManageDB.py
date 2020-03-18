@@ -316,8 +316,7 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year', 'cost_in_original_currency', 'original_currency', 'cost_in_local_currency',
-                        'cost_in_local_currency_with_tax')
+FIELDS_NOT_IN_SEARCH = ('year',)
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 
@@ -689,16 +688,17 @@ def search_sql_text(report, start_year, end_year,
     clauses.extend(search_parameters)
     print(clauses)
     clauses_texts = []
+    data = []
     for clause in clauses:
         sub_clauses_text = []
         for sub_clause in clause:
             sub_clauses_text.append(
-                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-            # TODO (Chandler): make parameterized query
+                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' ?')
+            data.append(sub_clause['value'])
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def chart_search_sql_text(report, start_year, end_year,
@@ -716,12 +716,13 @@ def chart_search_sql_text(report, start_year, end_year,
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
     clauses_texts = []
+    data = []
     for clause in clauses:
-        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
-        # TODO (Chandler): make parameterized query
+        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
+        data.append(clause['value'])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def get_names_sql_text(report_type, vendor):
@@ -771,10 +772,13 @@ def run_sql(connection, sql_text, data=None):
         print(error)
 
 
-def run_select_sql(connection, sql_text):
+def run_select_sql(connection, sql_text, data=None):
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_text)
+        if data is not None:
+            cursor.execute(sql_text, data)
+        else:
+            cursor.execute(sql_text)
         return cursor.fetchall()
     except sqlite3.Error as error:
         print(error)
@@ -782,8 +786,6 @@ def run_select_sql(connection, sql_text):
 
 
 def setup_database(drop_tables):
-    if not os.path.exists(DATABASE_FOLDER):
-        os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
     sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
@@ -803,6 +805,13 @@ def setup_database(drop_tables):
         connection.close()
     else:
         print('Error, no connection')
+
+
+def first_time_setup():
+    if not os.path.exists(DATABASE_FOLDER):
+        os.mkdir(DATABASE_FOLDER)
+    if not os.path.exists(DATABASE_LOCATION):
+        setup_database(False)
 
 
 def backup_costs_data(report_type):
@@ -832,10 +841,12 @@ def test_chart_search():
     headers = []
     for field in get_chart_report_fields_list('DR_D1'):
         headers.append(field['name'])
-    sql_text = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
-    print(sql_text)
+    search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
+                                   'Searches_Automated')  # changed
+    print(search['sql_text'])  # changed
+    print(search['data'])  # changed
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, sql_text)
+        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
         results.insert(0, headers)
         print(results)
