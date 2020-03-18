@@ -1,7 +1,7 @@
 from enum import Enum
-from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtWidgets import QDialog, QFileDialog, QLabel, QVBoxLayout, QSizePolicy, QWidget
-from ui import SettingsTab, MessageDialog, UpdateDatabaseProgressDialog
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog, QFileDialog, QWidget
+from ui import SettingsTab, MessageDialog
 from JsonUtils import JsonModel
 import json
 import DataStorage

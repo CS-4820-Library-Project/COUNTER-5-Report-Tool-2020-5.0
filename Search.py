@@ -1,6 +1,5 @@
 import csv
 import os
-from os import path
 import shlex
 import sip
 import webbrowser
@@ -104,8 +103,6 @@ class SearchController:
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
             if field['name'] not in FIELDS_NOT_IN_SEARCH:
                 field_combobox.addItem(field['name'], field['type'])
-
-        # TODO (Chandler): make value check for type
 
         type_label = or_clause_ui.search_type_label
 
