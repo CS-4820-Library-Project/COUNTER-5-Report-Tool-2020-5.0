@@ -162,7 +162,7 @@ class SearchController:
                 and_clause = self.add_and_clause()
                 for sub_clause in clause:
                     or_clause = self.add_or_clause(and_clause)
-                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'], Qt.UserRole)
+                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'])
                     or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause['comparison'])
                     or_clause.search_value_parameter_lineedit.setText(sub_clause['value'])
 
