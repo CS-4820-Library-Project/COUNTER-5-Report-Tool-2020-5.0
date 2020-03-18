@@ -33,17 +33,17 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = 0.0
+        self.cost_in_original_currency = None
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = ''
+        self.original_currency = None
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = 0.0
+        self.cost_in_local_currency = None
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = 0.0
+        self.cost_in_local_currency_with_tax = None
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -51,6 +51,9 @@ class CostsController:
 
         self.load_button = costs_ui.costs_load_button
         self.load_button.clicked.connect(self.load_costs)
+
+        self.clear_button = costs_ui.costs_clear_button
+        self.clear_button.clicked.connect(self.clear_costs)
 
         self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
         self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
@@ -66,6 +69,8 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.valueChanged.connect(self.on_cost_in_local_currency_changed)
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
+
+        self.clear_costs()
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
@@ -121,8 +126,8 @@ class CostsController:
         sql_text = None
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
-            sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
-                                                      [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
+            sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
+                                                       [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
                                                             self.name_parameter,
                                                         'vendor': self.vendor_parameter, 'year': self.year_parameter,
                                                         'cost_in_original_currency': self.cost_in_original_currency,
@@ -133,9 +138,12 @@ class CostsController:
         else:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)
+            self.clear_costs()
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
             ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
+            connection.close()
+            ManageDB.backup_costs_data(self.report_parameter)
 
     def load_costs(self):
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
@@ -146,6 +154,7 @@ class CostsController:
             results = ManageDB.run_select_sql(connection, sql_text)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
+            connection.close()
         values = {}
         index = 0
         for field in ManageDB.COST_FIELDS:
@@ -155,5 +164,11 @@ class CostsController:
         self.original_currency_combobox.setCurrentText(values['original_currency'])
         self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
+
+    def clear_costs(self):
+        self.cost_in_original_currency_doublespinbox.setValue(0.0)
+        self.original_currency_combobox.setCurrentText('')
+        self.cost_in_local_currency_doublespinbox.setValue(0.0)
+        self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
 
     # TODO (Chandler): import/export tsv file with costs

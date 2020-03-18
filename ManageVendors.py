@@ -217,6 +217,8 @@ class ManageVendorsController(QObject):
 
         if original_name != new_name:
             ManageDB.update_vendor_in_all_tables(original_name, new_name)
+            for report_type in ManageDB.REPORT_TYPE_SWITCHER.keys():
+                ManageDB.backup_costs_data(report_type)
 
         self.show_message("Changes Saved!")
 
