@@ -785,8 +785,6 @@ def run_select_sql(connection, sql_text, data=None):
 
 
 def setup_database(drop_tables):
-    if not os.path.exists(DATABASE_FOLDER):
-        os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
     sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
@@ -806,6 +804,13 @@ def setup_database(drop_tables):
         connection.close()
     else:
         print('Error, no connection')
+
+
+def first_time_setup():
+    if not os.path.exists(DATABASE_FOLDER):
+        os.mkdir(DATABASE_FOLDER)
+    if not os.path.exists(DATABASE_LOCATION):
+        setup_database(False)
 
 
 def backup_costs_data(report_type):

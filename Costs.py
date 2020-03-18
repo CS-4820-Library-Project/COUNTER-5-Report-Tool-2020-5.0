@@ -97,9 +97,9 @@ class CostsController:
             results = ManageDB.run_select_sql(connection, sql_text)
             print(results)
             connection.close()
+            self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
             print('Error, no connection')
-        self.name_parameter_combobox.addItems([result[0] for result in results])
 
     def on_name_parameter_changed(self):
         self.name_parameter = self.name_parameter_combobox.currentText()

@@ -11,6 +11,7 @@ from Costs import CostsController
 from Search import SearchController
 from Settings import SettingsController
 from Visual import VisualController
+import ManageDB
 
 HELP_SITE = "https://github.com/CS-4820-Library-Project/Libly/wiki"
 
@@ -42,6 +43,8 @@ if __name__ == "__main__":
     font = app.font()
     font.setPointSize(11)
     app.setFont(font)
+
+    ManageDB.first_time_setup()
 
     main_window = QMainWindow()
     main_window_ui = MainWindow.Ui_mainWindow()
