@@ -12,6 +12,8 @@ import ManageDB
 import DataStorage
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
 
+COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+
 
 class SearchController:
     def __init__(self, search_ui: SearchTab.Ui_search_tab):
@@ -107,7 +109,7 @@ class SearchController:
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE'))
+        comparison_combobox.addItems(COMPARISON_OPERATORS)
 
         # set up remove current or clause button
         def remove_this_or():
