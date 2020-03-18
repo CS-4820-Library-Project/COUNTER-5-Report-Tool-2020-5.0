@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
         costs_tab.setObjectName("costs_tab")
-        costs_tab.resize(620, 671)
+        costs_tab.resize(898, 671)
         self.verticalLayout = QtWidgets.QVBoxLayout(costs_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.costs_parameters_frame = QtWidgets.QFrame(costs_tab)
@@ -86,17 +86,20 @@ class Ui_costs_tab(object):
         self.costs_control_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.costs_control_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.costs_control_frame.setObjectName("costs_control_frame")
-        self.horizontalLayout_14 = QtWidgets.QHBoxLayout(self.costs_control_frame)
-        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
-        self.costs_load_button = QtWidgets.QPushButton(self.costs_control_frame)
-        self.costs_load_button.setObjectName("costs_load_button")
-        self.horizontalLayout_14.addWidget(self.costs_load_button)
+        self.gridLayout = QtWidgets.QGridLayout(self.costs_control_frame)
+        self.gridLayout.setObjectName("gridLayout")
         self.costs_clear_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_clear_button.setObjectName("costs_clear_button")
-        self.horizontalLayout_14.addWidget(self.costs_clear_button)
+        self.gridLayout.addWidget(self.costs_clear_button, 0, 2, 1, 1)
+        self.costs_load_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_load_button.setObjectName("costs_load_button")
+        self.gridLayout.addWidget(self.costs_load_button, 0, 1, 1, 1)
         self.costs_insert_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_insert_button.setObjectName("costs_insert_button")
-        self.horizontalLayout_14.addWidget(self.costs_insert_button)
+        self.gridLayout.addWidget(self.costs_insert_button, 0, 3, 1, 1)
+        self.costs_load_from_disk_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_load_from_disk_button.setObjectName("costs_load_from_disk_button")
+        self.gridLayout.addWidget(self.costs_load_from_disk_button, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.costs_control_frame)
 
         self.retranslateUi(costs_tab)
@@ -114,9 +117,10 @@ class Ui_costs_tab(object):
         self.costs_original_currency_label.setText(_translate("costs_tab", "Original Currency"))
         self.costs_cost_in_local_currency_label.setText(_translate("costs_tab", "Cost in Local Currency"))
         self.costs_cost_in_local_currency_with_tax_label.setText(_translate("costs_tab", "Cost in Local Currency with Tax"))
-        self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
+        self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
+        self.costs_load_from_disk_button.setText(_translate("costs_tab", "Load From Disk"))
 
 
 if __name__ == "__main__":

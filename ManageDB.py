@@ -282,11 +282,11 @@ def read_report_file(file_name, vendor,
         return None
 
 
-def read_costs_file(file_name):
+def read_costs_file(report_type, file_name):
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
-    results = {'report': os.path.basename(file.name)[:2]}
+    results = {'report': report_type}
     if file.mode == 'r':
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
@@ -323,7 +323,7 @@ def get_all_cost_files():
     files = []
     for file in os.scandir(COSTS_SAVE_FOLDER):
         if file.name[-4:] in DELIMITERS:
-            files.append({'file': file.path})
+            files.append({'file': file.path, 'report': file.name[:2]})
     return files
 
 
@@ -340,8 +340,8 @@ def insert_single_file(file_path, vendor, year):
         print('Error, no connection')
 
 
-def insert_single_cost_file(file_path):
-    data = read_costs_file(file_path)
+def insert_single_cost_file(report_type, file_path):
+    data = read_costs_file(report_type, file_path)
     replace = replace_costs_sql_text(data['report'], data['values'])
 
     connection = create_connection(DATABASE_LOCATION)
