@@ -5,7 +5,7 @@
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
-                           'options': ('NOT NULL', 'CHECK(database <> \"\")'),
+                           'options': ('NOT NULL',),
                            'reports': ('DR', 'DR_D1', 'DR_D2')},
                           {'name': 'publisher',
                            'type': 'TEXT',
@@ -199,12 +199,13 @@ PLATFORM_REPORT_FIELDS = ({'name': 'platform',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
                            'reports': ('PR',)})
+# endregion
 
-# title report definitions
+# region title report definitions
 TITLE_REPORTS = ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')
 TITLE_REPORT_FIELDS = ({'name': 'title',
                         'type': 'TEXT',
-                        'options': ('NOT NULL', 'CHECK(title <> \"\")'),
+                        'options': ('NOT NULL',),
                         'reports': ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')},
                        {'name': 'publisher',
                         'type': 'TEXT',
@@ -327,7 +328,7 @@ COSTS_KEY_FIELDS = ('vendor', 'year')
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
-FILE_LOCATION = r'./all_data/DO_NOT_MODIFY/'
+FILE_LOCATION = r'./all_data/.DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
