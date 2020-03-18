@@ -716,12 +716,13 @@ def chart_search_sql_text(report, start_year, end_year,
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
     clauses_texts = []
+    data = []
     for clause in clauses:
-        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
-        # TODO (Chandler): make parameterized query
+        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
+        data.append(clause['value'])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def get_names_sql_text(report_type, vendor):
@@ -840,10 +841,12 @@ def test_chart_search():
     headers = []
     for field in get_chart_report_fields_list('DR_D1'):
         headers.append(field['name'])
-    sql_text = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
-    print(sql_text)
+    search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
+                                   'Searches_Automated')  # changed
+    print(search['sql_text'])  # changed
+    print(search['data'])  # changed
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, sql_text)
+        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
         results.insert(0, headers)
         print(results)
