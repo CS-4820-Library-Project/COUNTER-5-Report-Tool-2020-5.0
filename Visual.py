@@ -8,16 +8,14 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import ManageDB
 from ui import MainWindow, MessageDialog, VisualTab
+from VariableConstants import *
 
 
 class VisualController:
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
         # set up report types combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
-        self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
-        self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
-        self.report_parameter.addItems(ManageDB.PLATFORM_REPORTS)
-        self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
+        self.report_parameter.addItems(ALL_REPORTS)
 
         # set up radio buttons
         self.h_bar_radio = visual_ui.radioButton
@@ -68,7 +66,7 @@ class VisualController:
         headers = []
         for field in ManageDB.get_chart_report_fields_list(report):
             headers.append(field['name'])
-        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             self.results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
             print(self.results)

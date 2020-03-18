@@ -21,14 +21,6 @@ class Ui_search_or_clause_parameter_frame(object):
         search_or_clause_parameter_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.gridLayout = QtWidgets.QGridLayout(search_or_clause_parameter_frame)
         self.gridLayout.setObjectName("gridLayout")
-        self.search_value_parameter_lineedit = QtWidgets.QLineEdit(search_or_clause_parameter_frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.search_value_parameter_lineedit.sizePolicy().hasHeightForWidth())
-        self.search_value_parameter_lineedit.setSizePolicy(sizePolicy)
-        self.search_value_parameter_lineedit.setObjectName("search_value_parameter_lineedit")
-        self.gridLayout.addWidget(self.search_value_parameter_lineedit, 0, 2, 1, 1)
         self.search_comparison_parameter_combobox = QtWidgets.QComboBox(search_or_clause_parameter_frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -52,7 +44,18 @@ class Ui_search_or_clause_parameter_frame(object):
         sizePolicy.setHeightForWidth(self.search_remove_or_clause_button.sizePolicy().hasHeightForWidth())
         self.search_remove_or_clause_button.setSizePolicy(sizePolicy)
         self.search_remove_or_clause_button.setObjectName("search_remove_or_clause_button")
-        self.gridLayout.addWidget(self.search_remove_or_clause_button, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.search_remove_or_clause_button, 0, 4, 1, 1)
+        self.search_value_parameter_lineedit = QtWidgets.QLineEdit(search_or_clause_parameter_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.search_value_parameter_lineedit.sizePolicy().hasHeightForWidth())
+        self.search_value_parameter_lineedit.setSizePolicy(sizePolicy)
+        self.search_value_parameter_lineedit.setObjectName("search_value_parameter_lineedit")
+        self.gridLayout.addWidget(self.search_value_parameter_lineedit, 0, 2, 1, 1)
+        self.search_type_label = QtWidgets.QLabel(search_or_clause_parameter_frame)
+        self.search_type_label.setObjectName("search_type_label")
+        self.gridLayout.addWidget(self.search_type_label, 0, 3, 1, 1)
 
         self.retranslateUi(search_or_clause_parameter_frame)
         QtCore.QMetaObject.connectSlotsByName(search_or_clause_parameter_frame)
@@ -61,6 +64,7 @@ class Ui_search_or_clause_parameter_frame(object):
         _translate = QtCore.QCoreApplication.translate
         search_or_clause_parameter_frame.setWindowTitle(_translate("search_or_clause_parameter_frame", "Frame"))
         self.search_remove_or_clause_button.setText(_translate("search_or_clause_parameter_frame", "Remove \"Or\" Clause"))
+        self.search_type_label.setText(_translate("search_or_clause_parameter_frame", "Type"))
 
 
 if __name__ == "__main__":
