@@ -1,7 +1,9 @@
 import csv
 import os
+from os import path
 import shlex
 import sip
+import webbrowser
 import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
@@ -31,7 +33,9 @@ class SearchController:
         self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_checkbox = search_ui.search_open_results_checkbox
+        self.open_results_file_radioButton = search_ui.open_file_radioButton
+        self.open_results_folder_radioButton = search_ui.open_folder_radioButton
+        self.open_results_both_radioButton = search_ui.open_both_radioButton
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -184,8 +188,18 @@ class SearchController:
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    if self.open_results_checkbox.isChecked():
+                    if self.open_results_file_radioButton.isChecked():
                         open_file_switcher[os.name]()
+
+                    else:
+                        if self.open_results_folder_radioButton.isChecked():
+                            webbrowser.open_new_tab(os.path.dirname(file_name))
+
+                        else:
+                            if self.open_results_both_radioButton.isChecked():
+                                open_file_switcher[os.name]()
+                                webbrowser.open_new_tab(os.path.dirname(file_name))
+
                 else:
                     print('Error: could not open file ' + file_name)
 
