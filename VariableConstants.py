@@ -1,4 +1,7 @@
-# Variable Constants for ManageDB
+# region Variable Constants for ManageDB
+
+# region field and table definitions
+# region database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
@@ -28,8 +31,9 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
                            'reports': ('DR',)})
+# endregion
 
-# item report definitions
+# region item report definitions
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
 ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
@@ -179,8 +183,9 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
                        'options': ('NOT NULL',),
                        'reports': ('IR',)})
+# endregion
 
-# platform report definitions
+# region platform report definitions
 PLATFORM_REPORTS = ('PR', 'PR_P1')
 PLATFORM_REPORT_FIELDS = ({'name': 'platform',
                            'type': 'TEXT',
@@ -257,8 +262,9 @@ TITLE_REPORT_FIELDS = ({'name': 'title',
                         'type': 'TEXT',
                         'options': ('NOT NULL',),
                         'reports': ('TR',)})
+# endregion
 
-# fields that all reports have
+# region fields that all reports have
 ALL_REPORT_FIELDS = ({'name': 'metric_type',
                       'type': 'TEXT',
                       'options': ('NOT NULL', 'CHECK(metric_type <> \"\")')},
@@ -280,8 +286,9 @@ ALL_REPORT_FIELDS = ({'name': 'metric_type',
                      {'name': 'file',
                       'type': 'TEXT',
                       'options': ('NOT NULL',)})
+# endregion
 
-# cost table fields
+# region cost table fields
 COST_FIELDS = ({'name': 'cost_in_original_currency',
                 'type': 'REAL',
                 'options': ('NOT NULL', 'CHECK(cost_in_original_currency >= 0)')},
@@ -294,6 +301,8 @@ COST_FIELDS = ({'name': 'cost_in_original_currency',
                {'name': 'cost_in_local_currency_with_tax',
                 'type': 'REAL',
                 'options': ('NOT NULL', 'CHECK(cost_in_local_currency_with_tax >= 0)')})
+# endregion
+# endregion
 
 ALL_REPORTS = DATABASE_REPORTS + ITEM_REPORTS + PLATFORM_REPORTS + TITLE_REPORTS
 REPORT_TYPE_SWITCHER = {'DR': {'reports': DATABASE_REPORTS, 'report_fields': DATABASE_REPORT_FIELDS},
@@ -312,8 +321,7 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year', 'cost_in_original_currency', 'original_currency', 'cost_in_local_currency',
-                        'cost_in_local_currency_with_tax')
+FIELDS_NOT_IN_SEARCH = ('year', )
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 
@@ -321,11 +329,15 @@ DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 FILE_LOCATION = r'./all_data/DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
+COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
 HEADER_ROWS = 12
 BLANK_ROWS = 1
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
+
+# endregion

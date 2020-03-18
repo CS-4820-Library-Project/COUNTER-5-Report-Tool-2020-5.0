@@ -365,9 +365,11 @@ def search_sql_text(report, start_year, end_year,
     for clause in clauses:
         sub_clauses_text = []
         for sub_clause in clause:
-            sub_clauses_text.append(
-                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' ?')
-            data.append(sub_clause['value'])
+            current_text = sub_clause['field'] + ' ' + sub_clause['comparison']
+            if sub_clause['comparison'] not in NON_COMPARISONS:
+                current_text += ' ?'
+                data.append(sub_clause['value'])
+            sub_clauses_text.append(current_text)
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
