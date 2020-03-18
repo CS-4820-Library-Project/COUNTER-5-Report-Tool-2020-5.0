@@ -1,14 +1,19 @@
 import csv
 import os
+from os import path
 import shlex
 import sip
+import webbrowser
 import json
 from PyQt5.QtCore import QDate
+from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 
 import ManageDB
 import DataStorage
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
+
+COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
 
 
 class SearchController:
@@ -31,7 +36,10 @@ class SearchController:
         self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_checkbox = search_ui.search_open_results_checkbox
+        self.open_results_file_radioButton = search_ui.open_file_radioButton
+        self.open_results_folder_radioButton = search_ui.open_folder_radioButton
+        self.open_results_both_radioButton = search_ui.open_both_radioButton
+        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -95,14 +103,31 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
-                field_combobox.addItem(field['name'])
+            if field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
+                field_combobox.addItem(field['name'], field['type'])
 
         # TODO (Chandler): make value check for type
 
+        type_label = or_clause_ui.search_type_label
+
+        value_lineedit = or_clause_ui.search_value_parameter_lineedit
+
+        def on_field_changed():
+            type_label.setText(field_combobox.currentData())
+            value_lineedit.setText(None)
+            if field_combobox.currentData() == 'INTEGER':
+                value_lineedit.setValidator(QIntValidator())
+            elif field_combobox.currentData() == 'REAL':
+                value_lineedit.setValidator(QDoubleValidator())
+            else:
+                value_lineedit.setValidator(None)
+
+        field_combobox.currentTextChanged.connect(on_field_changed)
+        on_field_changed()
+
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+        comparison_combobox.addItems(COMPARISON_OPERATORS)
 
         # set up remove current or clause button
         def remove_this_or():
@@ -127,7 +152,7 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.dat' and file_name != '':
                 file_name += '.tsv'
-            file = open(file_name, 'w', encoding='utf-8')
+            file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
 
@@ -155,9 +180,9 @@ class SearchController:
         parameters = self.get_search_parameters()
 
         # sql query to get search results
-        sql_text = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
-                                            parameters['end_year'], parameters['search_parameters'])
-        print(sql_text)  # testing
+        search = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+                                          parameters['end_year'], parameters['search_parameters'])
+        print(search)  # testing
 
         headers = []
         for field in ManageDB.get_view_report_fields_list(parameters['report']):
@@ -173,20 +198,24 @@ class SearchController:
                 file_name += '.tsv'
             connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
             if connection is not None:
-                results = ManageDB.run_select_sql(connection, sql_text)
+                results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
                 results.insert(0, headers)
                 print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8')
+                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')
                     for row in results:
                         output.writerow(row)
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                          # TODO (Chandler): check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    if self.open_results_checkbox.isChecked():
+                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
                         open_file_switcher[os.name]()
+
+                    if self.open_results_folder_radioButton.isChecked() \
+                            or self.open_results_both_radioButton.isChecked():
+                        webbrowser.open_new_tab(os.path.dirname(file_name))
+
                 else:
                     print('Error: could not open file ' + file_name)
 
@@ -212,11 +241,18 @@ class SearchController:
             for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
                 # iterate over child or clauses
                 # get parameters for clause
-                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
+                field_parameter_combobox = or_widget.findChild(QComboBox, 'search_field_parameter_combobox')
+                field_parameter = field_parameter_combobox.currentText()
                 comparison_parameter = or_widget.findChild(QComboBox,
                                                            'search_comparison_parameter_combobox').currentText()
-                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
-                # TODO (Chandler): check for special characters
+                value_parameter_lineedit = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit')
+                value_parameter = None
+                if field_parameter_combobox.currentData() == 'INTEGER':
+                    value_parameter = int(value_parameter_lineedit.text())
+                elif field_parameter_combobox.currentData() == 'REAL':
+                    value_parameter = float(value_parameter_lineedit.text())
+                else:
+                    value_parameter = value_parameter_lineedit.text()
                 or_clauses.append(
                     {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
             search_parameters.append(or_clauses)

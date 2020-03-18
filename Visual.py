@@ -3,9 +3,11 @@ from datetime import date
 import csv
 import os
 import shlex
-from PyQt5.QtWidgets import QFileDialog
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog, QDialog
 import ManageDB
-from ui import VisualTab
+from ui import MainWindow, MessageDialog, VisualTab
 
 
 class VisualController:
@@ -45,6 +47,7 @@ class VisualController:
         self.file_name_edit = visual_ui.file_name_lineEdit
         self.horizontal_axis_edit = visual_ui.horizontal_axis_lineEdit
         self.vertical_axis_edit = visual_ui.vertical_axis_lineEdit
+
         self.data = []
 
     def createChart(self):  # submit search result to database and open results
@@ -65,41 +68,32 @@ class VisualController:
         headers = []
         for field in ManageDB.get_chart_report_fields_list(report):
             headers.append(field['name'])
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            self.results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            print(self.results)
 
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setNameFilter('TSV files (*.tsv)')
-        if dialog.exec_():
-            file_name = dialog.selectedFiles()[0]
-            if file_name[-4:].lower() != '.tsv' and file_name != '':
-                file_name += '.tsv'
-            connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
-            if connection is not None:
-                self.results = ManageDB.run_select_sql(connection, sql_text)
-                self.results.insert(0, headers)
-                file = open(file_name, 'w', newline="", encoding='utf-8')
-                if file.mode == 'w':
-                    output = csv.writer(file, delimiter='\t', quotechar='\"')
-                    for row in self.results:
-                        output.writerow(row)
-
-                    open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                          # TODO check file_name for special characters and quote
-                                          'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    open_file_switcher[os.name]()
-                else:
-                    print('Error: could not open file ' + file_name)
-
-                connection.close()
-            else:
-                print('Error, no connection')
+            self.results.insert(0, headers)
+            print(self.results)
+            connection.close()
         else:
-            print('Error, no file location selected')
-
+            print('Error, no connection')
         self.process_data()
 
+    # process_data distributes the usage data in an array accordingly
     def process_data(self):
         m = len(self.results)
+        print(m)
+        if m == 1:
+            message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+            message_dialog_ui = MessageDialog.Ui_message_dialog()
+            message_dialog_ui.setupUi(message_dialog)
+
+            message_label = message_dialog_ui.message_label
+            message_label.setText("PLEASE ENTER A VALID INPUT")
+
+            message_dialog.exec_()
+        self.data = []
         for i in range(0, m):
             data1 = []
             print(self.results[i])
@@ -107,10 +101,10 @@ class VisualController:
             for j in range(5, n):
                 data1.append(self.results[i][j])
             self.data.append(data1)
-        #testing to make sure its working good
+        # testing to make sure its working good
         print(self.data[0])
         print(self.data[1])
-        #print(self.data[2])
+        # print(self.data[2])
         print(len(self.data))
         self.chart_type()
 
@@ -143,8 +137,12 @@ class VisualController:
         headings = [vertical_axis_title, 'Total 1', 'Total 2']
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
-        self.worksheet.write_column('B2', self.data[1])
-        # self.worksheet.write_column('C2', self.data[2])
+        # self.worksheet.write_column('B2', self.data[1])
+        n = ord('A') + 1
+        for i in range(1, len(self.data)):
+            self.worksheet.write_column(chr(n) + '2', self.data[i])
+            n = n + 1
+
         # Create a new bar chart.
         chart1 = self.workbook.add_chart({'type': 'bar'})
 
@@ -155,12 +153,13 @@ class VisualController:
             'values': '=Sheet1!$B$2:$B$13',
         })
 
-        # # Configure a second series. Note use of alternative syntax to define ranges.
-        # chart1.add_series({
-        #     'name': ['Sheet1', 0, 2],
-        #     'categories': ['Sheet1', 1, 0, 6, 0],
-        #     'values': ['Sheet1', 1, 2, 6, 2],
-        # })
+        # Configure a second series. Note use of alternative syntax to define ranges.
+        for i in range(2, len(self.data)):
+            chart1.add_series({
+                'name': ['Sheet1', 0, 2],
+                'categories': ['Sheet1', 1, 0, 6, 0],
+                'values': ['Sheet1', 1, 2, 6, 2],
+            })
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
@@ -186,15 +185,17 @@ class VisualController:
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
         self.workbook = xlsxwriter.Workbook(directory + file_name + '_vbar.xlsx')
-        #self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_vbar.xlsx')
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
         headings = [vertical_axis_title, 'Total 1', 'Total 2']
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
-        self.worksheet.write_column('B2', self.data[1])
-        # self.worksheet.write_column('C2', self.data[2])
+        n = ord('A') + 1
+        for i in range(1, len(self.data)):
+            self.worksheet.write_column(chr(n) + '2', self.data[i])
+            n = n + 1
+
         # Create a new bar chart.
         chart1 = self.workbook.add_chart({'type': 'column'})
 
@@ -205,12 +206,13 @@ class VisualController:
             'values': '=Sheet1!$B$2:$B$13',
         })
 
-        # # Configure a second series. Note use of alternative syntax to define ranges.
-        # chart1.add_series({
-        #     'name': ['Sheet1', 0, 2],
-        #     'categories': ['Sheet1', 1, 0, 6, 0],
-        #     'values': ['Sheet1', 1, 2, 6, 2],
-        # })
+        # Configure a second series. Note use of alternative syntax to define ranges.
+        for i in range(2, len(self.data)):
+            chart1.add_series({
+                'name': ['Sheet1', 0, 2],
+                'categories': ['Sheet1', 1, 0, 6, 0],
+                'values': ['Sheet1', 1, 2, 6, 2],
+            })
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
@@ -225,6 +227,7 @@ class VisualController:
         self.workbook.close()
 
     def line_chart(self):
+
         # get file name and titles from user
         file_name = self.file_name_edit.text()
         chart_title = self.chart_title_edit.text()
@@ -236,15 +239,17 @@ class VisualController:
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
         self.workbook = xlsxwriter.Workbook(directory + file_name + '_line.xlsx')
-        #self.workbook = xlsxwriter.Workbook('./all_data/charts/' + file_name + '_line.xlsx')
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
         headings = [vertical_axis_title, 'Total 1', 'Total 2']
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
-        self.worksheet.write_column('B2', self.data[1])
-        # self.worksheet.write_column('C2', self.data[2])
+        n = ord('A') + 1
+        for i in range(1, len(self.data)):
+            self.worksheet.write_column(chr(n) + '2', self.data[i])
+            n = n + 1
+
         # Create a new bar chart.
         chart1 = self.workbook.add_chart({'type': 'line'})
 
@@ -255,12 +260,13 @@ class VisualController:
             'values': '=Sheet1!$B$2:$B$13',
         })
 
-        # # Configure a second series. Note use of alternative syntax to define ranges.
-        # chart1.add_series({
-        #     'name': ['Sheet1', 0, 2],
-        #     'categories': ['Sheet1', 1, 0, 6, 0],
-        #     'values': ['Sheet1', 1, 2, 6, 2],
-        # })
+        # Configure a second series. Note use of alternative syntax to define ranges.
+        for i in range(2, len(self.data)):
+            chart1.add_series({
+                'name': ['Sheet1', 0, 2],
+                'categories': ['Sheet1', 1, 0, 6, 0],
+                'values': ['Sheet1', 1, 2, 6, 2],
+            })
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})

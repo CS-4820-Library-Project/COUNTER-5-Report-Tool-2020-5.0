@@ -170,7 +170,33 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
 
 
-def replace_cost_sql_text(report_type, data):
+def update_vendor_name_sql_text(table, old_name, new_name):
+    sql_text = 'UPDATE ' + table + ' SET'
+    sql_text += '\n\t' + 'vendor' + ' = \"' + new_name + '\"'
+    if not table.endswith(COST_TABLE_SUFFIX):
+        sql_text += ',\n\t' + 'file' + ' = ' + 'REPLACE(' + 'file' + ', ' + '\"_' + old_name + '_\"'
+        sql_text += ', ' + '\"_' + new_name + '_\")'
+    sql_text += '\nWHERE ' + 'vendor' + ' = \"' + old_name + '\";'
+    return sql_text
+
+
+def update_vendor_in_all_tables(old_name, new_name):
+    sql_texts = []
+    for table in ALL_REPORTS:
+        sql_texts.append(update_vendor_name_sql_text(table, old_name, new_name))
+    for cost_table in REPORT_TYPE_SWITCHER.keys():
+        sql_texts.append(update_vendor_name_sql_text(cost_table + COST_TABLE_SUFFIX, old_name, new_name))
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        for sql_text in sql_texts:
+            run_sql(connection, sql_text)
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
+def replace_costs_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
@@ -191,13 +217,23 @@ def replace_cost_sql_text(report_type, data):
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_replace': sql_replace_text, 'data': values}
+    return {'sql_text': sql_replace_text, 'data': values}  # sql_delete is not used
+
+
+def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql statement to delete data from a cost table
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += '\nWHERE '
+    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
+    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
+    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
+    return {'sql_text': sql_text, 'data': None}  # sql_replace and data are not used
 
 
 def read_report_file(file_name, vendor,
                      year):  # reads a specific csv/tsv file and returns the report type and the values for inserting
     delimiter = DELIMITERS[file_name[-4:].lower()]
-    file = open(file_name, 'r', encoding='utf-8')
+    file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     results = {}
     if file.mode == 'r':
@@ -227,7 +263,7 @@ def read_report_file(file_name, vendor,
                     if metric > 0:
                         value = {}
                         last_column = column_headers.index(YEAR_TOTAL)
-                        for i in range(last_column):  # read rows before months
+                        for i in range(last_column):  # read columns before months
                             value[column_headers[i]] = cells[i]
                         if not value['metric_type']:  # if no metric type column, use the metric type from header
                             value['metric_type'] = header['metric_types']
@@ -239,6 +275,27 @@ def read_report_file(file_name, vendor,
                         value['updated_on'] = header['created']
                         value['file'] = os.path.basename(file.name)
                         values.append(value)
+        results['values'] = values
+        return results
+    else:
+        print('Error: could not open file ' + file_name)
+        return None
+
+
+def read_costs_file(file_name):
+    delimiter = DELIMITERS[file_name[-4:].lower()]
+    file = open(file_name, 'r', encoding='utf-8-sig')
+    reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
+    results = {'report': os.path.basename(file.name)[:2]}
+    if file.mode == 'r':
+        column_headers = next(reader)
+        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        values = []
+        for cells in list(reader):
+            value = {}
+            for i in range(len(cells)):  # read columns
+                value[column_headers[i]] = cells[i]
+            values.append(value)
         results['values'] = values
         return results
     else:
@@ -262,13 +319,34 @@ def get_all_reports():
     return reports
 
 
+def get_all_cost_files():
+    files = []
+    for file in os.scandir(COSTS_SAVE_FOLDER):
+        if file.name[-4:] in DELIMITERS:
+            files.append({'file': file.path})
+    return files
+
+
 def insert_single_file(file_path, vendor, year):
     data = read_report_file(file_path, vendor, year)
     replace = replace_sql_text(data['file'], data['report'], data['values'])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_insert_sql(connection, replace['sql_delete'], replace['sql_replace'], replace['data'])
+        run_sql(connection, replace['sql_delete'])
+        run_sql(connection, replace['sql_replace'], replace['data'])
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
+def insert_single_cost_file(file_path):
+    data = read_costs_file(file_path)
+    replace = replace_costs_sql_text(data['report'], data['values'])
+
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        run_sql(connection, replace['sql_text'], replace['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -283,16 +361,17 @@ def search_sql_text(report, start_year, end_year,
     clauses.extend(search_parameters)
     print(clauses)
     clauses_texts = []
+    data = []
     for clause in clauses:
         sub_clauses_text = []
         for sub_clause in clause:
             sub_clauses_text.append(
-                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' \'' + str(sub_clause['value']) + '\'')
-            # TODO (Chandler): make parameterized query
+                sub_clause['field'] + ' ' + sub_clause['comparison'] + ' ?')
+            data.append(sub_clause['value'])
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def chart_search_sql_text(report, start_year, end_year,
@@ -310,19 +389,35 @@ def chart_search_sql_text(report, start_year, end_year,
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
     clauses_texts = []
+    data = []
     for clause in clauses:
-        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' \'' + str(clause['value']) + '\'')
-        # TODO (Chandler): make parameterized query
+        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
+        data.append(clause['value'])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return sql_text
+    return {'sql_text': sql_text, 'data': data}
 
 
 def get_names_sql_text(report_type, vendor):
     name_field = NAME_FIELD_SWITCHER[report_type]
+
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
                + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE \"' + vendor + '\"' \
                + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
+    return sql_text
+
+
+def get_costs_sql_text(report_type, vendor, year, name):
+    name_field = NAME_FIELD_SWITCHER[report_type]
+    sql_text = 'SELECT'
+    fields = []
+    for field in COST_FIELDS:
+        fields.append(field['name'])
+    sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += '\nWHERE '
+    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
+    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
+    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
     return sql_text
 
 
@@ -338,29 +433,25 @@ def create_connection(db_file):
     return connection
 
 
-def run_sql(connection, sql_text):
+def run_sql(connection, sql_text, data=None):
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_text)
-    except sqlite3.Error as error:
-        print(error)
-
-
-def run_insert_sql(connection, sql_delete_text, sql_insert_text, data):
-    try:
-        cursor = connection.cursor()
-        if sql_delete_text:
-            cursor.execute(sql_delete_text)
-        cursor.executemany(sql_insert_text, data)
+        if data is not None:
+            cursor.executemany(sql_text, data)
+        else:
+            cursor.execute(sql_text)
         connection.commit()
     except sqlite3.Error as error:
         print(error)
 
 
-def run_select_sql(connection, sql_text):
+def run_select_sql(connection, sql_text, data=None):
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_text)
+        if data is not None:
+            cursor.execute(sql_text, data)
+        else:
+            cursor.execute(sql_text)
         return cursor.fetchall()
     except sqlite3.Error as error:
         print(error)
@@ -368,8 +459,6 @@ def run_select_sql(connection, sql_text):
 
 
 def setup_database(drop_tables):
-    if not os.path.exists(DATABASE_FOLDER):
-        os.mkdir(DATABASE_FOLDER)
     sql_texts = {}
     sql_texts.update(create_table_sql_texts(ALL_REPORTS))
     sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
@@ -391,14 +480,46 @@ def setup_database(drop_tables):
         print('Error, no connection')
 
 
+def first_time_setup():
+    if not os.path.exists(DATABASE_FOLDER):
+        os.mkdir(DATABASE_FOLDER)
+    if not os.path.exists(DATABASE_LOCATION):
+        setup_database(False)
+
+
+def backup_costs_data(report_type):
+    if not os.path.exists(COSTS_SAVE_FOLDER):
+        os.mkdir(COSTS_SAVE_FOLDER)
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        headers = []
+        for field in get_cost_fields_list(report_type):
+            headers.append(field['name'])
+        sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
+        sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
+        print(sql_text)
+        results = run_select_sql(connection, sql_text)
+        results.insert(0, headers)
+        file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
+        if file.mode == 'w':
+            output = csv.writer(file, delimiter='\t', quotechar='\"')
+            for row in results:
+                output.writerow(row)
+        connection.close()
+    else:
+        print('Error, no connection')
+
+
 def test_chart_search():
     headers = []
     for field in get_chart_report_fields_list('DR_D1'):
         headers.append(field['name'])
-    sql_text = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
-    print(sql_text)
+    search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
+                                   'Searches_Automated')  # changed
+    print(search['sql_text'])  # changed
+    print(search['data'])  # changed
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, sql_text)
+        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
         results.insert(0, headers)
         print(results)

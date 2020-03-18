@@ -93,38 +93,21 @@ class SettingsController:
         # region Reports
         self.yearly_dir_edit = settings_ui.yearly_directory_edit
         self.other_dir_edit = settings_ui.other_directory_edit
-
-        settings_ui.yearly_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog(Setting.YEARLY_DIR))
-        settings_ui.other_directory_button.clicked.connect(
-            lambda: self.open_file_select_dialog(Setting.OTHER_DIR))
+        self.request_interval_spin_box = settings_ui.request_interval_spin_box
+        self.request_timeout_spin_box = settings_ui.request_timeout_spin_box
+        self.concurrent_vendors_spin_box = settings_ui.concurrent_vendors_spin_box
+        self.concurrent_reports_spin_box = settings_ui.concurrent_reports_spin_box
+        self.empty_cell_edit = settings_ui.empty_cell_edit
+        self.user_agent_edit = settings_ui.user_agent_edit
 
         self.yearly_dir_edit.setText(self.settings.yearly_directory)
         self.other_dir_edit.setText(self.settings.other_directory)
-        settings_ui.request_interval_spin_box.setValue(self.settings.request_interval)
-        settings_ui.request_timeout_spin_box.setValue(self.settings.request_timeout)
-        settings_ui.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
-        settings_ui.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
-        settings_ui.empty_cell_edit.setText(self.settings.empty_cell)
-        settings_ui.user_agent_edit.setText(self.settings.user_agent)
-
-        self.yearly_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed(Setting.YEARLY_DIR, text))
-        self.other_dir_edit.textEdited.connect(
-            lambda text: self.on_setting_changed(Setting.OTHER_DIR, text))
-        settings_ui.request_interval_spin_box.valueChanged.connect(
-            lambda value: self.on_setting_changed(Setting.REQUEST_INTERVAL, value))
-        settings_ui.request_timeout_spin_box.valueChanged.connect(
-            lambda value: self.on_setting_changed(Setting.REQUEST_TIMEOUT, value))
-        settings_ui.concurrent_vendors_spin_box.valueChanged.connect(
-            lambda value: self.on_setting_changed(Setting.CONCURRENT_VENDORS, value))
-        settings_ui.concurrent_reports_spin_box.valueChanged.connect(
-            lambda value: self.on_setting_changed(Setting.CONCURRENT_REPORTS, value))
-        settings_ui.empty_cell_edit.textEdited.connect(
-            lambda text: self.on_setting_changed(Setting.EMPTY_CELL, text))
-        settings_ui.user_agent_edit.textEdited.connect(
-            lambda text: self.on_setting_changed(Setting.USER_AGENT, text))
-        # endregion
+        self.request_interval_spin_box.setValue(self.settings.request_interval)
+        self.request_timeout_spin_box.setValue(self.settings.request_timeout)
+        self.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
+        self.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
+        self.empty_cell_edit.setText(self.settings.empty_cell)
+        self.user_agent_edit.setText(self.settings.user_agent)
 
         # region Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
@@ -152,25 +135,7 @@ class SettingsController:
         self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
 
-    def on_setting_changed(self, setting: Setting, setting_value):
-        if setting == Setting.YEARLY_DIR:
-            self.settings.yearly_directory = setting_value
-        elif setting == Setting.OTHER_DIR:
-            self.settings.other_directory = setting_value
-        elif setting == Setting.REQUEST_INTERVAL:
-            self.settings.request_interval = int(setting_value)
-        elif setting == Setting.REQUEST_TIMEOUT:
-            self.settings.request_timeout = int(setting_value)
-        elif setting == Setting.CONCURRENT_VENDORS:
-            self.settings.concurrent_vendors = int(setting_value)
-        elif setting == Setting.CONCURRENT_REPORTS:
-            self.settings.concurrent_reports = int(setting_value)
-        elif setting == Setting.EMPTY_CELL:
-            self.settings.empty_cell = setting_value
-        elif setting == Setting.USER_AGENT:
-            self.settings.user_agent = setting_value
-
-        self.save_settings_to_disk()
+        settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
 
     def open_file_select_dialog(self, setting: Setting):
         dialog = QFileDialog()
@@ -182,7 +147,20 @@ class SettingsController:
             elif setting == Setting.OTHER_DIR:
                 self.other_dir_edit.setText(directory)
 
-            self.on_setting_changed(setting, directory)
+    def on_save_button_clicked(self):
+        self.update_settings()
+        self.save_settings_to_disk()
+        show_message("Changes saved!")
+
+    def update_settings(self):
+        self.settings.yearly_directory = self.yearly_dir_edit.text()
+        self.settings.other_directory = self.other_dir_edit.text()
+        self.settings.request_interval = self.request_interval_spin_box.value()
+        self.settings.request_timeout = self.request_timeout_spin_box.value()
+        self.settings.concurrent_vendors = self.concurrent_vendors_spin_box.value()
+        self.settings.concurrent_reports = self.concurrent_reports_spin_box.value()
+        self.settings.empty_cell = self.empty_cell_edit.text()
+        self.settings.user_agent = self.user_agent_edit.text()
 
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
@@ -191,9 +169,8 @@ class SettingsController:
     def on_restore_database(self):
         if not self.is_restoring_database:  # check if already running
             self.is_restoring_database = True
-            self.update_database_dialog.update_database(ManageDB.get_all_reports(), True)
+            self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
+                                                        True)
             self.is_restoring_database = False
         else:
             print('Error, already running')
-
-    # TODO (Chandler): backup and restore costs

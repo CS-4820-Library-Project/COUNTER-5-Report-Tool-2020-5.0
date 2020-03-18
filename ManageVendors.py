@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDialog
-import DataStorage
+import DataStorage, ManageDB
 import webbrowser
 from JsonUtils import JsonModel
 
@@ -214,6 +214,12 @@ class ManageVendorsController(QObject):
         self.update_vendor_names()
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
+
+        if original_name != new_name:
+            ManageDB.update_vendor_in_all_tables(original_name, new_name)
+            for report_type in ManageDB.REPORT_TYPE_SWITCHER.keys():
+                ManageDB.backup_costs_data(report_type)
+
         self.show_message("Changes Saved!")
 
     def open_add_vendor_dialog(self):
