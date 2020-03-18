@@ -70,7 +70,7 @@ class VisualController:
             headers.append(field['name'])
         connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
         if connection is not None:
-            self.results = ManageDB.run_select_sql(connection, sql_text)
+            self.results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
             print(self.results)
 
             self.results.insert(0, headers)
