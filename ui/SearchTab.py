@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'SearchTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_search_tab(object):
     def setupUi(self, search_tab):
@@ -57,7 +55,7 @@ class Ui_search_tab(object):
         self.search_and_clause_parameters_scrollarea.setWidgetResizable(True)
         self.search_and_clause_parameters_scrollarea.setObjectName("search_and_clause_parameters_scrollarea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 360, 88))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 360, 89))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -83,13 +81,6 @@ class Ui_search_tab(object):
         self.search_control_frame.setObjectName("search_control_frame")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.search_control_frame)
         self.gridLayout_4.setObjectName("gridLayout_4")
-        self.search_open_results_checkbox = QtWidgets.QCheckBox(self.search_control_frame)
-        self.search_open_results_checkbox.setChecked(True)
-        self.search_open_results_checkbox.setObjectName("search_open_results_checkbox")
-        self.gridLayout_4.addWidget(self.search_open_results_checkbox, 2, 5, 1, 1)
-        self.search_export_button = QtWidgets.QPushButton(self.search_control_frame)
-        self.search_export_button.setObjectName("search_export_button")
-        self.gridLayout_4.addWidget(self.search_export_button, 3, 1, 1, 1)
         self.search_import_button = QtWidgets.QPushButton(self.search_control_frame)
         self.search_import_button.setObjectName("search_import_button")
         self.gridLayout_4.addWidget(self.search_import_button, 3, 2, 1, 1)
@@ -101,6 +92,19 @@ class Ui_search_tab(object):
         self.search_button.setSizePolicy(sizePolicy)
         self.search_button.setObjectName("search_button")
         self.gridLayout_4.addWidget(self.search_button, 2, 1, 1, 2)
+        self.search_export_button = QtWidgets.QPushButton(self.search_control_frame)
+        self.search_export_button.setObjectName("search_export_button")
+        self.gridLayout_4.addWidget(self.search_export_button, 3, 1, 1, 1)
+        self.open_file_radioButton = QtWidgets.QRadioButton(self.search_control_frame)
+        self.open_file_radioButton.setChecked(True)
+        self.open_file_radioButton.setObjectName("open_file_radioButton")
+        self.gridLayout_4.addWidget(self.open_file_radioButton, 2, 3, 1, 1)
+        self.open_folder_radioButton = QtWidgets.QRadioButton(self.search_control_frame)
+        self.open_folder_radioButton.setObjectName("open_folder_radioButton")
+        self.gridLayout_4.addWidget(self.open_folder_radioButton, 2, 4, 1, 1)
+        self.open_both_radioButton = QtWidgets.QRadioButton(self.search_control_frame)
+        self.open_both_radioButton.setObjectName("open_both_radioButton")
+        self.gridLayout_4.addWidget(self.open_both_radioButton, 2, 5, 1, 1)
         self.verticalLayout.addWidget(self.search_control_frame)
 
         self.retranslateUi(search_tab)
@@ -115,7 +119,10 @@ class Ui_search_tab(object):
         self.search_start_year_parameter_dateedit.setDisplayFormat(_translate("search_tab", "yyyy"))
         self.search_end_year_parameter_dateedit.setDisplayFormat(_translate("search_tab", "yyyy"))
         self.search_add_and_button.setText(_translate("search_tab", "Add \"And\" Clause"))
-        self.search_open_results_checkbox.setText(_translate("search_tab", "Open Results"))
-        self.search_export_button.setText(_translate("search_tab", "Export Search"))
         self.search_import_button.setText(_translate("search_tab", "Import Search"))
         self.search_button.setText(_translate("search_tab", "Search"))
+        self.search_export_button.setText(_translate("search_tab", "Export Search"))
+        self.open_file_radioButton.setText(_translate("search_tab", "Open File"))
+        self.open_folder_radioButton.setText(_translate("search_tab", "Open Folder"))
+        self.open_both_radioButton.setText(_translate("search_tab", "Open Both"))
+
