@@ -124,6 +124,17 @@ class SearchController:
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
         comparison_combobox.addItems(COMPARISON_OPERATORS)
+        comparison_combobox.addItems(NON_COMPARISONS)
+
+        def on_comparison_changed():
+            if comparison_combobox.currentText() in NON_COMPARISONS:
+                value_lineedit.setText(None)
+                value_lineedit.setEnabled(False)
+            else:
+                value_lineedit.setEnabled(True)
+
+        comparison_combobox.currentTextChanged.connect(on_comparison_changed)
+
 
         # set up remove current or clause button
         def remove_this_or():
@@ -239,11 +250,13 @@ class SearchController:
                 # get parameters for clause
                 field_parameter_combobox = or_widget.findChild(QComboBox, 'search_field_parameter_combobox')
                 field_parameter = field_parameter_combobox.currentText()
-                comparison_parameter = or_widget.findChild(QComboBox,
-                                                           'search_comparison_parameter_combobox').currentText()
+                comparison_parameter_combobox =  or_widget.findChild(QComboBox, 'search_comparison_parameter_combobox')
+                comparison_parameter = comparison_parameter_combobox.currentText()
                 value_parameter_lineedit = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit')
                 value_parameter = None
-                if field_parameter_combobox.currentData() == 'INTEGER':
+                if comparison_parameter in NON_COMPARISONS:
+                    pass
+                elif field_parameter_combobox.currentData() == 'INTEGER':
                     value_parameter = int(value_parameter_lineedit.text())
                 elif field_parameter_combobox.currentData() == 'REAL':
                     value_parameter = float(value_parameter_lineedit.text())

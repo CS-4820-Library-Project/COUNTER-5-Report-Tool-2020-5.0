@@ -321,8 +321,7 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year', 'cost_in_original_currency', 'original_currency', 'cost_in_local_currency',
-                        'cost_in_local_currency_with_tax')
+FIELDS_NOT_IN_SEARCH = ('year', )
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 
@@ -337,6 +336,7 @@ BLANK_ROWS = 1
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
 
