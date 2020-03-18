@@ -6,7 +6,7 @@ import webbrowser
 import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog, QSpacerItem, QSizePolicy
 
 import ManageDB
 import DataStorage
@@ -68,6 +68,8 @@ class SearchController:
     def refresh_clauses(self):  # resets the search clauses
         self.and_clause_parameters_frame = QFrame()
         self.and_clause_parameters_frame.setLayout(QVBoxLayout())
+        self.and_clause_parameters_frame.layout().addItem(QSpacerItem(0, 0, QSizePolicy.Expanding,
+                                                                      QSizePolicy.Expanding))
         self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
     def add_and_clause(self):
@@ -89,7 +91,8 @@ class SearchController:
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
         # add to the layout
-        self.and_clause_parameters_frame.layout().addWidget(and_clause)
+        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,
+                                                               and_clause)
 
         return and_clause_ui
 
@@ -134,7 +137,6 @@ class SearchController:
                 value_lineedit.setEnabled(True)
 
         comparison_combobox.currentTextChanged.connect(on_comparison_changed)
-
 
         # set up remove current or clause button
         def remove_this_or():
