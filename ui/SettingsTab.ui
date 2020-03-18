@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>806</width>
-    <height>1005</height>
+    <width>794</width>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,78 +38,6 @@
       <property name="bottomMargin">
        <number>0</number>
       </property>
-      <item row="1" column="0">
-       <widget class="QFrame" name="frame_35">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_20">
-         <item alignment="Qt::AlignHCenter">
-          <widget class="QLabel" name="label_26">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <family>Segoe UI</family>
-             <pointsize>11</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Search</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="settings_restore_database_button">
-           <property name="text">
-            <string>Restore Database</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="frame_36">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <layout class="QFormLayout" name="formLayout_7">
-            <property name="horizontalSpacing">
-             <number>50</number>
-            </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_27">
-              <property name="text">
-               <string>[In Development]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="save_location_edit_fetch_2">
-              <property name="text">
-               <string>[In Development]</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QFrame" name="frame_33">
         <property name="sizePolicy">
@@ -205,14 +133,14 @@
             <item row="1" column="2">
              <widget class="QPushButton" name="other_directory_button">
               <property name="text">
-               <string>Choose Folder...</string>
+               <string>Choose</string>
               </property>
              </widget>
             </item>
             <item row="0" column="2">
              <widget class="QPushButton" name="yearly_directory_button">
               <property name="text">
-               <string>Choose Folder...</string>
+               <string>Choose</string>
               </property>
              </widget>
             </item>
@@ -429,6 +357,80 @@
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QFrame" name="frame_35">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_20">
+         <item alignment="Qt::AlignHCenter">
+          <widget class="QLabel" name="label_26">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Segoe UI</family>
+             <pointsize>11</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Search</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="settings_restore_database_button">
+           <property name="text">
+            <string>Restore Database</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QFrame" name="frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="topMargin">
+          <number>30</number>
+         </property>
+         <property name="bottomMargin">
+          <number>30</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="save_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Save Changes</string>
+           </property>
           </widget>
          </item>
         </layout>
