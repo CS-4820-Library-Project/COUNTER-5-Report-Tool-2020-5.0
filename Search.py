@@ -6,6 +6,7 @@ import sip
 import webbrowser
 import json
 from PyQt5.QtCore import QDate
+from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
 
 import ManageDB
@@ -109,8 +110,17 @@ class SearchController:
 
         type_label = or_clause_ui.search_type_label
 
+        value_lineedit = or_clause_ui.search_value_parameter_lineedit
+
         def on_field_changed():
             type_label.setText(field_combobox.currentData())
+            value_lineedit.setText(None)
+            if field_combobox.currentData() == 'INTEGER':
+                value_lineedit.setValidator(QIntValidator())
+            elif field_combobox.currentData() == 'REAL':
+                value_lineedit.setValidator(QDoubleValidator())
+            else:
+                value_lineedit.setValidator(None)
 
         field_combobox.currentTextChanged.connect(on_field_changed)
         on_field_changed()
