@@ -36,6 +36,7 @@ class SearchController:
         self.open_results_file_radioButton = search_ui.open_file_radioButton
         self.open_results_folder_radioButton = search_ui.open_folder_radioButton
         self.open_results_both_radioButton = search_ui.open_both_radioButton
+        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -188,17 +189,12 @@ class SearchController:
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    if self.open_results_file_radioButton.isChecked():
+                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
                         open_file_switcher[os.name]()
 
-                    else:
-                        if self.open_results_folder_radioButton.isChecked():
-                            webbrowser.open_new_tab(os.path.dirname(file_name))
-
-                        else:
-                            if self.open_results_both_radioButton.isChecked():
-                                open_file_switcher[os.name]()
-                                webbrowser.open_new_tab(os.path.dirname(file_name))
+                    if self.open_results_folder_radioButton.isChecked() \
+                            or self.open_results_both_radioButton.isChecked():
+                        webbrowser.open_new_tab(os.path.dirname(file_name))
 
                 else:
                     print('Error: could not open file ' + file_name)
