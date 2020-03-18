@@ -12,6 +12,8 @@ import ManageDB
 import DataStorage
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
 
+COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+
 
 class SearchController:
     def __init__(self, search_ui: SearchTab.Ui_search_tab):
@@ -36,6 +38,7 @@ class SearchController:
         self.open_results_file_radioButton = search_ui.open_file_radioButton
         self.open_results_folder_radioButton = search_ui.open_folder_radioButton
         self.open_results_both_radioButton = search_ui.open_both_radioButton
+        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -106,7 +109,7 @@ class SearchController:
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE'))
+        comparison_combobox.addItems(COMPARISON_OPERATORS)
 
         # set up remove current or clause button
         def remove_this_or():
@@ -188,17 +191,12 @@ class SearchController:
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    if self.open_results_file_radioButton.isChecked():
+                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
                         open_file_switcher[os.name]()
 
-                    else:
-                        if self.open_results_folder_radioButton.isChecked():
-                            webbrowser.open_new_tab(os.path.dirname(file_name))
-
-                        else:
-                            if self.open_results_both_radioButton.isChecked():
-                                open_file_switcher[os.name]()
-                                webbrowser.open_new_tab(os.path.dirname(file_name))
+                    if self.open_results_folder_radioButton.isChecked() \
+                            or self.open_results_both_radioButton.isChecked():
+                        webbrowser.open_new_tab(os.path.dirname(file_name))
 
                 else:
                     print('Error: could not open file ' + file_name)

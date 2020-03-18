@@ -55,7 +55,7 @@ class Ui_search_tab(object):
         self.search_and_clause_parameters_scrollarea.setWidgetResizable(True)
         self.search_and_clause_parameters_scrollarea.setObjectName("search_and_clause_parameters_scrollarea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 894, 514))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 842, 223))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -105,6 +105,9 @@ class Ui_search_tab(object):
         self.open_both_radioButton = QtWidgets.QRadioButton(self.search_control_frame)
         self.open_both_radioButton.setObjectName("open_both_radioButton")
         self.gridLayout_4.addWidget(self.open_both_radioButton, 3, 3, 1, 1)
+        self.dont_open_radioButton = QtWidgets.QRadioButton(self.search_control_frame)
+        self.dont_open_radioButton.setObjectName("dont_open_radioButton")
+        self.gridLayout_4.addWidget(self.dont_open_radioButton, 3, 4, 1, 1)
         self.verticalLayout.addWidget(self.search_control_frame)
 
         self.retranslateUi(search_tab)
@@ -125,4 +128,15 @@ class Ui_search_tab(object):
         self.open_file_radioButton.setText(_translate("search_tab", "Open File"))
         self.open_folder_radioButton.setText(_translate("search_tab", "Open Folder"))
         self.open_both_radioButton.setText(_translate("search_tab", "Open Both"))
+        self.dont_open_radioButton.setText(_translate("search_tab", "Don\'t Open"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    search_tab = QtWidgets.QWidget()
+    ui = Ui_search_tab()
+    ui.setupUi(search_tab)
+    search_tab.show()
+    sys.exit(app.exec_())
 

@@ -92,8 +92,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>894</width>
-           <height>514</height>
+           <width>842</width>
+           <height>223</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -179,6 +179,13 @@
        <widget class="QRadioButton" name="open_both_radioButton">
         <property name="text">
          <string>Open Both</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QRadioButton" name="dont_open_radioButton">
+        <property name="text">
+         <string>Don't Open</string>
         </property>
        </widget>
       </item>

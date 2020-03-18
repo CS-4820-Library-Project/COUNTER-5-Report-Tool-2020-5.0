@@ -7,6 +7,8 @@ import ManageDB
 import ManageVendors
 from ui import CostsTab
 
+CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
+
 
 class CostsController:
     def __init__(self, costs_ui: CostsTab.Ui_costs_tab):
@@ -36,7 +38,7 @@ class CostsController:
         self.cost_in_original_currency = None
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency_combobox.addItems(('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD'))
+        self.original_currency_combobox.addItems(CURRENCY_LIST)
         self.original_currency = None
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
