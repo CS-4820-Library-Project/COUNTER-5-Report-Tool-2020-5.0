@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'SettingsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_settings_tab(object):
     def setupUi(self, settings_tab):
         settings_tab.setObjectName("settings_tab")
-        settings_tab.resize(400, 427)
+        settings_tab.resize(806, 1005)
         self.verticalLayout = QtWidgets.QVBoxLayout(settings_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_37 = QtWidgets.QFrame(settings_tab)
@@ -272,3 +270,14 @@ class Ui_settings_tab(object):
         self.request_timeout_help_button.setText(_translate("settings_tab", "?"))
         self.label_73.setText(_translate("settings_tab", "User Agent"))
         self.user_agent_help_button.setText(_translate("settings_tab", "?"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    settings_tab = QtWidgets.QWidget()
+    ui = Ui_settings_tab()
+    ui.setupUi(settings_tab)
+    settings_tab.show()
+    sys.exit(app.exec_())
+

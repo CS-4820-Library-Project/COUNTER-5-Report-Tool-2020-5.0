@@ -99,7 +99,10 @@ class UpdateDatabaseWorker(QObject):
         for file in self.files:
             filename = os.path.basename(file['file'])
             print('READ ' + filename)
-            ManageDB.insert_single_file(file['file'], file['vendor'], file['year'])
+            if not filename[:-4].endswith(ManageDB.COST_TABLE_SUFFIX):
+                ManageDB.insert_single_file(file['file'], file['vendor'], file['year'])
+            else:
+                ManageDB.insert_single_cost_file(file['file'])
             self.task_finished_signal.emit(filename)
             current += 1
             self.progress_changed_signal.emit(current)

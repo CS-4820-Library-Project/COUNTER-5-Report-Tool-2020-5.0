@@ -191,9 +191,8 @@ class SettingsController:
     def on_restore_database(self):
         if not self.is_restoring_database:  # check if already running
             self.is_restoring_database = True
-            self.update_database_dialog.update_database(ManageDB.get_all_reports(), True)
+            self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
+                                                        True)
             self.is_restoring_database = False
         else:
             print('Error, already running')
-
-    # TODO (Chandler): backup and restore costs
