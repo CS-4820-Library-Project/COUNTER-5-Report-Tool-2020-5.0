@@ -33,17 +33,17 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = None
+        self.cost_in_original_currency = 0.0
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency = None
+        self.original_currency = ''
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = None
+        self.cost_in_local_currency = 0.0
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = None
+        self.cost_in_local_currency_with_tax = 0.0
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -67,8 +67,6 @@ class CostsController:
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
 
-    # TODO (Chandler): enable cost fields when others are filled
-
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
         self.name_label.setText(ManageDB.NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
@@ -77,7 +75,6 @@ class CostsController:
 
     def on_vendor_parameter_changed(self):
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
-        print(self.vendor_parameter)
         if self.report_parameter:
             self.fill_names()
 
@@ -112,7 +109,7 @@ class CostsController:
         self.cost_in_original_currency = self.cost_in_original_currency_doublespinbox.value()
 
     def on_original_currency_changed(self):
-        self.original_currency = self.original_currency_combobox.text()
+        self.original_currency = self.original_currency_combobox.currentText()
 
     def on_cost_in_local_currency_changed(self):
         self.cost_in_local_currency = self.cost_in_local_currency_doublespinbox.value()
@@ -121,21 +118,42 @@ class CostsController:
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
     def insert_costs(self):
-        print('insert_costs')
-        sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
-                                                  [{ManageDB.NAME_FIELD_SWITCHER[
-                                                        self.report_parameter]: self.name_parameter,
-                                                    'vendor': self.vendor_parameter, 'year': self.year_parameter,
-                                                    'cost_in_original_currency': self.cost_in_original_currency,
-                                                    'original_currency': self.original_currency,
-                                                    'cost_in_local_currency': self.cost_in_local_currency,
-                                                    'cost_in_local_currency_with_tax':
-                                                        self.cost_in_local_currency_with_tax}])
-        print(sql_text)
-        # TODO (Chandler): insert into database
+        sql_text = None
+        if self.cost_in_original_currency > 0 and self.original_currency != '' \
+                and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
+            sql_text = ManageDB.replace_cost_sql_text(self.report_parameter,
+                                                      [{ManageDB.NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                            self.name_parameter,
+                                                        'vendor': self.vendor_parameter, 'year': self.year_parameter,
+                                                        'cost_in_original_currency': self.cost_in_original_currency,
+                                                        'original_currency': self.original_currency,
+                                                        'cost_in_local_currency': self.cost_in_local_currency,
+                                                        'cost_in_local_currency_with_tax':
+                                                            self.cost_in_local_currency_with_tax}])
+        else:
+            sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                                      self.name_parameter)
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
 
     def load_costs(self):
-        print('load_costs')
-        # TODO (Chandler): load from database
+        sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                               self.name_parameter)
+        results = []
+        connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text)
+            if not results:
+                results.append((0.0, '', 0.0, 0.0))
+        values = {}
+        index = 0
+        for field in ManageDB.COST_FIELDS:
+            values[field['name']] = results[0][index]
+            index += 1
+        self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
+        self.original_currency_combobox.setCurrentText(values['original_currency'])
+        self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
+        self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
 
     # TODO (Chandler): import/export tsv file with costs
