@@ -103,9 +103,17 @@ class SearchController:
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
             if field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
-                field_combobox.addItem(field['name'])
+                field_combobox.addItem(field['name'], field['type'])
 
         # TODO (Chandler): make value check for type
+
+        type_label = or_clause_ui.search_type_label
+
+        def on_field_changed():
+            type_label.setText(field_combobox.currentData())
+
+        field_combobox.currentTextChanged.connect(on_field_changed)
+        on_field_changed()
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
@@ -154,7 +162,7 @@ class SearchController:
                 and_clause = self.add_and_clause()
                 for sub_clause in clause:
                     or_clause = self.add_or_clause(and_clause)
-                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'])
+                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'], Qt.UserRole)
                     or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause['comparison'])
                     or_clause.search_value_parameter_lineedit.setText(sub_clause['value'])
 
@@ -223,10 +231,18 @@ class SearchController:
             for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
                 # iterate over child or clauses
                 # get parameters for clause
-                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
+                field_parameter_combobox = or_widget.findChild(QComboBox, 'search_field_parameter_combobox')
+                field_parameter = field_parameter_combobox.currentText()
                 comparison_parameter = or_widget.findChild(QComboBox,
                                                            'search_comparison_parameter_combobox').currentText()
-                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
+                value_parameter_lineedit = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit')
+                value_parameter = None
+                if field_parameter_combobox.currentData() == 'INTEGER':
+                    value_parameter = int(value_parameter_lineedit.text())
+                elif field_parameter_combobox.currentData() == 'REAL':
+                    value_parameter = float(value_parameter_lineedit.text())
+                else:
+                    value_parameter = value_parameter_lineedit.text()
                 or_clauses.append(
                     {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
             search_parameters.append(or_clauses)
