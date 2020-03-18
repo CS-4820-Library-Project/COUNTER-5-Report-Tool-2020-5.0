@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>934</width>
+    <height>725</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -92,8 +92,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>360</width>
-           <height>89</height>
+           <width>894</width>
+           <height>514</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -175,7 +175,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="5">
+      <item row="3" column="3">
        <widget class="QRadioButton" name="open_both_radioButton">
         <property name="text">
          <string>Open Both</string>
