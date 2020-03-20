@@ -2,58 +2,57 @@ import csv
 import os
 import shlex
 import sip
+import webbrowser
 import json
 from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog
+from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog, QSpacerItem, QSizePolicy
 
 import ManageDB
-import DataStorage
-from ui import MainWindow, SearchAndClauseFrame, SearchOrClauseFrame
+import GeneralUtils
+from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
+from VariableConstants import *
 
 
 class SearchController:
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
-        self.main_window = main_window_ui
+    def __init__(self, search_ui: SearchTab.Ui_search_tab):
+        self.main_window = search_ui
 
         # set up report types combobox
-        self.report_parameter = main_window_ui.search_report_parameter_combobox
-        self.report_parameter.addItems(ManageDB.DATABASE_REPORTS)
-        self.report_parameter.addItems(ManageDB.ITEM_REPORTS)
-        self.report_parameter.addItems(ManageDB.PLATFORM_REPORTS)
-        self.report_parameter.addItems(ManageDB.TITLE_REPORTS)
+        self.report_parameter = search_ui.search_report_parameter_combobox
+        self.report_parameter.addItems(ALL_REPORTS)
 
         # set up start year dateedit
-        self.start_year_parameter = main_window_ui.search_start_year_parameter_dateedit
+        self.start_year_parameter = search_ui.search_start_year_parameter_dateedit
         self.start_year_parameter.setDate(QDate.currentDate())
 
         # set up end year dateedit
-        self.end_year_parameter = main_window_ui.search_end_year_parameter_dateedit
+        self.end_year_parameter = search_ui.search_end_year_parameter_dateedit
         self.end_year_parameter.setDate(QDate.currentDate())
 
         # set up search button
-        self.search_button = main_window_ui.search_button
+        self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_checkbox = main_window_ui.search_open_results_checkbox
+        self.open_results_file_radioButton = search_ui.open_file_radioButton
+        self.open_results_folder_radioButton = search_ui.open_folder_radioButton
+        self.open_results_both_radioButton = search_ui.open_both_radioButton
+        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
 
         # set up export button
-        self.export_button = main_window_ui.search_export_button
+        self.export_button = search_ui.search_export_button
         self.export_button.clicked.connect(self.export_parameters)
 
         # set up import button
-        self.import_button = main_window_ui.search_import_button
+        self.import_button = search_ui.search_import_button
         self.import_button.clicked.connect(self.import_parameters)
-
-        # set up restore database button
-        self.restore_database_button = main_window_ui.search_restore_database_button
-        self.restore_database_button.clicked.connect(self.restore_database)
 
         # set up add and clause button
         def add_and_and_or_clause():
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
 
-        self.add_and_button = main_window_ui.search_add_and_button
+        self.add_and_button = search_ui.search_add_and_button
         self.add_and_button.clicked.connect(add_and_and_or_clause)
 
         # resets the search clauses when the report type is changed
@@ -62,13 +61,16 @@ class SearchController:
             add_and_and_or_clause()
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
-        self.and_clause_parameters = None
+        self.and_clause_parameters_scrollarea = search_ui.search_and_clause_parameters_scrollarea
+        self.and_clause_parameters_frame = None
         refresh_and_add_clauses()
 
     def refresh_clauses(self):  # resets the search clauses
-        self.and_clause_parameters = QFrame()
-        self.and_clause_parameters.setLayout(QVBoxLayout())
-        self.main_window.search_and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters)
+        self.and_clause_parameters_frame = QFrame()
+        self.and_clause_parameters_frame.setLayout(QVBoxLayout())
+        self.and_clause_parameters_frame.layout().addItem(QSpacerItem(0, 0, QSizePolicy.Expanding,
+                                                                      QSizePolicy.Expanding))
+        self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
     def add_and_clause(self):
         and_clause = QFrame()
@@ -83,13 +85,14 @@ class SearchController:
 
         # set up remove current and clause button
         def remove_this_and():
-            self.and_clause_parameters.layout().removeWidget(and_clause)
+            self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
         # add to the layout
-        self.and_clause_parameters.layout().addWidget(and_clause)
+        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,
+                                                               and_clause)
 
         return and_clause_ui
 
@@ -100,15 +103,40 @@ class SearchController:
 
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
-        for field in ManageDB.get_report_fields_list(self.report_parameter.currentText(), True):
-            if 'calculation' not in field.keys() and field['name'] not in ManageDB.FIELDS_NOT_IN_SEARCH:
-                field_combobox.addItem(field['name'])
+        for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
+            if field['name'] not in FIELDS_NOT_IN_SEARCH:
+                field_combobox.addItem(field['name'], field['type'])
 
-        # TODO make value check for type
+        type_label = or_clause_ui.search_type_label
+
+        value_lineedit = or_clause_ui.search_value_parameter_lineedit
+
+        def on_field_changed():
+            type_label.setText(field_combobox.currentData())
+            value_lineedit.setText(None)
+            if field_combobox.currentData() == 'INTEGER':
+                value_lineedit.setValidator(QIntValidator())
+            elif field_combobox.currentData() == 'REAL':
+                value_lineedit.setValidator(QDoubleValidator())
+            else:
+                value_lineedit.setValidator(None)
+
+        field_combobox.currentTextChanged.connect(on_field_changed)
+        on_field_changed()
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
-        comparison_combobox.addItems(('=', '<=', '<', '>=', '>', 'LIKE'))
+        comparison_combobox.addItems(COMPARISON_OPERATORS)
+        comparison_combobox.addItems(NON_COMPARISONS)
+
+        def on_comparison_changed():
+            if comparison_combobox.currentText() in NON_COMPARISONS:
+                value_lineedit.setText(None)
+                value_lineedit.setEnabled(False)
+            else:
+                value_lineedit.setEnabled(True)
+
+        comparison_combobox.currentTextChanged.connect(on_comparison_changed)
 
         # set up remove current or clause button
         def remove_this_or():
@@ -122,7 +150,7 @@ class SearchController:
 
         return or_clause_ui
 
-    def export_parameters(self): # export current search parameters to selected file
+    def export_parameters(self):  # export current search parameters to selected file
         parameters = self.get_search_parameters()
         print(parameters)
         dialog = QFileDialog()
@@ -133,22 +161,21 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.dat' and file_name != '':
                 file_name += '.tsv'
-            file = open(file_name, 'w', encoding='utf-8')
+            file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
 
-    def import_parameters(self): # import search parameters from selected file
+    def import_parameters(self):  # import search parameters from selected file
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilter('JSON files (*.dat)')
         if dialog.exec_():
-            fields = json.loads(DataStorage.read_json_file(dialog.selectedFiles()[0]))
+            fields = json.loads(GeneralUtils.read_json_file(dialog.selectedFiles()[0]))
             print(fields)
             self.report_parameter.setCurrentText(fields['report'])
             self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))
             self.end_year_parameter.setDate(QDate(fields['end_year'], 1, 1))
             clauses = fields['search_parameters']
-            print(clauses)
             self.refresh_clauses()
             for clause in clauses:
                 and_clause = self.add_and_clause()
@@ -162,12 +189,12 @@ class SearchController:
         parameters = self.get_search_parameters()
 
         # sql query to get search results
-        sql_text = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
-                                            parameters['end_year'], parameters['search_parameters'])
-        print(sql_text)  # testing
+        search = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+                                          parameters['end_year'], parameters['search_parameters'])
+        print(search)  # testing
 
         headers = []
-        for field in ManageDB.get_report_fields_list(parameters['report'], True):
+        for field in ManageDB.get_view_report_fields_list(parameters['report']):
             headers.append(field['name'])
 
         dialog = QFileDialog()
@@ -178,22 +205,26 @@ class SearchController:
             file_name = dialog.selectedFiles()[0]
             if file_name[-4:].lower() != '.tsv' and file_name != '':
                 file_name += '.tsv'
-            connection = ManageDB.create_connection(ManageDB.DATABASE_LOCATION)
+            connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
-                results = ManageDB.run_select_sql(connection, sql_text)
+                results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
                 results.insert(0, headers)
                 print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8')
+                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')
                     for row in results:
                         output.writerow(row)
 
                     open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                          # TODO check file_name for special characters and quote
                                           'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
-                    if self.open_results_checkbox.isChecked():
+                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
                         open_file_switcher[os.name]()
+
+                    if self.open_results_folder_radioButton.isChecked() \
+                            or self.open_results_both_radioButton.isChecked():
+                        webbrowser.open_new_tab(os.path.dirname(file_name))
+
                 else:
                     print('Error: could not open file ' + file_name)
 
@@ -212,31 +243,30 @@ class SearchController:
         end_year = int(self.end_year_parameter.text())
 
         search_parameters = []
-        for and_widget in self.and_clause_parameters.findChildren(QFrame, 'search_and_clause_parameter_frame'):
+        for and_widget in self.and_clause_parameters_frame.findChildren(QFrame, 'search_and_clause_parameter_frame'):
             # iterate over and clauses
-            print('and: ' + str(and_widget.objectName()) + ' ' + str(and_widget))  # testing
             or_clause_parameters = and_widget.findChild(QFrame, 'search_or_clause_parameters_frame')
             or_clauses = []
             for or_widget in or_clause_parameters.findChildren(QFrame, 'search_or_clause_parameter_frame'):
                 # iterate over child or clauses
-                print('\tor: ' + str(or_widget.objectName()) + ' ' + str(or_widget))  # testing
                 # get parameters for clause
-                field_parameter = or_widget.findChild(QComboBox, 'search_field_parameter_combobox').currentText()
-                comparison_parameter = or_widget.findChild(QComboBox,
-                                                           'search_comparison_parameter_combobox').currentText()
-                value_parameter = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit').text()
-                # TODO check for special characters
+                field_parameter_combobox = or_widget.findChild(QComboBox, 'search_field_parameter_combobox')
+                field_parameter = field_parameter_combobox.currentText()
+                comparison_parameter_combobox = or_widget.findChild(QComboBox, 'search_comparison_parameter_combobox')
+                comparison_parameter = comparison_parameter_combobox.currentText()
+                value_parameter_lineedit = or_widget.findChild(QLineEdit, 'search_value_parameter_lineedit')
+                value_parameter = None
+                if comparison_parameter in NON_COMPARISONS:
+                    pass
+                elif field_parameter_combobox.currentData() == 'INTEGER':
+                    value_parameter = int(value_parameter_lineedit.text())
+                elif field_parameter_combobox.currentData() == 'REAL':
+                    value_parameter = float(value_parameter_lineedit.text())
+                else:
+                    value_parameter = value_parameter_lineedit.text()
                 or_clauses.append(
                     {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
             search_parameters.append(or_clauses)
 
         return {'report': report, 'start_year': start_year, 'end_year': end_year,
                 'search_parameters': search_parameters}
-
-    def restore_database(self):
-        ManageDB.setup_database(True)
-        reports = ManageDB.get_all_reports()
-        for report in reports:
-            print(os.path.basename(report['file']))
-            ManageDB.insert_single_file(report['file'], report['vendor'], report['year'])
-        print('done')

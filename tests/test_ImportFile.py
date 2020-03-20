@@ -5,11 +5,11 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QStandardItemModel
 from ui import MainWindow
-from ImportFile import ImportFileController
+from ImportFile import ImportReportController
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 import Settings
-import DataStorage
+import GeneralUtils
 import json
 
 
@@ -24,7 +24,7 @@ def vendors() -> list:
         "test vendor.dat should be placed in ./tests/data/vendor_manager/"
 
     vendor_list = []
-    vendors_json_string = DataStorage.read_json_file("./data/vendor_manager/vendors.dat")
+    vendors_json_string = GeneralUtils.read_json_file("./data/vendor_manager/vendors.dat")
     vendor_dicts = json.loads(vendors_json_string)
     for json_dict in vendor_dicts:
         vendor = Vendor.from_json(json_dict)
@@ -41,7 +41,8 @@ def settings() -> Settings.SettingsModel:
                                   Settings.REQUEST_TIMEOUT,
                                   Settings.CONCURRENT_VENDORS,
                                   Settings.CONCURRENT_REPORTS,
-                                  Settings.EMPTY_CELL)
+                                  Settings.EMPTY_CELL,
+                                  Settings.USER_AGENT)
 
 
 @pytest.fixture
@@ -50,7 +51,7 @@ def controller(qtbot, settings):  # ImportFileController without populated vendo
     window_ui = MainWindow.Ui_mainWindow()
     window_ui.setupUi(window)
 
-    c = ImportFileController([], settings, window_ui)
+    c = ImportReportController([], settings, window_ui)
     yield c
 
 
@@ -60,7 +61,7 @@ def controller_v(qtbot, vendors, settings):  # ImportFileController with populat
     window_ui = MainWindow.Ui_mainWindow()
     window_ui.setupUi(window)
 
-    c = ImportFileController(vendors, settings, window_ui)
+    c = ImportReportController(vendors, settings, window_ui)
     yield c
 
 
@@ -155,15 +156,15 @@ def test_import_file(controller_v):
     file_path = file_dir + file_name
 
     # No file selected
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Invalid file selected
     controller_v.selected_file_path = "./data/invalid_file"
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.FAILED
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Valid file selected
     controller_v.selected_file_path = "./data/test_file_for_import.tsv"
-    assert controller_v.import_file(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
+    assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
     assert path.isfile(file_path)
 
 

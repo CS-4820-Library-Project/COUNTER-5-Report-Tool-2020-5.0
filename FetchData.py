@@ -6,16 +6,22 @@ import requests
 import webbrowser
 import shlex
 import platform
+import copy
+import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog
+    QCheckBox, QFileDialog, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton,\
+    QButtonGroup
 
-from ui import MainWindow, MessageDialog, FetchProgressDialog, ReportResultWidget, VendorResultsWidget, DisclaimerDialog
-from JsonUtils import JsonModel
+import GeneralUtils
+from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
+    VendorResultsWidget
+from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
+from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 SHOW_DEBUG_MESSAGES = False
 
@@ -36,33 +42,12 @@ REPORT_TYPES = ["PR",
                 "IR_A1",
                 "IR_M1"]
 
-# If these codes are received with a Report_Header, files will be created and saved
-ACCEPTABLE_CODES = [3030,
-                    3031,
-                    3032,
-                    3040,
-                    3050,
-                    3060,
-                    3062] + list(range(1, 1000))
-
-# If these codes are received the retry checkbox will be checked, user can retry later
-RETRY_LATER_CODES = [1010,
-                     1011]
-RETRY_WAIT_TIME = 5  # Seconds
-
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
     DATABASE = "DR"
     TITLE = "TR"
     ITEM = "IR"
-
-
-class CompletionStatus(Enum):
-    SUCCESSFUL = "Successful!"
-    WARNING = "Warning!"
-    FAILED = "Failed!"
-    CANCELLED = "Cancelled!"
 
 
 def get_major_report_type(report_type: str) -> MajorReportType:
@@ -81,15 +66,164 @@ def get_major_report_type(report_type: str) -> MajorReportType:
         return MajorReportType.ITEM
 
 
-def show_message(message: str):
-    message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-    message_dialog_ui = MessageDialog.Ui_message_dialog()
-    message_dialog_ui.setupUi(message_dialog)
+class SpecialOptionType(Enum):
+    TO = 0  # Tabular Only, not included in request url, only used in creating tabular report
+    AO = 1  # Attribute Only, only in attributes_to_include, does not have it's own parameters in request url
+    AP = 2  # Attribute Parameter, in attributes_to_include and has it's own parameters in request url
+    ADP = 3  # Attribute Date Parameter, in attributes_to_include and has it's own date parameters in request url
+    POS = 4  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
+    POB = 5  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
 
-    message_label = message_dialog_ui.message_label
-    message_label.setText(message)
 
-    message_dialog.exec_()
+class SpecialReportOptions:
+    def __init__(self):
+        # PR, DR, TR, IR
+        self.data_type = False, SpecialOptionType.AP, "Data_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_method = False, SpecialOptionType.AP, "Access_Method", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.metric_type = False, SpecialOptionType.POS, "Metric_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.exclude_monthly_details = False, SpecialOptionType.TO, None, None
+        # TR, IR
+        current_date = QDate.currentDate()
+        self.yop = False, SpecialOptionType.ADP, "YOP", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_type = False, SpecialOptionType.AP, "Access_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        # TR
+        self.section_type = False, SpecialOptionType.AP, "Section_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        # IR
+        self.authors = False, SpecialOptionType.AO, "Authors", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.publication_date = False, SpecialOptionType.AO, "Publication_Date", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.article_version = False, SpecialOptionType.AO, "Article_Version", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.include_component_details = False, SpecialOptionType.POB, None, None
+        self.include_parent_details = False, SpecialOptionType.POB, None, None
+
+
+SPECIAL_REPORT_OPTIONS = {
+    MajorReportType.PLATFORM: [(SpecialOptionType.AP, "Data_Type", ["Article",
+                                                                     "Book",
+                                                                     "Book_Segment",
+                                                                     "Database",
+                                                                     "Dataset",
+                                                                     "Journal",
+                                                                     "Multimedia",
+                                                                     "Newspaper_or_Newsletter",
+                                                                     "Other",
+                                                                     "Platform",
+                                                                     "Report",
+                                                                    "Repository_Item",
+                                                                    "Thesis_or_Dissertation"]),
+                               (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                         "TDM"]),
+                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Platform",
+                                                                       "Total_Item_Investigations",
+                                                                       "Total_Item_Requests",
+                                                                       "Unique_Item_Investigations",
+                                                                       "Unique_Item_Requests",
+                                                                       "Unique_Title_Investigations",
+                                                                       "Unique_Title_Requests"]),
+                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.DATABASE: [(SpecialOptionType.AP, "Data_Type", ["Book",
+                                                                     "Database",
+                                                                     "Journal",
+                                                                     "Multimedia",
+                                                                     "Newspaper_or_Newsletter",
+                                                                     "Other",
+                                                                     "Report",
+                                                                     "Repository_Item",
+                                                                     "Thesis_or_Dissertation"]),
+                               (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                         "TDM"]),
+                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Automated",
+                                                                       "Searches_Federated",
+                                                                       "Searches_Regular",
+                                                                       "Total_Item_Investigations",
+                                                                       "Total_Item_Requests",
+                                                                       "Unique_Item_Investigations",
+                                                                       "Unique_Item_Requests",
+                                                                       "Unique_Title_Investigations",
+                                                                       "Unique_Title_Requests",
+                                                                       "Limit_Exceeded",
+                                                                       "No_License"]),
+                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.TITLE: [(SpecialOptionType.AP, "Data_Type", ["Book",
+                                                                  "Journal",
+                                                                  "Newspaper_or_Newsletter",
+                                                                  "Other",
+                                                                  "Report",
+                                                                  "Thesis_or_Dissertation"]),
+                            (SpecialOptionType.AP, "Section_Type", ["Article",
+                                                                     "Book",
+                                                                     "Chapter",
+                                                                     "Other",
+                                                                     "Section"]),
+                            (SpecialOptionType.AP, "Access_Type", ["Controlled",
+                                                                    "OA_Gold"]),
+                            (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                      "TDM"]),
+                            (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
+                                                                    "Total_Item_Requests",
+                                                                    "Unique_Item_Investigations",
+                                                                    "Unique_Item_Requests",
+                                                                    "Unique_Title_Investigations",
+                                                                    "Unique_Title_Requests",
+                                                                    "Limit_Exceeded",
+                                                                    "No_License"]),
+                            (SpecialOptionType.ADP, "YOP"),
+                            (SpecialOptionType.TO, "Exclude_Monthly_Details")],
+    MajorReportType.ITEM: [(SpecialOptionType.AP, "Data_Type", ["Article",
+                                                                 "Book",
+                                                                 "Book_Segment",
+                                                                 "Dataset",
+                                                                 "Journal",
+                                                                 "Multimedia",
+                                                                 "Newspaper_or_Newsletter",
+                                                                 "Other",
+                                                                 "Report",
+                                                                 "Repository_Item",
+                                                                 "Thesis_or_Dissertation"]),
+                           (SpecialOptionType.AP, "Access_Type", ["Controlled",
+                                                                   "OA_Gold",
+                                                                   "Other_Free_To_Read"]),
+                           (SpecialOptionType.AP, "Access_Method", ["Regular",
+                                                                     "TDM"]),
+                           (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
+                                                                   "Total_Item_Requests",
+                                                                   "Unique_Item_Investigations",
+                                                                   "Unique_Item_Requests",
+                                                                   "Limit_Exceeded",
+                                                                   "No_License"]),
+                           (SpecialOptionType.ADP, "YOP"),
+                           (SpecialOptionType.AO, "Authors"),
+                           (SpecialOptionType.AO, "Publication_Date"),
+                           (SpecialOptionType.AO, "Article_Version"),
+                           (SpecialOptionType.POB, "Include_Component_Details"),
+                           (SpecialOptionType.POB, "Include_Parent_Details"),
+                           (SpecialOptionType.TO, "Exclude_Monthly_Details")]
+}
+
+DEFAULT_SPECIAL_OPTION_VALUE = "all"
+
+# If these codes are received with a Report_Header, files will be created and saved
+ACCEPTABLE_CODES = [3030,
+                    3031,
+                    3032,
+                    3040,
+                    3050,
+                    3060,
+                    3062] + list(range(1, 1000))
+
+# If these codes are received the retry checkbox will be checked, user can retry later
+RETRY_LATER_CODES = [1010,
+                     1011]
+RETRY_WAIT_TIME = 5  # Seconds
+
+# All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
+
+
+class CompletionStatus(Enum):
+    SUCCESSFUL = "Successful!"
+    WARNING = "Warning!"
+    FAILED = "Failed!"
+    CANCELLED = "Cancelled!"
 
 
 # region Models
@@ -191,7 +325,7 @@ class ExceptionModel(JsonModel):
 def exception_models_to_message(exceptions: list) -> str:
     message = ""
     for exception in exceptions:
-        if message: message += "\n"
+        if message: message += "\n\n"
         message += f"Code: {exception.code}" \
                    f"\nMessage: {exception.message}" \
                    f"\nSeverity: {exception.severity}" \
@@ -513,6 +647,26 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
     return models
 
 
+# endregion
+
+
+# region Custom Exceptions
+class RetryLaterException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class ReportHeaderMissingException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+
+
+class UnacceptableCodeException(Exception):
+    def __init__(self, exceptions: list):
+        self.exceptions = exceptions
+# endregion
+
+
 class ReportRow:
     def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
         self.database = empty_cell
@@ -597,34 +751,16 @@ def get_month_years(begin_date: QDate, end_date: QDate) -> list:
     return month_years
 
 
-class Attributes:
-    def __init__(self):
-        # PR, DR, TR, IR
-        self.data_type = False
-        self.access_method = False
-        # TR, IR
-        self.yop = False
-        self.access_type = False
-        # TR
-        self.section_type = False
-        # IR
-        self.authors = False
-        self.publication_date = False
-        self.article_version = False
-        self.include_component_details = False
-        self.include_parent_details = False
-
-
 class RequestData:
     def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate,
-                 save_location: str, settings: SettingsModel, attributes: Attributes = None):
+                 save_location: str, settings: SettingsModel, special_options: SpecialReportOptions = None):
         self.vendor = vendor
         self.target_report_types = target_report_types
         self.begin_date = begin_date
         self.end_date = end_date
         self.save_location = save_location
         self.settings = settings
-        self.attributes = attributes
+        self.special_options = special_options
 
 
 class ProcessResult:
@@ -637,29 +773,13 @@ class ProcessResult:
         self.file_name = ""
         self.file_dir = ""
         self.file_path = ""
-
-
-class RetryLaterException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
-
-
-class ReportHeaderMissingException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
-
-
-class UnacceptableCodeException(Exception):
-    def __init__(self, exceptions: list):
-        self.exceptions = exceptions
-
-
-# endregion
+        self.year = ""
 
 
 class FetchReportsAbstract:
-    def __init__(self, vendors: list, settings: SettingsModel):
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget):
         # region General
+        self.widget = widget
         self.vendors = []
         self.update_vendors(vendors)
         self.selected_data = []  # List of ReportData Objects
@@ -670,8 +790,12 @@ class FetchReportsAbstract:
         self.total_processes = 0
         self.begin_date = QDate()
         self.end_date = QDate()
+        self.selected_options = None
+        self.save_dir = ""
         self.is_cancelling = False
+        self.is_yearly_fetch = False
         self.settings = settings
+        self.database_report_data = []
         # endregion
 
         # region Fetch Progress Dialog
@@ -685,6 +809,13 @@ class FetchReportsAbstract:
         self.cancel_button: QPushButton = None
 
         self.vendor_result_widgets = {}  # <k = vendor name, v = (VendorResultsWidget, VendorResultsUI)>
+        # endregion
+
+        # region Update Database Dialog
+        self.is_updating_database = False
+        self.add_to_database = True
+        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.widget)
+
         # endregion
 
     def on_vendors_changed(self, vendors: list):
@@ -722,8 +853,6 @@ class FetchReportsAbstract:
                 self.status_label.setText(f"Progress: {self.completed_processes}/{self.total_processes}")
             else:
                 self.status_label.setText(f"Finishing...")
-        else:
-            self.status_label.setText(f"Cancelling...")
 
         if vendor.name in self.vendor_result_widgets:
             vendor_results_widget, vendor_results_ui = self.vendor_result_widgets[vendor.name]
@@ -777,11 +906,12 @@ class FetchReportsAbstract:
 
                 folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
                 report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
-                report_result_ui.folder_button.clicked.connect(lambda: self.open_explorer(process_result.file_dir))
+                report_result_ui.folder_button.clicked.connect(
+                    lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 
                 report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
                 report_result_ui.file_label.mousePressEvent = \
-                    lambda event: self.open_explorer(process_result.file_path)
+                    lambda event: GeneralUtils.open_file_or_dir(process_result.file_path)
             else:
                 report_result_ui.file_frame.hide()
         else:
@@ -806,6 +936,15 @@ class FetchReportsAbstract:
         worker, thread = self.vendor_workers[worker_id]
         self.update_results_ui(worker.vendor, worker.process_result, worker.report_process_results)
 
+        process_result: ProcessResult
+        for process_result in worker.report_process_results:
+            if process_result.completion_status != CompletionStatus.SUCCESSFUL:
+                continue
+
+            self.database_report_data.append({'file': process_result.file_path,
+                                              'vendor': process_result.vendor.name,
+                                              'year': process_result.year})
+
         thread.quit()
         thread.wait()
         self.vendor_workers.pop(worker_id, None)
@@ -820,7 +959,8 @@ class FetchReportsAbstract:
     def start_progress_dialog(self, window_title: str):
         self.vendor_result_widgets = {}
 
-        self.fetch_progress_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        if self.fetch_progress_dialog: self.fetch_progress_dialog.close()
+        self.fetch_progress_dialog = QDialog(self.widget, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         fetch_progress_ui = FetchProgressDialog.Ui_FetchProgressDialog()
         fetch_progress_ui.setupUi(self.fetch_progress_dialog)
         self.fetch_progress_dialog.setWindowTitle(window_title)
@@ -865,13 +1005,13 @@ class FetchReportsAbstract:
 
     def retry_selected_reports(self, progress__window_title: str):
         if len(self.retry_data) == 0:
-            show_message("No report selected")
+            GeneralUtils.show_message("No report selected")
             return
 
         self.selected_data = []
         for vendor, report_types in self.retry_data:
-            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.fetch_type,
-                                       self.settings)
+            request_data = RequestData(vendor, report_types, self.begin_date, self.end_date, self.save_dir,
+                                       self.settings, self.selected_options)
             self.selected_data.append(request_data)
 
         self.start_progress_dialog(progress__window_title)
@@ -891,6 +1031,13 @@ class FetchReportsAbstract:
         self.cancel_button.setEnabled(False)
         self.status_label.setText("Done!")
 
+        # Update database...
+        if self.is_yearly_fetch:
+            self.on_update_database(self.database_report_data)
+
+        # Reset database data
+        self.database_report_data = []
+
         self.started_processes = 0
         self.completed_processes = 0
         self.total_processes = 0
@@ -900,18 +1047,9 @@ class FetchReportsAbstract:
     def cancel_workers(self):
         self.is_cancelling = True
         self.total_processes = self.started_processes
-        self.status_label.setText(f"Cancelling...")
+        self.status_label.setText(f"Cancelling... (Waiting for started requests to finish)")
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
-
-    def open_explorer(self, file_path: str):
-        if path.exists(file_path):
-            if(platform.system()=="Windows"):
-                webbrowser.open(path.realpath(file_path))
-            elif(platform.system()=="Darwin"):
-                system("open " + shlex.quote(file_path))
-        else:
-            show_message(f"\'{file_path}\' does not exist")
 
     def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
         current_date = QDate.currentDate()
@@ -928,10 +1066,19 @@ class FetchReportsAbstract:
 
         return False
 
+    def on_update_database(self, files):
+        if not self.is_updating_database:  # check if already running
+            self.is_updating_database = True
+            self.update_database_dialog.update_database(files, False)
+            self.is_updating_database = False
+        else:
+            print('Error, already running')
+
 
 class FetchReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget,
+                 fetch_reports_ui: FetchReportsTab.Ui_fetch_reports_tab):
+        super().__init__(vendors, settings, widget)
 
         # region General
         current_date = QDate.currentDate()
@@ -945,31 +1092,27 @@ class FetchReportsController(FetchReportsAbstract):
         # endregion
 
         # region Start Fetch Buttons
-        self.fetch_all_btn = main_window_ui.fetch_all_data_button
+        self.fetch_all_btn = fetch_reports_ui.fetch_all_data_button
         self.fetch_all_btn.clicked.connect(self.fetch_all_basic_data)
 
-        self.fetch_adv_btn = main_window_ui.fetch_advanced_button
+        self.fetch_adv_btn = fetch_reports_ui.fetch_advanced_button
         self.fetch_adv_btn.clicked.connect(self.fetch_advanced_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_fetch
+        self.vendor_list_view = fetch_reports_ui.vendors_list_view_fetch
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_fetch
+        self.select_vendors_btn = fetch_reports_ui.select_vendors_button_fetch
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_fetch
+        self.deselect_vendors_btn = fetch_reports_ui.deselect_vendors_button_fetch
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
-        self.tool_button = main_window_ui.toolButton
-        self.tool_button.clicked.connect(self.tool_button_click)
-        self.save_checkbox = main_window_ui.save_checkbox
-
         # endregion
 
         # region Report Types
-        self.report_type_list_view = main_window_ui.report_types_list_view
+        self.report_type_list_view = fetch_reports_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         for report_type in REPORT_TYPES:
@@ -978,22 +1121,46 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
 
-        self.select_report_types_btn = main_window_ui.select_report_types_button_fetch
+        self.select_report_types_btn = fetch_reports_ui.select_report_types_button_fetch
         self.select_report_types_btn.clicked.connect(self.select_all_report_types)
-        self.deselect_report_types_btn = main_window_ui.deselect_report_types_button_fetch
+        self.deselect_report_types_btn = fetch_reports_ui.deselect_report_types_button_fetch
         self.deselect_report_types_btn.clicked.connect(self.deselect_all_report_types)
+
+        self.report_types_help_btn = fetch_reports_ui.report_types_help_button
+        self.report_types_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("Only reports supported by selected vendor will be retrieved!"))
         # endregion
 
         # region Date Edits
-        self.all_date_edit = main_window_ui.All_reports_edit_fetch
+        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
         self.all_date_edit.setDate(self.basic_begin_date)
-        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "all_date"))
-        self.begin_date_edit = main_window_ui.begin_date_edit_fetch
-        self.begin_date_edit.setDate(self.adv_begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_begin"))
-        self.end_date_edit = main_window_ui.end_date_edit_fetch
-        self.end_date_edit.setDate(self.adv_end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "adv_end"))
+        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_all_changed(date, "all_date"))
+
+        self.begin_date_edit_year = fetch_reports_ui.begin_date_edit_fetch_year
+        self.begin_date_edit_year.setDate(self.adv_begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
+
+        self.begin_date_edit_month = fetch_reports_ui.begin_date_edit_fetch_month
+        self.begin_date_edit_month.setDate(self.adv_begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_begin"))
+
+        self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
+        self.end_date_edit_year.setDate(self.adv_end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
+
+        self.end_date_edit_month = fetch_reports_ui.end_date_edit_fetch_month
+        self.end_date_edit_month.setDate(self.adv_end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
+        # endregion
+
+        # region Custom Date Range
+        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
+        self.custom_dir_frame.hide()
+        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
+        self.custom_dir_edit.setText(self.settings.other_directory)
+        self.custom_dir_button = fetch_reports_ui.custom_dir_button
+        self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+
         # endregion
 
     def update_vendors_ui(self):
@@ -1004,58 +1171,38 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
-        if date_type == "adv_begin":
-            self.adv_begin_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_end_date.setDate(self.adv_begin_date.year() + 1, self.adv_begin_date.month(), 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() != 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()+1, self.adv_begin_date.month()-1,1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_begin_date.month() !=1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), self.adv_begin_date.month()-1, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_begin_date.month() == 1):
-            #     self.adv_end_date.setDate(self.adv_end_date.year()-1, 12, 1)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-
-        elif date_type == "adv_end":
-            self.adv_end_date = date
-            # if (self.adv_end_date.year() - self.adv_begin_date.year()) >= 2 or (self.adv_end_date.year() - self.adv_begin_date.year()) < 0:
-            #     self.adv_begin_date.setDate(self.adv_end_date.year()-1, self.adv_begin_date.month(), 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if self.adv_begin_date.year() == self.adv_end_date.year():
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), 1, 1)
-            #     self.adv_end_date.setDate(self.adv_end_date.year(), 12, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #     self.end_date_edit.setDate(self.adv_end_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() != 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year(), self.adv_end_date.month()+1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() != self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()+1, 1, 1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-            #
-            # if (self.adv_begin_date.year() == self.adv_end_date.year()) and (self.adv_end_date.month() == 12):
-            #     self.adv_begin_date.setDate(self.adv_begin_date.year()-1, self.adv_end_date.month()+1,1)
-            #     self.begin_date_edit.setDate(self.adv_begin_date)
-
-        elif date_type == "all_date":
+    def on_date_all_changed(self, date: QDate, date_type: str):
+        if date_type == "all_date":
             self.basic_begin_date = QDate(date.year(), 1, 1)
             self.basic_end_date = QDate(date.year(), 12, 31)
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+
+    def on_date_year_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(date.year(), self.adv_begin_date.month(), self.adv_begin_date.day())
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(date.year(), self.adv_end_date.month(), self.adv_end_date.day())
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "adv_begin":
+            self.adv_begin_date = QDate(self.adv_begin_date.year(), date.month(), self.adv_begin_date.day())
+
+        elif date_type == "adv_end":
+            self.adv_end_date = QDate(self.adv_end_date.year(), date.month(), self.adv_end_date.day())
+
+        if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
+            self.custom_dir_frame.hide()
+        else:
+            self.custom_dir_frame.show()
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1075,26 +1222,28 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_all_basic_data(self):
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         self.begin_date = self.basic_begin_date
         self.end_date = self.basic_end_date
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
+        self.is_yearly_fetch = True
+        self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
             if self.vendors[i].is_local: continue
 
             request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
-                                       self.settings.yearly_directory, self.settings)
+                                       self.save_dir, self.settings)
             self.selected_data.append(request_data)
 
         self.is_last_fetch_advanced = False
@@ -1110,23 +1259,19 @@ class FetchReportsController(FetchReportsAbstract):
             self.started_processes += 1
 
     def fetch_advanced_data(self):
-        custom_dir = ""
-        if self.save_checkbox.isChecked():
-            custom_dir = self.open_custom_dir_dialog()
-
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.selected_data = []
@@ -1135,17 +1280,20 @@ class FetchReportsController(FetchReportsAbstract):
             if self.report_type_list_model.item(i).checkState() == Qt.Checked:
                 selected_report_types.append(REPORT_TYPES[i])
         if len(selected_report_types) == 0:
-            show_message("No report type selected")
+            GeneralUtils.show_message("No report type selected")
             return
 
-        save_dir = custom_dir if custom_dir else self.settings.yearly_directory
+        self.is_yearly_fetch = self.is_yearly_range(self.adv_begin_date, self.adv_end_date)
+        custom_dir = self.custom_dir_edit.text()
+        if not custom_dir: custom_dir = self.settings.other_directory
+        self.save_dir = custom_dir if not self.is_yearly_fetch else self.settings.yearly_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           save_dir, self.settings)
+                                           self.save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
-            show_message("No vendor selected")
+            GeneralUtils.show_message("No vendor selected")
             return
 
         self.start_progress_dialog("Fetch Reports Progress")
@@ -1160,68 +1308,51 @@ class FetchReportsController(FetchReportsAbstract):
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-    def tool_button_click(self):
-        disclaimer_dialog = QDialog()
-        disclaimer_dialog_ui = DisclaimerDialog.Ui_dialog()
-        disclaimer_dialog_ui.setupUi(disclaimer_dialog)
-
-        disclaimer_dialog.exec_()
-
-    def open_custom_dir_dialog(self) -> str:
-        directory = ""
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
-        return directory
+    def on_custom_dir_clicked(self):
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path: self.custom_dir_edit.setText(dir_path)
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
-    def __init__(self, vendors: list, settings: SettingsModel, main_window_ui: MainWindow.Ui_mainWindow):
-        super().__init__(vendors, settings)
+    def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget,
+                 fetch_special_reports_ui: FetchSpecialReportsTab.Ui_fetch_special_reports_tab):
+        super().__init__(vendors, settings, widget)
 
         # region General
         self.selected_report_type = None
-        self.selected_attributes = Attributes()
-        self.attribute_options = {
-            MajorReportType.PLATFORM: ["Data_Type", "Access_Method"],
-            MajorReportType.DATABASE: ["Data_Type", "Access_Method"],
-            MajorReportType.TITLE: ["Data_Type", "Section_Type", "YOP", "Access_Type", "Access_Method"],
-            MajorReportType.ITEM: ["Authors", "Publication_Date", "Article_Version", "Data_Type", "YOP", "Access_Type",
-                                   "Access_Method", "Include_Parent_Details", "Include_Component_Details"]
-        }
+        self.selected_options = SpecialReportOptions()
         current_date = QDate.currentDate()
         self.begin_date = QDate(current_date.year(), 1, current_date.day())
         self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
         # endregion
 
         # region Start Fetch Button
-        self.fetch_special_btn = main_window_ui.fetch_special_data_button
+        self.fetch_special_btn = fetch_special_reports_ui.fetch_special_data_button
         self.fetch_special_btn.clicked.connect(self.fetch_special_data)
         # endregion
 
         # region Vendors
-        self.vendor_list_view = main_window_ui.vendors_list_view_special
+        self.vendor_list_view = fetch_special_reports_ui.vendors_list_view_special
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.update_vendors_ui()
 
-        self.select_vendors_btn = main_window_ui.select_vendors_button_special
+        self.select_vendors_btn = fetch_special_reports_ui.select_vendors_button_special
         self.select_vendors_btn.clicked.connect(self.select_all_vendors)
-        self.deselect_vendors_btn = main_window_ui.deselect_vendors_button_special
+        self.deselect_vendors_btn = fetch_special_reports_ui.deselect_vendors_button_special
         self.deselect_vendors_btn.clicked.connect(self.deselect_all_vendors)
         # endregion
 
-        # region Attributes
-        self.attributes_frame = main_window_ui.attributes_frame
-        self.attributes_layout = self.attributes_frame.layout()
+        # region Options
+        self.options_frame = fetch_special_reports_ui.options_frame
+        self.options_layout = self.options_frame.layout()
         # endregion
 
         # region Report Types
-        self.pr_radio_button = main_window_ui.pr_radio_button
-        self.dr_radio_button = main_window_ui.dr_radio_button
-        self.tr_radio_button = main_window_ui.tr_radio_button
-        self.ir_radio_button = main_window_ui.ir_radio_button
+        self.pr_radio_button = fetch_special_reports_ui.pr_radio_button
+        self.dr_radio_button = fetch_special_reports_ui.dr_radio_button
+        self.tr_radio_button = fetch_special_reports_ui.tr_radio_button
+        self.ir_radio_button = fetch_special_reports_ui.ir_radio_button
 
         self.pr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.PLATFORM))
         self.dr_radio_button.clicked.connect(lambda checked: self.on_report_type_selected(MajorReportType.DATABASE))
@@ -1234,12 +1365,21 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
-        self.begin_date_edit = main_window_ui.begin_date_edit_special
-        self.begin_date_edit.setDate(self.begin_date)
-        self.begin_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "begin_date"))
-        self.end_date_edit = main_window_ui.end_date_edit_special
-        self.end_date_edit.setDate(self.end_date)
-        self.end_date_edit.dateChanged.connect(lambda date: self.on_date_changed(date, "end_date"))
+        self.begin_date_edit_year = fetch_special_reports_ui.begin_date_edit_special_year
+        self.begin_date_edit_year.setDate(self.begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
+
+        self.begin_date_edit_month = fetch_special_reports_ui.begin_date_edit_special_month
+        self.begin_date_edit_month.setDate(self.begin_date)
+        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "begin_date"))
+
+        self.end_date_edit_year = fetch_special_reports_ui.end_date_edit_special_year
+        self.end_date_edit_year.setDate(self.end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "end_date"))
+
+        self.end_date_edit_month = fetch_special_reports_ui.end_date_edit_special_month
+        self.end_date_edit_month.setDate(self.end_date)
+        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
         # endregion
 
     def update_vendors_ui(self):
@@ -1250,16 +1390,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_changed(self, date: QDate, date_type: str):
+    def on_date_year_changed(self, date: QDate, date_type: str):
         if date_type == "begin_date":
-            self.begin_date = date
+            self.begin_date = QDate(date.year(),self.begin_date.month(),self.begin_date.day())
             # if self.begin_date.year() != self.end_date.year():
             #     self.end_date.setDate(self.begin_date.year(),
             #                           self.end_date.month(),
             #                           self.end_date.day())
             #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
-            self.end_date = date
+            self.end_date = QDate(date.year(),self.end_date.month(),self.end_date.day())
+            # if self.end_date.year() != self.begin_date.year():
+            #     self.begin_date.setDate(self.end_date.year(),
+            #                             self.begin_date.month(),
+            #                             self.begin_date.day())
+            #     self.begin_date_edit.setDate(self.begin_date)
+
+    def on_date_month_changed(self, date: QDate, date_type: str):
+        if date_type == "begin_date":
+            self.begin_date = QDate(self.begin_date.year(),date.month(),self.begin_date.day())
+            # if self.begin_date.year() != self.end_date.year():
+            #     self.end_date.setDate(self.begin_date.year(),
+            #                           self.end_date.month(),
+            #                           self.end_date.day())
+            #     self.end_date_edit.setDate(self.end_date)
+        elif date_type == "end_date":
+            self.end_date = QDate(self.end_date.year(),date.month(),self.end_date.day())
             # if self.end_date.year() != self.begin_date.year():
             #     self.begin_date.setDate(self.end_date.year(),
             #                             self.begin_date.month(),
@@ -1270,27 +1426,186 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         if major_report_type == self.selected_report_type: return
 
         self.selected_report_type = major_report_type
-        self.selected_attributes = Attributes()
+        self.selected_options = SpecialReportOptions()
 
         # Remove existing options from ui
-        for i in reversed(range(self.attributes_layout.count())):
-            widget = self.attributes_layout.itemAt(i).widget()
+        for i in reversed(range(self.options_layout.count())):
+            widget = self.options_layout.itemAt(i).widget()
             # remove it from the layout list
-            self.attributes_layout.removeWidget(widget)
+            self.options_layout.removeWidget(widget)
             # remove it from the gui
             widget.deleteLater()
 
         # Add new options
-        attribute_options = self.attribute_options[major_report_type]
+        special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
+        for i in range(len(special_options)):
+            option_name = special_options[i][1]
+            label = QLabel(option_name, self.options_frame)
 
-        for attribute in attribute_options:
-            checkbox = QCheckBox(attribute, self.attributes_frame)
-            checkbox.toggled.connect(lambda checked, attr=attribute: self.on_attribute_selected(checked, attr))
-            self.attributes_layout.addWidget(checkbox)
+            option_type: SpecialOptionType = special_options[i][0]
+            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS:
+                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
+                line_edit.setReadOnly(True)
+                button = QPushButton("Choose", self.options_frame)
+                button.clicked.connect(
+                    lambda c, so=special_options[i], edit=line_edit: self.on_special_parameter_option_button_clicked(so, edit))
 
-    def on_attribute_selected(self, checked: bool, attribute: str):
-        if checked: setattr(self.selected_attributes, attribute.lower(), True)
-        else: setattr(self.selected_attributes, attribute.lower(), False)
+                self.options_layout.addWidget(line_edit, i, 1)
+                self.options_layout.addWidget(button, i, 2)
+
+            elif option_type == SpecialOptionType.ADP:
+                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
+                line_edit.setReadOnly(True)
+                button = QPushButton("Choose", self.options_frame)
+                button.clicked.connect(
+                    lambda c, so=special_options[i], edit=line_edit: self.on_special_date_parameter_option_button_clicked(so, edit))
+
+                self.options_layout.addWidget(line_edit, i, 1)
+                self.options_layout.addWidget(button, i, 2)
+
+            else:
+                checkbox = QCheckBox(self.options_frame)
+                checkbox.toggled.connect(
+                    lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
+
+                self.options_layout.addWidget(checkbox, i, 1)
+
+            self.options_layout.addWidget(label, i, 0)
+
+    def on_special_option_toggled(self, option: str, is_checked: bool):
+        option = option.lower()
+        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option)
+        self.selected_options.__setattr__(option, (is_checked, option_type, option_name, curr_options))
+
+    def on_special_parameter_option_button_clicked(self, special_option, line_edit):
+        option_type, option_name, option_list = special_option
+        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
+
+        dialog = QDialog(self.options_frame)
+        dialog.setWindowTitle(option_name + " options")
+        layout = QVBoxLayout(dialog)
+
+        list_view = QListView(dialog)
+        list_view.setAlternatingRowColors(True)
+        model = QStandardItemModel(list_view)
+
+        for option in option_list:
+            item = QStandardItem(option)
+            item.setCheckable(True)
+            item.setEditable(False)
+            if option in curr_options:
+                item.setCheckState(Qt.Checked)
+            model.appendRow(item)
+
+        list_view.setModel(model)
+
+        layout.addWidget(list_view)
+
+        def on_ok_button_clicked():
+            checked_list = []
+            for i in range(model.rowCount()):
+                if model.item(i).checkState() == Qt.Checked:
+                    checked_list.append(model.item(i).text())
+
+            if len(checked_list) == 0:
+                is_selected = False
+                checked_list = [DEFAULT_SPECIAL_OPTION_VALUE]
+            else:
+                is_selected = True
+            line_edit.setText("|".join(checked_list))
+            self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, checked_list))
+            dialog.close()
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
+        button_box.accepted.connect(on_ok_button_clicked)
+        button_box.rejected.connect(lambda: dialog.close())
+        button_box.setCenterButtons(True)
+        layout.addWidget(button_box)
+
+        dialog.exec_()
+
+    def on_special_date_parameter_option_button_clicked(self, special_option, line_edit):
+        option_type, option_name = special_option
+        __, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
+
+        dialog = QDialog(self.options_frame)
+        dialog.setWindowTitle(option_name + " options")
+        layout = QVBoxLayout(dialog)
+
+        radio_button_group = QButtonGroup(dialog)
+
+        default_frame = QFrame(dialog)
+        default_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        default_layout = QHBoxLayout(default_frame)
+        default_layout.setContentsMargins(0, 0, 0, 0)
+
+        default_radio_btn = QRadioButton(default_frame)
+        default_radio_btn.setChecked(True)
+        radio_button_group.addButton(default_radio_btn)
+        default_label = QLabel(DEFAULT_SPECIAL_OPTION_VALUE, dialog)
+
+        default_layout.addWidget(default_radio_btn)
+        default_layout.addWidget(default_label)
+
+        single_date_frame = QFrame(dialog)
+        single_date_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        single_date_layout = QHBoxLayout(single_date_frame)
+        single_date_layout.setContentsMargins(0, 0, 0, 0)
+
+        single_date_radio_btn = QRadioButton(single_date_frame)
+        radio_button_group.addButton(single_date_radio_btn)
+        single_date_edit = QDateEdit(QDate.currentDate(), single_date_frame)
+        single_date_edit.setDisplayFormat("yyyy")
+
+        single_date_layout.addWidget(single_date_radio_btn)
+        single_date_layout.addWidget(single_date_edit)
+
+        range_date_frame = QFrame(dialog)
+        range_date_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        range_date_layout = QHBoxLayout(range_date_frame)
+        range_date_layout.setContentsMargins(0, 0, 0, 0)
+
+        range_date_radio_btn = QRadioButton(range_date_frame)
+        radio_button_group.addButton(range_date_radio_btn)
+        begin_date_edit = QDateEdit(QDate.currentDate(), range_date_frame)
+        end_date_edit = QDateEdit(QDate.currentDate(), range_date_frame)
+        begin_date_edit.setDisplayFormat("yyyy")
+        end_date_edit.setDisplayFormat("yyyy")
+        to_label = QLabel(" to ", range_date_frame)
+        to_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        range_date_layout.addWidget(range_date_radio_btn)
+        range_date_layout.addWidget(begin_date_edit)
+        range_date_layout.addWidget(to_label)
+        range_date_layout.addWidget(end_date_edit)
+
+        def on_ok_button_clicked():
+            new_selection = [DEFAULT_SPECIAL_OPTION_VALUE]
+            is_selected = False
+
+            checked_button = radio_button_group.checkedButton()
+            if checked_button == single_date_radio_btn:
+                is_selected = True
+                new_selection = [single_date_edit.date().toString("yyyy")]
+            elif checked_button == range_date_radio_btn:
+                is_selected = True
+                new_selection = [begin_date_edit.date().toString("yyyy") + "-" + end_date_edit.date().toString("yyyy")]
+
+            line_edit.setText(new_selection[0])
+            self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, new_selection))
+            dialog.close()
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
+        button_box.accepted.connect(on_ok_button_clicked)
+        button_box.rejected.connect(lambda: dialog.close())
+        button_box.setCenterButtons(True)
+
+        layout.addWidget(default_frame)
+        layout.addWidget(single_date_frame)
+        layout.addWidget(range_date_frame)
+        layout.addWidget(button_box)
+
+        dialog.exec_()
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1302,28 +1617,30 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
     def fetch_special_data(self):
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.selected_data = []
         selected_report_types = [self.selected_report_type.value]
 
+        self.is_yearly_fetch = False
+        self.save_dir = self.settings.other_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
-                                           self.settings.other_directory, self.settings, self.selected_attributes)
+                                           self.save_dir, self.settings, self.selected_options)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
-            show_message("No vendor selected")
+            GeneralUtils.show_message("No vendor selected")
             return
 
         self.start_progress_dialog("Fetch Special Reports Progress")
@@ -1350,6 +1667,7 @@ class VendorWorker(QObject):
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
         self.request_timeout = request_data.settings.request_timeout
+        self.user_agent = request_data.settings.user_agent
         self.reports_to_process = []
         self.started_processes = 0
         self.completed_processes = 0
@@ -1371,8 +1689,8 @@ class VendorWorker(QObject):
         request_url = self.vendor.base_url
 
         try:
-            # Some vendors only work if they think a web browser is making the request...(JSTOR...)
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            # Some vendors only work if they think a web browser is making the request...
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
@@ -1399,7 +1717,11 @@ class VendorWorker(QObject):
 
         try:
             json_response = response.json()
-            self.check_for_exception(json_response)
+            exceptions = self.check_for_exception(json_response)
+            if len(exceptions) > 0:
+                self.process_result.message = exception_models_to_message(exceptions)
+                self.process_result.completion_status = CompletionStatus.FAILED
+                return
 
             json_dicts = []
             if type(json_response) is dict:  # This should never be a dict by the standard, but some vendors......
@@ -1461,15 +1783,28 @@ class VendorWorker(QObject):
         report_thread.started.connect(report_worker.work)
         report_thread.start()
 
-    def check_for_exception(self, json_response):
+    def check_for_exception(self, json_response) -> list:
+        exceptions = []
+
         if type(json_response) is dict:
             if "Exception" in json_response:
-                exception = ExceptionModel.from_json(json_response["Exception"])
-                raise Exception(f"Code: {exception.code}, Message: {exception.message}")
+                exceptions.append(ExceptionModel.from_json(json_response["Exception"]))
+                # raise Exception(f"Code: {exception.code}, Message: {exception.message}")
 
-            code = int(json_response["Code"]) if "Code" in json_response else None
-            message = json_response["Message"] if "Message" in json_response else None
-            if code is not None: raise Exception(f"Code: {code}, Message: {message}")
+            code = int(json_response["Code"]) if "Code" in json_response else ""
+            message = json_response["Message"] if "Message" in json_response else ""
+            data = json_response["Data"] if "Data" in json_response else ""
+            severity = json_response["Severity"] if "Severity" in json_response else ""
+            if code:
+                exceptions.append(ExceptionModel(code, message, severity, data))
+
+        elif type(json_response) is list:
+            for json_dict in json_response:
+                exception = ExceptionModel.from_json(json_dict)
+                if exception.code:
+                    exceptions.append(exception)
+
+        return exceptions
 
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.vendor.name)
@@ -1509,8 +1844,12 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
+        self.user_agent = request_data.settings.user_agent
         self.save_dir = request_data.save_location
-        self.attributes = request_data.attributes
+        self.special_options = request_data.special_options
+
+        self.is_yearly_dir = self.save_dir == request_data.settings.yearly_directory
+        self.is_special = self.special_options is not None
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
         self.retried_request = False
@@ -1532,25 +1871,39 @@ class ReportWorker(QObject):
         request_query["begin_date"] = self.begin_date.toString("yyyy-MM")
         request_query["end_date"] = self.end_date.toString("yyyy-MM")
 
-        if self.attributes is not None:
-            attributes_str = ""
-            attributes_dict = self.attributes.__dict__
-            count = 0
-            for attribute in attributes_dict.keys():
-                if attributes_dict[attribute] and count == 0:
-                    attributes_str += attribute
-                    count += 1
-                elif attributes_dict[attribute] and count > 0:
-                    attributes_str += f"|{attribute}"
-                    count += 1
+        if self.is_special:
+            attributes_to_show = ""
+            attr_count = 0
+            special_options_dict = self.special_options.__dict__
+            for option in special_options_dict:
+                value = special_options_dict[option]
+                is_selected, option_type, option_name, option_parameters = value
 
-            if attributes_str: request_query["attributes_to_show"] = attributes_str
+                if is_selected:
+                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP\
+                            or option_type == SpecialOptionType.POS:
+                        if option_parameters[0] != DEFAULT_SPECIAL_OPTION_VALUE:
+                            request_query[option] = "|".join(option_parameters)
+
+                    elif option_type == SpecialOptionType.POB:
+                        request_query[option] = "True"
+
+                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP\
+                            or option_type == SpecialOptionType.AO:
+                        if attr_count == 0:
+                            attributes_to_show += option_name
+                            attr_count += 1
+                        elif attr_count > 0:
+                            attributes_to_show += f"|{option_name}"
+                            attr_count += 1
+
+            if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
         request_url = f"{self.vendor.base_url}/{self.report_type.lower()}"
 
         try:
             # Some vendors only work if they think a web browser is making the request...
-            response = requests.get(request_url, request_query, headers={'User-Agent': 'Mozilla/5.0'},
+            response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
             if SHOW_DEBUG_MESSAGES: print(response.url)
             if response.status_code == 200:
@@ -1571,7 +1924,7 @@ class ReportWorker(QObject):
     def process_response(self, response: requests.Response):
         try:
             json_string = response.text
-            self.save_json_file(self.report_type, json_string)
+            if self.is_yearly_dir: self.save_json_file(json_string)
 
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
@@ -1599,7 +1952,7 @@ class ReportWorker(QObject):
             else:
                 self.process_result.message = "Retry later exception received"
                 message = exception_models_to_message(e.exceptions)
-                if message: self.process_result.message += "\n" + message
+                if message: self.process_result.message += "\n\n" + message
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.retry = True
                 if SHOW_DEBUG_MESSAGES: print(
@@ -1607,14 +1960,14 @@ class ReportWorker(QObject):
         except ReportHeaderMissingException as e:
             self.process_result.message = "Report_Header not received, no file was created"
             message = exception_models_to_message(e.exceptions)
-            if message: self.process_result.message += "\n" + message
+            if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Report Header Missing Exception: {e}")
         except UnacceptableCodeException as e:
             self.process_result.message = "Unsupported exception code received"
             message = exception_models_to_message(e.exceptions)
-            if message: self.process_result.message += "\n" + message
+            if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
             if SHOW_DEBUG_MESSAGES: print(
                 f"{self.vendor.name}-{self.report_type}: Unsupported Code Exception: {e}")
@@ -1635,7 +1988,9 @@ class ReportWorker(QObject):
         if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Processing report")
 
         for report_item in report_items:
-            row_dict = {}  # <k = metric_type, v = ReportRow>
+            metric_row_dict = {}  # <k = metric_type, v = ReportRow> Some metric_types have a list of components
+            # Some Item report metric_types have a list of components
+            components = []  # list({component_values_as_dict})
 
             performance: PerformanceModel
             for performance in report_item.performances:
@@ -1644,83 +1999,137 @@ class ReportWorker(QObject):
                 instance: InstanceModel
                 for instance in performance.instances:
                     metric_type = instance.metric_type
-                    if metric_type not in row_dict:
-                        report_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
-                        report_row.metric_type = metric_type
+                    if metric_type not in metric_row_dict:
+                        metric_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
+                        metric_row.metric_type = metric_type
 
-                        if major_report_type == MajorReportType.PLATFORM:
-                            report_item: PlatformReportItemModel
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                        metric_row_dict[metric_type] = metric_row
+                    else:
+                        metric_row = metric_row_dict[metric_type]
 
-                        elif major_report_type == MajorReportType.DATABASE:
-                            report_item: DatabaseReportItemModel
-                            if report_item.database != "": report_row.database = report_item.database
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                    if major_report_type == MajorReportType.PLATFORM:
+                        report_item: PlatformReportItemModel
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.DATABASE:
+                        report_item: DatabaseReportItemModel
+                        if report_item.database: metric_row.database = report_item.database
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
-                            for item_id in report_item.item_ids:
-                                if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
 
-                        elif major_report_type == MajorReportType.TITLE:
-                            report_item: TitleReportItemModel
-                            if report_item.title != "": report_row.title = report_item.title
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.section_type != "": report_row.section_type = report_item.section_type
-                            if report_item.yop != "": report_row.yop = report_item.yop
-                            if report_item.access_type != "": report_row.access_type = report_item.access_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                        for item_id in report_item.item_ids:
+                            if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
 
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.TITLE:
+                        report_item: TitleReportItemModel
+                        if report_item.title: metric_row.title = report_item.title
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.section_type: metric_row.section_type = report_item.section_type
+                        if report_item.yop: metric_row.yop = report_item.yop
+                        if report_item.access_type: metric_row.access_type = report_item.access_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
 
-                            item_id: TypeValueModel
-                            for item_id in report_item.item_ids:
-                                item_type = item_id.item_type
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
 
-                                if item_type == "DOI":
-                                    report_row.doi = item_id.value
-                                elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
-                                elif item_type == "ISBN":
-                                    report_row.isbn = item_id.value
-                                elif item_type == "Print_ISSN":
-                                    report_row.print_issn = item_id.value
-                                elif item_type == "Online_ISSN":
-                                    report_row.online_issn = item_id.value
-                                elif item_type == "Linking_ISSN":
-                                    report_row.linking_issn = item_id.value
-                                elif item_type == "URI":
-                                    report_row.uri = item_id.value
+                        item_id: TypeValueModel
+                        for item_id in report_item.item_ids:
+                            item_type = item_id.item_type
 
-                        elif major_report_type == MajorReportType.ITEM:
-                            report_item: ItemReportItemModel
-                            if report_item.item != "": report_row.item = report_item.item
-                            if report_item.publisher != "": report_row.publisher = report_item.publisher
-                            if report_item.platform != "": report_row.platform = report_item.platform
-                            if report_item.data_type != "": report_row.data_type = report_item.data_type
-                            if report_item.yop != "": report_row.yop = report_item.yop
-                            if report_item.access_type != "": report_row.access_type = report_item.access_type
-                            if report_item.access_method != "": report_row.access_method = report_item.access_method
+                            if item_type == "DOI":
+                                metric_row.doi = item_id.value
+                            elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
+                            elif item_type == "ISBN":
+                                metric_row.isbn = item_id.value
+                            elif item_type == "Print_ISSN":
+                                metric_row.print_issn = item_id.value
+                            elif item_type == "Online_ISSN":
+                                metric_row.online_issn = item_id.value
+                            elif item_type == "Linking_ISSN":
+                                metric_row.linking_issn = item_id.value
+                            elif item_type == "URI":
+                                metric_row.uri = item_id.value
 
-                            # Publisher ID
-                            pub_id_str = ""
-                            for pub_id in report_item.publisher_ids:
-                                pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                            if pub_id_str != "": report_row.publisher_id = pub_id_str
+                    elif major_report_type == MajorReportType.ITEM:
+                        report_item: ItemReportItemModel
+                        if report_item.item: metric_row.item = report_item.item
+                        if report_item.publisher: metric_row.publisher = report_item.publisher
+                        if report_item.platform: metric_row.platform = report_item.platform
+                        if report_item.data_type: metric_row.data_type = report_item.data_type
+                        if report_item.yop: metric_row.yop = report_item.yop
+                        if report_item.access_type: metric_row.access_type = report_item.access_type
+                        if report_item.access_method: metric_row.access_method = report_item.access_method
+
+                        # Publisher ID
+                        pub_id_str = ""
+                        for pub_id in report_item.publisher_ids:
+                            pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
+                        if pub_id_str: metric_row.publisher_id = pub_id_str
+
+                        # Authors
+                        authors_str = ""
+                        item_contributor: ItemContributorModel
+                        for item_contributor in report_item.item_contributors:
+                            if item_contributor.item_type == "Author":
+                                authors_str += f"{item_contributor.name}"
+                                if item_contributor.identifier:
+                                    authors_str += f" ({item_contributor.identifier})"
+                                authors_str += "; "
+                        if authors_str: metric_row.authors = authors_str.rstrip("; ")
+
+                        # Publication date
+                        item_date: TypeValueModel
+                        for item_date in report_item.item_dates:
+                            if item_date.item_type == "Publication_Date":
+                                metric_row.publication_date = item_date.value
+
+                        # Article version
+                        item_attribute: TypeValueModel
+                        for item_attribute in report_item.item_attributes:
+                            if item_attribute.item_type == "Article_Version":
+                                metric_row.article_version = item_attribute.value
+
+                        # Base IDs
+                        item_id: TypeValueModel
+                        for item_id in report_item.item_ids:
+                            item_type = item_id.item_type
+
+                            if item_type == "DOI":
+                                metric_row.doi = item_id.value
+                            elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                                metric_row.proprietary_id = item_id.value
+                            elif item_type == "ISBN":
+                                metric_row.isbn = item_id.value
+                            elif item_type == "Print_ISSN":
+                                metric_row.print_issn = item_id.value
+                            elif item_type == "Online_ISSN":
+                                metric_row.online_issn = item_id.value
+                            elif item_type == "Linking_ISSN":
+                                metric_row.linking_issn = item_id.value
+                            elif item_type == "URI":
+                                metric_row.uri = item_id.value
+
+                        # Parent
+                        if report_item.item_parent is not None:
+                            item_parent: ItemParentModel
+                            item_parent = report_item.item_parent
+                            if item_parent.item_name: metric_row.parent_title = item_parent.item_name
+                            if item_parent.data_type: metric_row.parent_data_type = item_parent.data_type
 
                             # Authors
                             authors_str = ""
@@ -1731,206 +2140,186 @@ class ReportWorker(QObject):
                                     if item_contributor.identifier:
                                         authors_str += f" ({item_contributor.identifier})"
                                     authors_str += "; "
-                            if authors_str != "": report_row.authors = authors_str.rstrip("; ")
+                            authors_str.rstrip("; ")
+                            if authors_str: metric_row.authors = authors_str
 
                             # Publication date
                             item_date: TypeValueModel
-                            for item_date in report_item.item_dates:
-                                if item_date.item_type == "Publication_Date":
-                                    report_row.publication_date = item_date.value
+                            for item_date in item_parent.item_dates:
+                                if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
+                                    metric_row.parent_publication_date = item_date.value
 
                             # Article version
                             item_attribute: TypeValueModel
-                            for item_attribute in report_item.item_attributes:
+                            for item_attribute in item_parent.item_attributes:
                                 if item_attribute.item_type == "Article_Version":
-                                    report_row.article_version = item_attribute.value
+                                    metric_row.parent_article_version = item_attribute.value
 
-                            # Base IDs
+                            # Parent IDs
                             item_id: TypeValueModel
-                            for item_id in report_item.item_ids:
+                            for item_id in item_parent.item_ids:
                                 item_type = item_id.item_type
 
                                 if item_type == "DOI":
-                                    report_row.doi = item_id.value
+                                    metric_row.parent_doi = item_id.value
                                 elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                    report_row.proprietary_id = item_id.value
+                                    metric_row.parent_proprietary_id = item_id.value
                                 elif item_type == "ISBN":
-                                    report_row.isbn = item_id.value
+                                    metric_row.parent_isbn = item_id.value
                                 elif item_type == "Print_ISSN":
-                                    report_row.print_issn = item_id.value
+                                    metric_row.parent_print_issn = item_id.value
                                 elif item_type == "Online_ISSN":
-                                    report_row.online_issn = item_id.value
-                                elif item_type == "Linking_ISSN":
-                                    report_row.linking_issn = item_id.value
+                                    metric_row.parent_online_issn = item_id.value
                                 elif item_type == "URI":
-                                    report_row.uri = item_id.value
+                                    metric_row.parent_uri = item_id.value
 
-                            # Parent
-                            if report_item.item_parent is not None:
-                                item_parent: ItemParentModel
-                                item_parent = report_item.item_parent
-                                if item_parent.item_name != "": report_row.parent_title = item_parent.item_name
-                                if item_parent.data_type != "": report_row.parent_data_type = item_parent.data_type
+                    else:
+                        if SHOW_DEBUG_MESSAGES: print(
+                            f"{self.vendor.name}-{self.report_type}: Unexpected report type")
 
-                                # Authors
-                                authors_str = ""
-                                item_contributor: ItemContributorModel
-                                for item_contributor in report_item.item_contributors:
-                                    if item_contributor.item_type == "Author":
-                                        authors_str += f"{item_contributor.name}"
-                                        if item_contributor.identifier:
-                                            authors_str += f" ({item_contributor.identifier})"
-                                        authors_str += "; "
-                                authors_str.rstrip("; ")
-                                if authors_str != "": report_row.authors = authors_str
-
-                                # Publication date
-                                item_date: TypeValueModel
-                                for item_date in item_parent.item_dates:
-                                    if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
-                                        report_row.parent_publication_date = item_date.value
-
-                                # Article version
-                                item_attribute: TypeValueModel
-                                for item_attribute in item_parent.item_attributes:
-                                    if item_attribute.item_type == "Article_Version":
-                                        report_row.parent_article_version = item_attribute.value
-
-                                # Parent IDs
-                                item_id: TypeValueModel
-                                for item_id in item_parent.item_ids:
-                                    item_type = item_id.item_type
-
-                                    if item_type == "DOI":
-                                        report_row.parent_doi = item_id.value
-                                    elif item_type == "Proprietary" or item_type == "Proprietary_ID":
-                                        report_row.parent_proprietary_id = item_id.value
-                                    elif item_type == "ISBN":
-                                        report_row.parent_isbn = item_id.value
-                                    elif item_type == "Print_ISSN":
-                                        report_row.parent_print_issn = item_id.value
-                                    elif item_type == "Online_ISSN":
-                                        report_row.parent_online_issn = item_id.value
-                                    elif item_type == "URI":
-                                        report_row.parent_uri = item_id.value
-
-                        else:
-                            if SHOW_DEBUG_MESSAGES: print(
-                                f"Unexpected report type while processing instance of {report_type} for {self.vendor.name}")
-
-                        row_dict[metric_type] = report_row
-
-                    month_counts = row_dict[metric_type].month_counts
+                    month_counts = metric_row.month_counts
                     month_counts[begin_month] += instance.count
 
-                    row_dict[metric_type].total_count += instance.count
+                    metric_row.total_count += instance.count
 
-            for row in row_dict.values():
-                report_rows.append(row)
+            if major_report_type == MajorReportType.ITEM:
+                # Item Components
+                item_component: ItemComponentModel
+                for item_component in report_item.item_components:
+                    component_dict = {
+                        "component_title": self.empty_cell,
+                        "component_authors": self.empty_cell,
+                        "component_publication_date": self.empty_cell,
+                        "component_data_type": self.empty_cell,
+                        "component_doi": self.empty_cell,
+                        "component_proprietary_id": self.empty_cell,
+                        "component_isbn": self.empty_cell,
+                        "component_print_issn": self.empty_cell,
+                        "component_online_issn": self.empty_cell,
+                        "component_uri": ""
+                    }
 
-        self.merge_sort(report_rows, major_report_type)
-        self.save_tsv_file(report_model.report_header, report_rows)
+                    if item_component.item_name: component_dict["component_title"] = item_component.item_name
+                    if item_component.data_type: component_dict["component_data_type"] = item_component.data_type
 
-    def merge_sort(self, report_rows: list, major_report_type: MajorReportType):
-        n = len(report_rows)
-        if n < 2:
-            return
+                    # Authors
+                    authors_str = ""
+                    item_contributor: ItemContributorModel
+                    for item_contributor in item_component.item_contributors:
+                        if item_contributor.item_type == "Author":
+                            authors_str += f"{item_contributor.name}"
+                            if item_contributor.identifier:
+                                authors_str += f" ({item_contributor.identifier})"
+                            authors_str += "; "
+                    authors_str.rstrip("; ")
+                    if authors_str: component_dict["component_authors"] = authors_str
 
-        mid = n // 2
-        left = []
-        right = []
+                    # Publication date
+                    item_date: TypeValueModel
+                    for item_date in item_component.item_dates:
+                        if item_date.item_type == "Publication_Date" or item_date.item_type == "Pub_Date":
+                            component_dict["component_publication_date"] = item_date.value
 
-        for i in range(mid):
-            number = report_rows[i]
-            left.append(number)
+                    # Component IDs
+                    item_id: TypeValueModel
+                    for item_id in item_component.item_ids:
+                        item_type = item_id.item_type
 
-        for i in range(mid, n):
-            number = report_rows[i]
-            right.append(number)
+                        if item_type == "DOI":
+                            component_dict["component_doi"] = item_id.value
+                        elif item_type == "Proprietary" or item_type == "Proprietary_ID":
+                            component_dict["component_proprietary_id"] = item_id.value
+                        elif item_type == "ISBN":
+                            component_dict["component_isbn"] = item_id.value
+                        elif item_type == "Print_ISSN":
+                            component_dict["component_print_issn"] = item_id.value
+                        elif item_type == "Online_ISSN":
+                            component_dict["component_online_issn"] = item_id.value
+                        elif item_type == "URI":
+                            component_dict["component_uri"] = item_id.value
 
-        self.merge_sort(left, major_report_type)
-        self.merge_sort(right, major_report_type)
+                    components.append(component_dict)
 
-        self.merge(left, right, report_rows, major_report_type)
+            for metric_type in metric_row_dict:
+                metric_row = metric_row_dict[metric_type]
 
-    def merge(self, left, right, report_rows, major_report_type: MajorReportType):
-        i = 0
-        j = 0
-        k = 0
-
-        if major_report_type == MajorReportType.PLATFORM:
-            while i < len(left) and j < len(right):
-                if left[i].platform.lower() < right[j].platform.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
-        elif major_report_type == MajorReportType.DATABASE:
-            while i < len(left) and j < len(right):
-                if left[i].database.lower() < right[j].database.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
-
-                k = k + 1
-        elif major_report_type == MajorReportType.TITLE:
-            while i < len(left) and j < len(right):
-                if left[i].title.lower() < right[j].title.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                elif left[i].title.lower() == right[j].title.lower():
-                    if left[i].yop < right[j].yop:
-                        report_rows[k] = left[i]
-                        i = i + 1
+                if major_report_type == MajorReportType.ITEM:
+                    if len(components) > 0 and \
+                            (metric_type == "Total_Item_Investigations" or metric_type == "Total_Item_Requests"):
+                        for component in components:
+                            row = copy.copy(metric_row)
+                            row.component_title = component["component_title"]
+                            row.component_authors = component["component_authors"]
+                            row.component_publication_date = component["component_publication_date"]
+                            row.component_data_type = component["component_data_type"]
+                            row.component_doi = component["component_doi"]
+                            row.component_proprietary_id = component["component_proprietary_id"]
+                            row.component_isbn = component["component_isbn"]
+                            row.component_print_issn = component["component_print_issn"]
+                            row.component_online_issn = component["component_online_issn"]
+                            row.component_uri = component["component_uri"]
+                            report_rows.append(row)
                     else:
-                        report_rows[k] = right[j]
-                        j = j + 1
+                        report_rows.append(metric_row)
                 else:
-                    report_rows[k] = right[j]
-                    j = j + 1
+                    report_rows.append(metric_row)
 
-                k = k + 1
+        report_rows = self.sort_rows(report_rows, major_report_type)
+        self.save_tsv_files(report_model.report_header, report_rows)
+
+    def sort_rows(self, report_rows: list, major_report_type: MajorReportType) -> list:
+        if major_report_type == MajorReportType.PLATFORM:
+            return sorted(report_rows, key=lambda row: row.platform.lower())
+        elif major_report_type == MajorReportType.DATABASE:
+            return sorted(report_rows, key=lambda row: row.database.lower())
+        elif major_report_type == MajorReportType.TITLE:
+            return sorted(report_rows, key=lambda row: (row.title.lower(), row.yop))
         elif major_report_type == MajorReportType.ITEM:
-            while i < len(left) and j < len(right):
-                if left[i].item.lower() < right[j].item.lower():
-                    report_rows[k] = left[i]
-                    i = i + 1
-                else:
-                    report_rows[k] = right[j]
-                    j = j + 1
+            return sorted(report_rows, key=lambda row: row.item.lower())
 
-                k = k + 1
-
-        while i < len(left):
-            report_rows[k] = left[i]
-            i = i + 1
-            k = k + 1
-
-        while j < len(right):
-            report_rows[k] = right[j]
-            j = j + 1
-            k = k + 1
-
-    def save_tsv_file(self, report_header, report_rows: list):
+    def save_tsv_files(self, report_header, report_rows: list):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
-        file_path = f"{file_dir}{file_name}"
+        if self.is_yearly_dir:
+            file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        else:
+            file_dir = self.save_dir
+            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
 
+        # Save user tsv file
         if not path.isdir(file_dir):
             makedirs(file_dir)
 
+        file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
+        self.add_report_header_to_file(report_header, file)
 
-        # region Report Header
+        if not self.add_report_rows_to_file(report_type, report_rows, file):
+            self.process_result.completion_status = CompletionStatus.WARNING
 
+        file.close()
+        self.process_result.file_name = file_name
+        self.process_result.file_dir = file_dir
+        self.process_result.file_path = file_path
+        self.process_result.year = self.begin_date.toString('yyyy')
+
+        # Save protected tsv file
+        if self.is_yearly_dir:
+            protected_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            if not path.isdir(protected_file_dir):
+                makedirs(protected_file_dir)
+                if platform.system() == "Windows":
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
+
+            protected_file_path = f"{protected_file_dir}{file_name}"
+            protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
+            self.add_report_header_to_file(report_header, protected_file)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file)
+            protected_file.close()
+
+    def add_report_header_to_file(self, report_header: ReportHeaderModel, file):
         tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
         tsv_writer.writerow(["Report_ID", report_header.report_id])
@@ -1970,30 +2359,32 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-        # endregion
-
-        # region Report Body
-
+    def add_report_rows_to_file(self, report_type: str, report_rows: list, file) -> bool:
         column_names = []
         row_dicts = []
 
         if report_type == "PR":
             column_names += ["Platform"]
-            if self.attributes:
-                if self.attributes.data_type: column_names.append("Data_Type")
-                if self.attributes.access_method: column_names.append("Access_Method")
+            if self.is_special:
+                special_options_dict = self.special_options.__dict__
+                if special_options_dict["data_type"][0]: column_names.append("Data_Type")
+                if special_options_dict["access_method"][0]: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
                 row_dict = {"Platform": row.platform}
-                if self.attributes:
-                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
-                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+                if self.is_special:
+                    special_options_dict = self.special_options.__dict__
+                    if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
+                    if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
+
+                    if not special_options_dict["exclude_monthly_details"][0]:
+                        row_dict.update(row.month_counts)
+                else:
+                    row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
                                  "Reporting_Period_Total": row.total_count})
-                row_dict.update(row.month_counts)
-
                 row_dicts.append(row_dict)
 
         elif report_type == "PR_P1":
@@ -2010,9 +2401,10 @@ class ReportWorker(QObject):
 
         elif report_type == "DR":
             column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Proprietary_ID"]
-            if self.attributes:
-                if self.attributes.data_type: column_names.append("Data_Type")
-                if self.attributes.access_method: column_names.append("Access_Method")
+            if self.is_special:
+                special_options_dict = self.special_options.__dict__
+                if special_options_dict["data_type"][0]: column_names.append("Data_Type")
+                if special_options_dict["access_method"][0]: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2022,14 +2414,18 @@ class ReportWorker(QObject):
                             "Platform": row.platform,
                             "Proprietary_ID": row.proprietary_id}
 
-                if self.attributes:
-                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
-                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+                if self.is_special:
+                    special_options_dict = self.special_options.__dict__
+                    if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
+                    if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
+
+                    if not special_options_dict["exclude_monthly_details"][0]:
+                        row_dict.update(row.month_counts)
+                else:
+                    row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
                                  "Reporting_Period_Total": row.total_count})
-                row_dict.update(row.month_counts)
-
                 row_dicts.append(row_dict)
 
         elif report_type == "DR_D1" or report_type == "DR_D2":
@@ -2051,12 +2447,13 @@ class ReportWorker(QObject):
         elif report_type == "TR":
             column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
                              "Print_ISSN", "Online_ISSN", "URI"]
-            if self.attributes:
-                if self.attributes.data_type: column_names.append("Data_Type")
-                if self.attributes.section_type: column_names.append("Section_Type")
-                if self.attributes.yop: column_names.append("YOP")
-                if self.attributes.access_type: column_names.append("Access_Type")
-                if self.attributes.access_method: column_names.append("Access_Method")
+            if self.is_special:
+                special_options_dict = self.special_options.__dict__
+                if special_options_dict["data_type"][0]: column_names.append("Data_Type")
+                if special_options_dict["section_type"][0]: column_names.append("Section_Type")
+                if special_options_dict["yop"][0]: column_names.append("YOP")
+                if special_options_dict["access_type"][0]: column_names.append("Access_Type")
+                if special_options_dict["access_method"][0]: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2071,17 +2468,21 @@ class ReportWorker(QObject):
                             "Online_ISSN": row.online_issn,
                             "URI": row.uri}
 
-                if self.attributes:
-                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
-                    if self.attributes.section_type: row_dict["Section_Type"] = row.section_type
-                    if self.attributes.yop: row_dict["YOP"] = row.yop
-                    if self.attributes.access_type: row_dict["Access_Type"] = row.access_type
-                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+                if self.is_special:
+                    special_options_dict = self.special_options.__dict__
+                    if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
+                    if special_options_dict["section_type"][0]: row_dict["Section_Type"] = row.section_type
+                    if special_options_dict["yop"][0]: row_dict["YOP"] = row.yop
+                    if special_options_dict["access_type"][0]: row_dict["Access_Type"] = row.access_type
+                    if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
+
+                    if not special_options_dict["exclude_monthly_details"][0]:
+                        row_dict.update(row.month_counts)
+                else:
+                    row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
                                  "Reporting_Period_Total": row.total_count})
-                row_dict.update(row.month_counts)
-
                 row_dicts.append(row_dict)
 
         elif report_type == "TR_B1" or report_type == "TR_B2":
@@ -2198,21 +2599,27 @@ class ReportWorker(QObject):
 
         elif report_type == "IR":
             column_names += ["Item", "Publisher", "Publisher_ID", "Platform"]
-            if self.attributes:
-                if self.attributes.authors: column_names.append("Authors")
-                if self.attributes.publication_date: column_names.append("Publication_Date")
-                if self.attributes.article_version: column_names.append("Article_version")
+            if self.is_special:
+                special_options_dict = self.special_options.__dict__
+                if special_options_dict["authors"][0]: column_names.append("Authors")
+                if special_options_dict["publication_date"][0]: column_names.append("Publication_Date")
+                if special_options_dict["article_version"][0]: column_names.append("Article_version")
             column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
-            if self.attributes:
-                if self.attributes.include_parent_details:
+            if self.is_special:
+                special_options_dict = self.special_options.__dict__
+                if special_options_dict["include_parent_details"][0]:
                     column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
                                      "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
                                      "Parent_Proprietary_ID", "Parent_ISBN", "Parent_Print_ISSN", "Parent_Online_ISSN",
                                      "Parent_URI"]
-                if self.attributes.data_type: column_names.append("Data_Type")
-                if self.attributes.yop: column_names.append("YOP")
-                if self.attributes.access_type: column_names.append("Access_Type")
-                if self.attributes.access_method: column_names.append("Access_Method")
+                if special_options_dict["include_component_details"][0]:
+                    column_names += ["Component_Title", "Component_Authors", "Component_Publication_Date",
+                                     "Component_Data_Type", "Component_DOI", "Component_Proprietary_ID",
+                                     "Component_ISBN", "Component_Print_ISSN", "Component_Online_ISSN", "Component_URI"]
+                if special_options_dict["data_type"][0]: column_names.append("Data_Type")
+                if special_options_dict["yop"][0]: column_names.append("YOP")
+                if special_options_dict["access_type"][0]: column_names.append("Access_Type")
+                if special_options_dict["access_method"][0]: column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2227,31 +2634,46 @@ class ReportWorker(QObject):
                             "Online_ISSN": row.online_issn,
                             "URI": row.uri}
 
-                if self.attributes:
-                    if self.attributes.authors: row_dict["Authors"] = row.authors
-                    if self.attributes.publication_date: row_dict["Publication_Date"] = row.publication_date
-                    if self.attributes.article_version: row_dict["Article_version"] = row.article_version
-                    if self.attributes.include_parent_details:
+                if self.is_special:
+                    special_options_dict = self.special_options.__dict__
+                    if special_options_dict["authors"][0]: row_dict["Authors"] = row.authors
+                    if special_options_dict["publication_date"][0]: row_dict["Publication_Date"] = row.publication_date
+                    if special_options_dict["article_version"][0]: row_dict["Article_version"] = row.article_version
+                    if special_options_dict["include_parent_details"][0]:
                         row_dict.update({"Parent_Title": row.parent_title,
                                          "Parent_Authors": row.parent_authors,
                                          "Parent_Publication_Date": row.parent_publication_date,
                                          "Parent_Article_Version": row.parent_article_version,
-                                         "Parent_Data_Type": row.uri,
+                                         "Parent_Data_Type": row.parent_data_type,
                                          "Parent_DOI": row.parent_doi,
                                          "Parent_Proprietary_ID": row.parent_proprietary_id,
                                          "Parent_ISBN": row.parent_isbn,
                                          "Parent_Print_ISSN": row.parent_print_issn,
                                          "Parent_Online_ISSN": row.parent_online_issn,
                                          "Parent_URI": row.parent_uri})
-                    if self.attributes.data_type: row_dict["Data_Type"] = row.data_type
-                    if self.attributes.yop: row_dict["YOP"] = row.yop
-                    if self.attributes.access_type: row_dict["Access_Type"] = row.access_type
-                    if self.attributes.access_method: row_dict["Access_Method"] = row.access_method
+                    if special_options_dict["include_component_details"][0]:
+                        row_dict.update({"Component_Title": row.component_title,
+                                         "Component_Authors": row.component_authors,
+                                         "Component_Publication_Date": row.component_publication_date,
+                                         "Component_Data_Type": row.component_data_type,
+                                         "Component_DOI": row.component_doi,
+                                         "Component_Proprietary_ID": row.component_proprietary_id,
+                                         "Component_ISBN": row.component_isbn,
+                                         "Component_Print_ISSN": row.component_print_issn,
+                                         "Component_Online_ISSN": row.component_online_issn,
+                                         "Component_URI": row.component_uri})
+                    if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
+                    if special_options_dict["yop"][0]: row_dict["YOP"] = row.yop
+                    if special_options_dict["access_type"][0]: row_dict["Access_Type"] = row.access_type
+                    if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
+
+                    if not special_options_dict["exclude_monthly_details"][0]:
+                        row_dict.update(row.month_counts)
+                else:
+                    row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
                                  "Reporting_Period_Total": row.total_count})
-                row_dict.update(row.month_counts)
-
                 row_dicts.append(row_dict)
 
         elif report_type == "IR_A1":
@@ -2309,30 +2731,26 @@ class ReportWorker(QObject):
                 row_dicts.append(row_dict)
 
         column_names += ["Metric_Type", "Reporting_Period_Total"]
-        column_names += get_month_years(self.begin_date, self.end_date)
+
+        if self.is_special:
+            special_options_dict = self.special_options.__dict__
+            if not special_options_dict["exclude_monthly_details"][0]:
+                column_names += get_month_years(self.begin_date, self.end_date)
+        else:
+            column_names += get_month_years(self.begin_date, self.end_date)
+
         tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
 
         if len(row_dicts) == 0:
-            file.close()
-            self.process_result.completion_status = CompletionStatus.WARNING
-            self.process_result.file_name = file_name
-            self.process_result.file_dir = file_dir
-            self.process_result.file_path = file_path
-            return
+            return False
 
         tsv_dict_writer.writerows(row_dicts)
+        return True
 
-        # endregion
-
-        file.close()
-        self.process_result.file_name = file_name
-        self.process_result.file_dir = file_dir
-        self.process_result.file_path = file_path
-
-    def save_json_file(self, report_type: str, json_string: str):
-        file_dir = f"{self.save_dir}json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.json"
+    def save_json_file(self, json_string: str):
+        file_dir = f"{PROTECTED_DIR}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{self.report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
         if not path.isdir(file_dir):

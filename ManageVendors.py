@@ -4,17 +4,17 @@ import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-from ui import MainWindow, AddVendorDialog, MessageDialog, RemoveVendorDialog
-import DataStorage
-import webbrowser
-from JsonUtils import JsonModel
+from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
+import ManageDB
+import GeneralUtils
+from GeneralUtils import JsonModel
+from VariableConstants import *
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
 VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
 
 EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
-help_site = "https://github.com/CS-4820-Library-Project/Libly/wiki"
 
 
 class Vendor(JsonModel):
@@ -48,56 +48,50 @@ class Vendor(JsonModel):
 class ManageVendorsController(QObject):
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, main_window_ui: MainWindow.Ui_mainWindow):
+    def __init__(self, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
         super().__init__()
         self.selected_index = -1
 
-        self.edit_vendor_details_frame = main_window_ui.edit_vendor_details_frame
-        self.edit_vendor_options_frame = main_window_ui.edit_vendor_options_frame
+        self.edit_vendor_details_frame = manage_vendors_ui.edit_vendor_details_frame
+        self.edit_vendor_options_frame = manage_vendors_ui.edit_vendor_options_frame
 
-        self.name_line_edit = main_window_ui.nameEdit
-        self.customer_id_line_edit = main_window_ui.customerIdEdit
-        self.base_url_line_edit = main_window_ui.baseUrlEdit
-        self.requestor_id_line_edit = main_window_ui.requestorIdEdit
-        self.api_key_line_edit = main_window_ui.apiKeyEdit
-        self.platform_line_edit = main_window_ui.platformEdit
-        self.local_only_check_box = main_window_ui.local_only_check_box
-        self.description_text_edit = main_window_ui.descriptionEdit
-        self.companies_text_edit = main_window_ui.companiesEdit
+        self.name_line_edit = manage_vendors_ui.nameEdit
+        self.customer_id_line_edit = manage_vendors_ui.customerIdEdit
+        self.base_url_line_edit = manage_vendors_ui.baseUrlEdit
+        self.requestor_id_line_edit = manage_vendors_ui.requestorIdEdit
+        self.api_key_line_edit = manage_vendors_ui.apiKeyEdit
+        self.platform_line_edit = manage_vendors_ui.platformEdit
+        self.local_only_check_box = manage_vendors_ui.local_only_check_box
+        self.description_text_edit = manage_vendors_ui.descriptionEdit
+        self.companies_text_edit = manage_vendors_ui.companiesEdit
 
-        self.name_validation_label = main_window_ui.name_validation_label
+        self.name_validation_label = manage_vendors_ui.name_validation_label
         self.name_validation_label.hide()
-        self.url_validation_label = main_window_ui.url_validation_label
+        self.url_validation_label = manage_vendors_ui.url_validation_label
         self.url_validation_label.hide()
 
-        self.help_button = main_window_ui.helpButton
-        self.save_vendor_changes_button = main_window_ui.saveVendorChangesButton
-        self.undo_vendor_changes_button = main_window_ui.undoVendorChangesButton
-        self.remove_vendor_button = main_window_ui.removeVendorButton
-        self.add_vendor_button = main_window_ui.addVendorButton
-        self.export_vendors_button = main_window_ui.exportVendorsButton
-        # TODO(Ziheng): add export_vendors_button
-        self.import_vendors_button = main_window_ui.importVendorsButton
-        # TODO(Ziheng): add import_vendors_button
+        self.save_vendor_changes_button = manage_vendors_ui.saveVendorChangesButton
+        self.undo_vendor_changes_button = manage_vendors_ui.undoVendorChangesButton
+        self.remove_vendor_button = manage_vendors_ui.removeVendorButton
+        self.add_vendor_button = manage_vendors_ui.addVendorButton
+        self.export_vendors_button = manage_vendors_ui.exportVendorsButton
+        self.import_vendors_button = manage_vendors_ui.importVendorsButton
 
-        self.help_button.clicked.connect(self.help_method)
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
-        self.export_vendors_button.clicked.connect(self.open_custom_folder_select_dialog)
-        # TODO(Ziheng): add connection to dialog for export_vendors_button to export dir path
-        self.import_vendors_button.clicked.connect(self.open_file_select_dialog)
-        # TODO(Ziheng): add connection to dialog for import_vendors_button to import file
+        self.export_vendors_button.clicked.connect(self.on_export_vendors_clicked)
+        self.import_vendors_button.clicked.connect(self.on_import_vendors_clicked)
 
-        self.vendor_list_view = main_window_ui.vendorsListView
+        self.vendor_list_view = manage_vendors_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
 
         self.vendors = []
         self.vendor_names = set()  # Hash set for faster operations
-        vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_PATH)
+        vendors_json_string = GeneralUtils.read_json_file(VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
             vendor = Vendor.from_json(json_dict)
@@ -195,14 +189,14 @@ class ManageVendorsController(QObject):
         original_name = selected_vendor.name
         is_valid, message = self.validate_new_name(new_name, original_name)
         if not is_valid:
-            self.show_message(message)
+            GeneralUtils.show_message(message)
             return
 
         if not self.local_only_check_box.isChecked():
             url = self.base_url_line_edit.text()
             is_valid, message = self.validate_url(url)
             if not is_valid:
-                self.show_message(message)
+                GeneralUtils.show_message(message)
                 return
 
         # Apply Changes
@@ -220,7 +214,13 @@ class ManageVendorsController(QObject):
         self.update_vendor_names()
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
-        self.show_message("Changes Saved!")
+
+        if original_name != new_name:
+            ManageDB.update_vendor_in_all_tables(original_name, new_name)
+            for report_type in REPORT_TYPE_SWITCHER.keys():
+                ManageDB.backup_costs_data(report_type)
+
+        GeneralUtils.show_message("Changes Saved!")
 
     def open_add_vendor_dialog(self):
         vendor_dialog = QDialog()
@@ -268,7 +268,7 @@ class ManageVendorsController(QObject):
                 self.save_all_vendors_to_disk()
                 vendor_dialog.close()
             else:
-                self.show_message(message)
+                GeneralUtils.show_message(message)
 
         button_box = vendor_dialog_ui.buttonBox
         ok_button = button_box.button(QDialogButtonBox.Ok)
@@ -278,21 +278,17 @@ class ManageVendorsController(QObject):
 
         vendor_dialog.exec_()
 
-    def open_file_select_dialog(self):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        if dialog.exec_():
-            selected_file_path = dialog.selectedFiles()[0]
-            self.import_vendors_tsv(selected_file_path)
-            self.show_message(f"Import successful!")
+    def on_import_vendors_clicked(self):
+        file_path = GeneralUtils.choose_file("All TSV files (*.tsv)")
+        if file_path:
+            self.import_vendors_tsv(file_path)
+            GeneralUtils.show_message(f"Import successful!")
 
-    def open_custom_folder_select_dialog(self):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
-            self.export_vendors_tsv(directory)
-            self.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
+    def on_export_vendors_clicked(self):
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path:
+            self.export_vendors_tsv(dir_path)
+            GeneralUtils.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
 
     def populate_edit_vendor_view(self):
         if self.selected_index >= 0:
@@ -367,17 +363,7 @@ class ManageVendorsController(QObject):
 
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
-        DataStorage.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
-
-    def show_message(self, message: str):
-        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = MessageDialog.Ui_message_dialog()
-        message_dialog_ui.setupUi(message_dialog)
-
-        message_label = message_dialog_ui.message_label
-        message_label.setText(message)
-
-        message_dialog.exec_()
+        GeneralUtils.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
 
     def sort_vendors(self):
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
@@ -440,7 +426,4 @@ class ManageVendorsController(QObject):
 
         except Exception as e:
             print(f"File export failed: {e}")
-
-    def help_method(self):
-        webbrowser.open(help_site, 2, True)
 
