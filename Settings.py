@@ -1,8 +1,7 @@
 import json
 from enum import Enum
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFileDialog, QWidget
-from ui import SettingsTab, MessageDialog
+from PyQt5.QtWidgets import QFileDialog, QWidget
+from ui import SettingsTab
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
@@ -69,17 +68,6 @@ class SettingsModel(JsonModel):
                    concurrent_reports, empty_cell, user_agent)
 
 
-def show_message(message: str):
-    message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-    message_dialog_ui = MessageDialog.Ui_message_dialog()
-    message_dialog_ui.setupUi(message_dialog)
-
-    message_label = message_dialog_ui.message_label
-    message_label.setText(message)
-
-    message_dialog.exec_()
-
-
 class SettingsController:
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
@@ -111,21 +99,21 @@ class SettingsController:
 
         # region Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
-            lambda: show_message("This is where yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
         settings_ui.other_directory_help_button.clicked.connect(
-            lambda: show_message("This is where special and non-yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where special and non-yearly files will be saved by default"))
         settings_ui.request_interval_help_button.clicked.connect(
-            lambda: show_message("The amount of time to wait between a vendor's report requests"))
+            lambda: GeneralUtils.show_message("The amount of time to wait between a vendor's report requests"))
         settings_ui.request_timeout_help_button.clicked.connect(
-            lambda: show_message("The amount of time to wait before cancelling a request"))
+            lambda: GeneralUtils.show_message("The amount of time to wait before cancelling a request"))
         settings_ui.concurrent_vendors_help_button.clicked.connect(
-            lambda: show_message("The maximum number of vendors to work on at the same time"))
+            lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time"))
         settings_ui.concurrent_reports_help_button.clicked.connect(
-            lambda: show_message("The maximum number of reports to work on at the same time, per vendor"))
+            lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time, per vendor"))
         settings_ui.empty_cell_help_button.clicked.connect(
-            lambda: show_message("Empty cells will be replaced by whatever is in here"))
+            lambda: GeneralUtils.show_message("Empty cells will be replaced by whatever is in here"))
         settings_ui.user_agent_help_button.clicked.connect(
-            lambda: show_message("Some vendors only support specific user-agents otherwise, they return error HTTP "
+            lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return error HTTP "
                                  "error codes. Values should be separated by a space"))
         # endregion
 
@@ -150,7 +138,7 @@ class SettingsController:
     def on_save_button_clicked(self):
         self.update_settings()
         self.save_settings_to_disk()
-        show_message("Changes saved!")
+        GeneralUtils.show_message("Changes saved!")
 
     def update_settings(self):
         self.settings.yearly_directory = self.yearly_dir_edit.text()
