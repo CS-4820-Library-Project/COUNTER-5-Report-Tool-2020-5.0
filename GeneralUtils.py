@@ -52,11 +52,14 @@ def open_file_or_dir(target_path: str):
 
 
 def choose_file(name_filter: str) -> str:
+    file_path = ""
     dialog = QFileDialog()
     dialog.setFileMode(QFileDialog.ExistingFile)
     dialog.setNameFilter(name_filter)
     if dialog.exec_():
-        return dialog.selectedFiles()[0]
+        file_path = dialog.selectedFiles()[0]
+
+    return file_path
 
 
 def open_in_browser(url: str):

@@ -82,7 +82,7 @@ class ManageVendorsController(QObject):
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
         self.export_vendors_button.clicked.connect(self.open_custom_folder_select_dialog)
-        self.import_vendors_button.clicked.connect(self.open_file_select_dialog)
+        self.import_vendors_button.clicked.connect(self.on_import_vendors_clicked)
 
         self.vendor_list_view = manage_vendors_ui.vendorsListView
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
@@ -278,13 +278,10 @@ class ManageVendorsController(QObject):
 
         vendor_dialog.exec_()
 
-    def open_file_select_dialog(self):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilter("All TSV files (*.tsv)")
-        if dialog.exec_():
-            selected_file_path = dialog.selectedFiles()[0]
-            self.import_vendors_tsv(selected_file_path)
+    def on_import_vendors_clicked(self):
+        file_path = GeneralUtils.choose_file("All TSV files (*.tsv)")
+        if file_path:
+            self.import_vendors_tsv(file_path)
             GeneralUtils.show_message(f"Import successful!")
 
     def open_custom_folder_select_dialog(self):
@@ -369,16 +366,6 @@ class ManageVendorsController(QObject):
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
         GeneralUtils.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
-
-    # def show_message(self, message: str):
-    #     message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-    #     message_dialog_ui = MessageDialog.Ui_message_dialog()
-    #     message_dialog_ui.setupUi(message_dialog)
-    #
-    #     message_label = message_dialog_ui.message_label
-    #     message_label.setText(message)
-    #
-    #     message_dialog.exec_()
 
     def sort_vendors(self):
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
