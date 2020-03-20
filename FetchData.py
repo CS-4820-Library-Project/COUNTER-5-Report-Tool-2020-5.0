@@ -1159,7 +1159,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
-        self.custom_dir_button.clicked.connect(lambda: self.update_custom_dir(self.open_dir_select_dialog()))
+        self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
 
         # endregion
 
@@ -1308,16 +1308,9 @@ class FetchReportsController(FetchReportsAbstract):
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-    def open_dir_select_dialog(self) -> str:
-        directory = ""
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
-        return directory
-
-    def update_custom_dir(self, directory: str):
-        if directory: self.custom_dir_edit.setText(directory)
+    def on_custom_dir_clicked(self):
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path: self.custom_dir_edit.setText(dir_path)
 
 
 class FetchSpecialReportsController(FetchReportsAbstract):
