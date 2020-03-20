@@ -200,11 +200,13 @@ class ImportReportController:
             report_result_ui.retry_frame.hide()
 
             report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
-            report_result_ui.file_label.mousePressEvent = lambda event: self.open_explorer(process_result.file_path)
+            report_result_ui.file_label.mousePressEvent = \
+                lambda event: GeneralUtils.open_file_or_dir(process_result.file_path)
 
             folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
             report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
-            report_result_ui.folder_button.clicked.connect(lambda: self.open_explorer(process_result.file_dir))
+            report_result_ui.folder_button.clicked.connect(
+                lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 
             report_result_ui.success_label.setText("Successful!")
             report_result_ui.retry_frame.hide()
@@ -217,14 +219,5 @@ class ImportReportController:
 
         vertical_layout.addWidget(report_result_widget)
         self.result_dialog.show()
-
-    def open_explorer(self, file_path: str):
-        if path.exists(file_path):
-            if(platform.system()=="Windows"):
-                webbrowser.open(path.realpath(file_path))
-            elif(platform.system()=="Darwin"):
-                system("open " + shlex.quote(file_path))
-        else:
-            GeneralUtils.show_message(f"\'{file_path}\' does not exist")
 
 

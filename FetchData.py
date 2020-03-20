@@ -1051,15 +1051,6 @@ class FetchReportsAbstract:
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
-    # def open_explorer(self, file_path: str):
-    #     if path.exists(file_path):
-    #         if(platform.system()=="Darwin"):
-    #             system("open " + shlex.quote(file_path))
-    #         else:
-    #             webbrowser.open_new_tab(path.realpath(file_path))
-    #     else:
-    #         GeneralUtils.show_message(f"\'{file_path}\' does not exist")
-
     def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
         current_date = QDate.currentDate()
 
