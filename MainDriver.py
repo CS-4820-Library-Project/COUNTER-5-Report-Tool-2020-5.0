@@ -1,5 +1,4 @@
 import sys
-import webbrowser
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
 from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
@@ -11,13 +10,10 @@ from Costs import CostsController
 from Search import SearchController
 from Settings import SettingsController
 from Visual import VisualController
+import GeneralUtils
 import ManageDB
 
 HELP_SITE = "https://github.com/CS-4820-Library-Project/Libly/wiki"
-
-
-def open_help():
-    webbrowser.open_new_tab(HELP_SITE)
 
 
 # region debug_stuff
@@ -124,7 +120,7 @@ if __name__ == "__main__":
     help_frame_layout.setContentsMargins(-1, 2, -1, 5)
     help_frame.setLayout(help_frame_layout)
     help_button = QPushButton("Help", help_frame)
-    help_button.clicked.connect(open_help)
+    help_button.clicked.connect(lambda: GeneralUtils.open_in_browser(HELP_SITE))
     help_frame_layout.addWidget(help_button)
 
     status_bar.addWidget(help_frame)
