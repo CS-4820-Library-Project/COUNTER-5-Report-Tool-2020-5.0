@@ -10,6 +10,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
 
 import GeneralUtils
+from VariableConstants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
@@ -108,7 +109,7 @@ class ImportReportController:
         self.date = date
 
     def on_select_file_clicked(self):
-        file_path = GeneralUtils.choose_file("All TSV files (*.tsv)")
+        file_path = GeneralUtils.choose_file(TSV_FILTER)
         if file_path:
             self.selected_file_path = file_path
             self.selected_file_edit.setText(file_path)
