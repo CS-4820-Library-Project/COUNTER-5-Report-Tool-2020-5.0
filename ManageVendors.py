@@ -4,7 +4,7 @@ import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
-from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDialog
+from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
@@ -15,7 +15,6 @@ VENDORS_FILE_NAME = "vendors.dat"
 VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
 
 EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
-help_site = "https://github.com/CS-4820-Library-Project/Libly/wiki"
 
 
 class Vendor(JsonModel):
@@ -190,14 +189,14 @@ class ManageVendorsController(QObject):
         original_name = selected_vendor.name
         is_valid, message = self.validate_new_name(new_name, original_name)
         if not is_valid:
-            self.show_message(message)
+            GeneralUtils.show_message(message)
             return
 
         if not self.local_only_check_box.isChecked():
             url = self.base_url_line_edit.text()
             is_valid, message = self.validate_url(url)
             if not is_valid:
-                self.show_message(message)
+                GeneralUtils.show_message(message)
                 return
 
         # Apply Changes
@@ -221,7 +220,7 @@ class ManageVendorsController(QObject):
             for report_type in REPORT_TYPE_SWITCHER.keys():
                 ManageDB.backup_costs_data(report_type)
 
-        self.show_message("Changes Saved!")
+        GeneralUtils.show_message("Changes Saved!")
 
     def open_add_vendor_dialog(self):
         vendor_dialog = QDialog()
@@ -269,7 +268,7 @@ class ManageVendorsController(QObject):
                 self.save_all_vendors_to_disk()
                 vendor_dialog.close()
             else:
-                self.show_message(message)
+                GeneralUtils.show_message(message)
 
         button_box = vendor_dialog_ui.buttonBox
         ok_button = button_box.button(QDialogButtonBox.Ok)
@@ -286,7 +285,7 @@ class ManageVendorsController(QObject):
         if dialog.exec_():
             selected_file_path = dialog.selectedFiles()[0]
             self.import_vendors_tsv(selected_file_path)
-            self.show_message(f"Import successful!")
+            GeneralUtils.show_message(f"Import successful!")
 
     def open_custom_folder_select_dialog(self):
         dialog = QFileDialog()
@@ -294,7 +293,7 @@ class ManageVendorsController(QObject):
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
             self.export_vendors_tsv(directory)
-            self.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
+            GeneralUtils.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
 
     def populate_edit_vendor_view(self):
         if self.selected_index >= 0:
@@ -371,15 +370,15 @@ class ManageVendorsController(QObject):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
         GeneralUtils.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
 
-    def show_message(self, message: str):
-        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = MessageDialog.Ui_message_dialog()
-        message_dialog_ui.setupUi(message_dialog)
-
-        message_label = message_dialog_ui.message_label
-        message_label.setText(message)
-
-        message_dialog.exec_()
+    # def show_message(self, message: str):
+    #     message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+    #     message_dialog_ui = MessageDialog.Ui_message_dialog()
+    #     message_dialog_ui.setupUi(message_dialog)
+    #
+    #     message_label = message_dialog_ui.message_label
+    #     message_label.setText(message)
+    #
+    #     message_dialog.exec_()
 
     def sort_vendors(self):
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
