@@ -906,11 +906,12 @@ class FetchReportsAbstract:
 
                 folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
                 report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
-                report_result_ui.folder_button.clicked.connect(lambda: self.open_explorer(process_result.file_dir))
+                report_result_ui.folder_button.clicked.connect(
+                    lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 
                 report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
                 report_result_ui.file_label.mousePressEvent = \
-                    lambda event: self.open_explorer(process_result.file_path)
+                    lambda event: GeneralUtils.open_file_or_dir(process_result.file_path)
             else:
                 report_result_ui.file_frame.hide()
         else:
@@ -1050,14 +1051,14 @@ class FetchReportsAbstract:
         for worker, thread in self.vendor_workers.values():
             worker.set_cancelling()
 
-    def open_explorer(self, file_path: str):
-        if path.exists(file_path):
-            if(platform.system()=="Darwin"):
-                system("open " + shlex.quote(file_path))
-            else:
-                webbrowser.open_new_tab(path.realpath(file_path))
-        else:
-            GeneralUtils.show_message(f"\'{file_path}\' does not exist")
+    # def open_explorer(self, file_path: str):
+    #     if path.exists(file_path):
+    #         if(platform.system()=="Darwin"):
+    #             system("open " + shlex.quote(file_path))
+    #         else:
+    #             webbrowser.open_new_tab(path.realpath(file_path))
+    #     else:
+    #         GeneralUtils.show_message(f"\'{file_path}\' does not exist")
 
     def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
         current_date = QDate.currentDate()
