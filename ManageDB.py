@@ -484,7 +484,7 @@ def setup_database(drop_tables):
 
 def first_time_setup():
     if not os.path.exists(DATABASE_FOLDER):
-        os.mkdir(DATABASE_FOLDER)
+        os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
         setup_database(False)
 
