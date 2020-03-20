@@ -62,5 +62,15 @@ def choose_file(name_filter: str) -> str:
     return file_path
 
 
+def choose_directory() -> str:
+    dir_path = ""
+    dialog = QFileDialog()
+    dialog.setFileMode(QFileDialog.Directory)
+    if dialog.exec_():
+        dir_path = dialog.selectedFiles()[0] + "/"
+
+    return dir_path
+
+
 def open_in_browser(url: str):
     webbrowser.open_new_tab(url)
