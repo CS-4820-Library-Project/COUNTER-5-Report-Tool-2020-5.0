@@ -9,11 +9,11 @@ import platform
 import copy
 import ctypes
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt, QVariant
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog, QComboBox, QStylePainter, QStyleOptionComboBox, QStyle, QDateEdit, QFrame, QHBoxLayout,\
-    QSizePolicy
+    QCheckBox, QFileDialog, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton,\
+    QButtonGroup
 
 from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget, DisclaimerDialog
@@ -67,29 +67,30 @@ def get_major_report_type(report_type: str) -> MajorReportType:
 
 class SpecialOptionType(Enum):
     TO = 0  # Tabular Only, not included in request url, only used in creating tabular report
-    AP = 1  # Attribute Parameter, in attributes_to_include and has it's own parameters in request url
-    ADP = 2  # Attribute Date Parameter, in attributes_to_include and has it's own date parameters in request url
-    POS = 3  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
-    POB = 3  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
+    AO = 1  # Attribute Only, only in attributes_to_include, does not have it's own parameters in request url
+    AP = 2  # Attribute Parameter, in attributes_to_include and has it's own parameters in request url
+    ADP = 3  # Attribute Date Parameter, in attributes_to_include and has it's own date parameters in request url
+    POS = 4  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
+    POB = 5  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
 
 
 class SpecialReportOptions:
     def __init__(self):
         # PR, DR, TR, IR
-        self.data_type = False, SpecialOptionType.AP, "Data_Type", DEFAULT_SPECIAL_OPTION_VALUE
-        self.access_method = False, SpecialOptionType.AP, "Access_Method", DEFAULT_SPECIAL_OPTION_VALUE
-        self.metric_type = False, SpecialOptionType.POS, None, DEFAULT_SPECIAL_OPTION_VALUE
+        self.data_type = False, SpecialOptionType.AP, "Data_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_method = False, SpecialOptionType.AP, "Access_Method", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.metric_type = False, SpecialOptionType.POS, "Metric_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
         self.exclude_monthly_details = False, SpecialOptionType.TO, None, None
         # TR, IR
         current_date = QDate.currentDate()
-        self.yop = False, SpecialOptionType.ADP, "YOP", f"{current_date.year()}-{current_date.year()}"
-        self.access_type = False, SpecialOptionType.AP, "Access_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        self.yop = False, SpecialOptionType.ADP, "YOP", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_type = False, SpecialOptionType.AP, "Access_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
         # TR
-        self.section_type = False, SpecialOptionType.AP, "Section_Type", DEFAULT_SPECIAL_OPTION_VALUE
+        self.section_type = False, SpecialOptionType.AP, "Section_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
         # IR
-        self.authors = False, SpecialOptionType.TO, "Authors", DEFAULT_SPECIAL_OPTION_VALUE
-        self.publication_date = False, SpecialOptionType.TO, "Publication_Date", DEFAULT_SPECIAL_OPTION_VALUE
-        self.article_version = False, SpecialOptionType.TO, "Article_Version", DEFAULT_SPECIAL_OPTION_VALUE
+        self.authors = False, SpecialOptionType.AO, "Authors", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.publication_date = False, SpecialOptionType.AO, "Publication_Date", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.article_version = False, SpecialOptionType.AO, "Article_Version", [DEFAULT_SPECIAL_OPTION_VALUE]
         self.include_component_details = False, SpecialOptionType.POB, None, None
         self.include_parent_details = False, SpecialOptionType.POB, None, None
 
@@ -110,7 +111,7 @@ SPECIAL_REPORT_OPTIONS = {
                                                                     "Thesis_or_Dissertation"]),
                                (SpecialOptionType.AP, "Access_Method", ["Regular",
                                                                          "TDM"]),
-                               (SpecialOptionType.AP, "Metric_Type", ["Searches_Platform",
+                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Platform",
                                                                        "Total_Item_Investigations",
                                                                        "Total_Item_Requests",
                                                                        "Unique_Item_Investigations",
@@ -129,7 +130,7 @@ SPECIAL_REPORT_OPTIONS = {
                                                                      "Thesis_or_Dissertation"]),
                                (SpecialOptionType.AP, "Access_Method", ["Regular",
                                                                          "TDM"]),
-                               (SpecialOptionType.AP, "Metric_Type", ["Searches_Automated",
+                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Automated",
                                                                        "Searches_Federated",
                                                                        "Searches_Regular",
                                                                        "Total_Item_Investigations",
@@ -156,7 +157,7 @@ SPECIAL_REPORT_OPTIONS = {
                                                                     "OA_Gold"]),
                             (SpecialOptionType.AP, "Access_Method", ["Regular",
                                                                       "TDM"]),
-                            (SpecialOptionType.AP, "Metric_Type", ["Total_Item_Investigations",
+                            (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
                                                                     "Total_Item_Requests",
                                                                     "Unique_Item_Investigations",
                                                                     "Unique_Item_Requests",
@@ -182,18 +183,18 @@ SPECIAL_REPORT_OPTIONS = {
                                                                    "Other_Free_To_Read"]),
                            (SpecialOptionType.AP, "Access_Method", ["Regular",
                                                                      "TDM"]),
-                           (SpecialOptionType.AP, "Metric_Type", ["Total_Item_Investigations",
+                           (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
                                                                    "Total_Item_Requests",
                                                                    "Unique_Item_Investigations",
                                                                    "Unique_Item_Requests",
                                                                    "Limit_Exceeded",
                                                                    "No_License"]),
                            (SpecialOptionType.ADP, "YOP"),
-                           (SpecialOptionType.POS, "Authors"),
-                           (SpecialOptionType.POS, "Publication_Date"),
-                           (SpecialOptionType.POS, "Article_Version"),
-                           (SpecialOptionType.TO, "Include_Component_Details"),
-                           (SpecialOptionType.TO, "Include_Parent_Details"),
+                           (SpecialOptionType.AO, "Authors"),
+                           (SpecialOptionType.AO, "Publication_Date"),
+                           (SpecialOptionType.AO, "Article_Version"),
+                           (SpecialOptionType.POB, "Include_Component_Details"),
+                           (SpecialOptionType.POB, "Include_Parent_Details"),
                            (SpecialOptionType.TO, "Exclude_Monthly_Details")]
 }
 
@@ -783,63 +784,6 @@ class ProcessResult:
         self.file_dir = ""
         self.file_path = ""
         self.year = ""
-
-
-class CheckableComboBox(QComboBox):
-    parameters_changed_signal = pyqtSignal(str)
-
-    def __init__(self, parent=None, delimiter: str = "|", default_parameter: str = DEFAULT_SPECIAL_OPTION_VALUE):
-        super().__init__(parent)
-
-        self.delimiter = delimiter
-        self.default_parameter = default_parameter
-        self.current_parameters = default_parameter
-        self.view().pressed.connect(self.handleItemPressed)
-        self.is_changed = False
-
-    def handleItemPressed(self, index):
-        item = self.model().itemFromIndex(index)
-        if item.checkState() == Qt.Checked:
-            item.setCheckState(Qt.Unchecked)
-        else:
-            item.setCheckState(Qt.Checked)
-
-        self.update_current_parameters()
-        self.parameters_changed_signal.emit(self.current_parameters)
-
-        self.is_changed = True
-
-    def hidePopup(self):
-        if not self.is_changed:
-            super(CheckableComboBox, self).hidePopup()
-        self.is_changed = False
-
-    def paintEvent(self, event):
-
-        painter = QStylePainter(self)
-        opt = QStyleOptionComboBox()
-        self.initStyleOption(opt)
-
-        opt.currentText = self.current_parameters
-
-        painter.drawComplexControl(QStyle.CC_ComboBox, opt)
-        painter.drawControl(QStyle.CE_ComboBoxLabel, opt)
-
-    def update_current_parameters(self):
-        self.current_parameters = ""
-        count = 0
-        model: QStandardItemModel = self.model()
-        for i in range(model.rowCount()):
-            if model.item(i).checkState() == Qt.Checked:
-                if count == 0:
-                    self.current_parameters += model.item(i).text()
-                    count += 1
-                elif count > 0:
-                    self.current_parameters += self.delimiter + model.item(i).text()
-                    count += 1
-
-        if not self.current_parameters:
-            self.current_parameters = self.default_parameter
 
 
 class FetchReportsAbstract:
@@ -1521,72 +1465,172 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
         for i in range(len(special_options)):
             option_name = special_options[i][1]
-
-            checkbox = QCheckBox(option_name, self.options_frame)
-            checkbox.toggled.connect(
-                lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
+            label = QLabel(option_name, self.options_frame)
 
             option_type: SpecialOptionType = special_options[i][0]
-            if option_type == SpecialOptionType.AP:
-                option_list = special_options[i][2]
+            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS:
+                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
+                line_edit.setReadOnly(True)
+                button = QPushButton("Choose", self.options_frame)
+                button.clicked.connect(
+                    lambda c, so=special_options[i], edit=line_edit: self.on_special_parameter_option_button_clicked(so, edit))
 
-                combo = CheckableComboBox(self.options_frame)
-                model = QStandardItemModel(combo)
-                for j in range(len(option_list)):
-                    item = QStandardItem(option_list[j])
-                    item.setCheckable(True)
-                    model.appendRow(item)
-                combo.setModel(model)
-
-                combo.parameters_changed_signal.connect(
-                    lambda parameters, option=option_name: self.on_special_option_parameters_changed(option, parameters))
-
-                self.options_layout.addWidget(combo, i, 1)
+                self.options_layout.addWidget(line_edit, i, 1)
+                self.options_layout.addWidget(button, i, 2)
 
             elif option_type == SpecialOptionType.ADP:
-                frame = QFrame(self.options_frame)
-                layout = QHBoxLayout(frame)
-                layout.setContentsMargins(0, 0, 0, 0)
+                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
+                line_edit.setReadOnly(True)
+                button = QPushButton("Choose", self.options_frame)
+                button.clicked.connect(
+                    lambda c, so=special_options[i], edit=line_edit: self.on_special_date_parameter_option_button_clicked(so, edit))
 
-                begin_date = QDateEdit(QDate.currentDate(), frame)
-                end_date = QDateEdit(QDate.currentDate(), frame)
-                begin_date.setDisplayFormat("yyyy")
-                end_date.setDisplayFormat("yyyy")
+                self.options_layout.addWidget(line_edit, i, 1)
+                self.options_layout.addWidget(button, i, 2)
 
-                begin_date.dateChanged.connect(lambda date: self.on_special_yop_changed("begin", date))
-                end_date.dateChanged.connect(lambda date: self.on_special_yop_changed("end", date))
+            else:
+                checkbox = QCheckBox(self.options_frame)
+                checkbox.toggled.connect(
+                    lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
 
-                to_label = QLabel(" to ", frame)
-                to_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                self.options_layout.addWidget(checkbox, i, 1)
 
-                layout.addWidget(begin_date)
-                layout.addWidget(to_label)
-                layout.addWidget(end_date)
-
-                self.options_layout.addWidget(frame, i, 1)
-
-            self.options_layout.addWidget(checkbox, i, 0)
+            self.options_layout.addWidget(label, i, 0)
 
     def on_special_option_toggled(self, option: str, is_checked: bool):
         option = option.lower()
-        is_selected, option_type, option_name, curr_params = self.selected_options.__getattribute__(option)
-        self.selected_options.__setattr__(option, (is_checked, option_type, option_name, curr_params))
+        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option)
+        self.selected_options.__setattr__(option, (is_checked, option_type, option_name, curr_options))
 
-    def on_special_option_parameters_changed(self, option: str, text: str):
-        option = option.lower()
-        is_selected, option_type, option_name, curr_params = self.selected_options.__getattribute__(option)
-        self.selected_options.__setattr__(option, (is_selected, option_type, option_name, text))
+    def on_special_parameter_option_button_clicked(self, special_option, line_edit):
+        option_type, option_name, option_list = special_option
+        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
 
-    def on_special_yop_changed(self, date_name: str, date: QDate):
-        is_selected, option_type, option_name, curr_params = self.selected_options.yop
-        curr_dates = curr_params.split("-")
-        new_yop = ""
-        if date_name == "begin":
-            new_yop = f"{date.year()}-{curr_dates[1]}"
-        elif date_name == "end":
-            new_yop = f"{curr_dates[0]}-{date.year()}"
+        dialog = QDialog(self.options_frame)
+        dialog.setWindowTitle(option_name + " options")
+        layout = QVBoxLayout(dialog)
 
-        self.selected_options.yop = is_selected, option_type, option_name, new_yop
+        list_view = QListView(dialog)
+        list_view.setAlternatingRowColors(True)
+        model = QStandardItemModel(list_view)
+
+        for option in option_list:
+            item = QStandardItem(option)
+            item.setCheckable(True)
+            item.setEditable(False)
+            if option in curr_options:
+                item.setCheckState(Qt.Checked)
+            model.appendRow(item)
+
+        list_view.setModel(model)
+
+        layout.addWidget(list_view)
+
+        def on_ok_button_clicked():
+            checked_list = []
+            for i in range(model.rowCount()):
+                if model.item(i).checkState() == Qt.Checked:
+                    checked_list.append(model.item(i).text())
+
+            if len(checked_list) == 0:
+                is_selected = False
+                checked_list = [DEFAULT_SPECIAL_OPTION_VALUE]
+            else:
+                is_selected = True
+            line_edit.setText("|".join(checked_list))
+            self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, checked_list))
+            dialog.close()
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
+        button_box.accepted.connect(on_ok_button_clicked)
+        button_box.rejected.connect(lambda: dialog.close())
+        button_box.setCenterButtons(True)
+        layout.addWidget(button_box)
+
+        dialog.exec_()
+
+    def on_special_date_parameter_option_button_clicked(self, special_option, line_edit):
+        option_type, option_name = special_option
+        __, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
+
+        dialog = QDialog(self.options_frame)
+        dialog.setWindowTitle(option_name + " options")
+        layout = QVBoxLayout(dialog)
+
+        radio_button_group = QButtonGroup(dialog)
+
+        default_frame = QFrame(dialog)
+        default_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        default_layout = QHBoxLayout(default_frame)
+        default_layout.setContentsMargins(0, 0, 0, 0)
+
+        default_radio_btn = QRadioButton(default_frame)
+        default_radio_btn.setChecked(True)
+        radio_button_group.addButton(default_radio_btn)
+        default_label = QLabel(DEFAULT_SPECIAL_OPTION_VALUE, dialog)
+
+        default_layout.addWidget(default_radio_btn)
+        default_layout.addWidget(default_label)
+
+        single_date_frame = QFrame(dialog)
+        single_date_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        single_date_layout = QHBoxLayout(single_date_frame)
+        single_date_layout.setContentsMargins(0, 0, 0, 0)
+
+        single_date_radio_btn = QRadioButton(single_date_frame)
+        radio_button_group.addButton(single_date_radio_btn)
+        single_date_edit = QDateEdit(QDate.currentDate(), single_date_frame)
+        single_date_edit.setDisplayFormat("yyyy")
+
+        single_date_layout.addWidget(single_date_radio_btn)
+        single_date_layout.addWidget(single_date_edit)
+
+        range_date_frame = QFrame(dialog)
+        range_date_frame.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        range_date_layout = QHBoxLayout(range_date_frame)
+        range_date_layout.setContentsMargins(0, 0, 0, 0)
+
+        range_date_radio_btn = QRadioButton(range_date_frame)
+        radio_button_group.addButton(range_date_radio_btn)
+        begin_date_edit = QDateEdit(QDate.currentDate(), range_date_frame)
+        end_date_edit = QDateEdit(QDate.currentDate(), range_date_frame)
+        begin_date_edit.setDisplayFormat("yyyy")
+        end_date_edit.setDisplayFormat("yyyy")
+        to_label = QLabel(" to ", range_date_frame)
+        to_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        range_date_layout.addWidget(range_date_radio_btn)
+        range_date_layout.addWidget(begin_date_edit)
+        range_date_layout.addWidget(to_label)
+        range_date_layout.addWidget(end_date_edit)
+
+        def on_ok_button_clicked():
+            new_selection = [DEFAULT_SPECIAL_OPTION_VALUE]
+            is_selected = False
+
+            checked_button = radio_button_group.checkedButton()
+            if checked_button == single_date_radio_btn:
+                is_selected = True
+                new_selection = [single_date_edit.date().toString("yyyy")]
+            elif checked_button == range_date_radio_btn:
+                is_selected = True
+                new_selection = [begin_date_edit.date().toString("yyyy") + "-" + end_date_edit.date().toString("yyyy")]
+
+            line_edit.setText(new_selection[0])
+            self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, new_selection))
+            dialog.close()
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
+        button_box.accepted.connect(on_ok_button_clicked)
+        button_box.rejected.connect(lambda: dialog.close())
+        button_box.setCenterButtons(True)
+
+        layout.addWidget(default_frame)
+        layout.addWidget(single_date_frame)
+        layout.addWidget(range_date_frame)
+        layout.addWidget(button_box)
+
+        dialog.exec_()
 
     def select_all_vendors(self):
         for i in range(self.vendor_list_model.rowCount()):
@@ -1787,7 +1831,6 @@ class VendorWorker(QObject):
 
         return exceptions
 
-
     def notify_worker_finished(self):
         self.worker_finished_signal.emit(self.vendor.name)
 
@@ -1864,13 +1907,14 @@ class ReportWorker(QObject):
                 if is_selected:
                     if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP\
                             or option_type == SpecialOptionType.POS:
-                        if option_parameters != DEFAULT_SPECIAL_OPTION_VALUE:
-                            request_query[option] = option_parameters
+                        if option_parameters[0] != DEFAULT_SPECIAL_OPTION_VALUE:
+                            request_query[option] = "|".join(option_parameters)
 
                     elif option_type == SpecialOptionType.POB:
                         request_query[option] = "True"
 
-                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP:
+                    if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.ADP\
+                            or option_type == SpecialOptionType.AO:
                         if attr_count == 0:
                             attributes_to_show += option_name
                             attr_count += 1
@@ -2359,7 +2403,7 @@ class ReportWorker(QObject):
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
-                    if not special_options_dict["exclude_monthly_details"]:
+                    if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
                     row_dict.update(row.month_counts)
@@ -2400,7 +2444,7 @@ class ReportWorker(QObject):
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
-                    if not special_options_dict["exclude_monthly_details"]:
+                    if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
                     row_dict.update(row.month_counts)
@@ -2457,7 +2501,7 @@ class ReportWorker(QObject):
                     if special_options_dict["access_type"][0]: row_dict["Access_Type"] = row.access_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
-                    if not special_options_dict["exclude_monthly_details"]:
+                    if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
                     row_dict.update(row.month_counts)
@@ -2648,7 +2692,7 @@ class ReportWorker(QObject):
                     if special_options_dict["access_type"][0]: row_dict["Access_Type"] = row.access_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
-                    if not special_options_dict["exclude_monthly_details"]:
+                    if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
                     row_dict.update(row.month_counts)
@@ -2715,7 +2759,7 @@ class ReportWorker(QObject):
 
         if self.is_special:
             special_options_dict = self.special_options.__dict__
-            if not special_options_dict["exclude_monthly_details"]:
+            if not special_options_dict["exclude_monthly_details"][0]:
                 column_names += get_month_years(self.begin_date, self.end_date)
         else:
             column_names += get_month_years(self.begin_date, self.end_date)
