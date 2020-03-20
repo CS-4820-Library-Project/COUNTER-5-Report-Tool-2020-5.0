@@ -81,7 +81,7 @@ class ManageVendorsController(QObject):
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
         self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
         self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
-        self.export_vendors_button.clicked.connect(self.open_custom_folder_select_dialog)
+        self.export_vendors_button.clicked.connect(self.on_export_vendors_clicked)
         self.import_vendors_button.clicked.connect(self.on_import_vendors_clicked)
 
         self.vendor_list_view = manage_vendors_ui.vendorsListView
@@ -284,12 +284,10 @@ class ManageVendorsController(QObject):
             self.import_vendors_tsv(file_path)
             GeneralUtils.show_message(f"Import successful!")
 
-    def open_custom_folder_select_dialog(self):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
-            self.export_vendors_tsv(directory)
+    def on_export_vendors_clicked(self):
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path:
+            self.export_vendors_tsv(dir_path)
             GeneralUtils.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
 
     def populate_edit_vendor_view(self):
