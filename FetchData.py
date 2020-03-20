@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel,
     QButtonGroup
 
 import GeneralUtils
-from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
+from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor

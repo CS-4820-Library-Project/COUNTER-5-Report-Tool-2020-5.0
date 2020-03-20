@@ -8,7 +8,9 @@ from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
-from ui import ImportReportTab, MessageDialog, ReportResultWidget
+
+import GeneralUtils
+from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
@@ -115,13 +117,13 @@ class ImportReportController:
 
     def on_import_clicked(self):
         if self.selected_vendor_index == -1:
-            self.show_message("Select a vendor")
+            GeneralUtils.show_message("Select a vendor")
             return
         elif self.selected_report_type_index == -1:
-            self.show_message("Select a report type")
+            GeneralUtils.show_message("Select a report type")
             return
         elif self.selected_file_path == "":
-            self.show_message("Select a file")
+            GeneralUtils.show_message("Select a file")
             return
 
         vendor = self.vendors[self.selected_vendor_index]
@@ -216,16 +218,6 @@ class ImportReportController:
         vertical_layout.addWidget(report_result_widget)
         self.result_dialog.show()
 
-    def show_message(self, message: str):
-        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = MessageDialog.Ui_message_dialog()
-        message_dialog_ui.setupUi(message_dialog)
-
-        message_label = message_dialog_ui.message_label
-        message_label.setText(message)
-
-        message_dialog.show()
-
     def open_explorer(self, file_path: str):
         if path.exists(file_path):
             if(platform.system()=="Windows"):
@@ -233,6 +225,6 @@ class ImportReportController:
             elif(platform.system()=="Darwin"):
                 system("open " + shlex.quote(file_path))
         else:
-            self.show_message(f"\'{file_path}\' does not exist")
+            GeneralUtils.show_message(f"\'{file_path}\' does not exist")
 
 
