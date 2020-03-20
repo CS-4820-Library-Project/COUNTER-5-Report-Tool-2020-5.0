@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from PyQt5.QtWidgets import QWidget, QMessageBox
 
 
@@ -36,3 +37,7 @@ def show_message(message: str, parent: QWidget = None):
     message_box.setWindowTitle("Message")
     message_box.setText(message)
     message_box.exec_()
+
+
+def open_in_browser(url: str):
+    webbrowser.open_new_tab(url)
