@@ -3,7 +3,7 @@ import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
-import DataStorage
+import GeneralUtils
 import ManageDB
 import ManageVendors
 from ui import CostsTab, ReportTypeDialog
@@ -20,7 +20,7 @@ class CostsController:
         self.report_parameter = None
 
         self.vendor_parameter_combobox = costs_ui.costs_vendor_parameter_combobox
-        vendors_json_string = DataStorage.read_json_file(ManageVendors.VENDORS_FILE_PATH)
+        vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
         self.vendor_parameter = None

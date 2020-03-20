@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QWidget
 from ui import SettingsTab, MessageDialog
 from JsonUtils import JsonModel
 import json
-import DataStorage
+import GeneralUtils
 import ManageDB
 from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
@@ -85,7 +85,7 @@ class SettingsController:
         # region General
         self.settings_widget = settings_widget
 
-        json_string = DataStorage.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
+        json_string = GeneralUtils.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         json_dict = json.loads(json_string)
         self.settings = SettingsModel.from_json(json_dict)
         # endregion
@@ -164,7 +164,7 @@ class SettingsController:
 
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
-        DataStorage.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
+        GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
 
     def on_restore_database(self):
         if not self.is_restoring_database:  # check if already running

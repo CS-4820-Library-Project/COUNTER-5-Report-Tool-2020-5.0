@@ -9,7 +9,7 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog, QSpacerItem, QSizePolicy
 
 import ManageDB
-import DataStorage
+import GeneralUtils
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
 from VariableConstants import *
 
@@ -170,7 +170,7 @@ class SearchController:
         dialog.setFileMode(QFileDialog.ExistingFile)
         dialog.setNameFilter('JSON files (*.dat)')
         if dialog.exec_():
-            fields = json.loads(DataStorage.read_json_file(dialog.selectedFiles()[0]))
+            fields = json.loads(GeneralUtils.read_json_file(dialog.selectedFiles()[0]))
             print(fields)
             self.report_parameter.setCurrentText(fields['report'])
             self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))

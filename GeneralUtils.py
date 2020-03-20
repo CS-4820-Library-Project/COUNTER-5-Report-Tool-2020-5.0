@@ -12,7 +12,7 @@ def save_json_file(file_dir: str, file_name: str, json_string: str):
         print(e)
 
 
-def read_json_file(file_path: str):
+def read_json_file(file_path: str) -> str:
     json_string = "[]"
     try:
         file = open(file_path, 'r', encoding='utf-8-sig')

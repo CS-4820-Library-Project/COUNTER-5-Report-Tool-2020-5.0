@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDialog
-import DataStorage, ManageDB
+import GeneralUtils, ManageDB
 import webbrowser
 from JsonUtils import JsonModel
 from VariableConstants import *
@@ -92,7 +92,7 @@ class ManageVendorsController(QObject):
 
         self.vendors = []
         self.vendor_names = set()  # Hash set for faster operations
-        vendors_json_string = DataStorage.read_json_file(VENDORS_FILE_PATH)
+        vendors_json_string = GeneralUtils.read_json_file(VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         for json_dict in vendor_dicts:
             vendor = Vendor.from_json(json_dict)
@@ -369,7 +369,7 @@ class ManageVendorsController(QObject):
 
     def save_all_vendors_to_disk(self):
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
-        DataStorage.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
+        GeneralUtils.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
 
     def show_message(self, message: str):
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)

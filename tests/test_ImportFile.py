@@ -9,7 +9,7 @@ from ImportFile import ImportReportController
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 import Settings
-import DataStorage
+import GeneralUtils
 import json
 
 
@@ -24,7 +24,7 @@ def vendors() -> list:
         "test vendor.dat should be placed in ./tests/data/vendor_manager/"
 
     vendor_list = []
-    vendors_json_string = DataStorage.read_json_file("./data/vendor_manager/vendors.dat")
+    vendors_json_string = GeneralUtils.read_json_file("./data/vendor_manager/vendors.dat")
     vendor_dicts = json.loads(vendors_json_string)
     for json_dict in vendor_dicts:
         vendor = Vendor.from_json(json_dict)
