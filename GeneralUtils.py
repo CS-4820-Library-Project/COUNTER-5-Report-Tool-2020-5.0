@@ -1,4 +1,5 @@
 import os
+from PyQt5.QtWidgets import QWidget, QMessageBox
 
 
 class JsonModel:
@@ -28,3 +29,10 @@ def read_json_file(file_path: str) -> str:
     finally:
         return json_string
 
+
+def show_message(message: str, parent: QWidget = None):
+    message_box = QMessageBox(parent)
+    message_box.setMinimumSize(800, 800)
+    message_box.setWindowTitle("Message")
+    message_box.setText(message)
+    message_box.exec_()

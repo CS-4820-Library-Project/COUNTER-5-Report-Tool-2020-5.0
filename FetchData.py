@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel,
     QCheckBox, QFileDialog, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton,\
     QButtonGroup
 
+import GeneralUtils
 from ui import FetchReportsTab, FetchSpecialReportsTab, MessageDialog, FetchProgressDialog, ReportResultWidget,\
     VendorResultsWidget
 from GeneralUtils import JsonModel
@@ -223,17 +224,6 @@ class CompletionStatus(Enum):
     WARNING = "Warning!"
     FAILED = "Failed!"
     CANCELLED = "Cancelled!"
-
-
-def show_message(message: str):
-    message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-    message_dialog_ui = MessageDialog.Ui_message_dialog()
-    message_dialog_ui.setupUi(message_dialog)
-
-    message_label = message_dialog_ui.message_label
-    message_label.setText(message)
-
-    message_dialog.exec_()
 
 
 # region Models
@@ -1014,7 +1004,7 @@ class FetchReportsAbstract:
 
     def retry_selected_reports(self, progress__window_title: str):
         if len(self.retry_data) == 0:
-            show_message("No report selected")
+            GeneralUtils.show_message("No report selected")
             return
 
         self.selected_data = []
@@ -1067,7 +1057,7 @@ class FetchReportsAbstract:
             else:
                 webbrowser.open_new_tab(path.realpath(file_path))
         else:
-            show_message(f"\'{file_path}\' does not exist")
+            GeneralUtils.show_message(f"\'{file_path}\' does not exist")
 
     def is_yearly_range(self, begin_date: QDate, end_date: QDate) -> bool:
         current_date = QDate.currentDate()
@@ -1146,7 +1136,7 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.report_types_help_btn = fetch_reports_ui.report_types_help_button
         self.report_types_help_btn.clicked.connect(
-            lambda: show_message("Only reports supported by selected vendor will be retrieved!"))
+            lambda: GeneralUtils.show_message("Only reports supported by selected vendor will be retrieved!"))
         # endregion
 
         # region Date Edits
@@ -1240,18 +1230,18 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_all_basic_data(self):
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         self.begin_date = self.basic_begin_date
         self.end_date = self.basic_end_date
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.is_yearly_fetch = True
@@ -1278,18 +1268,18 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_advanced_data(self):
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.selected_data = []
@@ -1298,7 +1288,7 @@ class FetchReportsController(FetchReportsAbstract):
             if self.report_type_list_model.item(i).checkState() == Qt.Checked:
                 selected_report_types.append(REPORT_TYPES[i])
         if len(selected_report_types) == 0:
-            show_message("No report type selected")
+            GeneralUtils.show_message("No report type selected")
             return
 
         self.is_yearly_fetch = self.is_yearly_range(self.adv_begin_date, self.adv_end_date)
@@ -1311,7 +1301,7 @@ class FetchReportsController(FetchReportsAbstract):
                                            self.save_dir, self.settings)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
-            show_message("No vendor selected")
+            GeneralUtils.show_message("No vendor selected")
             return
 
         self.start_progress_dialog("Fetch Reports Progress")
@@ -1642,16 +1632,16 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
     def fetch_special_data(self):
         if self.total_processes > 0:
-            show_message(f"Waiting for pending processes to complete...")
+            GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
-            show_message("Vendor list is empty")
+            GeneralUtils.show_message("Vendor list is empty")
             return
 
         if self.begin_date > self.end_date:
-            show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
 
         self.selected_data = []
@@ -1665,7 +1655,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                                            self.save_dir, self.settings, self.selected_options)
                 self.selected_data.append(request_data)
         if len(self.selected_data) == 0:
-            show_message("No vendor selected")
+            GeneralUtils.show_message("No vendor selected")
             return
 
         self.start_progress_dialog("Fetch Special Reports Progress")
