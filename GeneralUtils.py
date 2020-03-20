@@ -1,6 +1,11 @@
 import os
 
 
+class JsonModel:
+    def from_json(self, json_dict: dict):
+        raise NotImplementedError("from_json method is not implemented")
+
+
 def save_json_file(file_dir: str, file_name: str, json_string: str):
     try:
         if not os.path.isdir(file_dir):

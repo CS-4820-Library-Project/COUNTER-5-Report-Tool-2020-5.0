@@ -5,9 +5,9 @@ from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import ManageVendorsTab, AddVendorDialog, MessageDialog, RemoveVendorDialog
-import GeneralUtils, ManageDB
-import webbrowser
-from JsonUtils import JsonModel
+import ManageDB
+import GeneralUtils
+from GeneralUtils import JsonModel
 from VariableConstants import *
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"

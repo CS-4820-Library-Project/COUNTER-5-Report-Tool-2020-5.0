@@ -1,11 +1,11 @@
+import json
 from enum import Enum
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QFileDialog, QWidget
 from ui import SettingsTab, MessageDialog
-from JsonUtils import JsonModel
-import json
-import GeneralUtils
 import ManageDB
+import GeneralUtils
+from GeneralUtils import JsonModel
 from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
