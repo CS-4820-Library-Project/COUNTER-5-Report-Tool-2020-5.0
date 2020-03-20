@@ -71,7 +71,7 @@ class ImportReportController:
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
 
         self.select_file_btn = import_report_ui.select_file_button
-        self.select_file_btn.clicked.connect(self.open_file_select_dialog)
+        self.select_file_btn.clicked.connect(self.on_select_file_clicked)
 
         self.selected_file_edit = import_report_ui.selected_file_edit
 
@@ -107,13 +107,11 @@ class ImportReportController:
     def on_date_changed(self, date: QDate):
         self.date = date
 
-    def open_file_select_dialog(self):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilter("All TSV files (*.tsv)")
-        if dialog.exec_():
-            self.selected_file_path = dialog.selectedFiles()[0]
-            self.selected_file_edit.setText(self.selected_file_path)
+    def on_select_file_clicked(self):
+        file_path = GeneralUtils.choose_file("All TSV files (*.tsv)")
+        if file_path:
+            self.selected_file_path = file_path
+            self.selected_file_edit.setText(file_path)
 
     def on_import_clicked(self):
         if self.selected_vendor_index == -1:
