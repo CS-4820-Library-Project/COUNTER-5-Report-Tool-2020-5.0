@@ -185,10 +185,12 @@ class CostsController:
         report_type_dialog.show()
         if report_type_dialog.exec_():
             report_type = report_type_dialog_ui.report_type_combobox.currentText()
-            file_dialog = QFileDialog()
-            file_dialog.setFileMode(QFileDialog.ExistingFile)
-            file_dialog.setNameFilters(('TSV files (*.tsv)', 'CSV files (*.csv'))
-            if file_dialog.exec_():
-                file = file_dialog.selectedFiles()[0]
-                ManageDB.insert_single_cost_file(report_type, file)
-                ManageDB.backup_costs_data(report_type)
+            if report_type != '':
+                file_name = GeneralUtils.choose_file(TSV_FILTER + CSV_FILTER)
+                if file_name != '':
+                    ManageDB.insert_single_cost_file(report_type, file_name)
+                    ManageDB.backup_costs_data(report_type)
+                else:
+                    print('Error, no file location selected')
+            else:
+                print('Error, no report type selected')

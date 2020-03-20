@@ -342,3 +342,7 @@ NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
 
 # endregion
+
+JSON_FILTER = ('JSON files (*.dat)',)
+TSV_FILTER = ('TSV files (*.tsv)',)
+CSV_FILTER = ('CSV files (*.csv)',)
