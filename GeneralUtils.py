@@ -2,7 +2,7 @@ import webbrowser
 import shlex
 import platform
 from os import path, makedirs, system
-from PyQt5.QtWidgets import QWidget, QMessageBox
+from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
 
 
 class JsonModel:
@@ -49,6 +49,14 @@ def open_file_or_dir(target_path: str):
             webbrowser.open_new_tab(path.realpath(target_path))
     else:
         show_message(f"\'{target_path}\' does not exist")
+
+
+def choose_file(name_filter: str) -> str:
+    dialog = QFileDialog()
+    dialog.setFileMode(QFileDialog.ExistingFile)
+    dialog.setNameFilter(name_filter)
+    if dialog.exec_():
+        return dialog.selectedFiles()[0]
 
 
 def open_in_browser(url: str):
