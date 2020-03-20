@@ -1,11 +1,12 @@
 import json
 
 from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QFileDialog, QDialog
 
 import DataStorage
 import ManageDB
 import ManageVendors
-from ui import CostsTab
+from ui import CostsTab, ReportTypeDialog
 from VariableConstants import *
 
 
@@ -73,6 +74,9 @@ class CostsController:
             self.on_cost_in_local_currency_with_tax_changed)
 
         self.clear_costs()
+
+        self.load_from_disk_button = costs_ui.costs_load_from_disk_button
+        self.load_from_disk_button.clicked.connect(self.load_costs_from_disk)
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
@@ -173,4 +177,18 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setValue(0.0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
 
-    # TODO (Chandler): import/export tsv file with costs
+    def load_costs_from_disk(self):
+        report_type_dialog = QDialog()
+        report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()
+        report_type_dialog_ui.setupUi(report_type_dialog)
+        report_type_dialog_ui.report_type_combobox.addItems(REPORT_TYPE_SWITCHER.keys())
+        report_type_dialog.show()
+        if report_type_dialog.exec_():
+            report_type = report_type_dialog_ui.report_type_combobox.currentText()
+            file_dialog = QFileDialog()
+            file_dialog.setFileMode(QFileDialog.ExistingFile)
+            file_dialog.setNameFilters(('TSV files (*.tsv)', 'CSV files (*.csv'))
+            if file_dialog.exec_():
+                file = file_dialog.selectedFiles()[0]
+                ManageDB.insert_single_cost_file(report_type, file)
+                ManageDB.backup_costs_data(report_type)
