@@ -1,3 +1,5 @@
+"""Handles all user settings"""
+
 import json
 from enum import Enum
 from PyQt5.QtWidgets import QFileDialog, QWidget
@@ -5,6 +7,7 @@ from ui import SettingsTab
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
+from typing import Union
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
@@ -68,6 +71,7 @@ class SettingsModel(JsonModel):
 
 
 class SettingsController:
+    """Controls the Settings tab"""
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         self.settings_widget = settings_widget
@@ -101,7 +105,7 @@ class SettingsController:
         settings_ui.other_directory_button.clicked.connect(
             lambda: self.on_directory_setting_clicked(Setting.OTHER_DIR))
 
-        # region Reports Help Messages
+        # Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
         settings_ui.other_directory_help_button.clicked.connect(
@@ -119,7 +123,6 @@ class SettingsController:
         settings_ui.user_agent_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
                                               "error HTTP error codes. Values should be separated by a space"))
-        # endregion
 
         # endregion
 
@@ -128,12 +131,21 @@ class SettingsController:
         self.is_restoring_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
         self.restore_database_button = settings_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.on_restore_database)
+        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
         # endregion
 
         settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
 
     def on_directory_setting_clicked(self, setting: Setting):
+        """
+        Handles the signal emitted when a choose folder button is clicked
+
+        :param setting: The target setting to be changed
+        :return: None
+
+        .. note::
+            This function is not suitable for sending spam e-mails.
+        """
         dir_path = GeneralUtils.choose_directory()
         if dir_path:
             if setting == Setting.YEARLY_DIR:
@@ -142,9 +154,38 @@ class SettingsController:
                 self.other_dir_edit.setText(dir_path)
 
     def on_save_button_clicked(self):
+        """This function does something.
+
+        :param name: The name to use.
+        :type name: str.
+        :param state: Current state to be in.
+        :type state: bool.
+        :returns:  int -- the return code.
+        :raises: AttributeError, KeyError
+
+        """
         self.update_settings()
         self.save_settings_to_disk()
         GeneralUtils.show_message("Changes saved!")
+
+    def format_unit(self, value: Union[float, int], unit: str) -> str:
+        """
+        Formats the given value as a human readable string using the given units.
+
+        :param value: a numeric value
+        :param unit: the unit for the value (kg, m, etc.)
+        """
+        return '{} {}'.format(value, unit)
+
+    def on_restore_database_clicked(self):
+        if not self.is_restoring_database:  # check if already running
+            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
+                self.is_restoring_database = True
+                self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
+                                                            True)
+                self.is_restoring_database = False
+        else:
+            print('Error, already running')
 
     def update_settings(self):
         self.settings.yearly_directory = self.yearly_dir_edit.text()
@@ -159,13 +200,3 @@ class SettingsController:
     def save_settings_to_disk(self):
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
-
-    def on_restore_database(self):
-        if not self.is_restoring_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
-                self.is_restoring_database = True
-                self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
-                                                            True)
-                self.is_restoring_database = False
-        else:
-            print('Error, already running')
