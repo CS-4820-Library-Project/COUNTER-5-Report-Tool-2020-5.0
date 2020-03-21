@@ -226,6 +226,18 @@ class Ui_fetch_special_reports_tab(object):
 
         self.retranslateUi(fetch_special_reports_tab)
         QtCore.QMetaObject.connectSlotsByName(fetch_special_reports_tab)
+        fetch_special_reports_tab.setTabOrder(self.select_vendors_button_special, self.deselect_vendors_button_special)
+        fetch_special_reports_tab.setTabOrder(self.deselect_vendors_button_special, self.vendors_list_view_special)
+        fetch_special_reports_tab.setTabOrder(self.vendors_list_view_special, self.pr_radio_button)
+        fetch_special_reports_tab.setTabOrder(self.pr_radio_button, self.dr_radio_button)
+        fetch_special_reports_tab.setTabOrder(self.dr_radio_button, self.tr_radio_button)
+        fetch_special_reports_tab.setTabOrder(self.tr_radio_button, self.ir_radio_button)
+        fetch_special_reports_tab.setTabOrder(self.ir_radio_button, self.options_frame)
+        fetch_special_reports_tab.setTabOrder(self.options_frame, self.begin_date_edit_special_year)
+        fetch_special_reports_tab.setTabOrder(self.begin_date_edit_special_year, self.begin_date_edit_special_month)
+        fetch_special_reports_tab.setTabOrder(self.begin_date_edit_special_month, self.end_date_edit_special_year)
+        fetch_special_reports_tab.setTabOrder(self.end_date_edit_special_year, self.end_date_edit_special_month)
+        fetch_special_reports_tab.setTabOrder(self.end_date_edit_special_month, self.fetch_special_data_button)
 
     def retranslateUi(self, fetch_special_reports_tab):
         _translate = QtCore.QCoreApplication.translate

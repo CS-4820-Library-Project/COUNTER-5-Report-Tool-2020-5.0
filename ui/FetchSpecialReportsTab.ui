@@ -419,6 +419,21 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>select_vendors_button_special</tabstop>
+  <tabstop>deselect_vendors_button_special</tabstop>
+  <tabstop>vendors_list_view_special</tabstop>
+  <tabstop>pr_radio_button</tabstop>
+  <tabstop>dr_radio_button</tabstop>
+  <tabstop>tr_radio_button</tabstop>
+  <tabstop>ir_radio_button</tabstop>
+  <tabstop>options_frame</tabstop>
+  <tabstop>begin_date_edit_special_year</tabstop>
+  <tabstop>begin_date_edit_special_month</tabstop>
+  <tabstop>end_date_edit_special_year</tabstop>
+  <tabstop>end_date_edit_special_month</tabstop>
+  <tabstop>fetch_special_data_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

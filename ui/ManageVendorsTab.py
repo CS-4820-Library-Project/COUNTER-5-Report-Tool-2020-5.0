@@ -171,6 +171,21 @@ class Ui_manage_vendors_tab(object):
 
         self.retranslateUi(manage_vendors_tab)
         QtCore.QMetaObject.connectSlotsByName(manage_vendors_tab)
+        manage_vendors_tab.setTabOrder(self.vendorsListView, self.addVendorButton)
+        manage_vendors_tab.setTabOrder(self.addVendorButton, self.importVendorsButton)
+        manage_vendors_tab.setTabOrder(self.importVendorsButton, self.exportVendorsButton)
+        manage_vendors_tab.setTabOrder(self.exportVendorsButton, self.nameEdit)
+        manage_vendors_tab.setTabOrder(self.nameEdit, self.baseUrlEdit)
+        manage_vendors_tab.setTabOrder(self.baseUrlEdit, self.customerIdEdit)
+        manage_vendors_tab.setTabOrder(self.customerIdEdit, self.requestorIdEdit)
+        manage_vendors_tab.setTabOrder(self.requestorIdEdit, self.apiKeyEdit)
+        manage_vendors_tab.setTabOrder(self.apiKeyEdit, self.platformEdit)
+        manage_vendors_tab.setTabOrder(self.platformEdit, self.local_only_check_box)
+        manage_vendors_tab.setTabOrder(self.local_only_check_box, self.descriptionEdit)
+        manage_vendors_tab.setTabOrder(self.descriptionEdit, self.companiesEdit)
+        manage_vendors_tab.setTabOrder(self.companiesEdit, self.saveVendorChangesButton)
+        manage_vendors_tab.setTabOrder(self.saveVendorChangesButton, self.undoVendorChangesButton)
+        manage_vendors_tab.setTabOrder(self.undoVendorChangesButton, self.removeVendorButton)
 
     def retranslateUi(self, manage_vendors_tab):
         _translate = QtCore.QCoreApplication.translate

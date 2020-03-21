@@ -176,6 +176,11 @@ class Ui_import_report_tab(object):
 
         self.retranslateUi(import_report_tab)
         QtCore.QMetaObject.connectSlotsByName(import_report_tab)
+        import_report_tab.setTabOrder(self.vendors_list_view_import, self.report_types_list_view_import)
+        import_report_tab.setTabOrder(self.report_types_list_view_import, self.report_year_date_edit)
+        import_report_tab.setTabOrder(self.report_year_date_edit, self.selected_file_edit)
+        import_report_tab.setTabOrder(self.selected_file_edit, self.select_file_button)
+        import_report_tab.setTabOrder(self.select_file_button, self.import_report_button)
 
     def retranslateUi(self, import_report_tab):
         _translate = QtCore.QCoreApplication.translate

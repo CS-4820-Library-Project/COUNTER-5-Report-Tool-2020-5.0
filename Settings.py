@@ -113,8 +113,10 @@ class SettingsController:
         settings_ui.empty_cell_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("Empty cells will be replaced by whatever is in here"))
         settings_ui.user_agent_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return error HTTP "
-                                 "error codes. Values should be separated by a space"))
+            lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
+                                              "error HTTP error codes. Values should be separated by a space"))
+        # endregion
+
         # endregion
 
         # set up restore database button

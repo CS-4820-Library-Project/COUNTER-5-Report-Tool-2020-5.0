@@ -315,6 +315,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>vendors_list_view_import</tabstop>
+  <tabstop>report_types_list_view_import</tabstop>
+  <tabstop>report_year_date_edit</tabstop>
+  <tabstop>selected_file_edit</tabstop>
+  <tabstop>select_file_button</tabstop>
+  <tabstop>import_report_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

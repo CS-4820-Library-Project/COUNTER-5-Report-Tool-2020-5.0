@@ -308,6 +308,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>vendorsListView</tabstop>
+  <tabstop>addVendorButton</tabstop>
+  <tabstop>importVendorsButton</tabstop>
+  <tabstop>exportVendorsButton</tabstop>
+  <tabstop>nameEdit</tabstop>
+  <tabstop>baseUrlEdit</tabstop>
+  <tabstop>customerIdEdit</tabstop>
+  <tabstop>requestorIdEdit</tabstop>
+  <tabstop>apiKeyEdit</tabstop>
+  <tabstop>platformEdit</tabstop>
+  <tabstop>local_only_check_box</tabstop>
+  <tabstop>descriptionEdit</tabstop>
+  <tabstop>companiesEdit</tabstop>
+  <tabstop>saveVendorChangesButton</tabstop>
+  <tabstop>undoVendorChangesButton</tabstop>
+  <tabstop>removeVendorButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

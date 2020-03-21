@@ -619,6 +619,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>All_reports_edit_fetch</tabstop>
+  <tabstop>fetch_all_data_button</tabstop>
+  <tabstop>select_vendors_button_fetch</tabstop>
+  <tabstop>deselect_vendors_button_fetch</tabstop>
+  <tabstop>vendors_list_view_fetch</tabstop>
+  <tabstop>select_report_types_button_fetch</tabstop>
+  <tabstop>deselect_report_types_button_fetch</tabstop>
+  <tabstop>report_types_help_button</tabstop>
+  <tabstop>report_types_list_view</tabstop>
+  <tabstop>begin_date_edit_fetch_year</tabstop>
+  <tabstop>begin_date_edit_fetch_month</tabstop>
+  <tabstop>end_date_edit_fetch_year</tabstop>
+  <tabstop>end_date_edit_fetch_month</tabstop>
+  <tabstop>custom_dir_edit</tabstop>
+  <tabstop>custom_dir_button</tabstop>
+  <tabstop>fetch_advanced_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

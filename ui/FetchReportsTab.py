@@ -297,6 +297,21 @@ class Ui_fetch_reports_tab(object):
 
         self.retranslateUi(fetch_reports_tab)
         QtCore.QMetaObject.connectSlotsByName(fetch_reports_tab)
+        fetch_reports_tab.setTabOrder(self.All_reports_edit_fetch, self.fetch_all_data_button)
+        fetch_reports_tab.setTabOrder(self.fetch_all_data_button, self.select_vendors_button_fetch)
+        fetch_reports_tab.setTabOrder(self.select_vendors_button_fetch, self.deselect_vendors_button_fetch)
+        fetch_reports_tab.setTabOrder(self.deselect_vendors_button_fetch, self.vendors_list_view_fetch)
+        fetch_reports_tab.setTabOrder(self.vendors_list_view_fetch, self.select_report_types_button_fetch)
+        fetch_reports_tab.setTabOrder(self.select_report_types_button_fetch, self.deselect_report_types_button_fetch)
+        fetch_reports_tab.setTabOrder(self.deselect_report_types_button_fetch, self.report_types_help_button)
+        fetch_reports_tab.setTabOrder(self.report_types_help_button, self.report_types_list_view)
+        fetch_reports_tab.setTabOrder(self.report_types_list_view, self.begin_date_edit_fetch_year)
+        fetch_reports_tab.setTabOrder(self.begin_date_edit_fetch_year, self.begin_date_edit_fetch_month)
+        fetch_reports_tab.setTabOrder(self.begin_date_edit_fetch_month, self.end_date_edit_fetch_year)
+        fetch_reports_tab.setTabOrder(self.end_date_edit_fetch_year, self.end_date_edit_fetch_month)
+        fetch_reports_tab.setTabOrder(self.end_date_edit_fetch_month, self.custom_dir_edit)
+        fetch_reports_tab.setTabOrder(self.custom_dir_edit, self.custom_dir_button)
+        fetch_reports_tab.setTabOrder(self.custom_dir_button, self.fetch_advanced_button)
 
     def retranslateUi(self, fetch_reports_tab):
         _translate = QtCore.QCoreApplication.translate
