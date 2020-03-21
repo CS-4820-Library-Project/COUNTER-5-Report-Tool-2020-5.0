@@ -41,6 +41,11 @@ def show_message(message: str, parent: QWidget = None):
     message_box.exec_()
 
 
+def ask_confirmation(message: str = 'Are you sure you want to continue?', parent: QWidget = None):
+    reply = QMessageBox.question(parent, "Confirm", message, QMessageBox.Yes, QMessageBox.No)
+    return reply == QMessageBox.Yes
+
+
 def open_file_or_dir(target_path: str):
     if path.exists(target_path):
         if platform.system() == "Darwin":
