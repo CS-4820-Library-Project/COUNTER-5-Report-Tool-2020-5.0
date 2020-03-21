@@ -8,9 +8,20 @@ Welcome to Libly's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Modules:
 
-   modules
+   Costs
+   FetchData
+   GeneralUtils
+   ImportFile
+   MainDriver
+   ManageDB
+   ManageVendors
+   Search
+   Settings
+   UpdateDatabaseProgressDialogController
+   VariableConstants
+   Visual
 
 
 Indices and tables
