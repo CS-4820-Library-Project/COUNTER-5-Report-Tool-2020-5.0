@@ -1,6 +1,13 @@
 # region Variable Constants for ManageDB
 
 # region field and table definitions
+# region header definition
+HEADER_ENTRIES = ('report_name', 'report_id', 'release', 'institution_name', 'institution_id', 'metric_types',
+                  'report_filters', 'report_attributes', 'exceptions', 'reporting_period', 'created', 'created_by')
+HEADER_ROWS = len(HEADER_ENTRIES)
+BLANK_ROWS = 1
+# endregion
+
 # region database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
@@ -332,8 +339,6 @@ FILE_LOCATION = r'./all_data/.DO_NOT_MODIFY/'
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
-HEADER_ROWS = 12
-BLANK_ROWS = 1
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')

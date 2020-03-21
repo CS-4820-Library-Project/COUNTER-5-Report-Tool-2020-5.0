@@ -1,8 +1,6 @@
 import csv
 import os
-import shlex
 import sip
-import webbrowser
 import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
