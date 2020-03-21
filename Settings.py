@@ -86,7 +86,7 @@ class SettingsController:
     """Controls the Settings tab
 
     :param settings_widget: The settings widget.
-    :param settings_ui: The settings ui object, it holds references to all child widgets.
+    :param settings_ui: The UI for settings_widget.
     """
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
