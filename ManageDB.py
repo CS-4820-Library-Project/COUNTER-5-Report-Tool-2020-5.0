@@ -490,6 +490,8 @@ def first_time_setup():
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
         setup_database(False)
+    if not os.path.exists(COSTS_SAVE_FOLDER):
+        os.makedirs(COSTS_SAVE_FOLDER)
 
 
 def backup_costs_data(report_type):
