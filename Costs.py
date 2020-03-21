@@ -165,7 +165,6 @@ class CostsController:
         else:
             GeneralUtils.show_message('Invalid entry')
 
-
     def load_costs(self):
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                self.name_parameter)
