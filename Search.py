@@ -155,6 +155,7 @@ class SearchController:
             file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
+                GeneralUtils.show_message('Search saved to ' + file_name)
         else:
             print('Error, no file location selected')
 
@@ -206,6 +207,9 @@ class SearchController:
                     if self.open_results_folder_radioButton.isChecked() \
                             or self.open_results_both_radioButton.isChecked():
                         GeneralUtils.open_file_or_dir(os.path.dirname(file_name))
+
+                    if self.dont_open_results_radioButton.isChecked():
+                        GeneralUtils.show_message('Results saved to ' + file_name)
 
                 else:
                     print('Error: could not open file ' + file_name)
