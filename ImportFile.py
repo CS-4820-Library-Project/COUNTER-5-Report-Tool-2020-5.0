@@ -1,3 +1,5 @@
+"""This module handles all operations involving importing reports."""
+
 import shutil
 import webbrowser
 import platform
@@ -22,6 +24,11 @@ PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 
 class ProcessResult:
+    """This holds the results of an import process
+
+    :param vendor: The target vendor
+    :param report_type: The target report type
+    """
     def __init__(self, vendor: Vendor, report_type: str):
         self.vendor = vendor
         self.report_type = report_type
@@ -33,6 +40,13 @@ class ProcessResult:
 
 
 class ImportReportController:
+    """Controls the Import Report tab
+
+    :param vendors: The list of vendors in the system
+    :param settings: The user's settings
+    :param import_report_widget: The import report widget.
+    :param import_report_ui: The UI for the import_report_widget.
+    """
     def __init__(self, vendors: list, settings: SettingsModel, import_report_widget: QWidget,
                  import_report_ui: ImportReportTab.Ui_import_report_tab):
 
@@ -85,14 +99,23 @@ class ImportReportController:
         self.update_database_dialog = UpdateDatabaseProgressDialogController(self.import_report_widget)
 
     def on_vendors_changed(self, vendors: list):
+        """Handles the signal emitted when the system's vendor list is updated
+
+        :param vendors: An updated list of the system's vendors
+        """
         self.selected_vendor_index = -1
         self.update_vendors(vendors)
         self.update_vendors_ui()
 
     def update_vendors(self, vendors: list):
+        """ Updates the local copy of vendors that support report import
+
+        :param vendors: A list of vendors
+        """
         self.vendors = vendors
 
     def update_vendors_ui(self):
+        """Updates the UI to show vendors that support report import"""
         self.vendor_list_model.clear()
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
@@ -100,21 +123,26 @@ class ImportReportController:
             self.vendor_list_model.appendRow(item)
 
     def on_vendor_selected(self, model_index: QModelIndex):
+        """Handles the signal emitted when a vendor is selected"""
         self.selected_vendor_index = model_index.row()
 
     def on_report_type_selected(self, model_index: QModelIndex):
+        """Handles the signal emitted when a report type is selected"""
         self.selected_report_type_index = model_index.row()
 
     def on_date_changed(self, date: QDate):
+        """Handles the signal emitted when the target date is changed"""
         self.date = date
 
     def on_select_file_clicked(self):
+        """Handles the signal emitted when the select file button is clicked"""
         file_path = GeneralUtils.choose_file(TSV_FILTER)
         if file_path:
             self.selected_file_path = file_path
             self.selected_file_edit.setText(file_path)
 
     def on_import_clicked(self):
+        """Handles the signal emitted when the import button is clicked"""
         if self.selected_vendor_index == -1:
             GeneralUtils.show_message("Select a vendor")
             return
@@ -132,6 +160,12 @@ class ImportReportController:
         self.show_result(process_result)
 
     def import_report(self, vendor: Vendor, report_type: str) -> ProcessResult:
+        """ Imports the selected file using the selected parameters
+
+        :param vendor: The target vendor
+        :param report_type: The target report type
+        :raises Exception: If anything goes wrong while importing the report
+        """
         process_result = ProcessResult(vendor, report_type)
 
         try:
@@ -139,7 +173,11 @@ class ImportReportController:
             dest_file_name = f"{self.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
             dest_file_path = f"{dest_file_dir}{dest_file_name}"
 
-            self.verify_path_exists(dest_file_dir)
+            # Verify that dest_file_dir exists
+            if not path.isdir(dest_file_dir):
+                makedirs(dest_file_dir)
+
+            # Copy selected_file_path to dest_file_path
             self.copy_file(self.selected_file_path, dest_file_path)
 
             # Add file to database
@@ -171,14 +209,15 @@ class ImportReportController:
 
         return process_result
 
-    def verify_path_exists(self, path_str: str):
-        if not path.isdir(path_str):
-            makedirs(path_str)
-
     def copy_file(self, origin_path: str, dest_path: str):
+        """Copies a file from origin_path to dest_path"""
         shutil.copy2(origin_path, dest_path)
 
     def show_result(self, process_result: ProcessResult):
+        """Shows the result of the import process to the user
+
+        :param process_result: The result of the import process
+        """
         self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
