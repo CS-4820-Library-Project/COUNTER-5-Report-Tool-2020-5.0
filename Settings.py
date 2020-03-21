@@ -96,6 +96,11 @@ class SettingsController:
         self.empty_cell_edit.setText(self.settings.empty_cell)
         self.user_agent_edit.setText(self.settings.user_agent)
 
+        settings_ui.yearly_directory_button.clicked.connect(
+            lambda: self.on_directory_setting_clicked(Setting.YEARLY_DIR))
+        settings_ui.other_directory_button.clicked.connect(
+            lambda: self.on_directory_setting_clicked(Setting.OTHER_DIR))
+
         # region Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
@@ -118,23 +123,23 @@ class SettingsController:
 
         # endregion
 
+        # region Search
         # set up restore database button
         self.is_restoring_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
         self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
+        # endregion
 
         settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
 
-    def open_file_select_dialog(self, setting: Setting):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
+    def on_directory_setting_clicked(self, setting: Setting):
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path:
             if setting == Setting.YEARLY_DIR:
-                self.yearly_dir_edit.setText(directory)
+                self.yearly_dir_edit.setText(dir_path)
             elif setting == Setting.OTHER_DIR:
-                self.other_dir_edit.setText(directory)
+                self.other_dir_edit.setText(dir_path)
 
     def on_save_button_clicked(self):
         self.update_settings()
