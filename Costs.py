@@ -1,7 +1,7 @@
 import json
 
 from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QFileDialog, QDialog
+from PyQt5.QtWidgets import QDialog
 
 import GeneralUtils
 import ManageDB
@@ -35,18 +35,18 @@ class CostsController:
 
         # set up values
         self.cost_in_original_currency_doublespinbox = costs_ui.costs_cost_in_original_currency_doublespinbox
-        self.cost_in_original_currency = None
+        self.cost_in_original_currency = 0.0
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
         self.original_currency_combobox.addItems(CURRENCY_LIST)
-        self.original_currency = None
+        self.original_currency = ''
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
-        self.cost_in_local_currency = None
+        self.cost_in_local_currency = 0.0
 
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
-        self.cost_in_local_currency_with_tax = None
+        self.cost_in_local_currency_with_tax = 0.0
 
         # set up buttons
         self.insert_button = costs_ui.costs_insert_button
@@ -129,9 +129,17 @@ class CostsController:
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
     def insert_costs(self):
+        INSERT = 'insert'
+        DELETE = 'delete'
+        insert_or_delete = None
         sql_text = None
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
+            insert_or_delete = INSERT
+        elif self.cost_in_original_currency == 0 and self.original_currency == '' \
+                and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0:
+            insert_or_delete = DELETE
+        if insert_or_delete == INSERT:
             sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
                                                        [{NAME_FIELD_SWITCHER[self.report_parameter]:
                                                              self.name_parameter,
@@ -141,15 +149,21 @@ class CostsController:
                                                          'cost_in_local_currency': self.cost_in_local_currency,
                                                          'cost_in_local_currency_with_tax':
                                                              self.cost_in_local_currency_with_tax}])
-        else:
+        elif insert_or_delete == DELETE:
             sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                       self.name_parameter)
-            self.clear_costs()
-        connection = ManageDB.create_connection(DATABASE_LOCATION)
-        if connection is not None:
-            ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
-            connection.close()
-            ManageDB.backup_costs_data(self.report_parameter)
+        if insert_or_delete in (INSERT, DELETE):
+            connection = ManageDB.create_connection(DATABASE_LOCATION)
+            if connection is not None:
+                ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
+                connection.close()
+                ManageDB.backup_costs_data(self.report_parameter)
+                if insert_or_delete == INSERT:
+                    GeneralUtils.show_message('Data inserted/replaced')
+                elif insert_or_delete == DELETE:
+                    GeneralUtils.show_message('Data removed')
+        else:
+            GeneralUtils.show_message('Invalid entry')
 
     def load_costs(self):
         sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
@@ -185,10 +199,13 @@ class CostsController:
         report_type_dialog.show()
         if report_type_dialog.exec_():
             report_type = report_type_dialog_ui.report_type_combobox.currentText()
-            file_dialog = QFileDialog()
-            file_dialog.setFileMode(QFileDialog.ExistingFile)
-            file_dialog.setNameFilters(('TSV files (*.tsv)', 'CSV files (*.csv'))
-            if file_dialog.exec_():
-                file = file_dialog.selectedFiles()[0]
-                ManageDB.insert_single_cost_file(report_type, file)
-                ManageDB.backup_costs_data(report_type)
+            if report_type != '':
+                file_name = GeneralUtils.choose_file(TSV_FILTER + CSV_FILTER)
+                if file_name != '':
+                    ManageDB.insert_single_cost_file(report_type, file_name)
+                    ManageDB.backup_costs_data(report_type)
+                    GeneralUtils.show_message('File ' + file_name + ' imported')
+                else:
+                    print('Error, no file location selected')
+            else:
+                print('Error, no report type selected')

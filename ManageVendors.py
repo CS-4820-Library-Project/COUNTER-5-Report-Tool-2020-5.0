@@ -279,7 +279,7 @@ class ManageVendorsController(QObject):
         vendor_dialog.exec_()
 
     def on_import_vendors_clicked(self):
-        file_path = GeneralUtils.choose_file("All TSV files (*.tsv)")
+        file_path = GeneralUtils.choose_file(TSV_FILTER)
         if file_path:
             self.import_vendors_tsv(file_path)
             GeneralUtils.show_message(f"Import successful!")

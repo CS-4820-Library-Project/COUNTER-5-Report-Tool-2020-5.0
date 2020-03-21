@@ -51,11 +51,11 @@ def open_file_or_dir(target_path: str):
         show_message(f"\'{target_path}\' does not exist")
 
 
-def choose_file(name_filter: str) -> str:
+def choose_file(name_filters) -> str:
     file_path = ""
     dialog = QFileDialog()
     dialog.setFileMode(QFileDialog.ExistingFile)
-    dialog.setNameFilter(name_filter)
+    dialog.setNameFilters(name_filters)
     if dialog.exec_():
         file_path = dialog.selectedFiles()[0]
 
@@ -74,3 +74,15 @@ def choose_directory() -> str:
 
 def open_in_browser(url: str):
     webbrowser.open_new_tab(url)
+
+
+def choose_save(name_filters) -> str:
+    file_path = ""
+    dialog = QFileDialog()
+    dialog.setFileMode(QFileDialog.AnyFile)
+    dialog.setAcceptMode(QFileDialog.AcceptSave)
+    dialog.setNameFilters(name_filters)
+    if dialog.exec_():
+        file_path = dialog.selectedFiles()[0]
+
+    return file_path

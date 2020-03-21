@@ -1,8 +1,6 @@
 import csv
 import os
-import shlex
 import sip
-import webbrowser
 import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
@@ -151,27 +149,20 @@ class SearchController:
         return or_clause_ui
 
     def export_parameters(self):  # export current search parameters to selected file
-        parameters = self.get_search_parameters()
-        print(parameters)
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilter('JSON files (*.dat)')
-        if dialog.exec_():
-            file_name = dialog.selectedFiles()[0]
-            if file_name[-4:].lower() != '.dat' and file_name != '':
-                file_name += '.tsv'
+        file_name = GeneralUtils.choose_save(JSON_FILTER)
+        if file_name != '':
+            parameters = self.get_search_parameters()
             file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
                 json.dump(parameters, file)
+                GeneralUtils.show_message('Search saved to ' + file_name)
+        else:
+            print('Error, no file location selected')
 
     def import_parameters(self):  # import search parameters from selected file
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.ExistingFile)
-        dialog.setNameFilter('JSON files (*.dat)')
-        if dialog.exec_():
-            fields = json.loads(GeneralUtils.read_json_file(dialog.selectedFiles()[0]))
-            print(fields)
+        file_name = GeneralUtils.choose_file(JSON_FILTER)
+        if file_name != '':
+            fields = json.loads(GeneralUtils.read_json_file(file_name))
             self.report_parameter.setCurrentText(fields['report'])
             self.start_year_parameter.setDate(QDate(fields['start_year'], 1, 1))
             self.end_year_parameter.setDate(QDate(fields['end_year'], 1, 1))
@@ -197,14 +188,8 @@ class SearchController:
         for field in ManageDB.get_view_report_fields_list(parameters['report']):
             headers.append(field['name'])
 
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilter('TSV files (*.tsv)')
-        if dialog.exec_():
-            file_name = dialog.selectedFiles()[0]
-            if file_name[-4:].lower() != '.tsv' and file_name != '':
-                file_name += '.tsv'
+        file_name = GeneralUtils.choose_save(TSV_FILTER)
+        if file_name != '':
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
@@ -216,14 +201,15 @@ class SearchController:
                     for row in results:
                         output.writerow(row)
 
-                    open_file_switcher = {'nt': (lambda: os.startfile(file_name)),
-                                          'posix': (lambda: os.system("open " + shlex.quote(file_name)))}
                     if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
-                        open_file_switcher[os.name]()
+                        GeneralUtils.open_file_or_dir(file_name)
 
                     if self.open_results_folder_radioButton.isChecked() \
                             or self.open_results_both_radioButton.isChecked():
-                        webbrowser.open_new_tab(os.path.dirname(file_name))
+                        GeneralUtils.open_file_or_dir(os.path.dirname(file_name))
+
+                    if self.dont_open_results_radioButton.isChecked():
+                        GeneralUtils.show_message('Results saved to ' + file_name)
 
                 else:
                     print('Error: could not open file ' + file_name)
