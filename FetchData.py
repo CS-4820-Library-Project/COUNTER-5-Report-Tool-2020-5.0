@@ -1,10 +1,8 @@
 from enum import Enum
-from os import path, makedirs, system
+from os import path, makedirs
 import csv
 import json
 import requests
-import webbrowser
-import shlex
 import platform
 import copy
 import ctypes

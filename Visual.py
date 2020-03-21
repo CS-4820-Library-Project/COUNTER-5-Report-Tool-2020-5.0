@@ -1,13 +1,10 @@
 import xlsxwriter
 from datetime import date
-import csv
-import os
-import shlex
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 import ManageDB
-from ui import MainWindow, MessageDialog, VisualTab
+from ui import MessageDialog, VisualTab
 from VariableConstants import *
 
 
