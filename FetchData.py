@@ -10,8 +10,7 @@ import ctypes
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
-    QCheckBox, QFileDialog, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton,\
-    QButtonGroup
+    QCheckBox, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton, QButtonGroup
 
 import GeneralUtils
 from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
@@ -19,7 +18,7 @@ from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, Rep
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
-from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
+from ManageDB import UpdateDatabaseProgressDialogController
 
 SHOW_DEBUG_MESSAGES = False
 

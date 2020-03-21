@@ -15,7 +15,7 @@ from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import REPORT_TYPES, CompletionStatus
 from Settings import SettingsModel
-from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
+from ManageDB import UpdateDatabaseProgressDialogController
 
 # All yearly reports tsv and json are saved here in original condition as backup
 PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"

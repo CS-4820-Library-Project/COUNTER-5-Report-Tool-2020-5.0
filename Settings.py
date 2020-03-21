@@ -5,7 +5,6 @@ from ui import SettingsTab
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
-from UpdateDatabaseProgressDialogController import UpdateDatabaseProgressDialogController
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
@@ -121,7 +120,7 @@ class SettingsController:
 
         # set up restore database button
         self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.settings_widget)
+        self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
         self.restore_database_button = settings_ui.settings_restore_database_button
         self.restore_database_button.clicked.connect(self.on_restore_database)
 
