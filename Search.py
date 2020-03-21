@@ -4,7 +4,7 @@ import sip
 import json
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QFileDialog, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
 
 import ManageDB
 import GeneralUtils
