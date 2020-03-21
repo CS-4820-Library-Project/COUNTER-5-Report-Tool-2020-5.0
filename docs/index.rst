@@ -19,7 +19,6 @@ Welcome to Libly's documentation!
    ManageVendors
    Search
    Settings
-   UpdateDatabaseProgressDialogController
    VariableConstants
    Visual
 

@@ -1,3 +1,5 @@
+"""This module handles all operations involving the user's settings."""
+
 import json
 from enum import Enum
 from PyQt5.QtWidgets import QFileDialog, QWidget
@@ -11,6 +13,7 @@ SETTINGS_FILE_NAME = "settings.dat"
 
 
 class Setting(Enum):
+    """An enum of all settings"""
     YEARLY_DIR = 0
     OTHER_DIR = 1
     REQUEST_INTERVAL = 2
@@ -33,6 +36,18 @@ USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 
 
 class SettingsModel(JsonModel):
+    """This holds the user's settings.
+
+    :param yearly_directory: The directory where yearly reports are saved. Yearly reports are reports that include all
+        the available data for a year.
+    :param other_directory: The default directory where non-yearly reports are saved.
+    :param request_interval: The time to wait between each report request, per vendor.
+    :param request_timeout: The time to wait before timing out a connection (seconds).
+    :param concurrent_vendors: The max number of vendors to work on at a time.
+    :param concurrent_reports: The max number of reports to work on at a time, per vendor.
+    :param empty_cell: The default empty cell value in generated tabular reports.
+    :param user_agent: The user-agent that's included in the header when making requests.
+    """
     def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
                  concurrent_vendors: int, concurrent_reports: int, empty_cell: str, user_agent: str):
         self.yearly_directory = yearly_directory
@@ -68,6 +83,11 @@ class SettingsModel(JsonModel):
 
 
 class SettingsController:
+    """Controls the Settings tab
+
+    :param settings_widget: The settings widget.
+    :param settings_ui: The settings ui object, it holds references to all child widgets.
+    """
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         self.settings_widget = settings_widget
@@ -96,7 +116,12 @@ class SettingsController:
         self.empty_cell_edit.setText(self.settings.empty_cell)
         self.user_agent_edit.setText(self.settings.user_agent)
 
-        # region Reports Help Messages
+        settings_ui.yearly_directory_button.clicked.connect(
+            lambda: self.on_directory_setting_clicked(Setting.YEARLY_DIR))
+        settings_ui.other_directory_button.clicked.connect(
+            lambda: self.on_directory_setting_clicked(Setting.OTHER_DIR))
+
+        # Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
         settings_ui.other_directory_help_button.clicked.connect(
@@ -114,34 +139,50 @@ class SettingsController:
         settings_ui.user_agent_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
                                               "error HTTP error codes. Values should be separated by a space"))
-        # endregion
 
         # endregion
 
+        # region Search
         # set up restore database button
         self.is_restoring_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
         self.restore_database_button = settings_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.on_restore_database)
+        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
+        # endregion
 
-        settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
+        settings_ui.save_button.clicked.connect(self._on_save_button_clicked)
 
-    def open_file_select_dialog(self, setting: Setting):
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
+    def on_directory_setting_clicked(self, setting: Setting):
+        """Handles the signal emitted when a choose folder button is clicked
+
+        :param setting: The setting to be changed
+        """
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path:
             if setting == Setting.YEARLY_DIR:
-                self.yearly_dir_edit.setText(directory)
+                self.yearly_dir_edit.setText(dir_path)
             elif setting == Setting.OTHER_DIR:
-                self.other_dir_edit.setText(directory)
+                self.other_dir_edit.setText(dir_path)
 
-    def on_save_button_clicked(self):
+    def _on_save_button_clicked(self):
+        """Handles the signal emitted when the save button is clicked"""
         self.update_settings()
         self.save_settings_to_disk()
         GeneralUtils.show_message("Changes saved!")
 
+    def on_restore_database_clicked(self):
+        """Restores the database when the restore database button is clicked"""
+        if not self.is_restoring_database:  # check if already running
+            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
+                self.is_restoring_database = True
+                self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
+                                                            True)
+                self.is_restoring_database = False
+        else:
+            print('Error, already running')
+
     def update_settings(self):
+        """Updates the app's settings using the values entered on the UI"""
         self.settings.yearly_directory = self.yearly_dir_edit.text()
         self.settings.other_directory = self.other_dir_edit.text()
         self.settings.request_interval = self.request_interval_spin_box.value()
@@ -152,15 +193,6 @@ class SettingsController:
         self.settings.user_agent = self.user_agent_edit.text()
 
     def save_settings_to_disk(self):
+        """Saves all settings to disk"""
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
-
-    def on_restore_database(self):
-        if not self.is_restoring_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
-                self.is_restoring_database = True
-                self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
-                                                            True)
-                self.is_restoring_database = False
-        else:
-            print('Error, already running')
