@@ -1,4 +1,4 @@
-"""Handles all user settings"""
+"""This module handles all operations involving the user's settings."""
 
 import json
 from enum import Enum
@@ -7,13 +7,13 @@ from ui import SettingsTab
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
-from typing import Union
 
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
 
 
 class Setting(Enum):
+    """An enum of all settings"""
     YEARLY_DIR = 0
     OTHER_DIR = 1
     REQUEST_INTERVAL = 2
@@ -36,6 +36,18 @@ USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 
 
 class SettingsModel(JsonModel):
+    """This holds the user's settings.
+
+    :param yearly_directory: The directory where yearly reports are saved. Yearly reports are reports that include all
+        the available data for a year.
+    :param other_directory: The default directory where non-yearly reports are saved.
+    :param request_interval: The time to wait between each report request, per vendor.
+    :param request_timeout: The time to wait before timing out a connection (seconds).
+    :param concurrent_vendors: The max number of vendors to work on at a time.
+    :param concurrent_reports: The max number of reports to work on at a time, per vendor.
+    :param empty_cell: The default empty cell value in generated tabular reports.
+    :param user_agent: The user-agent that's included in the header when making requests.
+    """
     def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
                  concurrent_vendors: int, concurrent_reports: int, empty_cell: str, user_agent: str):
         self.yearly_directory = yearly_directory
@@ -71,7 +83,11 @@ class SettingsModel(JsonModel):
 
 
 class SettingsController:
-    """Controls the Settings tab"""
+    """Controls the Settings tab
+
+    :param settings_widget: The settings widget.
+    :param settings_ui: The settings ui object, it holds references to all child widgets.
+    """
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         self.settings_widget = settings_widget
@@ -134,17 +150,12 @@ class SettingsController:
         self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
         # endregion
 
-        settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
+        settings_ui.save_button.clicked.connect(self._on_save_button_clicked)
 
     def on_directory_setting_clicked(self, setting: Setting):
-        """
-        Handles the signal emitted when a choose folder button is clicked
+        """Handles the signal emitted when a choose folder button is clicked
 
-        :param setting: The target setting to be changed
-        :return: None
-
-        .. note::
-            This function is not suitable for sending spam e-mails.
+        :param setting: The setting to be changed
         """
         dir_path = GeneralUtils.choose_directory()
         if dir_path:
@@ -153,31 +164,14 @@ class SettingsController:
             elif setting == Setting.OTHER_DIR:
                 self.other_dir_edit.setText(dir_path)
 
-    def on_save_button_clicked(self):
-        """This function does something.
-
-        :param name: The name to use.
-        :type name: str.
-        :param state: Current state to be in.
-        :type state: bool.
-        :returns:  int -- the return code.
-        :raises: AttributeError, KeyError
-
-        """
+    def _on_save_button_clicked(self):
+        """Handles the signal emitted when the save button is clicked"""
         self.update_settings()
         self.save_settings_to_disk()
         GeneralUtils.show_message("Changes saved!")
 
-    def format_unit(self, value: Union[float, int], unit: str) -> str:
-        """
-        Formats the given value as a human readable string using the given units.
-
-        :param value: a numeric value
-        :param unit: the unit for the value (kg, m, etc.)
-        """
-        return '{} {}'.format(value, unit)
-
     def on_restore_database_clicked(self):
+        """Restores the database when the restore database button is clicked"""
         if not self.is_restoring_database:  # check if already running
             if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
                 self.is_restoring_database = True
@@ -188,6 +182,7 @@ class SettingsController:
             print('Error, already running')
 
     def update_settings(self):
+        """Updates the app's settings using the values entered on the UI"""
         self.settings.yearly_directory = self.yearly_dir_edit.text()
         self.settings.other_directory = self.other_dir_edit.text()
         self.settings.request_interval = self.request_interval_spin_box.value()
@@ -198,5 +193,6 @@ class SettingsController:
         self.settings.user_agent = self.user_agent_edit.text()
 
     def save_settings_to_disk(self):
+        """Saves all settings to disk"""
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
