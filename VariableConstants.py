@@ -10,6 +10,17 @@ BLANK_ROWS = 1
 
 # region database report definitions
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
+DATABASE_REPORTS_METRIC = ('Searches_Automated',
+                           'Searches_Federated',
+                           'Searches_Regular',
+                           'Total_Item_Investigations',
+                           'Total_Item_Requests',
+                           'Unique_Item_Investigations',
+                           'Unique_Item_Requests',
+                           'Unique_Title_Investigations',
+                           'Unique_Title_Requests',
+                           'Limit_Exceeded',
+                           'No_License')
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
@@ -42,6 +53,12 @@ DATABASE_REPORT_FIELDS = ({'name': 'database',
 
 # region item report definitions
 ITEM_REPORTS = ('IR', 'IR_A1', 'IR_M1')
+ITEM_REPORTS_METRIC = ('Total_Item_Investigations',
+                       'Total_Item_Requests',
+                       'Unique_Item_Investigations',
+                       'Unique_Item_Requests',
+                       'Limit_Exceeded',
+                       'No_License')
 ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
                        'options': ('NOT NULL',),
@@ -194,6 +211,13 @@ ITEM_REPORT_FIELDS = ({'name': 'item',
 
 # region platform report definitions
 PLATFORM_REPORTS = ('PR', 'PR_P1')
+PLATFORM_REPORTS_METRIC = ('Searches_Platform',
+                           'Total_Item_Investigations',
+                           'Total_Item_Requests',
+                           'Unique_Item_Investigations',
+                           'Unique_Item_Requests',
+                           'Unique_Title_Investigations',
+                           'Unique_Title_Requests')
 PLATFORM_REPORT_FIELDS = ({'name': 'platform',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
@@ -210,6 +234,14 @@ PLATFORM_REPORT_FIELDS = ({'name': 'platform',
 
 # region title report definitions
 TITLE_REPORTS = ('TR', 'TR_B1', 'TR_B2', 'TR_B3', 'TR_J1', 'TR_J2', 'TR_J3', 'TR_J4')
+TITLE_REPORTS_METRIC = ('Total_Item_Investigations',
+                        'Total_Item_Requests',
+                        'Unique_Item_Investigations',
+                        'Unique_Item_Requests',
+                        'Unique_Title_Investigations',
+                        'Unique_Title_Requests',
+                        'Limit_Exceeded',
+                        'No_License')
 TITLE_REPORT_FIELDS = ({'name': 'title',
                         'type': 'TEXT',
                         'options': ('NOT NULL',),
@@ -329,7 +361,7 @@ COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
-FIELDS_NOT_IN_SEARCH = ('year', )
+FIELDS_NOT_IN_SEARCH = ('year',)
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 

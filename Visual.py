@@ -10,9 +10,10 @@ from VariableConstants import *
 
 class VisualController:
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
-        # set up report types combobox
+        # set up combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.report_parameter.addItems(ALL_REPORTS)
+        self.report_parameter.activated[str].connect(self.on_combo_activated)
 
         # set up radio buttons
         self.h_bar_radio = visual_ui.radioButton
@@ -28,7 +29,8 @@ class VisualController:
         self.end_year_parameter.setDate(date.today())
 
         self.name = visual_ui.name_lineEdit
-        self.metric = visual_ui.metric_type_lineEdit
+        self.metric = visual_ui.metric_Type_comboBox
+        self.metric.addItems(DATABASE_REPORTS_METRIC)
 
         # set up the search clauses
         self.and_clause_parameters = None
@@ -45,6 +47,17 @@ class VisualController:
 
         self.data = []
 
+    def on_combo_activated(self, text):
+        self.metric.clear()
+        if text in DATABASE_REPORTS:
+            self.metric.addItems(DATABASE_REPORTS_METRIC)
+        if text in ITEM_REPORTS:
+            self.metric.addItems(ITEM_REPORTS_METRIC)
+        if text in PLATFORM_REPORTS:
+            self.metric.addItems(PLATFORM_REPORTS_METRIC)
+        if text in TITLE_REPORTS:
+            self.metric.addItems(TITLE_REPORTS_METRIC)
+
     def createChart(self):  # submit search result to database and open results
         # get report type
         report = self.report_parameter.currentText()
@@ -54,7 +67,7 @@ class VisualController:
         end_year = self.end_year_parameter.text()
         # get name
         name = self.name.text()
-        metric = self.metric.text()
+        metric = self.metric.currentText()
 
         # sql query to get search results
         sql_text = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
@@ -88,6 +101,13 @@ class VisualController:
             message_label.setText("PLEASE ENTER A VALID INPUT")
 
             message_dialog.exec_()
+
+        self.legendEntry =[] # legend entry data
+        for i in range(1, m):
+            print(self.results[i][3])
+            self.legendEntry.append(self.results[i][3])
+
+        # data is an array with the sorted usage figures
         self.data = []
         for i in range(0, m):
             data1 = []
@@ -97,7 +117,7 @@ class VisualController:
                 data1.append(self.results[i][j])
             self.data.append(data1)
         # testing to make sure its working good
-        print(self.data[0])
+        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
         print(self.data[1])
         # print(self.data[2])
         print(len(self.data))
@@ -126,13 +146,16 @@ class VisualController:
         if dialog.exec_():
             directory = dialog.selectedFiles()[0] + "/"
         self.workbook = xlsxwriter.Workbook(directory + file_name + '_hbar.xlsx')
+
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
+
         # Add the worksheet data that the charts will refer to.
-        headings = [vertical_axis_title, 'Total 1', 'Total 2']
+        headings = [vertical_axis_title]
+        for i in range(0, len(self.legendEntry)):
+            headings.append(self.legendEntry[i])
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
-        # self.worksheet.write_column('B2', self.data[1])
         n = ord('A') + 1
         for i in range(1, len(self.data)):
             self.worksheet.write_column(chr(n) + '2', self.data[i])
@@ -149,12 +172,14 @@ class VisualController:
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
+        m = 2
         for i in range(2, len(self.data)):
             chart1.add_series({
-                'name': ['Sheet1', 0, 2],
-                'categories': ['Sheet1', 1, 0, 6, 0],
-                'values': ['Sheet1', 1, 2, 6, 2],
+                'name': ['Sheet1', 0, m],
+                'categories': ['Sheet1', 1, 0, 12, 0],
+                'values': ['Sheet1', 1, m, 12, m],
             })
+            m = m + 1
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
@@ -183,7 +208,9 @@ class VisualController:
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
-        headings = [vertical_axis_title, 'Total 1', 'Total 2']
+        headings = [vertical_axis_title]
+        for i in range(0, len(self.legendEntry)):
+            headings.append(self.legendEntry[i])
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
         n = ord('A') + 1
@@ -202,12 +229,14 @@ class VisualController:
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
+        m = 2
         for i in range(2, len(self.data)):
             chart1.add_series({
-                'name': ['Sheet1', 0, 2],
-                'categories': ['Sheet1', 1, 0, 6, 0],
-                'values': ['Sheet1', 1, 2, 6, 2],
+                'name': ['Sheet1', 0, m],
+                'categories': ['Sheet1', 1, 0, 12, 0],
+                'values': ['Sheet1', 1, m, 12, m],
             })
+            m = m + 1
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
@@ -237,7 +266,10 @@ class VisualController:
         self.worksheet = self.workbook.add_worksheet()
         bold = self.workbook.add_format({'bold': 1})
         # Add the worksheet data that the charts will refer to.
-        headings = [vertical_axis_title, 'Total 1', 'Total 2']
+        headings = [vertical_axis_title]
+        for i in range(0,len(self.legendEntry)):
+            headings.append(self.legendEntry[i])
+        print(headings)
         self.worksheet.write_row('A1', headings, bold)
         self.worksheet.write_column('A2', self.data[0])
         n = ord('A') + 1
@@ -256,12 +288,14 @@ class VisualController:
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
+        m = 2
         for i in range(2, len(self.data)):
             chart1.add_series({
-                'name': ['Sheet1', 0, 2],
-                'categories': ['Sheet1', 1, 0, 6, 0],
-                'values': ['Sheet1', 1, 2, 6, 2],
+                'name': ['Sheet1', 0, m],
+                'categories': ['Sheet1', 1, 0, 12, 0],
+                'values': ['Sheet1', 1, m, 12, m],
             })
+            m = m + 1
 
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
