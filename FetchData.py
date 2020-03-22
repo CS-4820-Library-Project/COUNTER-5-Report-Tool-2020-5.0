@@ -1,3 +1,5 @@
+"""This module handles all operations involving fetching reports."""
+
 from enum import Enum
 from os import path, makedirs
 import csv

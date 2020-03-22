@@ -1,7 +1,9 @@
+"""This module handles all operations involving managing vendors."""
+
 import csv
 import json
 import validators
-from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QFileDialog
+from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
@@ -18,11 +20,23 @@ EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 
 
 class Vendor(JsonModel):
-    def __init__(self, name: str, customer_id: str, base_url: str, requestor_id: str, api_key: str, platform: str,
+    """This holds a vendor's information
+
+    :param name: The vendor's unique name (Mandatory)
+    :param base_url: The base URL for making sushi report calls (must end with '/reports', mandatory)
+    :param customer_id: The customer id used in sushi report calls
+    :param requestor_id: The requestor id id used in sushi report calls
+    :param api_key: The api key id used in sushi report calls
+    :param platform: The platform id used in sushi report calls
+    :param is_local: This indicates if this vendor is sushi compatible
+    :param description: A description of this vendor
+    :param companies: More information about the vendor
+    """
+    def __init__(self, name: str, base_url: str, customer_id: str, requestor_id: str, api_key: str, platform: str,
                  is_local: bool, description: str, companies: str):
         self.name = name
-        self.customer_id = customer_id
         self.base_url = base_url
+        self.customer_id = customer_id
         self.requestor_id = requestor_id
         self.api_key = api_key
         self.platform = platform
@@ -32,6 +46,11 @@ class Vendor(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
+        """This returns a vendor object using the parameters in a json dict
+
+        :param json_dict: A dict containing a vendor's details
+        :return: Vendor
+        """
         name = json_dict["name"] if "name" in json_dict else ""
         customer_id = json_dict["customer_id"] if "customer_id" in json_dict else ""
         base_url = json_dict["base_url"] if "base_url" in json_dict else ""
@@ -42,14 +61,20 @@ class Vendor(JsonModel):
         description = json_dict["description"] if "description" in json_dict else ""
         companies = json_dict["companies"] if "companies" in json_dict else ""
 
-        return cls(name, customer_id, base_url, requestor_id, api_key, platform, is_local, description, companies)
+        return cls(name, base_url, customer_id, requestor_id, api_key, platform, is_local, description, companies)
 
 
 class ManageVendorsController(QObject):
+    """Controls the Manage Vendors tab
+
+    :param manage_vendors_widget: The manage vendors widget.
+    :param manage_vendors_ui: The UI for the manage_vendors_widget.
+    """
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
+    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
         super().__init__()
+        self.manage_vendors_widget = manage_vendors_widget
         self.selected_index = -1
 
         self.edit_vendor_details_frame = manage_vendors_ui.edit_vendor_details_frame
@@ -79,8 +104,8 @@ class ManageVendorsController(QObject):
 
         self.save_vendor_changes_button.clicked.connect(self.modify_vendor)
         self.undo_vendor_changes_button.clicked.connect(self.populate_edit_vendor_view)
-        self.remove_vendor_button.clicked.connect(self.open_remove_vendor_dialog)
-        self.add_vendor_button.clicked.connect(self.open_add_vendor_dialog)
+        self.remove_vendor_button.clicked.connect(self.on_remove_vendor_clicked)
+        self.add_vendor_button.clicked.connect(self.on_add_vendor_clicked)
         self.export_vendors_button.clicked.connect(self.on_export_vendors_clicked)
         self.import_vendors_button.clicked.connect(self.on_import_vendors_clicked)
 
@@ -101,10 +126,21 @@ class ManageVendorsController(QObject):
         self.update_vendors_ui()
 
     def on_vendor_selected(self, model_index: QModelIndex):
+        """Handles the signal emitted when a vendor is selected
+
+        :param model_index: An object containing the location of the vendor on the vendor list
+        """
         self.selected_index = model_index.row()
         self.populate_edit_vendor_view()
 
     def on_name_text_changed(self, new_name: str, original_name: str, validation_label: QLabel, validate: bool = True):
+        """Handles the signal emitted when a vendor's name is changed
+
+        :param new_name: The new name entered in the text field
+        :param original_name: The vendor's original name
+        :param validation_label: The label to show validation messages
+        :param validate: This indicates whether the new_name should be validated
+        """
         if not validate:
             validation_label.hide()
             return
@@ -117,6 +153,12 @@ class ManageVendorsController(QObject):
             validation_label.setText(message)
 
     def on_url_text_changed(self, url: str, validation_label: QLabel, validate: bool = True):
+        """Handles the signal emitted when a vendor's URL is changed
+
+        :param url: The URL entered in the text field
+        :param validation_label: The label to show validation messages
+        :param validate: This indicates whether the url should be validated
+        """
         if not validate:
             validation_label.hide()
             return
@@ -129,6 +171,12 @@ class ManageVendorsController(QObject):
             validation_label.setText(message)
 
     def validate_new_name(self, new_name: str, original_name: str = "") -> (bool, str):
+        """Validates a new vendor name
+
+        :param new_name: The new name to be validated
+        :param original_name: The original name
+        :returns: (is_successful, message) A Tuple with the completion status and a message
+        """
         if not new_name:
             return False, "Vendor name can't be empty"
         elif new_name.lower() in self.vendor_names:
@@ -140,6 +188,11 @@ class ManageVendorsController(QObject):
             return True, ""
 
     def validate_url(self, url: str) -> (bool, str):
+        """Validates a new url
+
+        :param url: The URL to be validated
+        :returns: (is_successful, message) A Tuple with the completion status and a message
+        """
         if not validators.url(url):
             return False, "Invalid Url"
         elif not url.endswith("/reports"):
@@ -148,6 +201,7 @@ class ManageVendorsController(QObject):
             return True, ""
 
     def update_vendors_ui(self):
+        """Updates the UI to show all vendors"""
         self.vendor_list_model.clear()
         for vendor in self.vendors:
             item = QStandardItem(vendor.name)
@@ -157,11 +211,17 @@ class ManageVendorsController(QObject):
         self.populate_edit_vendor_view()
 
     def update_vendor_names(self):
+        """Updates the local set of vendor names used for validation"""
         self.vendor_names.clear()
         for vendor in self.vendors:
             self.vendor_names.add(vendor.name.lower())
 
     def add_vendor(self, new_vendor: Vendor) -> (bool, str):
+        """Adds a new vendor to the system if the vendor is valid
+
+        :param new_vendor: The new vendor to be added
+        :returns: (is_successful, message) A Tuple with the completion status and a message
+        """
         # Check if vendor is valid
         is_valid, message = self.validate_new_name(new_vendor.name)
         if not is_valid:
@@ -178,6 +238,7 @@ class ManageVendorsController(QObject):
         return True, ""
 
     def modify_vendor(self):
+        """Updates a vendor's information in the system if the vendor is valid"""
         if self.selected_index < 0:
             print("No vendor selected")
             return
@@ -222,7 +283,12 @@ class ManageVendorsController(QObject):
 
         GeneralUtils.show_message("Changes Saved!")
 
-    def open_add_vendor_dialog(self):
+    def on_add_vendor_clicked(self):
+        """Handles the signal emitted when the add vendor button is clicked
+
+        A dialog is show to allow the user to enter a new vendor's information. If the information entered is valid,
+        the vendor is added to the system
+        """
         vendor_dialog = QDialog()
         vendor_dialog_ui = AddVendorDialog.Ui_addVendorDialog()
         vendor_dialog_ui.setupUi(vendor_dialog)
@@ -248,15 +314,9 @@ class ManageVendorsController(QObject):
             lambda url: self.on_url_text_changed(url, url_validation_label))
 
         def attempt_add_vendor():
-            vendor = Vendor(name_edit.text(),
-                            customer_id_edit.text(),
-                            base_url_edit.text(),
-                            requestor_id_edit.text(),
-                            api_key_edit.text(),
-                            platform_edit.text(),
-                            local_only_check_box.checkState() == Qt.Checked,
-                            description_edit.toPlainText(),
-                            companies_edit.toPlainText())
+            vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
+                            api_key_edit.text(), platform_edit.text(), local_only_check_box.checkState() == Qt.Checked,
+                            description_edit.toPlainText(), companies_edit.toPlainText())
 
             is_valid, message = self.add_vendor(vendor)
             if is_valid:
@@ -279,18 +339,29 @@ class ManageVendorsController(QObject):
         vendor_dialog.exec_()
 
     def on_import_vendors_clicked(self):
+        """Handles the signal emitted when the import vendors button is clicked.
+
+        A file select dialog is shown to allow the user to select the vendors TSV file to import. The selected file is
+        then imported.
+        """
         file_path = GeneralUtils.choose_file(TSV_FILTER)
         if file_path:
             self.import_vendors_tsv(file_path)
             GeneralUtils.show_message(f"Import successful!")
 
     def on_export_vendors_clicked(self):
+        """Handles the signal emitted when the export vendors button is clicked.
+
+        A folder select dialog is shown to allow the user to select the target directory to export the vendors file to.
+        A vendors TSV file containing all the vendors in the system is then exported
+        """
         dir_path = GeneralUtils.choose_directory()
         if dir_path:
             self.export_vendors_tsv(dir_path)
             GeneralUtils.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
 
     def populate_edit_vendor_view(self):
+        """Populates the edit vendor view with the selected vendors's information"""
         if self.selected_index >= 0:
             selected_vendor = self.vendors[self.selected_index]
 
@@ -334,6 +405,10 @@ class ManageVendorsController(QObject):
             self.set_edit_vendor_view_state(False)
 
     def set_edit_vendor_view_state(self, is_enabled):
+        """Enables or disables the elements in the edit vendor view
+
+        :param is_enabled: This indicates whether the edit vendor view should be enabled
+        """
         if is_enabled:
             self.edit_vendor_details_frame.setEnabled(True)
             self.edit_vendor_options_frame.setEnabled(True)
@@ -341,7 +416,12 @@ class ManageVendorsController(QObject):
             self.edit_vendor_details_frame.setEnabled(False)
             self.edit_vendor_options_frame.setEnabled(False)
 
-    def open_remove_vendor_dialog(self):
+    def on_remove_vendor_clicked(self):
+        """Handles the signal emitted when the remove vendor button is clicked.
+
+        A confirmation dialog is shown to confirm the removal of the vendor. The vendor is removed from the system if
+        confirmed
+        """
         dialog_remove = QDialog()
         dialog_remove_ui = RemoveVendorDialog.Ui_dialog_remove()
         dialog_remove_ui.setupUi(dialog_remove)
@@ -362,13 +442,19 @@ class ManageVendorsController(QObject):
         dialog_remove.exec_()
 
     def save_all_vendors_to_disk(self):
+        """Saves all the vendors in the system to disk"""
         json_string = json.dumps(self.vendors, default=lambda o: o.__dict__, indent=4)
         GeneralUtils.save_json_file(VENDORS_FILE_DIR, VENDORS_FILE_NAME, json_string)
 
     def sort_vendors(self):
+        """Sorts the vendors alphabetically based their names"""
         self.vendors = sorted(self.vendors, key=lambda vendor: vendor.name.lower())
 
     def import_vendors_tsv(self, file_path):
+        """Imports the vendors in a TSV file path to the system
+
+        :param file_path: The file path of the vendors TSV file
+        """
         try:
             tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
             reader = csv.DictReader(tsv_file, delimiter='\t')
@@ -378,8 +464,8 @@ class ManageVendorsController(QObject):
                 else:
                     is_local = False
                 vendor = Vendor(row['name'] if 'name' in row else "",
-                                row['customer_id'] if 'customer_id' in row else "",
                                 row['base_url'] if 'base_url' in row else "",
+                                row['customer_id'] if 'customer_id' in row else "",
                                 row['requestor_id'] if 'requestor_id' in row else "",
                                 row['api_key'] if 'api_key' in row else "",
                                 row['platform'] if 'platform' in row else "",
@@ -404,10 +490,14 @@ class ManageVendorsController(QObject):
             print(f"File import failed: {e}")
 
     def export_vendors_tsv(self, dir_path):
+        """Exports all vendor information as a TSV file to a directory
+
+        :param dir_path: The directory path to export the vendors TSV file to
+        """
         file_path = f"{dir_path}{EXPORT_VENDORS_FILE_NAME}"
         column_names = ["name",
-                        "customer_id",
                         "base_url",
+                        "customer_id",
                         "requestor_id",
                         "api_key",
                         "platform",
