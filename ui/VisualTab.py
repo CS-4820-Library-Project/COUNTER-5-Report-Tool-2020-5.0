@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'VisualTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_visual_tab(object):
     def setupUi(self, visual_tab):
         visual_tab.setObjectName("visual_tab")
-        visual_tab.resize(542, 481)
+        visual_tab.resize(977, 648)
         self.verticalLayout = QtWidgets.QVBoxLayout(visual_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.search_parameters_frame_2 = QtWidgets.QFrame(visual_tab)
@@ -76,18 +76,6 @@ class Ui_visual_tab(object):
         self.frame_15.setObjectName("frame_15")
         self.gridLayout_13 = QtWidgets.QGridLayout(self.frame_15)
         self.gridLayout_13.setObjectName("gridLayout_13")
-        self.label_8 = QtWidgets.QLabel(self.frame_15)
-        self.label_8.setObjectName("label_8")
-        self.gridLayout_13.addWidget(self.label_8, 1, 0, 1, 1)
-        self.name_lineEdit = QtWidgets.QLineEdit(self.frame_15)
-        self.name_lineEdit.setObjectName("name_lineEdit")
-        self.gridLayout_13.addWidget(self.name_lineEdit, 1, 1, 1, 1)
-        self.label_14 = QtWidgets.QLabel(self.frame_15)
-        self.label_14.setObjectName("label_14")
-        self.gridLayout_13.addWidget(self.label_14, 2, 0, 1, 1)
-        self.metric_type_lineEdit = QtWidgets.QLineEdit(self.frame_15)
-        self.metric_type_lineEdit.setObjectName("metric_type_lineEdit")
-        self.gridLayout_13.addWidget(self.metric_type_lineEdit, 2, 1, 1, 1)
         self.frame_18 = QtWidgets.QFrame(self.frame_15)
         self.frame_18.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_18.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -115,7 +103,7 @@ class Ui_visual_tab(object):
         self.radioButton = QtWidgets.QRadioButton(self.frame_18)
         self.radioButton.setObjectName("radioButton")
         self.verticalLayout_28.addWidget(self.radioButton)
-        self.gridLayout_13.addWidget(self.frame_18, 3, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.frame_18, 3, 0, 1, 3)
         self.frame_17 = QtWidgets.QFrame(self.frame_15)
         self.frame_17.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_17.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -141,7 +129,16 @@ class Ui_visual_tab(object):
         self.label_50.setIndent(85)
         self.label_50.setObjectName("label_50")
         self.verticalLayout_27.addWidget(self.label_50)
-        self.gridLayout_13.addWidget(self.frame_17, 4, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.frame_17, 4, 0, 1, 3)
+        self.label_8 = QtWidgets.QLabel(self.frame_15)
+        self.label_8.setObjectName("label_8")
+        self.gridLayout_13.addWidget(self.label_8, 1, 0, 1, 1)
+        self.label_14 = QtWidgets.QLabel(self.frame_15)
+        self.label_14.setObjectName("label_14")
+        self.gridLayout_13.addWidget(self.label_14, 2, 0, 1, 1)
+        self.name_lineEdit = QtWidgets.QLineEdit(self.frame_15)
+        self.name_lineEdit.setObjectName("name_lineEdit")
+        self.gridLayout_13.addWidget(self.name_lineEdit, 1, 2, 1, 1)
         self.label_15 = QtWidgets.QLabel(self.frame_15)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -150,7 +147,10 @@ class Ui_visual_tab(object):
         self.label_15.setSizePolicy(sizePolicy)
         self.label_15.setAlignment(QtCore.Qt.AlignCenter)
         self.label_15.setObjectName("label_15")
-        self.gridLayout_13.addWidget(self.label_15, 0, 0, 1, 2)
+        self.gridLayout_13.addWidget(self.label_15, 0, 0, 1, 3)
+        self.metric_Type_comboBox = QtWidgets.QComboBox(self.frame_15)
+        self.metric_Type_comboBox.setObjectName("metric_Type_comboBox")
+        self.gridLayout_13.addWidget(self.metric_Type_comboBox, 2, 2, 1, 1)
         self.horizontalLayout_14.addWidget(self.frame_15)
         self.frame_16 = QtWidgets.QFrame(self.frame_14)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -233,8 +233,6 @@ class Ui_visual_tab(object):
         self.search_end_year_parameter_label_2.setText(_translate("visual_tab", "End year"))
         self.search_start_year_parameter_dateedit_2.setDisplayFormat(_translate("visual_tab", "yyyy"))
         self.search_end_year_parameter_dateedit_2.setDisplayFormat(_translate("visual_tab", "yyyy"))
-        self.label_8.setText(_translate("visual_tab", "Name *   :"))
-        self.label_14.setText(_translate("visual_tab", "Metric Type *   :"))
         self.label_45.setText(_translate("visual_tab", "Select Chart Type"))
         self.radioButton_4.setText(_translate("visual_tab", "Line"))
         self.radioButton_3.setText(_translate("visual_tab", "Vertical Bar"))
@@ -244,6 +242,8 @@ class Ui_visual_tab(object):
         self.label_48.setText(_translate("visual_tab", "Examples : Report is PR, Name must be a Platform"))
         self.label_49.setText(_translate("visual_tab", "Report is DR, Name must be a Database"))
         self.label_50.setText(_translate("visual_tab", "Report is TR, Name must be a Title"))
+        self.label_8.setText(_translate("visual_tab", "Name *   :"))
+        self.label_14.setText(_translate("visual_tab", "Metric Type *   :"))
         self.label_15.setText(_translate("visual_tab", "Required fields*"))
         self.label_16.setText(_translate("visual_tab", "File Name"))
         self.label_44.setText(_translate("visual_tab", "Vertical Axis Title"))
