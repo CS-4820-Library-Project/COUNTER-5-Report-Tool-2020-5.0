@@ -50,7 +50,7 @@ if __name__ == "__main__":
     manage_vendors_tab = QWidget(main_window)
     manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
     manage_vendors_ui.setupUi(manage_vendors_tab)
-    manage_vendors_controller = ManageVendorsController(manage_vendors_ui)
+    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui)
 
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()
