@@ -1,6 +1,5 @@
 """This module handles all operations involving fetching reports."""
 
-from enum import Enum
 from os import path, makedirs
 import csv
 import json
@@ -21,33 +20,7 @@ from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseProgressDialogController
-
-SHOW_DEBUG_MESSAGES = False
-
-REPORT_TYPES = ["PR",
-                "PR_P1",
-                "DR",
-                "DR_D1",
-                "DR_D2",
-                "TR",
-                "TR_B1",
-                "TR_B2",
-                "TR_B3",
-                "TR_J1",
-                "TR_J2",
-                "TR_J3",
-                "TR_J4",
-                "IR",
-                "IR_A1",
-                "IR_M1"]
-
-
-class MajorReportType(Enum):
-    PLATFORM = "PR"
-    DATABASE = "DR"
-    TITLE = "TR"
-    ITEM = "IR"
-
+from VariableConstants import *
 
 def get_major_report_type(report_type: str) -> MajorReportType:
     if report_type == "PR" or report_type == "PR_P1":
@@ -63,16 +36,6 @@ def get_major_report_type(report_type: str) -> MajorReportType:
 
     elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
         return MajorReportType.ITEM
-
-
-class SpecialOptionType(Enum):
-    TO = 0  # Tabular Only, not included in request url, only used in creating tabular report
-    AO = 1  # Attribute Only, only in attributes_to_include, does not have it's own parameters in request url
-    AP = 2  # Attribute Parameter, in attributes_to_include and has it's own parameters in request url
-    ADP = 3  # Attribute Date Parameter, in attributes_to_include and has it's own date parameters in request url
-    POS = 4  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
-    POB = 5  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
-
 
 class SpecialReportOptions:
     def __init__(self):
@@ -93,138 +56,6 @@ class SpecialReportOptions:
         self.article_version = False, SpecialOptionType.AO, "Article_Version", [DEFAULT_SPECIAL_OPTION_VALUE]
         self.include_component_details = False, SpecialOptionType.POB, None, None
         self.include_parent_details = False, SpecialOptionType.POB, None, None
-
-
-SPECIAL_REPORT_OPTIONS = {
-    MajorReportType.PLATFORM: [(SpecialOptionType.AP, "Data_Type", ["Article",
-                                                                     "Book",
-                                                                     "Book_Segment",
-                                                                     "Database",
-                                                                     "Dataset",
-                                                                     "Journal",
-                                                                     "Multimedia",
-                                                                     "Newspaper_or_Newsletter",
-                                                                     "Other",
-                                                                     "Platform",
-                                                                     "Report",
-                                                                    "Repository_Item",
-                                                                    "Thesis_or_Dissertation"]),
-                               (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                         "TDM"]),
-                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Platform",
-                                                                       "Total_Item_Investigations",
-                                                                       "Total_Item_Requests",
-                                                                       "Unique_Item_Investigations",
-                                                                       "Unique_Item_Requests",
-                                                                       "Unique_Title_Investigations",
-                                                                       "Unique_Title_Requests"]),
-                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
-    MajorReportType.DATABASE: [(SpecialOptionType.AP, "Data_Type", ["Book",
-                                                                     "Database",
-                                                                     "Journal",
-                                                                     "Multimedia",
-                                                                     "Newspaper_or_Newsletter",
-                                                                     "Other",
-                                                                     "Report",
-                                                                     "Repository_Item",
-                                                                     "Thesis_or_Dissertation"]),
-                               (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                         "TDM"]),
-                               (SpecialOptionType.POS, "Metric_Type", ["Searches_Automated",
-                                                                       "Searches_Federated",
-                                                                       "Searches_Regular",
-                                                                       "Total_Item_Investigations",
-                                                                       "Total_Item_Requests",
-                                                                       "Unique_Item_Investigations",
-                                                                       "Unique_Item_Requests",
-                                                                       "Unique_Title_Investigations",
-                                                                       "Unique_Title_Requests",
-                                                                       "Limit_Exceeded",
-                                                                       "No_License"]),
-                               (SpecialOptionType.TO, "Exclude_Monthly_Details")],
-    MajorReportType.TITLE: [(SpecialOptionType.AP, "Data_Type", ["Book",
-                                                                  "Journal",
-                                                                  "Newspaper_or_Newsletter",
-                                                                  "Other",
-                                                                  "Report",
-                                                                  "Thesis_or_Dissertation"]),
-                            (SpecialOptionType.AP, "Section_Type", ["Article",
-                                                                     "Book",
-                                                                     "Chapter",
-                                                                     "Other",
-                                                                     "Section"]),
-                            (SpecialOptionType.AP, "Access_Type", ["Controlled",
-                                                                    "OA_Gold"]),
-                            (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                      "TDM"]),
-                            (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
-                                                                    "Total_Item_Requests",
-                                                                    "Unique_Item_Investigations",
-                                                                    "Unique_Item_Requests",
-                                                                    "Unique_Title_Investigations",
-                                                                    "Unique_Title_Requests",
-                                                                    "Limit_Exceeded",
-                                                                    "No_License"]),
-                            (SpecialOptionType.ADP, "YOP"),
-                            (SpecialOptionType.TO, "Exclude_Monthly_Details")],
-    MajorReportType.ITEM: [(SpecialOptionType.AP, "Data_Type", ["Article",
-                                                                 "Book",
-                                                                 "Book_Segment",
-                                                                 "Dataset",
-                                                                 "Journal",
-                                                                 "Multimedia",
-                                                                 "Newspaper_or_Newsletter",
-                                                                 "Other",
-                                                                 "Report",
-                                                                 "Repository_Item",
-                                                                 "Thesis_or_Dissertation"]),
-                           (SpecialOptionType.AP, "Access_Type", ["Controlled",
-                                                                   "OA_Gold",
-                                                                   "Other_Free_To_Read"]),
-                           (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                     "TDM"]),
-                           (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
-                                                                   "Total_Item_Requests",
-                                                                   "Unique_Item_Investigations",
-                                                                   "Unique_Item_Requests",
-                                                                   "Limit_Exceeded",
-                                                                   "No_License"]),
-                           (SpecialOptionType.ADP, "YOP"),
-                           (SpecialOptionType.AO, "Authors"),
-                           (SpecialOptionType.AO, "Publication_Date"),
-                           (SpecialOptionType.AO, "Article_Version"),
-                           (SpecialOptionType.POB, "Include_Component_Details"),
-                           (SpecialOptionType.POB, "Include_Parent_Details"),
-                           (SpecialOptionType.TO, "Exclude_Monthly_Details")]
-}
-
-DEFAULT_SPECIAL_OPTION_VALUE = "all"
-
-# If these codes are received with a Report_Header, files will be created and saved
-ACCEPTABLE_CODES = [3030,
-                    3031,
-                    3032,
-                    3040,
-                    3050,
-                    3060,
-                    3062] + list(range(1, 1000))
-
-# If these codes are received the retry checkbox will be checked, user can retry later
-RETRY_LATER_CODES = [1010,
-                     1011]
-RETRY_WAIT_TIME = 5  # Seconds
-
-# All yearly reports tsv and json are saved here in original condition as backup
-PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
-
-
-class CompletionStatus(Enum):
-    SUCCESSFUL = "Successful!"
-    WARNING = "Warning!"
-    FAILED = "Failed!"
-    CANCELLED = "Cancelled!"
-
-
 # region Models
 
 class SupportedReportModel(JsonModel):
