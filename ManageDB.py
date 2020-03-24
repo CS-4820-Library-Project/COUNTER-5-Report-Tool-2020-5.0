@@ -45,6 +45,9 @@ def get_chart_report_fields_list(report):
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] not in FIELDS_NOT_IN_VIEWS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    for field in COST_FIELDS:  # cost table fields
+        if field['name'] in COST_FIELDS_IN_SEARCH:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for key in sorted(MONTHS):  # month columns
         fields.append({'name': MONTHS[key], 'type': 'INTEGER',
                        'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
