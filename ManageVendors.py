@@ -2,7 +2,6 @@
 
 import csv
 import os
-import path
 import json
 import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
@@ -287,25 +286,26 @@ class ManageVendorsController(QObject):
         GeneralUtils.show_message("Changes Saved!")
 
     def update_file_folder(self,original_name, new_name):
-        workingPath1 = os.getcwd() + "\\all_data\.DO_NOT_MODIFY\_json"
-        workingPath2 = os.getcwd() + "\\all_data\.DO_NOT_MODIFY"
-        workingPath3 = os.getcwd() + "\\all_data\yearly_files"
-        workingPath4 = os.getcwd() + "\\all_data\other_files"
+        workingPath1 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY\_json"
+        workingPath2 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY"
+        workingPath3 = os.getcwd() + os.path.sep + "all_data\yearly_files"
+        workingPath4 = os.getcwd() + os.path.sep + "all_data\other_files"
+        print(os.path.sep)
         if(os.path.exists(workingPath1)):
             folderList = os.listdir(workingPath1)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath1 + "\\" + folder
+                    year_path = workingPath1 + os.path.sep + folder
 
-                    original_folder_path = year_path + "\\" + original_name
-                    new_folder_path = year_path + "\\" + new_name
+                    original_folder_path = year_path + os.path.sep + original_name
+                    new_folder_path = year_path + os.path.sep + new_name
 
                     if os.path.exists(original_folder_path):
                         filesList = os.listdir(original_folder_path)
 
                         for theFile in filesList:
-                            old_file_path = original_folder_path + "\\" + theFile
-                            new_file_path = original_folder_path + "\\" + theFile.replace(original_name,new_name)
+                            old_file_path = original_folder_path + os.path.sep + theFile
+                            new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,new_name)
                             #print("change fileName from: " + old_file_path + " to: "+ new_file_path)
                             os.rename(old_file_path,new_file_path)
 
@@ -316,17 +316,17 @@ class ManageVendorsController(QObject):
             folderList = os.listdir(workingPath1)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath2 + "\\" + folder
+                    year_path = workingPath2 + os.path.sep + folder
 
-                    original_folder_path = year_path + "\\" + original_name
-                    new_folder_path = year_path + "\\" + new_name
+                    original_folder_path = year_path + os.path.sep + original_name
+                    new_folder_path = year_path + os.path.sep + new_name
 
                     if os.path.exists(original_folder_path):
                         filesList = os.listdir(original_folder_path)
 
                         for theFile in filesList:
-                            old_file_path = original_folder_path + "\\" + theFile
-                            new_file_path = original_folder_path + "\\" + theFile.replace(original_name, new_name)
+                            old_file_path = original_folder_path + os.path.sep + theFile
+                            new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
                             # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
                             os.rename(old_file_path, new_file_path)
 
@@ -337,17 +337,17 @@ class ManageVendorsController(QObject):
             folderList = os.listdir(workingPath1)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath3 + "\\" + folder
+                    year_path = workingPath3 + os.path.sep + folder
 
-                    original_folder_path = year_path + "\\" + original_name
-                    new_folder_path = year_path + "\\" + new_name
+                    original_folder_path = year_path + os.path.sep + original_name
+                    new_folder_path = year_path + os.path.sep + new_name
 
                     if os.path.exists(original_folder_path):
                         filesList = os.listdir(original_folder_path)
 
                         for theFile in filesList:
-                            old_file_path = original_folder_path + "\\" + theFile
-                            new_file_path = original_folder_path + "\\" + theFile.replace(original_name, new_name)
+                            old_file_path = original_folder_path + os.path.sep + theFile
+                            new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
                             # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
                             os.rename(old_file_path, new_file_path)
 
@@ -359,8 +359,8 @@ class ManageVendorsController(QObject):
 
             for theFile in filesList:
                 if original_name in theFile:
-                    old_file_path = workingPath4 + "\\" + theFile
-                    new_file_path = workingPath4 + "\\" + theFile.replace(original_name, new_name)
+                    old_file_path = workingPath4 + os.path.sep + theFile
+                    new_file_path = workingPath4 + os.path.sep + theFile.replace(original_name, new_name)
                     os.rename(old_file_path, new_file_path)
 
 
