@@ -22,7 +22,9 @@ from Settings import SettingsModel
 from ManageDB import UpdateDatabaseProgressDialogController
 from VariableConstants import *
 
+
 def get_major_report_type(report_type: str) -> MajorReportType:
+    """Returns a major report type that a report type falls under"""
     if report_type == "PR" or report_type == "PR_P1":
         return MajorReportType.PLATFORM
 
@@ -37,28 +39,10 @@ def get_major_report_type(report_type: str) -> MajorReportType:
     elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
         return MajorReportType.ITEM
 
-class SpecialReportOptions:
-    def __init__(self):
-        # PR, DR, TR, IR
-        self.data_type = False, SpecialOptionType.AP, "Data_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.access_method = False, SpecialOptionType.AP, "Access_Method", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.metric_type = False, SpecialOptionType.POS, "Metric_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.exclude_monthly_details = False, SpecialOptionType.TO, None, None
-        # TR, IR
-        current_date = QDate.currentDate()
-        self.yop = False, SpecialOptionType.ADP, "YOP", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.access_type = False, SpecialOptionType.AP, "Access_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
-        # TR
-        self.section_type = False, SpecialOptionType.AP, "Section_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
-        # IR
-        self.authors = False, SpecialOptionType.AO, "Authors", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.publication_date = False, SpecialOptionType.AO, "Publication_Date", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.article_version = False, SpecialOptionType.AO, "Article_Version", [DEFAULT_SPECIAL_OPTION_VALUE]
-        self.include_component_details = False, SpecialOptionType.POB, None, None
-        self.include_parent_details = False, SpecialOptionType.POB, None, None
-# region Models
 
+# region Models
 class SupportedReportModel(JsonModel):
+    """Models a SUSHI Supported Report"""
     def __init__(self, report_id: str):
         self.report_id = report_id
 
@@ -70,6 +54,7 @@ class SupportedReportModel(JsonModel):
 
 
 class PeriodModel(JsonModel):
+    """Models a SUSHI Period"""
     def __init__(self, begin_date: str, end_date: str):
         self.begin_date = begin_date
         self.end_date = end_date
@@ -83,6 +68,7 @@ class PeriodModel(JsonModel):
 
 
 class InstanceModel(JsonModel):
+    """Models a SUSHI Instance"""
     def __init__(self, metric_type: str, count: int):
         self.metric_type = metric_type
         self.count = count
@@ -96,6 +82,7 @@ class InstanceModel(JsonModel):
 
 
 class PerformanceModel(JsonModel):
+    """Models a SUSHI Performance"""
     def __init__(self, period: PeriodModel, instances: list):
         self.period = period
         self.instances = instances
@@ -110,6 +97,7 @@ class PerformanceModel(JsonModel):
 
 
 class TypeValueModel(JsonModel):
+    """Models SUSHI models that are made up of Type and value"""
     def __init__(self, item_type: str, value: str):
         self.item_type = item_type
         self.value = value
@@ -123,6 +111,7 @@ class TypeValueModel(JsonModel):
 
 
 class NameValueModel(JsonModel):
+    """Models SUSHI models that are made up of Name and value"""
     def __init__(self, name: str, value: str):
         self.name = name
         self.value = value
@@ -136,6 +125,7 @@ class NameValueModel(JsonModel):
 
 
 class ExceptionModel(JsonModel):
+    """Models a SUSHI Exception"""
     def __init__(self, code: int, message: str, severity: str, data: str):
         self.code = code
         self.message = message
@@ -153,6 +143,7 @@ class ExceptionModel(JsonModel):
 
 
 def exception_models_to_message(exceptions: list) -> str:
+    """Formats a list of exception models into a single string """
     message = ""
     for exception in exceptions:
         if message: message += "\n\n"
@@ -165,6 +156,7 @@ def exception_models_to_message(exceptions: list) -> str:
 
 
 class ReportHeaderModel(JsonModel):
+    """Models a SUSHI Report Header"""
     def __init__(self, report_name: str, report_id: str, release: str, institution_name: str, institution_ids: list,
                  report_filters: list, report_attributes: list, exceptions: list, created: str, created_by: str):
         self.report_name = report_name
@@ -200,6 +192,7 @@ class ReportHeaderModel(JsonModel):
 
 
 class ReportModel(JsonModel):
+    """Models a SUSHI Report"""
     def __init__(self, report_header: ReportHeaderModel, report_items: list):
         self.report_header = report_header
         self.report_items = report_items
@@ -242,6 +235,13 @@ class ReportModel(JsonModel):
 
     @classmethod
     def process_exceptions(cls, json_dict: dict) -> list:
+        """Gets all exception models in a JSON dict, returns them as a list
+
+        :param json_dict: A JSON dict
+        :raises ReportHeaderMissingException: When the report header is missing
+        :raises RetryLaterException: When a retry later exception model is received
+        :raises UnacceptableCodeException: When the report cannot be processed based on the exception code
+        """
         exceptions = []
 
         if "Exception" in json_dict:
@@ -272,6 +272,7 @@ class ReportModel(JsonModel):
 
 
 class PlatformReportItemModel(JsonModel):
+    """Models a SUSHI Platform Report Item"""
     def __init__(self, platform: str, data_type: str, access_method: str, performances: list):
         self.platform = platform
         self.data_type = data_type
@@ -290,6 +291,7 @@ class PlatformReportItemModel(JsonModel):
 
 
 class DatabaseReportItemModel(JsonModel):
+    """Models a SUSHI Database Report Item"""
     def __init__(self, database: str, publisher: str, item_ids: list, publisher_ids: list, platform: str,
                  data_type: str, access_method: str,
                  performances: list):
@@ -318,6 +320,7 @@ class DatabaseReportItemModel(JsonModel):
 
 
 class TitleReportItemModel(JsonModel):
+    """Models a SUSHI Title Report Item"""
     def __init__(self, title: str, item_ids: list, platform: str, publisher: str, publisher_ids: list, data_type: str,
                  section_type: str, yop: str, access_type: str, access_method: str, performances: list):
         self.title = title
@@ -352,6 +355,7 @@ class TitleReportItemModel(JsonModel):
 
 
 class ItemContributorModel(JsonModel):
+    """Models a SUSHI Item Contributor"""
     def __init__(self, item_type: str, name: str, identifier: str):
         self.item_type = item_type
         self.name = name
@@ -367,6 +371,7 @@ class ItemContributorModel(JsonModel):
 
 
 class ItemParentModel(JsonModel):
+    """Models a SUSHI Item Parent"""
     def __init__(self, item_name: str, item_ids: list, item_contributors: list, item_dates: list, item_attributes: list,
                  data_type: str):
         self.item_name = item_name
@@ -390,6 +395,7 @@ class ItemParentModel(JsonModel):
 
 
 class ItemComponentModel(JsonModel):
+    """Models a SUSHI Item Component"""
     def __init__(self, item_name: str, item_ids: list, item_contributors: list, item_dates: list, item_attributes: list,
                  data_type: str, performances: list):
         self.item_name = item_name
@@ -415,6 +421,7 @@ class ItemComponentModel(JsonModel):
 
 
 class ItemReportItemModel(JsonModel):
+    """Models a SUSHI Item Report model"""
     def __init__(self, item: str, item_ids: list, item_contributors: list, item_dates: list, item_attributes: list,
                  platform: str, publisher: str, publisher_ids: list, item_parent: ItemParentModel,
                  item_components: list, data_type: str, yop: str, access_type: str,
@@ -461,7 +468,12 @@ class ItemReportItemModel(JsonModel):
 
 # Returns a list of JsonModel objects
 def get_models(model_key: str, model_type, json_dict: dict) -> list:
-    # This converts json formatted lists into a list of the specified model_type
+    """This converts json lists into a list of the specified SUSHI model type
+
+    :param model_key: The target key to get the list of JSONObjects
+    :param model_type: The target model type
+    :param json_dict: The JSON dict to get the list from
+    """
     # Some vendors sometimes return a single dict even when the standard specifies a list,
     # we need to check for that
     models = []
@@ -482,22 +494,73 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 
 # region Custom Exceptions
 class RetryLaterException(Exception):
+    """An exception raised when a retry later exception code is received in an exception model"""
     def __init__(self, exceptions: list):
         self.exceptions = exceptions
 
 
 class ReportHeaderMissingException(Exception):
+    """An exception raised when a report header is missing from a report"""
     def __init__(self, exceptions: list):
         self.exceptions = exceptions
 
 
 class UnacceptableCodeException(Exception):
+    """An exception raised when a report cannot be processed based on an exception code"""
     def __init__(self, exceptions: list):
         self.exceptions = exceptions
 # endregion
 
 
+# Returns a list of strings using the provided range in the format Month-Year
+def get_month_years(begin_date: QDate, end_date: QDate) -> list:
+    """Returns a list of month-year (MMM-yyyy) strings within a date range"""
+    month_years = []
+    if begin_date.year() == end_date.year():
+        num_months = (end_date.month() - begin_date.month()) + 1
+    else:
+        num_months = (12 - begin_date.month() + end_date.month()) + 1
+        num_years = end_date.year() - begin_date.year()
+        num_months += (num_years - 1) * 12
+
+    for i in range(num_months):
+        month_years.append(begin_date.addMonths(i).toString("MMM-yyyy"))
+
+    return month_years
+
+
+class SpecialReportOptions:
+    """This holds all the parameters that are used to process a special report
+
+    The options are stored as tuples, (option has non-default value, option type, option name, list of option values)
+    """
+    def __init__(self):
+        # PR, DR, TR, IR
+        self.data_type = False, SpecialOptionType.AP, "Data_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_method = False, SpecialOptionType.AP, "Access_Method", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.metric_type = False, SpecialOptionType.POS, "Metric_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.exclude_monthly_details = False, SpecialOptionType.TO, None, None
+        # TR, IR
+        current_date = QDate.currentDate()
+        self.yop = False, SpecialOptionType.ADP, "YOP", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.access_type = False, SpecialOptionType.AP, "Access_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        # TR
+        self.section_type = False, SpecialOptionType.AP, "Section_Type", [DEFAULT_SPECIAL_OPTION_VALUE]
+        # IR
+        self.authors = False, SpecialOptionType.AO, "Authors", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.publication_date = False, SpecialOptionType.AO, "Publication_Date", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.article_version = False, SpecialOptionType.AO, "Article_Version", [DEFAULT_SPECIAL_OPTION_VALUE]
+        self.include_component_details = False, SpecialOptionType.POB, None, None
+        self.include_parent_details = False, SpecialOptionType.POB, None, None
+
+
 class ReportRow:
+    """This models a row in the generated report, it contains every possible column
+
+    :param begin_date: The begin date of the request, used to populate the month columns in the report
+    :param end_date: The end date of the request, used to populate the month columns in the report
+    :param empty_cell: The default value for an empty cell
+    """
     def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
         self.database = empty_cell
         self.title = empty_cell
@@ -565,23 +628,17 @@ class ReportRow:
             self.month_counts[month_year_str] = 0
 
 
-# Returns a list of strings using the provided range in the format Month-Year
-def get_month_years(begin_date: QDate, end_date: QDate) -> list:
-    month_years = []
-    if begin_date.year() == end_date.year():
-        num_months = (end_date.month() - begin_date.month()) + 1
-    else:
-        num_months = (12 - begin_date.month() + end_date.month()) + 1
-        num_years = end_date.year() - begin_date.year()
-        num_months += (num_years - 1) * 12
-
-    for i in range(num_months):
-        month_years.append(begin_date.addMonths(i).toString("MMM-yyyy"))
-
-    return month_years
-
-
 class RequestData:
+    """This holds the data about a report request
+
+    :param vendor: The vendor being processed
+    :param target_report_types: The report types to attempt to fetch
+    :param begin_date: The begin date to specify in the request
+    :param end_date: The end date to specify in the request
+    :param save_location: Where the generated report should be saved
+    :param settings: The system's settings object
+    :param special_options: Special options if fetching a special report
+    """
     def __init__(self, vendor: Vendor, target_report_types: list, begin_date: QDate, end_date: QDate,
                  save_location: str, settings: SettingsModel, special_options: SpecialReportOptions = None):
         self.vendor = vendor
@@ -594,6 +651,11 @@ class RequestData:
 
 
 class ProcessResult:
+    """This holds the results of an fetch process
+
+    :param vendor: The target vendor
+    :param report_type: The target report type
+    """
     def __init__(self, vendor: Vendor, report_type: str = None):
         self.vendor = vendor
         self.report_type = report_type
@@ -608,6 +670,13 @@ class ProcessResult:
 
 class FetchReportsAbstract:
     def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget):
+        """This contains common functionality shared between classes that fetch reports
+
+        :param vendors: The list of vendors in the system
+        :param settings: The system's user settings
+        :param widget: The widget of the tab that this class controls
+        """
+
         # region General
         self.widget = widget
         self.vendors = []
@@ -649,19 +718,34 @@ class FetchReportsAbstract:
         # endregion
 
     def on_vendors_changed(self, vendors: list):
+        """Handles the signal emitted when the system's vendor list is updated
+
+        :param vendors: An updated list of the system's vendors
+        """
         self.update_vendors(vendors)
         self.update_vendors_ui()
 
     def update_vendors(self, vendors: list):
+        """ Updates the local copy of vendors that support report fetching (SUSHI)
+
+        :param vendors: A list of vendors
+        """
         self.vendors = []
         for vendor in vendors:
             if vendor.is_local: continue
             self.vendors.append(vendor)
 
     def update_vendors_ui(self):
+        """Updates the UI to show vendors that support report fetching (SUSHI)"""
         raise NotImplementedError()
 
     def fetch_vendor_data(self, request_data: RequestData):
+        """Initiates the process to fetch reports from a vendor
+
+        This creates a new thread to work on this vendor
+
+        :param request_data: The request data for this vendor request
+        """
         worker_id = request_data.vendor.name
         if worker_id in self.vendor_workers: return  # Avoid processing a vendor twice
 
@@ -677,6 +761,12 @@ class FetchReportsAbstract:
         self.update_results_ui(request_data.vendor)
 
     def update_results_ui(self, vendor: Vendor, vendor_result: ProcessResult = None, report_results: list = None):
+        """Updates the fetch progress dialog to show results
+
+        :param vendor: The vendor being updated
+        :param vendor_result: The result of the vendor
+        :param report_results: The results of the vendor's reports
+        """
         self.progress_bar.setValue(int(self.completed_processes / self.total_processes * 100))
         if not self.is_cancelling:
             if self.completed_processes != self.total_processes:
@@ -719,6 +809,12 @@ class FetchReportsAbstract:
             vertical_layout.addWidget(result_widget)
 
     def get_result_widget(self, vendor: Vendor, vendor_widget: QWidget, process_result: ProcessResult) -> QWidget:
+        """This creates a result widget for either a vendor or a vendor's report
+
+        :param vendor: The target vendor
+        :param vendor_widget: The vendor's widget in the fetch progress dialog
+        :param process_result: The result to show
+        """
         completion_status = process_result.completion_status
         report_result_widget = QWidget(vendor_widget)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
@@ -752,13 +848,17 @@ class FetchReportsAbstract:
         report_result_ui.success_label.setText(process_result.completion_status.value)
         if completion_status == CompletionStatus.FAILED:
             report_result_ui.retry_check_box.stateChanged.connect(
-                lambda checked_state: self.report_to_retry_toggled(checked_state, vendor, process_result.report_type))
+                lambda checked_state: self.on_report_to_retry_toggled(checked_state, vendor, process_result.report_type))
         else:
             report_result_ui.retry_frame.hide()
 
         return report_result_widget
 
     def on_vendor_worker_finished(self, worker_id: str):
+        """Handles the signal emmited when a vendor worker has finished
+
+        :param worker_id: The worker ID of the vendor
+        """
         self.completed_processes += 1
 
         thread: QThread
@@ -787,6 +887,10 @@ class FetchReportsAbstract:
         elif len(self.vendor_workers) == 0: self.finish()
 
     def start_progress_dialog(self, window_title: str):
+        """Sets up and shows the fetch progress dialog
+
+        :param window_title: The title of the fetch progress dialog
+        """
         self.vendor_result_widgets = {}
 
         if self.fetch_progress_dialog: self.fetch_progress_dialog.close()
@@ -814,7 +918,15 @@ class FetchReportsAbstract:
         self.status_label.setText("Starting...")
         self.fetch_progress_dialog.show()
 
-    def report_to_retry_toggled(self, checked_state: int, vendor: Vendor, report_type):
+    def on_report_to_retry_toggled(self, checked_state: int, vendor: Vendor, report_type):
+        """Handles the signal emmited when a report result's retry checkbox is toggled
+
+        The report is added the the list of reports to be retried when the 'retry selected reports' button is clicked
+
+        :param checked_state: The new checked state
+        :param vendor: The vendor that this report belongs to
+        :param report_type: The report type of the report
+        """
         if checked_state == Qt.Checked:
             found = False
             for i in range(len(self.retry_data)):
@@ -833,7 +945,7 @@ class FetchReportsAbstract:
                     report_types.remove(report_type)
                     if len(report_types) == 0: self.retry_data.pop(i)
 
-    def retry_selected_reports(self, progress__window_title: str):
+    def retry_selected_reports(self, progress_window_title: str):
         if len(self.retry_data) == 0:
             GeneralUtils.show_message("No report selected")
             return
@@ -844,7 +956,7 @@ class FetchReportsAbstract:
                                        self.settings, self.selected_options)
             self.selected_data.append(request_data)
 
-        self.start_progress_dialog(progress__window_title)
+        self.start_progress_dialog(progress_window_title)
         self.retry_data = []
 
         self.total_processes = len(self.selected_data)
