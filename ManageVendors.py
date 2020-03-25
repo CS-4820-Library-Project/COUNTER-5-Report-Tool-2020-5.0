@@ -2,6 +2,7 @@
 
 import csv
 import os
+import platform
 import json
 import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
@@ -286,10 +287,17 @@ class ManageVendorsController(QObject):
         GeneralUtils.show_message("Changes Saved!")
 
     def update_file_folder(self,original_name, new_name):
-        workingPath1 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY\_json"
-        workingPath2 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY"
-        workingPath3 = os.getcwd() + os.path.sep + "all_data\yearly_files"
-        workingPath4 = os.getcwd() + os.path.sep + "all_data\other_files"
+
+        if platform.system() == "Darwin":
+            workingPath1 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY/_json"
+            workingPath2 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY"
+            workingPath3 = os.getcwd() + os.path.sep + "all_data/yearly_files"
+            workingPath4 = os.getcwd() + os.path.sep + "all_data/other_files"
+        else:
+            workingPath1 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY\_json"
+            workingPath2 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY"
+            workingPath3 = os.getcwd() + os.path.sep + "all_data\yearly_files"
+            workingPath4 = os.getcwd() + os.path.sep + "all_data\other_files"
         print(os.path.sep)
         if(os.path.exists(workingPath1)):
             folderList = os.listdir(workingPath1)
