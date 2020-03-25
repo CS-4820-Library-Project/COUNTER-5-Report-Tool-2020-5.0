@@ -97,9 +97,9 @@ class Ui_costs_tab(object):
         self.costs_insert_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_insert_button.setObjectName("costs_insert_button")
         self.gridLayout.addWidget(self.costs_insert_button, 0, 3, 1, 1)
-        self.costs_load_from_disk_button = QtWidgets.QPushButton(self.costs_control_frame)
-        self.costs_load_from_disk_button.setObjectName("costs_load_from_disk_button")
-        self.gridLayout.addWidget(self.costs_load_from_disk_button, 0, 0, 1, 1)
+        self.costs_import_costs_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_import_costs_button.setObjectName("costs_import_costs_button")
+        self.gridLayout.addWidget(self.costs_import_costs_button, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.costs_control_frame)
 
         self.retranslateUi(costs_tab)
@@ -120,7 +120,7 @@ class Ui_costs_tab(object):
         self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
-        self.costs_load_from_disk_button.setText(_translate("costs_tab", "Load From Disk"))
+        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
 
 
 if __name__ == "__main__":

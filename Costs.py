@@ -75,8 +75,8 @@ class CostsController:
 
         self.clear_costs()
 
-        self.load_from_disk_button = costs_ui.costs_load_from_disk_button
-        self.load_from_disk_button.clicked.connect(self.load_costs_from_disk)
+        self.import_costs_button = costs_ui.costs_import_costs_button
+        self.import_costs_button.clicked.connect(self.import_costs)
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
@@ -191,7 +191,7 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setValue(0.0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
 
-    def load_costs_from_disk(self):
+    def import_costs(self):
         report_type_dialog = QDialog()
         report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()
         report_type_dialog_ui.setupUi(report_type_dialog)
