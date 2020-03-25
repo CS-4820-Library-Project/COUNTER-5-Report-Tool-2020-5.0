@@ -263,7 +263,8 @@ class ManageVendorsController(QObject):
                 return
 
         # Apply Changes
-        self.update_file_folder(original_name,new_name)
+        if original_name != new_name:
+            self.update_file_folder(original_name,new_name)
         selected_vendor.name = self.name_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
         selected_vendor.customer_id = self.customer_id_line_edit.text()
