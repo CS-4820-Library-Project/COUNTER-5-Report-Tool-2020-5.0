@@ -23,23 +23,6 @@ from ManageDB import UpdateDatabaseProgressDialogController
 from VariableConstants import *
 
 
-def get_major_report_type(report_type: str) -> MajorReportType:
-    """Returns a major report type that a report type falls under"""
-    if report_type == "PR" or report_type == "PR_P1":
-        return MajorReportType.PLATFORM
-
-    elif report_type == "DR" or report_type == "DR_D1" or report_type == "DR_D2":
-        return MajorReportType.DATABASE
-
-    elif report_type == "TR" or report_type == "TR_B1" or report_type == "TR_B2" \
-            or report_type == "TR_B3" or report_type == "TR_J1" or report_type == "TR_J2" \
-            or report_type == "TR_J3" or report_type == "TR_J4":
-        return MajorReportType.TITLE
-
-    elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
-        return MajorReportType.ITEM
-
-
 # region Models
 class SupportedReportModel(JsonModel):
     """Models a SUSHI Supported Report"""
@@ -140,19 +123,6 @@ class ExceptionModel(JsonModel):
         data = json_dict["Data"] if "Data" in json_dict else ""
 
         return cls(code, message, severity, data)
-
-
-def exception_models_to_message(exceptions: list) -> str:
-    """Formats a list of exception models into a single string """
-    message = ""
-    for exception in exceptions:
-        if message: message += "\n\n"
-        message += f"Code: {exception.code}" \
-                   f"\nMessage: {exception.message}" \
-                   f"\nSeverity: {exception.severity}" \
-                   f"\nData: {exception.data}"
-
-    return message
 
 
 class ReportHeaderModel(JsonModel):
@@ -466,29 +436,6 @@ class ItemReportItemModel(JsonModel):
                    item_parent, item_components, data_type, yop, access_type, access_method, performances)
 
 
-# Returns a list of JsonModel objects
-def get_models(model_key: str, model_type, json_dict: dict) -> list:
-    """This converts json lists into a list of the specified SUSHI model type
-
-    :param model_key: The target key to get the list of JSONObjects
-    :param model_type: The target model type
-    :param json_dict: The JSON dict to get the list from
-    """
-    # Some vendors sometimes return a single dict even when the standard specifies a list,
-    # we need to check for that
-    models = []
-    if model_key in json_dict and json_dict[model_key] is not None:
-        if type(json_dict[model_key]) is list:
-            model_dicts = json_dict[model_key]
-            for model_dict in model_dicts:
-                models.append(model_type.from_json(model_dict))
-
-        elif type(json_dict[model_key]) is dict:
-            models.append(model_type.from_json(json_dict[model_key]))
-
-    return models
-
-
 # endregion
 
 
@@ -512,7 +459,58 @@ class UnacceptableCodeException(Exception):
 # endregion
 
 
-# Returns a list of strings using the provided range in the format Month-Year
+def get_models(model_key: str, model_type, json_dict: dict) -> list:
+    """This converts json lists into a list of the specified SUSHI model type
+
+    :param model_key: The target key to get the list of JSONObjects
+    :param model_type: The target model type, e.g PerformanceModel
+    :param json_dict: The JSON dict to get the list from
+    """
+    # Some vendors sometimes return a single dict even when the standard specifies a list,
+    # we need to check for that
+    models = []
+    if model_key in json_dict and json_dict[model_key] is not None:
+        if type(json_dict[model_key]) is list:
+            model_dicts = json_dict[model_key]
+            for model_dict in model_dicts:
+                models.append(model_type.from_json(model_dict))
+
+        elif type(json_dict[model_key]) is dict:
+            models.append(model_type.from_json(json_dict[model_key]))
+
+    return models
+
+
+def exception_models_to_message(exceptions: list) -> str:
+    """Formats a list of exception models into a single string """
+    message = ""
+    for exception in exceptions:
+        if message: message += "\n\n"
+        message += f"Code: {exception.code}" \
+                   f"\nMessage: {exception.message}" \
+                   f"\nSeverity: {exception.severity}" \
+                   f"\nData: {exception.data}"
+
+    return message
+
+
+def get_major_report_type(report_type: str) -> MajorReportType:
+    """Returns a major report type that a report type falls under"""
+    if report_type == "PR" or report_type == "PR_P1":
+        return MajorReportType.PLATFORM
+
+    elif report_type == "DR" or report_type == "DR_D1" or report_type == "DR_D2":
+        return MajorReportType.DATABASE
+
+    elif report_type == "TR" or report_type == "TR_B1" or report_type == "TR_B2" \
+            or report_type == "TR_B3" or report_type == "TR_J1" or report_type == "TR_J2" \
+            or report_type == "TR_J3" or report_type == "TR_J4":
+        return MajorReportType.TITLE
+
+    elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
+        return MajorReportType.ITEM
+
+
 def get_month_years(begin_date: QDate, end_date: QDate) -> list:
     """Returns a list of month-year (MMM-yyyy) strings within a date range"""
     month_years = []
