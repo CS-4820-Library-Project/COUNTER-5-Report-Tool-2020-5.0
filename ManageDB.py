@@ -328,7 +328,7 @@ def read_costs_file(report_type, file_name):
 def get_all_reports():
     # TODO (Chandler): make safer; only look for vendors in the vendor list
     reports = []
-    for upper_directory in os.scandir(FILE_LOCATION):  # iterate over all files in FILE_LOCATION
+    for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
             for lower_directory in os.scandir(upper_directory):
                 if lower_directory.is_dir():

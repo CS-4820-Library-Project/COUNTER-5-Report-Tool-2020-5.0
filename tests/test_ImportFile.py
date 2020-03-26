@@ -7,7 +7,7 @@ from PyQt5.QtGui import QStandardItemModel
 from ui import MainWindow
 from ImportFile import ImportReportController
 from ManageVendors import Vendor
-from FetchData import REPORT_TYPES, CompletionStatus
+from FetchData import ALL_REPORTS, CompletionStatus
 import Settings
 import GeneralUtils
 import json
@@ -127,7 +127,7 @@ def test_on_import_clicked(controller_v):
     controller_v.selected_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = REPORT_TYPES[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
@@ -150,7 +150,7 @@ def test_import_file(controller_v):
     controller_v.selected_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = REPORT_TYPES[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name

@@ -1,4 +1,5 @@
 from enum import Enum
+
 # region Variable Constants for ManageDB
 
 # region field and table definitions
@@ -372,7 +373,8 @@ COSTS_KEY_FIELDS = ('vendor', 'year')
 
 DATABASE_FOLDER = r'./all_data/search/'
 DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
-FILE_LOCATION = r'./all_data/.DO_NOT_MODIFY/'
+# All yearly reports tsv and json are saved here in original condition as backup
+PROTECTED_DATABASE_FILE_DIR = "./all_data/.DO_NOT_MODIFY/"
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
 COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
@@ -385,36 +387,23 @@ CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
 
 # endregion
 
+# region Variable Constants for FileDialog Filters
 JSON_FILTER = ('JSON files (*.dat)',)
 TSV_FILTER = ('TSV files (*.tsv)',)
 CSV_FILTER = ('CSV files (*.csv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
+# endregion
 
-# region Variable Constants for ManageDB
+# region Variable Constants for FetchData
 SHOW_DEBUG_MESSAGES = False
 
-REPORT_TYPES = ["PR",
-                "PR_P1",
-                "DR",
-                "DR_D1",
-                "DR_D2",
-                "TR",
-                "TR_B1",
-                "TR_B2",
-                "TR_B3",
-                "TR_J1",
-                "TR_J2",
-                "TR_J3",
-                "TR_J4",
-                "IR",
-                "IR_A1",
-                "IR_M1"]
 
 class MajorReportType(Enum):
     PLATFORM = "PR"
     DATABASE = "DR"
     TITLE = "TR"
     ITEM = "IR"
+
 
 class SpecialOptionType(Enum):
     TO = 0  # Tabular Only, not included in request url, only used in creating tabular report
@@ -424,22 +413,23 @@ class SpecialOptionType(Enum):
     POS = 4  # Parameter Only String, NOT in attributes_to_include and has it's own parameters in request url
     POB = 5  # Parameter Only Bool, NOT in attributes_to_include and has it's own parameters in request url
 
+
 SPECIAL_REPORT_OPTIONS = {
     MajorReportType.PLATFORM: [(SpecialOptionType.AP, "Data_Type", ["Article",
-                                                                     "Book",
-                                                                     "Book_Segment",
-                                                                     "Database",
-                                                                     "Dataset",
-                                                                     "Journal",
-                                                                     "Multimedia",
-                                                                     "Newspaper_or_Newsletter",
-                                                                     "Other",
-                                                                     "Platform",
-                                                                     "Report",
+                                                                    "Book",
+                                                                    "Book_Segment",
+                                                                    "Database",
+                                                                    "Dataset",
+                                                                    "Journal",
+                                                                    "Multimedia",
+                                                                    "Newspaper_or_Newsletter",
+                                                                    "Other",
+                                                                    "Platform",
+                                                                    "Report",
                                                                     "Repository_Item",
                                                                     "Thesis_or_Dissertation"]),
                                (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                         "TDM"]),
+                                                                        "TDM"]),
                                (SpecialOptionType.POS, "Metric_Type", ["Searches_Platform",
                                                                        "Total_Item_Investigations",
                                                                        "Total_Item_Requests",
@@ -449,16 +439,16 @@ SPECIAL_REPORT_OPTIONS = {
                                                                        "Unique_Title_Requests"]),
                                (SpecialOptionType.TO, "Exclude_Monthly_Details")],
     MajorReportType.DATABASE: [(SpecialOptionType.AP, "Data_Type", ["Book",
-                                                                     "Database",
-                                                                     "Journal",
-                                                                     "Multimedia",
-                                                                     "Newspaper_or_Newsletter",
-                                                                     "Other",
-                                                                     "Report",
-                                                                     "Repository_Item",
-                                                                     "Thesis_or_Dissertation"]),
+                                                                    "Database",
+                                                                    "Journal",
+                                                                    "Multimedia",
+                                                                    "Newspaper_or_Newsletter",
+                                                                    "Other",
+                                                                    "Report",
+                                                                    "Repository_Item",
+                                                                    "Thesis_or_Dissertation"]),
                                (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                         "TDM"]),
+                                                                        "TDM"]),
                                (SpecialOptionType.POS, "Metric_Type", ["Searches_Automated",
                                                                        "Searches_Federated",
                                                                        "Searches_Regular",
@@ -472,20 +462,20 @@ SPECIAL_REPORT_OPTIONS = {
                                                                        "No_License"]),
                                (SpecialOptionType.TO, "Exclude_Monthly_Details")],
     MajorReportType.TITLE: [(SpecialOptionType.AP, "Data_Type", ["Book",
-                                                                  "Journal",
-                                                                  "Newspaper_or_Newsletter",
-                                                                  "Other",
-                                                                  "Report",
-                                                                  "Thesis_or_Dissertation"]),
+                                                                 "Journal",
+                                                                 "Newspaper_or_Newsletter",
+                                                                 "Other",
+                                                                 "Report",
+                                                                 "Thesis_or_Dissertation"]),
                             (SpecialOptionType.AP, "Section_Type", ["Article",
-                                                                     "Book",
-                                                                     "Chapter",
-                                                                     "Other",
-                                                                     "Section"]),
+                                                                    "Book",
+                                                                    "Chapter",
+                                                                    "Other",
+                                                                    "Section"]),
                             (SpecialOptionType.AP, "Access_Type", ["Controlled",
-                                                                    "OA_Gold"]),
+                                                                   "OA_Gold"]),
                             (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                      "TDM"]),
+                                                                     "TDM"]),
                             (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
                                                                     "Total_Item_Requests",
                                                                     "Unique_Item_Investigations",
@@ -497,21 +487,21 @@ SPECIAL_REPORT_OPTIONS = {
                             (SpecialOptionType.ADP, "YOP"),
                             (SpecialOptionType.TO, "Exclude_Monthly_Details")],
     MajorReportType.ITEM: [(SpecialOptionType.AP, "Data_Type", ["Article",
-                                                                 "Book",
-                                                                 "Book_Segment",
-                                                                 "Dataset",
-                                                                 "Journal",
-                                                                 "Multimedia",
-                                                                 "Newspaper_or_Newsletter",
-                                                                 "Other",
-                                                                 "Report",
-                                                                 "Repository_Item",
-                                                                 "Thesis_or_Dissertation"]),
+                                                                "Book",
+                                                                "Book_Segment",
+                                                                "Dataset",
+                                                                "Journal",
+                                                                "Multimedia",
+                                                                "Newspaper_or_Newsletter",
+                                                                "Other",
+                                                                "Report",
+                                                                "Repository_Item",
+                                                                "Thesis_or_Dissertation"]),
                            (SpecialOptionType.AP, "Access_Type", ["Controlled",
-                                                                   "OA_Gold",
-                                                                   "Other_Free_To_Read"]),
+                                                                  "OA_Gold",
+                                                                  "Other_Free_To_Read"]),
                            (SpecialOptionType.AP, "Access_Method", ["Regular",
-                                                                     "TDM"]),
+                                                                    "TDM"]),
                            (SpecialOptionType.POS, "Metric_Type", ["Total_Item_Investigations",
                                                                    "Total_Item_Requests",
                                                                    "Unique_Item_Investigations",
@@ -543,8 +533,6 @@ RETRY_LATER_CODES = [1010,
                      1011]
 RETRY_WAIT_TIME = 5  # Seconds
 
-# All yearly reports tsv and json are saved here in original condition as backup
-PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 class CompletionStatus(Enum):
     SUCCESSFUL = "Successful!"
