@@ -102,7 +102,7 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if field['name'] not in FIELDS_NOT_IN_SEARCH:
+            if field['name'] not in FIELDS_NOT_IN_SEARCH_DROPDOWN:
                 field_combobox.addItem(field['name'], field['type'])
 
         type_label = or_clause_ui.search_type_label

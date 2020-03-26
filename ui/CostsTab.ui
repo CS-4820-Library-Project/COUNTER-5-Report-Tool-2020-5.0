@@ -180,9 +180,9 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QPushButton" name="costs_load_from_disk_button">
+       <widget class="QPushButton" name="costs_import_costs_button">
         <property name="text">
-         <string>Load From Disk</string>
+         <string>Import Costs</string>
         </property>
        </widget>
       </item>
