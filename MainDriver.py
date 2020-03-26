@@ -101,14 +101,15 @@ if __name__ == "__main__":
     # endregion
 
     # region Add tabs to main window
-    main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
-    main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
-    main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
-    main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
-    main_window_ui.tab_widget.addTab(costs_tab, "Costs")
-    main_window_ui.tab_widget.addTab(search_tab, "Search")
-    main_window_ui.tab_widget.addTab(visual_tab, "Visual")
-    main_window_ui.tab_widget.addTab(settings_tab, "Settings")
+    main_window_ui.tab_widget.addTab(manage_vendors_tab, manage_vendors_tab.windowIcon(), "Manage Vendors")
+    main_window_ui.tab_widget.addTab(fetch_reports_tab, fetch_reports_tab.windowIcon(), "Fetch Reports")
+    main_window_ui.tab_widget.addTab(fetch_special_reports_tab, fetch_special_reports_tab.windowIcon(),
+                                     "Fetch Special Reports")
+    main_window_ui.tab_widget.addTab(import_report_tab, import_report_tab.windowIcon(), "Import Report")
+    main_window_ui.tab_widget.addTab(costs_tab, costs_tab.windowIcon(), "Costs")
+    main_window_ui.tab_widget.addTab(search_tab, search_tab.windowIcon(), "Search")
+    main_window_ui.tab_widget.addTab(visual_tab, visual_tab.windowIcon(), "Visual")
+    main_window_ui.tab_widget.addTab(settings_tab, settings_tab.windowIcon(), "Settings")
 
     main_window_ui.tab_widget.setCurrentIndex(1)
     # endregion

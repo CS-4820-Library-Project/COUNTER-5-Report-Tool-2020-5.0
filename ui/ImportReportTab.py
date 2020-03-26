@@ -13,7 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_import_report_tab(object):
     def setupUi(self, import_report_tab):
         import_report_tab.setObjectName("import_report_tab")
-        import_report_tab.resize(630, 234)
+        import_report_tab.resize(630, 252)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/import_report_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        import_report_tab.setWindowIcon(icon)
         self.horizontalLayout = QtWidgets.QHBoxLayout(import_report_tab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_21 = QtWidgets.QFrame(import_report_tab)
@@ -193,3 +196,4 @@ class Ui_import_report_tab(object):
         self.label_36.setText(_translate("import_report_tab", "Target Report File"))
         self.select_file_button.setText(_translate("import_report_tab", "Select File"))
         self.import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
+import Resources_rc

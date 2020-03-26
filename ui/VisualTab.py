@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'VisualTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -14,6 +14,9 @@ class Ui_visual_tab(object):
     def setupUi(self, visual_tab):
         visual_tab.setObjectName("visual_tab")
         visual_tab.resize(977, 648)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/visual_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        visual_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(visual_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.search_parameters_frame_2 = QtWidgets.QFrame(visual_tab)
@@ -253,3 +256,4 @@ class Ui_visual_tab(object):
         self.label_42.setText(_translate("visual_tab", "Customize Chart"))
         self.label_16.setText(_translate("visual_tab", "File Name"))
         self.create_chart_button.setText(_translate("visual_tab", "Create Chart"))
+import Resources_rc

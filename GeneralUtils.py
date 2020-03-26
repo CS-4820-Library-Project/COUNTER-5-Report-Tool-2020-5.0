@@ -1,5 +1,6 @@
 import webbrowser
 import shlex
+import subprocess
 import platform
 from os import path, makedirs, system
 from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
@@ -50,6 +51,8 @@ def open_file_or_dir(target_path: str):
     if path.exists(target_path):
         if platform.system() == "Darwin":
             system("open " + shlex.quote(target_path))
+        elif platform.system() == "Linux":
+            subprocess.call(["xdg-open", target_path])
         else:
             webbrowser.open_new_tab(path.realpath(target_path))
     else:

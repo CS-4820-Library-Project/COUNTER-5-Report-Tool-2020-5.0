@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
         costs_tab.setObjectName("costs_tab")
         costs_tab.resize(898, 671)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/costs_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        costs_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(costs_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.costs_parameters_frame = QtWidgets.QFrame(costs_tab)
@@ -121,6 +126,7 @@ class Ui_costs_tab(object):
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
+import Resources_rc
 
 
 if __name__ == "__main__":
@@ -131,4 +137,3 @@ if __name__ == "__main__":
     ui.setupUi(costs_tab)
     costs_tab.show()
     sys.exit(app.exec_())
-

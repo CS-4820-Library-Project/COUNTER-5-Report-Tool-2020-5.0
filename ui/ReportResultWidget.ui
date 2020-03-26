@@ -145,12 +145,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <property name="spacing">
           <number>6</number>
@@ -169,12 +163,6 @@
          </property>
          <item>
           <widget class="QFrame" name="file_frame">
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <property name="leftMargin">
              <number>0</number>
@@ -227,8 +215,8 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resources/folder_icon.png</normaloff>resources/folder_icon.png</iconset>
+               <iconset resource="../Resources.qrc">
+                <normaloff>:/ui/resources/folder_icon.png</normaloff>:/ui/resources/folder_icon.png</iconset>
               </property>
              </widget>
             </item>
@@ -361,6 +349,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

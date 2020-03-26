@@ -13,8 +13,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
         fetch_special_reports_tab.setObjectName("fetch_special_reports_tab")
-        fetch_special_reports_tab.resize(800, 251)
+        fetch_special_reports_tab.resize(800, 273)
         fetch_special_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_special_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        fetch_special_reports_tab.setWindowIcon(icon)
         self.horizontalLayout = QtWidgets.QHBoxLayout(fetch_special_reports_tab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_26 = QtWidgets.QFrame(fetch_special_reports_tab)
@@ -36,8 +39,6 @@ class Ui_fetch_special_reports_tab(object):
         self.label_21.setObjectName("label_21")
         self.verticalLayout_15.addWidget(self.label_21)
         self.frame_32 = QtWidgets.QFrame(self.frame_26)
-        self.frame_32.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_32.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_32.setObjectName("frame_32")
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout(self.frame_32)
         self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
@@ -64,7 +65,7 @@ class Ui_fetch_special_reports_tab(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_25.sizePolicy().hasHeightForWidth())
         self.frame_25.setSizePolicy(sizePolicy)
-        self.frame_25.setMinimumSize(QtCore.QSize(200, 0))
+        self.frame_25.setMinimumSize(QtCore.QSize(180, 0))
         self.frame_25.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_25.setObjectName("frame_25")
         self.verticalLayout_14 = QtWidgets.QVBoxLayout(self.frame_25)
@@ -259,3 +260,4 @@ class Ui_fetch_special_reports_tab(object):
         self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MM"))
         self.begin_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
+import Resources_rc

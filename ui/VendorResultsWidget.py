@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'VendorResultsWidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_VendorResultsWidget(object):
     def setupUi(self, VendorResultsWidget):
         VendorResultsWidget.setObjectName("VendorResultsWidget")
-        VendorResultsWidget.resize(600, 57)
+        VendorResultsWidget.resize(600, 59)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -46,10 +48,8 @@ class Ui_VendorResultsWidget(object):
         sizePolicy.setHeightForWidth(self.results_frame.sizePolicy().hasHeightForWidth())
         self.results_frame.setSizePolicy(sizePolicy)
         self.results_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.results_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.results_frame.setObjectName("results_frame")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.results_frame)
-        self.verticalLayout.setContentsMargins(0, -1, 0, -1)
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout_2.addWidget(self.results_frame, 1, 1, 1, 6)
         self.collapse_button = QtWidgets.QPushButton(self.frame)
@@ -94,4 +94,3 @@ class Ui_VendorResultsWidget(object):
         self.collapse_button.setText(_translate("VendorResultsWidget", "Collapse"))
         self.status_label.setText(_translate("VendorResultsWidget", "Success"))
         self.expand_button.setText(_translate("VendorResultsWidget", "Expand"))
-
