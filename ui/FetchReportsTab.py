@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
         fetch_reports_tab.setObjectName("fetch_reports_tab")
-        fetch_reports_tab.resize(800, 408)
+        fetch_reports_tab.resize(800, 436)
         fetch_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
         self.verticalLayout = QtWidgets.QVBoxLayout(fetch_reports_tab)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -83,8 +83,6 @@ class Ui_fetch_reports_tab(object):
         self.Adv_Fetch_text.setObjectName("Adv_Fetch_text")
         self.verticalLayout_3.addWidget(self.Adv_Fetch_text)
         self.frame_5 = QtWidgets.QFrame(self.frame_4)
-        self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_5.setObjectName("frame_5")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_5)
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
