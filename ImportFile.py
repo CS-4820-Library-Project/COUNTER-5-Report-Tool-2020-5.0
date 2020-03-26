@@ -1,14 +1,12 @@
 """This module handles all operations involving importing reports."""
 
 import shutil
-import webbrowser
 import platform
-import shlex
 import ctypes
 import csv
-from os import path, makedirs, system
+from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
-from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
+from PyQt5.QtWidgets import QWidget, QDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
 
@@ -16,12 +14,9 @@ import GeneralUtils
 from VariableConstants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
-from FetchData import REPORT_TYPES, CompletionStatus
+from FetchData import ALL_REPORTS, CompletionStatus
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseProgressDialogController
-
-# All yearly reports tsv and json are saved here in original condition as backup
-PROTECTED_DIR = "./all_data/.DO_NOT_MODIFY/"
 
 
 class ProcessResult:
@@ -75,7 +70,7 @@ class ImportReportController:
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
         self.report_type_list_view.clicked.connect(self.on_report_type_selected)
-        for report_type in REPORT_TYPES:
+        for report_type in ALL_REPORTS:
             item = QStandardItem(report_type)
             item.setEditable(False)
             self.report_type_list_model.appendRow(item)
@@ -155,7 +150,7 @@ class ImportReportController:
             return
 
         vendor = self.vendors[self.selected_vendor_index]
-        report_type = REPORT_TYPES[self.selected_report_type_index]
+        report_type = ALL_REPORTS[self.selected_report_type_index]
 
         process_result = self.import_report(vendor, report_type)
         self.show_result(process_result)
@@ -211,11 +206,11 @@ class ImportReportController:
             process_result.completion_status = CompletionStatus.SUCCESSFUL
 
             # Save protected tsv file
-            protected_file_dir = f"{PROTECTED_DIR}{self.date.toString('yyyy')}/{vendor.name}/"
+            protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.date.toString('yyyy')}/{vendor.name}/"
             if not path.isdir(protected_file_dir):
                 makedirs(protected_file_dir)
                 if platform.system() == "Windows":
-                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DATABASE_FILE_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protected_file_dir}{dest_file_name}"
             self.copy_file(self.selected_file_path, protected_file_path)

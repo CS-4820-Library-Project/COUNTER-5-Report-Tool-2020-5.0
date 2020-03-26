@@ -1081,7 +1081,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.report_type_list_view = fetch_reports_ui.report_types_list_view
         self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
         self.report_type_list_view.setModel(self.report_type_list_model)
-        for report_type in REPORT_TYPES:
+        for report_type in ALL_REPORTS:
             item = QStandardItem(report_type)
             item.setCheckable(True)
             item.setEditable(False)
@@ -1224,7 +1224,7 @@ class FetchReportsController(FetchReportsAbstract):
         for i in range(len(self.vendors)):
             if self.vendors[i].is_local: continue
 
-            request_data = RequestData(self.vendors[i], REPORT_TYPES, self.begin_date, self.end_date,
+            request_data = RequestData(self.vendors[i], ALL_REPORTS, self.begin_date, self.end_date,
                                        self.save_dir, self.settings)
             self.selected_data.append(request_data)
 
@@ -1259,9 +1259,9 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.selected_data = []
         selected_report_types = []
-        for i in range(len(REPORT_TYPES)):
+        for i in range(len(ALL_REPORTS)):
             if self.report_type_list_model.item(i).checkState() == Qt.Checked:
-                selected_report_types.append(REPORT_TYPES[i])
+                selected_report_types.append(ALL_REPORTS[i])
         if len(selected_report_types) == 0:
             GeneralUtils.show_message("No report type selected")
             return
@@ -2379,11 +2379,11 @@ class ReportWorker(QObject):
 
         # Save protected tsv file
         if self.is_yearly_dir:
-            protected_file_dir = f"{PROTECTED_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             if not path.isdir(protected_file_dir):
                 makedirs(protected_file_dir)
                 if platform.system() == "Windows":
-                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DIR, 2)  # Hide folder
+                    ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DATABASE_FILE_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
@@ -2836,7 +2836,7 @@ class ReportWorker(QObject):
 
         :param json_string: The JSON string
         """
-        file_dir = f"{PROTECTED_DIR}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        file_dir = f"{PROTECTED_DATABASE_FILE_DIR}_json/{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{self.report_type}.json"
         file_path = f"{file_dir}{file_name}"
 
