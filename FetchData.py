@@ -1117,14 +1117,13 @@ class FetchReportsController(FetchReportsAbstract):
         self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
         # endregion
 
-        # region Custom Date Range
+        # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
-
         # endregion
 
     def update_vendors_ui(self):
@@ -1178,6 +1177,11 @@ class FetchReportsController(FetchReportsAbstract):
             self.custom_dir_frame.hide()
         else:
             self.custom_dir_frame.show()
+
+    def on_custom_dir_clicked(self):
+        """Handles the signal emitted when the choose custom directory button is clicked"""
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path: self.custom_dir_edit.setText(dir_path)
 
     def select_all_vendors(self):
         """Checks all vendors in the vendors list view"""
@@ -1289,11 +1293,6 @@ class FetchReportsController(FetchReportsAbstract):
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-    def on_custom_dir_clicked(self):
-        """Handles the signal emitted when the choose custom directory button is clicked"""
-        dir_path = GeneralUtils.choose_directory()
-        if dir_path: self.custom_dir_edit.setText(dir_path)
-
 
 class FetchSpecialReportsController(FetchReportsAbstract):
     def __init__(self, vendors: list, settings: SettingsModel, widget: QWidget,
@@ -1362,6 +1361,14 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.end_date_edit_month = fetch_special_reports_ui.end_date_edit_special_month
         self.end_date_edit_month.setDate(self.end_date)
         self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
+        # endregion
+
+        # region Custom Directory
+        self.custom_dir_frame = fetch_special_reports_ui.custom_dir_frame
+        self.custom_dir_edit = fetch_special_reports_ui.custom_dir_edit
+        self.custom_dir_edit.setText(self.settings.other_directory)
+        self.custom_dir_button = fetch_special_reports_ui.custom_dir_button
+        self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
         # endregion
 
     def update_vendors_ui(self):
@@ -1619,6 +1626,11 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
         dialog.exec_()
 
+    def on_custom_dir_clicked(self):
+        """Handles the signal emitted when the choose custom directory button is clicked"""
+        dir_path = GeneralUtils.choose_directory()
+        if dir_path: self.custom_dir_edit.setText(dir_path)
+
     def select_all_vendors(self):
         """Checks all vendors in the vendors list view"""
         for i in range(self.vendor_list_model.rowCount()):
@@ -1648,7 +1660,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         selected_report_types = [self.selected_report_type.value]
 
         self.is_yearly_fetch = False
-        self.save_dir = self.settings.other_directory
+        custom_dir = self.custom_dir_edit.text()
+        self.save_dir = custom_dir if custom_dir else self.settings.other_directory
         for i in range(self.vendor_list_model.rowCount()):
             if self.vendor_list_model.item(i).checkState() == Qt.Checked:
                 request_data = RequestData(self.vendors[i], selected_report_types, self.begin_date, self.end_date,
@@ -2354,8 +2367,11 @@ class ReportWorker(QObject):
         if self.is_yearly_dir:
             file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        elif self.is_special:
+            file_dir = f"{self.save_dir}{self.vendor.name}/special/"
+            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}_S.tsv"
         else:
-            file_dir = self.save_dir
+            file_dir = f"{self.save_dir}{self.vendor.name}/"
             file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
 
         # Save user tsv file

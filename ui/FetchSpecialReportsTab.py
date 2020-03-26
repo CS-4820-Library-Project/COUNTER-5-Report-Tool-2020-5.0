@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'FetchSpecialReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
         fetch_special_reports_tab.setObjectName("fetch_special_reports_tab")
-        fetch_special_reports_tab.resize(800, 273)
+        fetch_special_reports_tab.resize(800, 338)
         fetch_special_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_special_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -202,6 +200,33 @@ class Ui_fetch_special_reports_tab(object):
         self.begin_date_edit_special_year.setObjectName("begin_date_edit_special_year")
         self.gridLayout_2.addWidget(self.begin_date_edit_special_year, 0, 1, 1, 1)
         self.verticalLayout.addWidget(self.frame)
+        self.custom_dir_frame = QtWidgets.QFrame(self.frame_16)
+        self.custom_dir_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.custom_dir_frame.setObjectName("custom_dir_frame")
+        self.verticalLayout_26 = QtWidgets.QVBoxLayout(self.custom_dir_frame)
+        self.verticalLayout_26.setObjectName("verticalLayout_26")
+        self.label_41 = QtWidgets.QLabel(self.custom_dir_frame)
+        self.label_41.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_41.setObjectName("label_41")
+        self.verticalLayout_26.addWidget(self.label_41)
+        self.frame_39 = QtWidgets.QFrame(self.custom_dir_frame)
+        self.frame_39.setObjectName("frame_39")
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.frame_39)
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.custom_dir_edit = QtWidgets.QLineEdit(self.frame_39)
+        self.custom_dir_edit.setObjectName("custom_dir_edit")
+        self.horizontalLayout_7.addWidget(self.custom_dir_edit)
+        self.custom_dir_button = QtWidgets.QPushButton(self.frame_39)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.custom_dir_button.sizePolicy().hasHeightForWidth())
+        self.custom_dir_button.setSizePolicy(sizePolicy)
+        self.custom_dir_button.setObjectName("custom_dir_button")
+        self.horizontalLayout_7.addWidget(self.custom_dir_button)
+        self.verticalLayout_26.addWidget(self.frame_39)
+        self.verticalLayout.addWidget(self.custom_dir_frame)
         self.verticalLayout_16.addWidget(self.frame_16)
         self.frame_29 = QtWidgets.QFrame(self.frame_27)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
@@ -259,5 +284,8 @@ class Ui_fetch_special_reports_tab(object):
         self.end_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
         self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MM"))
         self.begin_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
+        self.label_41.setText(_translate("fetch_special_reports_tab", "Report(s) will be saved to:"))
+        self.custom_dir_button.setText(_translate("fetch_special_reports_tab", "Change"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
+
 import Resources_rc
