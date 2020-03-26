@@ -55,6 +55,22 @@ def get_chart_report_fields_list(report):
     return fields
 
 
+def get_top_number_chart_report_fields_list(report):
+    fields = []
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
+                   'source': report})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if field['name'] not in FIELDS_NOT_IN_TOP_NUMBER_CHARTS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+    for field in COST_FIELDS:  # cost table fields
+        if field['name'] in COST_FIELDS_IN_CHARTS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
+                           'source': report[:2] + COST_TABLE_SUFFIX})
+    fields.append({'name': RANKING, 'type': 'INTEGER', 'calculation': 'RANK() OVER(ORDER BY ' + 'metric' + ' DESC)'})
+    return fields
+
+
 def get_cost_fields_list(report):
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
@@ -406,6 +422,48 @@ def chart_search_sql_text(report, start_year, end_year,
     return {'sql_text': sql_text, 'data': data}
 
 
+def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_type,
+                                     number):  # makes the sql statement to search the database for chart data
+    name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
+    sql_text = 'SELECT * FROM ('
+    sql_text += '\nSELECT'
+    chart_fields = get_top_number_chart_report_fields_list(report)
+    fields = []
+    calcs = []
+    key_fields = []
+    for field in chart_fields:  # fields specific to this report
+        if 'calculation' not in field.keys():
+            field_text = ''
+            if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+                key_fields.append(field['name'])
+                field_text = report + '.'
+            field_text += field['name']
+            fields.append(field_text)
+        else:
+            calcs.append(field['calculation'] + ' AS ' + field['name'])
+    sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
+    sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
+    join_clauses = []
+    for key_field in key_fields:
+        join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
+    sql_text += ' ON ' + ' AND '.join(join_clauses)
+    sql_text += '\nWHERE'
+    clauses = [{'field': report + '.' + 'year', 'comparison': '>=', 'value': start_year},
+               {'field': report + '.' + 'year', 'comparison': '<=', 'value': end_year},
+               {'field': report + '.' + name_field['name'], 'comparison': 'LIKE', 'value': name},
+               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
+    clauses_texts = []
+    data = []
+    for clause in clauses:
+        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
+        data.append(clause['value'])
+    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
+    sql_text += ')'
+    sql_text += '\nWHERE ' + RANKING + ' <= ' + '?;'
+    data.append(number)
+    return {'sql_text': sql_text, 'data': data}
+
+
 def get_names_sql_text(report_type, vendor):
     name_field = NAME_FIELD_SWITCHER[report_type]
 
@@ -533,6 +591,24 @@ def test_chart_search():
         results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
         results.insert(0, headers)
         print(results)
+
+
+def test_top_number_chart_search():
+    headers = []
+    for field in get_top_number_chart_report_fields_list('DR_D1'):
+        headers.append(field['name'])
+    print(get_chart_report_fields_list('DR_D1'))
+    search = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
+                                              'Searches_Automated', 10)
+    print(search['sql_text'])
+    print(search['data'])
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
+        results.insert(0, headers)
+        # print(results)
+        for row in results:
+            print(row)
 
 
 class UpdateDatabaseProgressDialogController:

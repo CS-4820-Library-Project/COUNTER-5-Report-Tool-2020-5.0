@@ -357,12 +357,15 @@ MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'jun
 
 YEAR_TOTAL = 'reporting_period_total'
 
+RANKING = 'ranking'
+
 VIEW_SUFFIX = '_view'
 COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
+FIELDS_NOT_IN_TOP_NUMBER_CHARTS = ('file', 'updated_on')
 COST_FIELDS_IN_CHARTS = ('cost_in_local_currency', 'cost_in_local_currency_with_tax')
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
