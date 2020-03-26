@@ -5,6 +5,7 @@ import webbrowser
 import platform
 import shlex
 import ctypes
+import csv
 from os import path, makedirs, system
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QFileDialog
@@ -177,16 +178,32 @@ class ImportReportController:
             if not path.isdir(dest_file_dir):
                 makedirs(dest_file_dir)
 
+            delimiter = DELIMITERS[self.selected_file_path[-4:].lower()]
+            file = open(self.selected_file_path, 'r', encoding='utf-8-sig')
+            reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
+            if file.mode == 'r':
+                header = {}
+                for row in range(HEADER_ROWS):  # reads header row data
+                    cells = next(reader)
+                    key = cells[0].lower()
+                    if key != HEADER_ENTRIES[row]:
+                        raise Exception('File has invalid header (missing a row)')
+                    else:
+                        header[key] = cells[1].strip()
+                for row in range(BLANK_ROWS):
+                    cells = next(reader)
+                    if cells[0].strip():
+                        raise Exception('File has invalid header (not enough blank rows)')
+                print(report_type)
+                if header['report_id'] != report_type:
+                    raise Exception('File has invalid header (wrong Report_Id)')
+                if not header['created']:
+                    raise Exception('File has invalid header (no Created date)')
+            else:
+                raise Exception('Could not open file')
+
             # Copy selected_file_path to dest_file_path
             self.copy_file(self.selected_file_path, dest_file_path)
-
-            # Add file to database
-            self.is_restoring_database = True
-            self.update_database_dialog.update_database([{'file': dest_file_path,
-                                                          'vendor': vendor.name,
-                                                          'year': int(self.date.toString('yyyy'))}],
-                                                        False)
-            self.is_restoring_database = False
 
             process_result.file_dir = dest_file_dir
             process_result.file_name = dest_file_name
@@ -202,6 +219,14 @@ class ImportReportController:
 
             protected_file_path = f"{protected_file_dir}{dest_file_name}"
             self.copy_file(self.selected_file_path, protected_file_path)
+
+            # Add file to database
+            self.is_restoring_database = True
+            self.update_database_dialog.update_database([{'file': protected_file_path,
+                                                          'vendor': vendor.name,
+                                                          'year': int(self.date.toString('yyyy'))}],
+                                                        False)
+            self.is_restoring_database = False
 
         except Exception as e:
             process_result.message = f"Exception: {e}"
