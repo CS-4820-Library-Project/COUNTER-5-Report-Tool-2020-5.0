@@ -423,7 +423,7 @@ def chart_search_sql_text(report, start_year, end_year,
 
 
 def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_type,
-                                     number):  # makes the sql statement to search the database for chart data
+                                     number=None):  # makes the sql statement to search the database for chart data
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'SELECT * FROM ('
     sql_text += '\nSELECT'
@@ -431,7 +431,7 @@ def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_
     fields = []
     calcs = []
     key_fields = []
-    for field in chart_fields:  # fields specific to this report
+    for field in chart_fields:
         if 'calculation' not in field.keys():
             field_text = ''
             if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
@@ -459,8 +459,10 @@ def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_
         data.append(clause['value'])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ')'
-    sql_text += '\nWHERE ' + RANKING + ' <= ' + '?;'
-    data.append(number)
+    if number is not None:
+        sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
+        data.append(number)
+    sql_text += ';'
     return {'sql_text': sql_text, 'data': data}
 
 
