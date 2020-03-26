@@ -2367,8 +2367,11 @@ class ReportWorker(QObject):
         if self.is_yearly_dir:
             file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        elif self.is_special:
+            file_dir = f"{self.save_dir}{self.vendor.name}/special/"
+            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}_S.tsv"
         else:
-            file_dir = self.save_dir
+            file_dir = f"{self.save_dir}{self.vendor.name}/"
             file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
 
         # Save user tsv file
