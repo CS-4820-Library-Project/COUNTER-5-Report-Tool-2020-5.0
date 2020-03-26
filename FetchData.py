@@ -830,8 +830,6 @@ class FetchReportsAbstract:
             if completion_status == CompletionStatus.SUCCESSFUL or completion_status == CompletionStatus.WARNING:
                 report_result_ui.file_frame.show()
 
-                folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
-                report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
                 report_result_ui.folder_button.clicked.connect(
                     lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 
