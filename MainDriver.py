@@ -97,6 +97,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
     # endregion
 
     # region Add tabs to main window

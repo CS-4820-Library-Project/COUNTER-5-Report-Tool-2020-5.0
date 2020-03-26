@@ -136,7 +136,7 @@ class ImportReportController:
 
     def on_select_file_clicked(self):
         """Handles the signal emitted when the select file button is clicked"""
-        file_path = GeneralUtils.choose_file(TSV_FILTER)
+        file_path = GeneralUtils.choose_file(TSV_FILTER + CSV_FILTER)
         if file_path:
             self.selected_file_path = file_path
             self.selected_file_edit.setText(file_path)

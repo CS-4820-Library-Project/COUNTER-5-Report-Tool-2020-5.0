@@ -20,9 +20,6 @@ class CostsController:
         self.report_parameter = None
 
         self.vendor_parameter_combobox = costs_ui.costs_vendor_parameter_combobox
-        vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
-        vendor_dicts = json.loads(vendors_json_string)
-        self.vendor_parameter_combobox.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
         self.vendor_parameter = None
 
         self.year_parameter_dateedit = costs_ui.costs_year_parameter_dateedit
@@ -63,6 +60,11 @@ class CostsController:
         self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
         self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
+        vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
+        vendor_dicts = json.loads(vendors_json_string)
+        self.vendor_parameter_combobox.clear()
+        self.vendor_parameter_combobox.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
+
         self.on_report_parameter_changed()
         self.on_vendor_parameter_changed()
         self.on_year_parameter_changed()
@@ -77,6 +79,10 @@ class CostsController:
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
+
+    def load_vendor_list(self, vendors: list):
+        self.vendor_parameter_combobox.clear()
+        self.vendor_parameter_combobox.addItems([vendor.name for vendor in vendors])
 
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
