@@ -15,6 +15,9 @@ class Ui_fetch_special_reports_tab(object):
         fetch_special_reports_tab.setObjectName("fetch_special_reports_tab")
         fetch_special_reports_tab.resize(800, 273)
         fetch_special_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_special_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        fetch_special_reports_tab.setWindowIcon(icon)
         self.horizontalLayout = QtWidgets.QHBoxLayout(fetch_special_reports_tab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_26 = QtWidgets.QFrame(fetch_special_reports_tab)
@@ -257,3 +260,4 @@ class Ui_fetch_special_reports_tab(object):
         self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MM"))
         self.begin_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
+import Resources_rc

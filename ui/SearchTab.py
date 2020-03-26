@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'SearchTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_search_tab(object):
     def setupUi(self, search_tab):
         search_tab.setObjectName("search_tab")
         search_tab.resize(934, 725)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/search_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        search_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(search_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.search_parameters_frame = QtWidgets.QFrame(search_tab)
@@ -55,7 +60,7 @@ class Ui_search_tab(object):
         self.search_and_clause_parameters_scrollarea.setWidgetResizable(True)
         self.search_and_clause_parameters_scrollarea.setObjectName("search_and_clause_parameters_scrollarea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 842, 223))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 894, 497))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -129,14 +134,4 @@ class Ui_search_tab(object):
         self.open_folder_radioButton.setText(_translate("search_tab", "Open Folder"))
         self.open_both_radioButton.setText(_translate("search_tab", "Open Both"))
         self.dont_open_radioButton.setText(_translate("search_tab", "Don\'t Open"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    search_tab = QtWidgets.QWidget()
-    ui = Ui_search_tab()
-    ui.setupUi(search_tab)
-    search_tab.show()
-    sys.exit(app.exec_())
-
+import Resources_rc

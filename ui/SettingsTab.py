@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'SettingsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_settings_tab(object):
     def setupUi(self, settings_tab):
         settings_tab.setObjectName("settings_tab")
-        settings_tab.resize(794, 472)
+        settings_tab.resize(794, 492)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/settings_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        settings_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(settings_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_37 = QtWidgets.QFrame(settings_tab)
@@ -271,4 +276,4 @@ class Ui_settings_tab(object):
         self.label_26.setText(_translate("settings_tab", "Search"))
         self.settings_restore_database_button.setText(_translate("settings_tab", "Restore Database"))
         self.save_button.setText(_translate("settings_tab", "Save Changes"))
-
+import Resources_rc

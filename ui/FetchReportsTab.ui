@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Fetch Report</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/fetch_reports_icon.png</normaloff>:/ui/resources/tab_icons/fetch_reports_icon.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QFrame" name="frame_4">
@@ -631,6 +635,8 @@
   <tabstop>custom_dir_button</tabstop>
   <tabstop>fetch_advanced_button</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -13,7 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_manage_vendors_tab(object):
     def setupUi(self, manage_vendors_tab):
         manage_vendors_tab.setObjectName("manage_vendors_tab")
-        manage_vendors_tab.resize(617, 630)
+        manage_vendors_tab.resize(803, 670)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/manage_vendors_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        manage_vendors_tab.setWindowIcon(icon)
         self.horizontalLayout = QtWidgets.QHBoxLayout(manage_vendors_tab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_12 = QtWidgets.QFrame(manage_vendors_tab)
@@ -209,3 +212,4 @@ class Ui_manage_vendors_tab(object):
         self.saveVendorChangesButton.setText(_translate("manage_vendors_tab", "Save Changes"))
         self.undoVendorChangesButton.setText(_translate("manage_vendors_tab", "Undo Changes"))
         self.removeVendorButton.setText(_translate("manage_vendors_tab", "Remove Vendor"))
+import Resources_rc

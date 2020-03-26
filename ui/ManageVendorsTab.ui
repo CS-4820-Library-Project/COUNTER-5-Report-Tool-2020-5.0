@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>617</width>
-    <height>630</height>
+    <width>803</width>
+    <height>670</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Manage Vendors</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/manage_vendors_icon.png</normaloff>:/ui/resources/tab_icons/manage_vendors_icon.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -326,6 +330,8 @@
   <tabstop>undoVendorChangesButton</tabstop>
   <tabstop>removeVendorButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
