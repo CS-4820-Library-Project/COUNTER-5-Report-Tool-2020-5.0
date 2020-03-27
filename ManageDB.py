@@ -40,7 +40,7 @@ def get_view_report_fields_list(report):
 
 def get_chart_report_fields_list(report):
     fields = []
-    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] not in FIELDS_NOT_IN_CHARTS:
@@ -57,7 +57,7 @@ def get_chart_report_fields_list(report):
 
 def get_top_number_chart_report_fields_list(report):
     fields = []
-    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
                    'source': report})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
@@ -73,12 +73,12 @@ def get_top_number_chart_report_fields_list(report):
 
 def get_cost_fields_list(report):
     fields = []
-    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] in COSTS_KEY_FIELDS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
-    for field in COST_FIELDS:
+    for field in COST_FIELDS:  # cost table fields
         fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     return tuple(fields)
 
@@ -104,7 +104,7 @@ def create_table_sql_texts(reports):  # makes the SQL statements to create the t
         report_fields = get_report_fields_list(report)
         fields_and_options = []
         key_fields = []
-        for field in report_fields:  # fields specific to this report
+        for field in report_fields:
             field_text = field['name'] + ' ' + field['type']
             if field['options']:
                 field_text += ' ' + ' '.join(field['options'])
@@ -125,7 +125,7 @@ def create_view_sql_texts(reports):  # makes the SQL statements to create the vi
         fields = []
         calcs = []
         key_fields = []
-        for field in report_fields:  # fields specific to this report
+        for field in report_fields:
             if 'calculation' not in field.keys():
                 field_text = ''
                 if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
@@ -171,7 +171,7 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
-    for field in report_fields:  # fields specific to this report
+    for field in report_fields:
         fields.append(field['name'])
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
@@ -194,12 +194,17 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
 
 def update_vendor_name_sql_text(table, old_name, new_name):
     sql_text = 'UPDATE ' + table + ' SET'
-    sql_text += '\n\t' + 'vendor' + ' = \"' + new_name + '\"'
+    values = []
+    sql_text += '\n\t' + 'vendor' + ' = ?'
+    values.append(new_name)
     if not table.endswith(COST_TABLE_SUFFIX):
-        sql_text += ',\n\t' + 'file' + ' = ' + 'REPLACE(' + 'file' + ', ' + '\"_' + old_name + '_\"'
-        sql_text += ', ' + '\"_' + new_name + '_\")'
-    sql_text += '\nWHERE ' + 'vendor' + ' = \"' + old_name + '\";'
-    return sql_text
+        sql_text += ',\n\t' + 'file' + ' = ' + 'REPLACE(' + 'file' + ', ' + '\"_\" || ? || \"_\"'
+        values.append(old_name)
+        sql_text += ', ' + '\"_\" || ? || \"_\")'
+        values.append(new_name)
+    sql_text += '\nWHERE ' + 'vendor' + ' = ?;'
+    values.append(old_name)
+    return {'sql_text': sql_text, 'data': [values]}
 
 
 def update_vendor_in_all_tables(old_name, new_name):
@@ -212,7 +217,7 @@ def update_vendor_in_all_tables(old_name, new_name):
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         for sql_text in sql_texts:
-            run_sql(connection, sql_text)
+            run_sql(connection, sql_text['sql_text'], sql_text['data'])
         connection.close()
     else:
         print('Error, no connection')
@@ -222,7 +227,7 @@ def replace_costs_sql_text(report_type, data):  # makes the sql statement to 're
     sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
-    for field in report_fields:  # fields specific to this report
+    for field in report_fields:
         fields.append(field['name'])
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
@@ -239,17 +244,21 @@ def replace_costs_sql_text(report_type, data):  # makes the sql statement to 're
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_text': sql_replace_text, 'data': values}  # sql_delete is not used
+    return {'sql_text': sql_replace_text, 'data': values}
 
 
 def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql statement to delete data from a cost table
     name_field = NAME_FIELD_SWITCHER[report_type]
+    values = []
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
     sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
-    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
-    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
-    return {'sql_text': sql_text, 'data': None}  # sql_replace and data are not used
+    sql_text += '\n\t' + 'vendor' + ' = ?'
+    values.append(vendor)
+    sql_text += '\n\tAND ' + 'year' + ' = ?'
+    values.append(year)
+    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    values.append(name)
+    return {'sql_text': sql_text, 'data': [values]}
 
 
 def read_report_file(file_name, vendor,
@@ -470,23 +479,25 @@ def get_names_sql_text(report_type, vendor):
     name_field = NAME_FIELD_SWITCHER[report_type]
 
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
-               + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE \"' + vendor + '\"' \
+               + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?' \
                + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
-    return sql_text
+    return {'sql_text': sql_text, 'data': [vendor]}
 
 
 def get_costs_sql_text(report_type, vendor, year, name):
     name_field = NAME_FIELD_SWITCHER[report_type]
+    values = []
     sql_text = 'SELECT'
-    fields = []
-    for field in COST_FIELDS:
-        fields.append(field['name'])
+    fields = [field['name'] for field in COST_FIELDS]
     sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
     sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = \"' + vendor + '\"'
-    sql_text += '\n\tAND ' + 'year' + ' = ' + str(year)
-    sql_text += '\n\tAND ' + name_field + ' = \"' + name + '\";'
-    return sql_text
+    sql_text += '\n\t' + 'vendor' + ' = ?'
+    values.append(vendor)
+    sql_text += '\n\tAND ' + 'year' + ' = ?'
+    values.append(year)
+    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    values.append(name)
+    return {'sql_text': sql_text, 'data': values}
 
 
 def create_connection(db_file):
@@ -583,12 +594,12 @@ def backup_costs_data(report_type):
 def test_chart_search():
     headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
     search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
-                                   'Searches_Automated')  # changed
-    print(search['sql_text'])  # changed
-    print(search['data'])  # changed
+                                   'Searches_Automated')
+    print(search['sql_text'])
+    print(search['data'])
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
+        results = run_select_sql(connection, search['sql_text'], search['data'])
         results.insert(0, headers)
         # print(results)
         for row in results:
