@@ -15,7 +15,7 @@ def get_report_fields_list(report):
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
-    return fields
+    return tuple(fields)
 
 
 def get_view_report_fields_list(report):
@@ -35,7 +35,7 @@ def get_view_report_fields_list(report):
         fields.append({'name': MONTHS[key], 'type': 'INTEGER',
                        'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
                            key) + ' THEN ' + 'metric' + ' END), 0)'})
-    return fields
+    return tuple(fields)
 
 
 def get_chart_report_fields_list(report):
@@ -52,7 +52,7 @@ def get_chart_report_fields_list(report):
         fields.append({'name': MONTHS[key], 'type': 'INTEGER',
                        'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
                            key) + ' THEN ' + 'metric' + ' END), 0)'})
-    return fields
+    return tuple(fields)
 
 
 def get_top_number_chart_report_fields_list(report):
@@ -68,7 +68,7 @@ def get_top_number_chart_report_fields_list(report):
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
                            'source': report[:2] + COST_TABLE_SUFFIX})
     fields.append({'name': RANKING, 'type': 'INTEGER', 'calculation': 'RANK() OVER(ORDER BY ' + 'metric' + ' DESC)'})
-    return fields
+    return tuple(fields)
 
 
 def get_cost_fields_list(report):
@@ -80,7 +80,7 @@ def get_cost_fields_list(report):
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in COST_FIELDS:
         fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
-    return fields
+    return tuple(fields)
 
 
 def get_field_attributes(report, field_name):
@@ -581,9 +581,7 @@ def backup_costs_data(report_type):
 
 
 def test_chart_search():
-    headers = []
-    for field in get_chart_report_fields_list('DR_D1'):
-        headers.append(field['name'])
+    headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
     search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
                                    'Searches_Automated')  # changed
     print(search['sql_text'])  # changed
@@ -598,16 +596,14 @@ def test_chart_search():
 
 
 def test_top_number_chart_search():
-    headers = []
-    for field in get_top_number_chart_report_fields_list('DR_D1'):
-        headers.append(field['name'])
+    headers = tuple([field['name'] for field in get_top_number_chart_report_fields_list('DR_D1')])
     search = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
                                               'Searches_Automated', 10)
     print(search['sql_text'])
     print(search['data'])
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
+        results = run_select_sql(connection, search['sql_text'], search['data'])
         results.insert(0, headers)
         # print(results)
         for row in results:
