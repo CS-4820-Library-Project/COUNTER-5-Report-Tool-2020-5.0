@@ -37,9 +37,7 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    font = app.font()
-    font.setPointSize(11)
-    app.setFont(font)
+    app.setStyleSheet("QWidget {font-size: 11pt;}")
 
     ManageDB.first_time_setup()
 
