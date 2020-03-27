@@ -1048,9 +1048,9 @@ class FetchReportsController(FetchReportsAbstract):
         current_date = QDate.currentDate()
         begin_date = QDate(current_date.year(), 1, current_date.day())
         end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
-        self.basic_begin_date = QDate(begin_date)
+        self.fetch_all_begin_date = QDate(begin_date)
         self.adv_begin_date = QDate(begin_date)
-        self.basic_end_date = QDate(end_date)
+        self.fetch_all_end_date = QDate(end_date)
         self.adv_end_date = QDate(end_date)
         self.is_last_fetch_advanced = False
         # endregion
@@ -1097,8 +1097,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         # region Date Edits
         self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
-        self.all_date_edit.setDate(self.basic_begin_date)
-        self.all_date_edit.dateChanged.connect(lambda date: self.on_date_all_changed(date, "all_date"))
+        self.all_date_edit.setDate(self.fetch_all_begin_date)
+        self.all_date_edit.dateChanged.connect(self.on_fetch_all_date_changed)
 
         self.begin_date_edit_year = fetch_reports_ui.begin_date_edit_fetch_year
         self.begin_date_edit_year.setDate(self.adv_begin_date)
@@ -1135,14 +1135,20 @@ class FetchReportsController(FetchReportsAbstract):
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_date_all_changed(self, date: QDate, date_type: str):
-        if date_type == "all_date":
-            self.basic_begin_date = QDate(date.year(), 1, 1)
-            self.basic_end_date = QDate(date.year(), 12, 31)
-        # if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
-        #     self.custom_dir_frame.hide()
-        # else:
-        #     self.custom_dir_frame.show()
+    def on_fetch_all_date_changed(self, date: QDate):
+        """Handles the signal emitted when the 'fetch all' date is changed
+
+        :param date: The new date
+        """
+        current_date = QDate.currentDate()
+        if date.year() == current_date.year():
+            self.fetch_all_begin_date = QDate(current_date.year(), 1, 1)
+            self.fetch_all_end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        elif date.year() < current_date.year():
+            self.fetch_all_begin_date = QDate(date.year(), 1, 1)
+            self.fetch_all_end_date = QDate(date.year(), 12, current_date.day())
+        else:
+            self.all_date_edit.setDate(current_date)
 
     def on_date_year_changed(self, date: QDate, date_type: str):
         """Handles the signal emitted when a date's year is changed
@@ -1214,8 +1220,8 @@ class FetchReportsController(FetchReportsAbstract):
             GeneralUtils.show_message("Vendor list is empty")
             return
 
-        self.begin_date = self.basic_begin_date
-        self.end_date = self.basic_end_date
+        self.begin_date = self.fetch_all_begin_date
+        self.end_date = self.fetch_all_end_date
         if self.begin_date > self.end_date:
             GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
             return
