@@ -43,7 +43,7 @@ def get_chart_report_fields_list(report):
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_VIEWS:
+        if field['name'] not in FIELDS_NOT_IN_CHARTS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in COST_FIELDS:  # cost table fields
         if field['name'] in COST_FIELDS_IN_CHARTS:
@@ -398,8 +398,8 @@ def search_sql_text(report, start_year, end_year,
     return {'sql_text': sql_text, 'data': data}
 
 
-def chart_search_sql_text(report, start_year, end_year,
-                          name, metric_type):  # makes the sql statement to search the database for chart data
+def chart_search_sql_text(report, start_year, end_year, name,
+                          metric_type):  # makes the sql statement to search the database for chart data
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -592,14 +592,15 @@ def test_chart_search():
     if connection is not None:
         results = run_select_sql(connection, search['sql_text'], search['data'])  # changed
         results.insert(0, headers)
-        print(results)
+        # print(results)
+        for row in results:
+            print(row)
 
 
 def test_top_number_chart_search():
     headers = []
     for field in get_top_number_chart_report_fields_list('DR_D1'):
         headers.append(field['name'])
-    print(get_chart_report_fields_list('DR_D1'))
     search = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
                                               'Searches_Automated', 10)
     print(search['sql_text'])
