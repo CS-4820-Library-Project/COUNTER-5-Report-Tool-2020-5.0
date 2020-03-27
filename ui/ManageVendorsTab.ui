@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>803</width>
+    <width>903</width>
     <height>670</height>
    </rect>
   </property>
@@ -63,18 +63,20 @@
            <property name="text">
             <string>Import Vendors</string>
            </property>
+           <property name="icon">
+            <iconset resource="../Resources.qrc">
+             <normaloff>:/ui/resources/import_vendors_icon.png</normaloff>:/ui/resources/import_vendors_icon.png</iconset>
+           </property>
           </widget>
          </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="addVendorButton">
-           <property name="maximumSize">
-            <size>
-             <width>150</width>
-             <height>16777215</height>
-            </size>
-           </property>
            <property name="text">
             <string>Add New Vendor</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Resources.qrc">
+             <normaloff>:/ui/resources/add_vendor_icon.png</normaloff>:/ui/resources/add_vendor_icon.png</iconset>
            </property>
           </widget>
          </item>
@@ -82,6 +84,10 @@
           <widget class="QPushButton" name="exportVendorsButton">
            <property name="text">
             <string>Export Vendors</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../Resources.qrc">
+             <normaloff>:/ui/resources/export_vendors_icon.png</normaloff>:/ui/resources/export_vendors_icon.png</iconset>
            </property>
           </widget>
          </item>
@@ -279,6 +285,10 @@
               <property name="text">
                <string>Save Changes</string>
               </property>
+              <property name="icon">
+               <iconset resource="../Resources.qrc">
+                <normaloff>:/ui/resources/save_icon.png</normaloff>:/ui/resources/save_icon.png</iconset>
+              </property>
               <property name="default">
                <bool>false</bool>
               </property>
@@ -292,12 +302,20 @@
               <property name="text">
                <string>Undo Changes</string>
               </property>
+              <property name="icon">
+               <iconset resource="../Resources.qrc">
+                <normaloff>:/ui/resources/undo_icon.png</normaloff>:/ui/resources/undo_icon.png</iconset>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="removeVendorButton">
               <property name="text">
                <string>Remove Vendor</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources.qrc">
+                <normaloff>:/ui/resources/remove_vendor_icon.png</normaloff>:/ui/resources/remove_vendor_icon.png</iconset>
               </property>
              </widget>
             </item>
