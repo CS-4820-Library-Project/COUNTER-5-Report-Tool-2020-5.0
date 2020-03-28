@@ -8,6 +8,9 @@ from ui import UpdateDatabaseProgressDialog
 
 
 def get_report_fields_list(report: str) -> tuple:
+    """Gets the fields in the report table
+    :param report: the name of the report
+    :return tuple: list of fields in this report's table"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -19,6 +22,9 @@ def get_report_fields_list(report: str) -> tuple:
 
 
 def get_view_report_fields_list(report: str) -> tuple:
+    """Gets the fields in the report month view
+    :param report: the name of the report
+    :return tuple: list of fields in this report's month view"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -39,6 +45,9 @@ def get_view_report_fields_list(report: str) -> tuple:
 
 
 def get_chart_report_fields_list(report: str) -> tuple:
+    """Gets the fields in the report chart
+    :param report: the name of the report
+    :return tuple: list of fields in this report's chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
@@ -56,6 +65,9 @@ def get_chart_report_fields_list(report: str) -> tuple:
 
 
 def get_top_number_chart_report_fields_list(report: str) -> tuple:
+    """Gets the fields in the report top # chart
+    :param report: the name of the report
+    :return tuple: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
@@ -71,9 +83,12 @@ def get_top_number_chart_report_fields_list(report: str) -> tuple:
     return tuple(fields)
 
 
-def get_cost_fields_list(report: str) -> tuple:
+def get_cost_fields_list(report_type: str) -> tuple:
+    """Gets the fields in the report type cost table
+    :param report_type: the name of the report type
+    :return tuple: list of fields in this report type's cost table"""
     fields = []
-    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
+    name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field['name'] in COSTS_KEY_FIELDS:
@@ -83,7 +98,11 @@ def get_cost_fields_list(report: str) -> tuple:
     return tuple(fields)
 
 
-def get_field_attributes(report, field_name):
+def get_field_attributes(report: str, field_name: str) -> dict:
+    """Gets the field attributes
+    :param report: the name of the report
+    :param field_name: the name of the field
+    :return dict: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     for field in report_fields:
         if field['name'] == field_name:
@@ -97,7 +116,8 @@ def get_field_attributes(report, field_name):
     return None
 
 
-def create_table_sql_texts(report):  # makes the SQL statements to create the tables from the table definition
+def create_table_sql_texts(report: str) -> str:
+    """makes the SQL statements to create the tables from the table definition"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
     report_fields = get_report_fields_list(report)
     fields_and_options = []
@@ -113,7 +133,8 @@ def create_table_sql_texts(report):  # makes the SQL statements to create the ta
     return sql_text
 
 
-def create_view_sql_texts(report):  # makes the SQL statements to create the views from the table definition
+def create_view_sql_texts(report: str) -> str:
+    """makes the SQL statements to create the views from the table definition"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
     report_fields = get_view_report_fields_list(report)
@@ -140,7 +161,8 @@ def create_view_sql_texts(report):  # makes the SQL statements to create the vie
     return sql_text
 
 
-def create_cost_table_sql_texts(report_type):
+def create_cost_table_sql_texts(report_type: str) -> str:
+    """makes the SQL statements to create the cost tables from the table definition"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
@@ -158,7 +180,8 @@ def create_cost_table_sql_texts(report_type):
     return sql_text
 
 
-def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
+def replace_sql_text(file_name: str, report: str, data: tuple) -> (str, tuple, str, tuple):
+    """makes the sql statement to 'replace or insert' data into a table"""
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
@@ -168,7 +191,7 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
     sql_replace_text += '\nVALUES'
     placeholders = ['?'] * len(fields)
     sql_replace_text += '(' + ', '.join(placeholders) + ');'
-    values = []
+    replace_values = []
     for row in data:  # gets data to fill parameters
         row_values = []
         for key in fields:
@@ -178,12 +201,13 @@ def replace_sql_text(file_name, report, data):  # makes the sql statement to 're
             else:
                 value = ''  # if empty, use empty string
             row_values.append(value)
-        values.append(row_values)
-    sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = \"' + file_name + '\";'
-    return {'sql_delete': sql_delete_text, 'sql_replace': sql_replace_text, 'data': values}
+        replace_values.append(row_values)
+    sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = ?;'
+    delete_values = ((file_name,),)
+    return sql_delete_text, delete_values, sql_replace_text, tuple(replace_values)
 
 
-def update_vendor_name_sql_text(table, old_name, new_name):
+def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> (str, tuple):
     sql_text = 'UPDATE ' + table + ' SET'
     values = []
     sql_text += '\n\t' + 'vendor' + ' = ?'
@@ -351,12 +375,12 @@ def get_all_cost_files():
 
 def insert_single_file(file_path, vendor, year):
     data = read_report_file(file_path, vendor, year)
-    replace = replace_sql_text(data['file'], data['report'], data['values'])
+    delete, delete_data, replace, replace_data = replace_sql_text(data['file'], data['report'], data['values'])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, replace['sql_delete'])
-        run_sql(connection, replace['sql_replace'], replace['data'])
+        run_sql(connection, delete, delete_data)
+        run_sql(connection, replace, replace_data)
         connection.close()
     else:
         print('Error, no connection')
