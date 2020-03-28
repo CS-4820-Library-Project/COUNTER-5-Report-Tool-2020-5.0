@@ -475,10 +475,10 @@ def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_
     return {'sql_text': sql_text, 'data': data}
 
 
-def get_names_sql_text(report_type, vendor):
-    name_field = NAME_FIELD_SWITCHER[report_type]
+def get_names_sql_text(report, vendor):
+    name_field = NAME_FIELD_SWITCHER[report[:2]]
 
-    sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report_type \
+    sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report \
                + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?' \
                + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
     return {'sql_text': sql_text, 'data': [vendor]}
