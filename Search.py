@@ -184,9 +184,7 @@ class SearchController:
                                           parameters['end_year'], parameters['search_parameters'])
         print(search)  # testing
 
-        headers = []
-        for field in ManageDB.get_view_report_fields_list(parameters['report']):
-            headers.append(field['name'])
+        headers = tuple([field['name'] for field in ManageDB.get_view_report_fields_list(parameters['report'])])
 
         file_name = GeneralUtils.choose_save(TSV_FILTER)
         if file_name != '':
