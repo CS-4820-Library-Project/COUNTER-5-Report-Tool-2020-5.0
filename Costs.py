@@ -101,11 +101,11 @@ class CostsController:
     def fill_names(self):
         self.name_parameter_combobox.clear()
         results = []
-        sql_text = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             print(sql_text)
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
@@ -175,12 +175,12 @@ class CostsController:
             GeneralUtils.show_message('Invalid entry')
 
     def load_costs(self):
-        sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
-                                               self.name_parameter)
+        sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                                     self.name_parameter)
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
             connection.close()

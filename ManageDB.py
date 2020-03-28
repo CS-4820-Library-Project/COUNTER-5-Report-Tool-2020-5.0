@@ -487,9 +487,9 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     return sql_text, tuple(data)
 
 
-def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_type, number=None):
+def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
+                                     number: int = None) -> Tuple[str, Sequence[Any]]:
     """makes the sql statement to search the database for chart data"""
-    # TODO (Chandler): add type hints
     # TODO (Chandler): add docstring
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'SELECT * FROM ('
@@ -530,22 +530,20 @@ def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_
         sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
         data.append(number)
     sql_text += ';'
-    return {'sql_text': sql_text, 'data': data}
+    return sql_text, tuple(data)
 
 
-def get_names_sql_text(report, vendor):
-    # TODO (Chandler): add type hints
+def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     # TODO (Chandler): add docstring
     name_field = NAME_FIELD_SWITCHER[report[:2]]
 
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report \
                + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?' \
                + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
-    return {'sql_text': sql_text, 'data': [vendor]}
+    return sql_text, (vendor,)
 
 
-def get_costs_sql_text(report_type, vendor, year, name):
-    # TODO (Chandler): add type hints
+def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Any]]:
     # TODO (Chandler): add docstring
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
@@ -559,11 +557,10 @@ def get_costs_sql_text(report_type, vendor, year, name):
     values.append(year)
     sql_text += '\n\tAND ' + name_field + ' = ?;'
     values.append(name)
-    return {'sql_text': sql_text, 'data': values}
+    return sql_text, tuple(values)
 
 
-def create_connection(db_file):
-    # TODO (Chandler): add type hints
+def create_connection(db_file: str) -> sqlite3.Connection:
     # TODO (Chandler): add docstring
     connection = None
     try:
@@ -576,8 +573,7 @@ def create_connection(db_file):
     return connection
 
 
-def run_sql(connection, sql_text, data=None):
-    # TODO (Chandler): add type hints
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None) -> NoReturn:
     # TODO (Chandler): add docstring
     try:
         cursor = connection.cursor()
@@ -590,8 +586,8 @@ def run_sql(connection, sql_text, data=None):
         print(error)
 
 
-def run_select_sql(connection, sql_text, data=None):
-    # TODO (Chandler): add type hints
+def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Any] = None) \
+        -> Sequence[Sequence[Any]]:
     # TODO (Chandler): add docstring
     try:
         cursor = connection.cursor()
@@ -605,8 +601,7 @@ def run_select_sql(connection, sql_text, data=None):
         return None
 
 
-def setup_database(drop_tables):
-    # TODO (Chandler): add type hints
+def setup_database(drop_tables: bool) -> NoReturn:
     # TODO (Chandler): add docstring
     sql_texts = {}
     sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
@@ -630,8 +625,7 @@ def setup_database(drop_tables):
         print('Error, no connection')
 
 
-def first_time_setup():
-    # TODO (Chandler): add type hints
+def first_time_setup() -> NoReturn:
     # TODO (Chandler): add docstring
     if not os.path.exists(DATABASE_FOLDER):
         os.makedirs(DATABASE_FOLDER)
@@ -641,8 +635,7 @@ def first_time_setup():
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
-def backup_costs_data(report_type):
-    # TODO (Chandler): add type hints
+def backup_costs_data(report_type: str) -> NoReturn:
     # TODO (Chandler): add docstring
     if not os.path.exists(COSTS_SAVE_FOLDER):
         os.mkdir(COSTS_SAVE_FOLDER)
@@ -668,13 +661,12 @@ def backup_costs_data(report_type):
 
 def test_chart_search():
     headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
-    search = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets',
-                                   'Searches_Automated')
-    print(search['sql_text'])
-    print(search['data'])
+    sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
+    print(sql_text)
+    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, search['sql_text'], search['data'])
+        results = run_select_sql(connection, sql_text, data)
         results.insert(0, headers)
         # print(results)
         for row in results:
@@ -683,13 +675,13 @@ def test_chart_search():
 
 def test_top_number_chart_search():
     headers = tuple([field['name'] for field in get_top_number_chart_report_fields_list('DR_D1')])
-    search = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
-                                              'Searches_Automated', 10)
-    print(search['sql_text'])
-    print(search['data'])
+    sql_text, data = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
+                                                      'Searches_Automated', 10)
+    print(sql_text)
+    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        results = run_select_sql(connection, search['sql_text'], search['data'])
+        results = run_select_sql(connection, sql_text, data)
         results.insert(0, headers)
         # print(results)
         for row in results:
