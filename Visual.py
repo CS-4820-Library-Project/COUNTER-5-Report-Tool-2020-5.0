@@ -62,6 +62,7 @@ class VisualController:
         self.vertical_axis_edit = visual_ui.vertical_axis_lineEdit
 
         self.data = []
+        ManageDB.test_chart_search()
 
     def on_report_type_combo_activated(self, text):
         self.metric.clear()
@@ -109,7 +110,7 @@ class VisualController:
         print(sql_text)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text)
+            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
             print(results)
             connection.close()
             self.name_combobox.addItems([result[0] for result in results])
@@ -171,7 +172,7 @@ class VisualController:
             data1 = []
             print(self.results[i])
             n = len(self.results[i])
-            for j in range(5, n):
+            for j in range(4, n):
                 data1.append(self.results[i][j])
             self.data.append(data1)
         # testing to make sure its working good
@@ -225,8 +226,8 @@ class VisualController:
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$13',
-            'values': '=Sheet1!$B$2:$B$13',
+            'categories': '=Sheet1!$A$2:$A$14',
+            'values': '=Sheet1!$B$2:$B$14',
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
@@ -282,8 +283,8 @@ class VisualController:
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$13',
-            'values': '=Sheet1!$B$2:$B$13',
+            'categories': '=Sheet1!$A$2:$A$14',
+            'values': '=Sheet1!$B$2:$B$14',
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
@@ -341,8 +342,8 @@ class VisualController:
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$13',
-            'values': '=Sheet1!$B$2:$B$13',
+            'categories': '=Sheet1!$A$2:$A$14',
+            'values': '=Sheet1!$B$2:$B$14',
         })
 
         # Configure a second series. Note use of alternative syntax to define ranges.
