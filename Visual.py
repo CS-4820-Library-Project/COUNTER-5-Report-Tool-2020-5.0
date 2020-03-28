@@ -235,8 +235,8 @@ class VisualController:
         for i in range(2, len(self.data)):
             chart1.add_series({
                 'name': ['Sheet1', 0, m],
-                'categories': ['Sheet1', 1, 0, 12, 0],
-                'values': ['Sheet1', 1, m, 12, m],
+                'categories': ['Sheet1', 1, 0, 13, 0],
+                'values': ['Sheet1', 1, m, 13, m],
             })
             m = m + 1
 
@@ -292,8 +292,8 @@ class VisualController:
         for i in range(2, len(self.data)):
             chart1.add_series({
                 'name': ['Sheet1', 0, m],
-                'categories': ['Sheet1', 1, 0, 12, 0],
-                'values': ['Sheet1', 1, m, 12, m],
+                'categories': ['Sheet1', 1, 0, 13, 0],
+                'values': ['Sheet1', 1, m, 13, m],
             })
             m = m + 1
 
@@ -351,8 +351,8 @@ class VisualController:
         for i in range(2, len(self.data)):
             chart1.add_series({
                 'name': ['Sheet1', 0, m],
-                'categories': ['Sheet1', 1, 0, 12, 0],
-                'values': ['Sheet1', 1, m, 12, m],
+                'categories': ['Sheet1', 1, 0, 13, 0],
+                'values': ['Sheet1', 1, m, 13, m],
             })
             m = m + 1
 
