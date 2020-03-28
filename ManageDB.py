@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import csv
+import typing
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 from VariableConstants import *
@@ -9,7 +10,7 @@ from ui import UpdateDatabaseProgressDialog
 
 def get_report_fields_list(report: str) -> tuple:
     """Gets the fields in the report table
-    :param report: the name of the report
+    :param report: the kind of the report
     :return tuple: list of fields in this report's table"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
@@ -23,7 +24,7 @@ def get_report_fields_list(report: str) -> tuple:
 
 def get_view_report_fields_list(report: str) -> tuple:
     """Gets the fields in the report month view
-    :param report: the name of the report
+    :param report: the kind of the report
     :return tuple: list of fields in this report's month view"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
@@ -46,7 +47,7 @@ def get_view_report_fields_list(report: str) -> tuple:
 
 def get_chart_report_fields_list(report: str) -> tuple:
     """Gets the fields in the report chart
-    :param report: the name of the report
+    :param report: the kind of the report
     :return tuple: list of fields in this report's chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
@@ -66,7 +67,7 @@ def get_chart_report_fields_list(report: str) -> tuple:
 
 def get_top_number_chart_report_fields_list(report: str) -> tuple:
     """Gets the fields in the report top # chart
-    :param report: the name of the report
+    :param report: the kind of the report
     :return tuple: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
@@ -85,7 +86,7 @@ def get_top_number_chart_report_fields_list(report: str) -> tuple:
 
 def get_cost_fields_list(report_type: str) -> tuple:
     """Gets the fields in the report type cost table
-    :param report_type: the name of the report type
+    :param report_type: the type of the report
     :return tuple: list of fields in this report type's cost table"""
     fields = []
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])  # name field only
@@ -100,7 +101,7 @@ def get_cost_fields_list(report_type: str) -> tuple:
 
 def get_field_attributes(report: str, field_name: str) -> dict:
     """Gets the field attributes
-    :param report: the name of the report
+    :param report: the kind of the report
     :param field_name: the name of the field
     :return dict: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
@@ -117,7 +118,9 @@ def get_field_attributes(report: str, field_name: str) -> dict:
 
 
 def create_table_sql_texts(report: str) -> str:
-    """makes the SQL statements to create the tables from the table definition"""
+    """Makes the SQL statements to create the tables from the table definition
+    :param report: the kind of the report
+    :return str: the sql statement"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
     report_fields = get_report_fields_list(report)
     fields_and_options = []
@@ -134,7 +137,9 @@ def create_table_sql_texts(report: str) -> str:
 
 
 def create_view_sql_texts(report: str) -> str:
-    """makes the SQL statements to create the views from the table definition"""
+    """Makes the SQL statements to create the views from the table definition
+    :param report: the kind of the report
+    :return str: the sql statement"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
     report_fields = get_view_report_fields_list(report)
@@ -162,7 +167,9 @@ def create_view_sql_texts(report: str) -> str:
 
 
 def create_cost_table_sql_texts(report_type: str) -> str:
-    """makes the SQL statements to create the cost tables from the table definition"""
+    """Makes the SQL statements to create the cost tables  from the table definition
+    :param report_type: the kind of the report type
+    :return str: the sql statement"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
@@ -180,8 +187,11 @@ def create_cost_table_sql_texts(report_type: str) -> str:
     return sql_text
 
 
-def replace_sql_text(file_name: str, report: str, data: tuple) -> (str, tuple, str, tuple):
-    """makes the sql statement to 'replace or insert' data into a table"""
+def replace_sql_text(file_name: str, report: str, data: tuple) -> typing.Tuple[str, tuple, str, tuple]:
+    """Makes the sql statements to 'replace or insert' data into a table
+    :param file_name: the name of the file the data is from
+    :param report: the kind of the report
+    :param data: the data from the file"""
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
@@ -204,10 +214,14 @@ def replace_sql_text(file_name: str, report: str, data: tuple) -> (str, tuple, s
         replace_values.append(row_values)
     sql_delete_text = 'DELETE FROM ' + report + ' WHERE ' + 'file' + ' = ?;'
     delete_values = ((file_name,),)
-    return sql_delete_text, delete_values, sql_replace_text, tuple(replace_values)
+    return sql_delete_text, tuple(delete_values), sql_replace_text, tuple(replace_values)
 
 
-def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> (str, tuple):
+def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> typing.Tuple[str, tuple]:
+    """Makes the sql statements to 'replace or insert' data into a table
+    :param table: the name of the table to replace in
+    :param old_name: the old name of the vendor
+    :param new_name: the new name of the vendor"""
     sql_text = 'UPDATE ' + table + ' SET'
     values = []
     sql_text += '\n\t' + 'vendor' + ' = ?'
@@ -219,15 +233,17 @@ def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> (st
         values.append(new_name)
     sql_text += '\nWHERE ' + 'vendor' + ' = ?;'
     values.append(old_name)
-    return {'sql_text': sql_text, 'data': [values]}
+    return sql_text, (values,)
 
 
-def update_vendor_in_all_tables(old_name, new_name):
+def update_vendor_in_all_tables(old_name: str, new_name: str) -> None:
     sql_texts = []
     for table in ALL_REPORTS:
-        sql_texts.append(update_vendor_name_sql_text(table, old_name, new_name))
+        sql_text, data = update_vendor_name_sql_text(table, old_name, new_name)
+        sql_texts.append({'sql_text': sql_text, 'data': data})
     for cost_table in REPORT_TYPE_SWITCHER.keys():
-        sql_texts.append(update_vendor_name_sql_text(cost_table + COST_TABLE_SUFFIX, old_name, new_name))
+        sql_text, data = update_vendor_name_sql_text(cost_table + COST_TABLE_SUFFIX, old_name, new_name)
+        sql_texts.append({'sql_text': sql_text, 'data': data})
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -238,16 +254,17 @@ def update_vendor_in_all_tables(old_name, new_name):
         print('Error, no connection')
 
 
-def replace_costs_sql_text(report_type, data):  # makes the sql statement to 'replace or insert' data into a cost table
-    sql_replace_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
+def replace_costs_sql_text(report_type: str, data: tuple) -> (str, tuple):
+    """makes the sql statement to 'replace or insert' data into a cost table"""
+    sql_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
     for field in report_fields:
         fields.append(field['name'])
-    sql_replace_text += ', '.join(fields) + ')'
-    sql_replace_text += '\nVALUES'
+    sql_text += ', '.join(fields) + ')'
+    sql_text += '\nVALUES'
     placeholders = ['?'] * len(fields)
-    sql_replace_text += '(' + ', '.join(placeholders) + ');'
+    sql_text += '(' + ', '.join(placeholders) + ');'
     values = []
     for row in data:  # gets data to fill parameters
         row_values = []
@@ -259,10 +276,11 @@ def replace_costs_sql_text(report_type, data):  # makes the sql statement to 're
                 value = ''  # if empty, use empty string
             row_values.append(value)
         values.append(row_values)
-    return {'sql_text': sql_replace_text, 'data': values}
+    return sql_text, tuple(values)
 
 
-def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql statement to delete data from a cost table
+def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> (str, tuple):
+    """makes the sql statement to delete data from a cost table"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
@@ -273,7 +291,7 @@ def delete_costs_sql_text(report_type, vendor, year, name):  # makes the sql sta
     values.append(year)
     sql_text += '\n\tAND ' + name_field + ' = ?;'
     values.append(name)
-    return {'sql_text': sql_text, 'data': [values]}
+    return sql_text, (values,)
 
 
 def read_report_file(file_name, vendor,
@@ -387,12 +405,12 @@ def insert_single_file(file_path, vendor, year):
 
 
 def insert_single_cost_file(report_type, file_path):
-    data = read_costs_file(report_type, file_path)
-    replace = replace_costs_sql_text(data['report'], data['values'])
+    read = read_costs_file(report_type, file_path)
+    sql_text, data = replace_costs_sql_text(read['report'], read['values'])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, replace['sql_text'], replace['data'])
+        run_sql(connection, sql_text, data)
         connection.close()
     else:
         print('Error, no connection')
