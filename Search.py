@@ -180,9 +180,10 @@ class SearchController:
         parameters = self.get_search_parameters()
 
         # sql query to get search results
-        search = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
+        sql_text, data = ManageDB.search_sql_text(parameters['report'], parameters['start_year'],
                                           parameters['end_year'], parameters['search_parameters'])
-        print(search)  # testing
+        print(sql_text)  # testing
+        print(data)  # testing
 
         headers = tuple([field['name'] for field in ManageDB.get_view_report_fields_list(parameters['report'])])
 
@@ -190,7 +191,7 @@ class SearchController:
         if file_name != '':
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
-                results = ManageDB.run_select_sql(connection, search['sql_text'], search['data'])
+                results = ManageDB.run_select_sql(connection, sql_text, data)
                 results.insert(0, headers)
                 print(results)
                 file = open(file_name, 'w', newline="", encoding='utf-8-sig')

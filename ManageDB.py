@@ -1,14 +1,14 @@
 import sqlite3
 import os
 import csv
-import typing
+from typing import Tuple, Dict, Sequence, Any, NoReturn
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 from VariableConstants import *
 from ui import UpdateDatabaseProgressDialog
 
 
-def get_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report table
     :param report: the kind of the report
     :return tuple: list of fields in this report's table"""
@@ -22,7 +22,7 @@ def get_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, typing.
     return tuple(fields)
 
 
-def get_view_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report month view
     :param report: the kind of the report
     :return tuple: list of fields in this report's month view"""
@@ -45,7 +45,7 @@ def get_view_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, ty
     return tuple(fields)
 
 
-def get_chart_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report chart
     :param report: the kind of the report
     :return tuple: list of fields in this report's chart"""
@@ -65,7 +65,7 @@ def get_chart_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, t
     return tuple(fields)
 
 
-def get_top_number_chart_report_fields_list(report: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report top # chart
     :param report: the kind of the report
     :return tuple: list of fields in this report's top # chart"""
@@ -84,7 +84,7 @@ def get_top_number_chart_report_fields_list(report: str) -> typing.Tuple[typing.
     return tuple(fields)
 
 
-def get_cost_fields_list(report_type: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_cost_fields_list(report_type: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report type cost table
     :param report_type: the type of the report (master report name)
     :return tuple: list of fields in this report type's cost table"""
@@ -99,7 +99,7 @@ def get_cost_fields_list(report_type: str) -> typing.Tuple[typing.Dict[str, typi
     return tuple(fields)
 
 
-def get_field_attributes(report: str, field_name: str) -> typing.Dict[str, typing.Any]:
+def get_field_attributes(report: str, field_name: str) -> Dict[str, Any]:
     """Gets the field attributes
     :param report: the kind of the report
     :param field_name: the name of the field
@@ -187,9 +187,8 @@ def create_cost_table_sql_texts(report_type: str) -> str:
     return sql_text
 
 
-def replace_sql_text(file_name: str, report: str, data: typing.Tuple[typing.Dict[str, typing.Any], ...]) \
-        -> typing.Tuple[str, typing.Tuple[typing.Sequence[typing.Any, ...], ...],
-                        str, typing.Tuple[typing.Sequence[typing.Any, ...], ...]]:
+def replace_sql_text(file_name: str, report: str, data: Sequence[Dict[str, Any]]) \
+        -> Tuple[str, Sequence[Sequence[Any]], str, Sequence[Sequence[Any]]]:
     """Makes the sql statements to delete old date from a table and 'replace or insert' data into a table
     :param file_name: the name of the file the data is from
     :param report: the kind of the report
@@ -220,8 +219,7 @@ def replace_sql_text(file_name: str, report: str, data: typing.Tuple[typing.Dict
     return sql_delete_text, tuple(delete_values), sql_replace_text, tuple(replace_values)
 
 
-def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) \
-        -> typing.Tuple[str, typing.Tuple[typing.Sequence[typing.Any, ...], ...]]:
+def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> Tuple[str, Sequence[Sequence[Any]]]:
     """Makes the sql statement to update the vendor's name in a table
     :param table: the name of the table to replace in
     :param old_name: the old name of the vendor
@@ -241,7 +239,7 @@ def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) \
     return sql_text, (values,)
 
 
-def update_vendor_in_all_tables(old_name: str, new_name: str) -> typing.NoReturn:
+def update_vendor_in_all_tables(old_name: str, new_name: str) -> NoReturn:
     """Updates the vendor's name in all tables
     :param old_name: the old name of the vendor
     :param new_name: the new name of the vendor"""
@@ -262,8 +260,7 @@ def update_vendor_in_all_tables(old_name: str, new_name: str) -> typing.NoReturn
         print('Error, no connection')
 
 
-def replace_costs_sql_text(report_type: str, data: typing.Tuple[typing.Dict[str, typing.Any], ...]) \
-        -> typing.Tuple[str, typing.Tuple[typing.Sequence[typing.Any, ...], ...]]:
+def replace_costs_sql_text(report_type: str, data: Sequence[Dict[str, Any]]) -> Tuple[str, Sequence[Sequence[Any]]]:
     """Makes the SQL statement to 'replace or insert' data into a cost table
     :param report_type: the type of the report (master report name)
     :param data: the new data for the table"""
@@ -291,8 +288,7 @@ def replace_costs_sql_text(report_type: str, data: typing.Tuple[typing.Dict[str,
     return sql_text, tuple(values)
 
 
-def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) \
-        -> typing.Tuple[str, typing.Tuple[typing.Sequence[typing.Any, ...], ...]]:
+def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Sequence[Any]]]:
     """Makes the SQL statement to delete data from a cost table
     :param report_type: the type of the report (master report name)
     :param vendor: the vendor name of the cost
@@ -312,8 +308,7 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) \
     return sql_text, (values,)
 
 
-def read_report_file(file_name: str, vendor: str, year: int) \
-        -> typing.Tuple[str, str, typing.Tuple[typing.Dict[str, typing.Any], ...]]:
+def read_report_file(file_name: str, vendor: str, year: int) -> Tuple[str, str, Sequence[Dict[str, Any]]]:
     """Reads a specific csv/tsv file and returns the kind of report and the values for inserting
     :param file_name: the name of the file the data is from
     :param vendor: the vendor name of the data in the file
@@ -365,7 +360,7 @@ def read_report_file(file_name: str, vendor: str, year: int) \
         return None
 
 
-def read_costs_file(file_name: str) -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def read_costs_file(file_name: str) -> Sequence[Dict[str, Any]]:
     """Reads a specific csv/tsv cost file and returns the values for inserting
     :param file_name: the name of the file the data is from
     :return tuple: list of values from the file"""
@@ -388,7 +383,8 @@ def read_costs_file(file_name: str) -> typing.Tuple[typing.Dict[str, typing.Any]
         return None
 
 
-def get_all_report_files() -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_all_report_files() -> Sequence[Dict[str, Any]]:
+    # TODO (Chandler): add docstring
     files = []
     for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
@@ -403,7 +399,8 @@ def get_all_report_files() -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
     return tuple(files)
 
 
-def get_all_cost_files() -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
+def get_all_cost_files() -> Sequence[Dict[str, Any]]:
+    # TODO (Chandler): add docstring
     files = []
     for file in os.scandir(COSTS_SAVE_FOLDER):
         if file.name[-4:] in DELIMITERS:
@@ -411,9 +408,10 @@ def get_all_cost_files() -> typing.Tuple[typing.Dict[str, typing.Any], ...]:
     return tuple(files)
 
 
-def insert_single_file(file_path: str, vendor: str, year: int) -> typing.NoReturn:
-    file, report, data = read_report_file(file_path, vendor, year)
-    delete, delete_data, replace, replace_data = replace_sql_text(file, report, data)
+def insert_single_file(file_path: str, vendor: str, year: int) -> NoReturn:
+    # TODO (Chandler): add docstring
+    file, report, read_data = read_report_file(file_path, vendor, year)
+    delete, delete_data, replace, replace_data = replace_sql_text(file, report, read_data)
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -424,7 +422,8 @@ def insert_single_file(file_path: str, vendor: str, year: int) -> typing.NoRetur
         print('Error, no connection')
 
 
-def insert_single_cost_file(report_type: str, file_path: str) -> typing.NoReturn:
+def insert_single_cost_file(report_type: str, file_path: str) -> NoReturn:
+    # TODO (Chandler): add docstring
     read_data = read_costs_file(file_path)
     sql_text, data = replace_costs_sql_text(report_type, read_data)
 
@@ -436,8 +435,10 @@ def insert_single_cost_file(report_type: str, file_path: str) -> typing.NoReturn
         print('Error, no connection')
 
 
-def search_sql_text(report, start_year, end_year, search_parameters):
+def search_sql_text(report: str, start_year: int, end_year: int,
+                    search_parameters: Sequence[Sequence[Dict[str, Any]]]) -> Tuple[str, Sequence[Any]]:
     """makes the sql statement to search the database; search_parameters in POS form"""
+    # TODO (Chandler): add docstring
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -457,11 +458,13 @@ def search_sql_text(report, start_year, end_year, search_parameters):
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return {'sql_text': sql_text, 'data': data}
+    return sql_text, tuple(data)
 
 
-def chart_search_sql_text(report, start_year, end_year, name, metric_type):
+def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str) \
+        -> Tuple[str, Sequence[Any]]:
     """makes the sql statement to search the database for chart data"""
+    # TODO (Chandler): add docstring
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -481,11 +484,13 @@ def chart_search_sql_text(report, start_year, end_year, name, metric_type):
         data.append(clause['value'])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
-    return {'sql_text': sql_text, 'data': data}
+    return sql_text, tuple(data)
 
 
 def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_type, number=None):
     """makes the sql statement to search the database for chart data"""
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'SELECT * FROM ('
     sql_text += '\nSELECT'
@@ -529,6 +534,8 @@ def chart_top_number_search_sql_text(report, start_year, end_year, name, metric_
 
 
 def get_names_sql_text(report, vendor):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     name_field = NAME_FIELD_SWITCHER[report[:2]]
 
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report \
@@ -538,6 +545,8 @@ def get_names_sql_text(report, vendor):
 
 
 def get_costs_sql_text(report_type, vendor, year, name):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'SELECT'
@@ -554,6 +563,8 @@ def get_costs_sql_text(report_type, vendor, year, name):
 
 
 def create_connection(db_file):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     connection = None
     try:
         connection = sqlite3.connect(db_file)
@@ -566,6 +577,8 @@ def create_connection(db_file):
 
 
 def run_sql(connection, sql_text, data=None):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     try:
         cursor = connection.cursor()
         if data is not None:
@@ -578,6 +591,8 @@ def run_sql(connection, sql_text, data=None):
 
 
 def run_select_sql(connection, sql_text, data=None):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     try:
         cursor = connection.cursor()
         if data is not None:
@@ -591,6 +606,8 @@ def run_select_sql(connection, sql_text, data=None):
 
 
 def setup_database(drop_tables):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     sql_texts = {}
     sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
     sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
@@ -614,6 +631,8 @@ def setup_database(drop_tables):
 
 
 def first_time_setup():
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     if not os.path.exists(DATABASE_FOLDER):
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
@@ -623,6 +642,8 @@ def first_time_setup():
 
 
 def backup_costs_data(report_type):
+    # TODO (Chandler): add type hints
+    # TODO (Chandler): add docstring
     if not os.path.exists(COSTS_SAVE_FOLDER):
         os.mkdir(COSTS_SAVE_FOLDER)
     connection = create_connection(DATABASE_LOCATION)
@@ -709,7 +730,7 @@ class UpdateDatabaseProgressDialogController:
 
         self.update_progress_bar.setMaximum(len(files))
 
-        self.update_database_progress_dialog.exec_()
+        self.update_database_progress_dialog.show()
 
         self.update_database_thread = QThread()
 
