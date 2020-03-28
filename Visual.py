@@ -1,9 +1,14 @@
+import json
+
 import xlsxwriter
 from datetime import date
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
+
+import GeneralUtils
 import ManageDB
+import ManageVendors
 from ui import MessageDialog, VisualTab
 from VariableConstants import *
 
@@ -13,7 +18,8 @@ class VisualController:
         # set up combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.report_parameter.addItems(ALL_REPORTS)
-        self.report_parameter.activated[str].connect(self.on_combo_activated)
+        #self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
+        self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
 
         # set up radio buttons
         self.h_bar_radio = visual_ui.radioButton
@@ -28,9 +34,19 @@ class VisualController:
         self.end_year_parameter = visual_ui.search_end_year_parameter_dateedit_2
         self.end_year_parameter.setDate(date.today())
 
-        self.name = visual_ui.name_lineEdit
+        self.name_label = visual_ui.visual_name_label
+        self.name_combobox = visual_ui.visual_name_parameter_combobox
+        self.name = None
         self.metric = visual_ui.metric_Type_comboBox
         self.metric.addItems(DATABASE_REPORTS_METRIC)
+
+        self.vendor = visual_ui.visual_vendor_parameter_combobox
+        self.vendor.currentTextChanged.connect(self.on_vendor_changed)
+        self.vendor_parameter = None
+        vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
+        vendor_dicts = json.loads(vendors_json_string)
+        self.vendor.clear()
+        self.vendor.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
 
         # set up the search clauses
         self.and_clause_parameters = None
@@ -47,16 +63,58 @@ class VisualController:
 
         self.data = []
 
-    def on_combo_activated(self, text):
+    def on_report_type_combo_activated(self, text):
         self.metric.clear()
         if text in DATABASE_REPORTS:
             self.metric.addItems(DATABASE_REPORTS_METRIC)
+            self.name_label.setText('Database')
         if text in ITEM_REPORTS:
             self.metric.addItems(ITEM_REPORTS_METRIC)
+            self.name_label.setText('Item')
         if text in PLATFORM_REPORTS:
             self.metric.addItems(PLATFORM_REPORTS_METRIC)
+            self.name_label.setText('Platform')
         if text in TITLE_REPORTS:
             self.metric.addItems(TITLE_REPORTS_METRIC)
+            self.name_label.setText('Title')
+
+    def on_report_parameter_changed(self, text):
+        #self.report_parameter = self.report_parameter.currentText()
+        #self.name_label.setText(NAME_FIELD_SWITCHER[self.report_parameter.currentText].capitalize())
+        self.metric.clear()
+        if text in DATABASE_REPORTS:
+            self.metric.addItems(DATABASE_REPORTS_METRIC)
+            self.name_label.setText('Database')
+        if text in ITEM_REPORTS:
+            self.metric.addItems(ITEM_REPORTS_METRIC)
+            self.name_label.setText('Item')
+        if text in PLATFORM_REPORTS:
+            self.metric.addItems(PLATFORM_REPORTS_METRIC)
+            self.name_label.setText('Platform')
+        if text in TITLE_REPORTS:
+            self.metric.addItems(TITLE_REPORTS_METRIC)
+            self.name_label.setText('Title')
+        if self.vendor.currentText():
+            self.fill_names()
+
+    def on_vendor_changed(self):
+        self.vendor_parameter = self.vendor.currentText()
+        if self.report_parameter.currentText():
+            self.fill_names()
+
+    def fill_names(self):
+        self.name_combobox.clear()
+        results = []
+        sql_text = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
+        print(sql_text)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text)
+            print(results)
+            connection.close()
+            self.name_combobox.addItems([result[0] for result in results])
+        else:
+            print('Error, no connection')
 
     def createChart(self):  # submit search result to database and open results
         # get report type
@@ -66,7 +124,7 @@ class VisualController:
         # get end year
         end_year = self.end_year_parameter.text()
         # get name
-        name = self.name.text()
+        name = self.name_combobox.currentText()
         metric = self.metric.currentText()
 
         # sql query to get search results
