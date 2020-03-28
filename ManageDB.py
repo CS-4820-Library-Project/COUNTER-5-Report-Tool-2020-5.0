@@ -7,7 +7,7 @@ from VariableConstants import *
 from ui import UpdateDatabaseProgressDialog
 
 
-def get_report_fields_list(report):
+def get_report_fields_list(report: str) -> tuple:
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -18,7 +18,7 @@ def get_report_fields_list(report):
     return tuple(fields)
 
 
-def get_view_report_fields_list(report):
+def get_view_report_fields_list(report: str) -> tuple:
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -38,7 +38,7 @@ def get_view_report_fields_list(report):
     return tuple(fields)
 
 
-def get_chart_report_fields_list(report):
+def get_chart_report_fields_list(report: str) -> tuple:
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
@@ -55,7 +55,7 @@ def get_chart_report_fields_list(report):
     return tuple(fields)
 
 
-def get_top_number_chart_report_fields_list(report):
+def get_top_number_chart_report_fields_list(report: str) -> tuple:
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
@@ -71,7 +71,7 @@ def get_top_number_chart_report_fields_list(report):
     return tuple(fields)
 
 
-def get_cost_fields_list(report):
+def get_cost_fields_list(report: str) -> tuple:
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
@@ -97,74 +97,65 @@ def get_field_attributes(report, field_name):
     return None
 
 
-def create_table_sql_texts(reports):  # makes the SQL statements to create the tables from the table definition
-    sql_texts = {}
-    for report in reports:
-        sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
-        report_fields = get_report_fields_list(report)
-        fields_and_options = []
-        key_fields = []
-        for field in report_fields:
-            field_text = field['name'] + ' ' + field['type']
-            if field['options']:
-                field_text += ' ' + ' '.join(field['options'])
-            fields_and_options.append(field_text)
-            if field['name'] not in FIELDS_NOT_IN_KEYS:
-                key_fields.append(field['name'])
-        sql_text += '\n\t' + ', \n\t'.join(fields_and_options) + ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
-        sql_texts[report] = sql_text
-    return sql_texts
+def create_table_sql_texts(report):  # makes the SQL statements to create the tables from the table definition
+    sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
+    report_fields = get_report_fields_list(report)
+    fields_and_options = []
+    key_fields = []
+    for field in report_fields:
+        field_text = field['name'] + ' ' + field['type']
+        if field['options']:
+            field_text += ' ' + ' '.join(field['options'])
+        fields_and_options.append(field_text)
+        if field['name'] not in FIELDS_NOT_IN_KEYS:
+            key_fields.append(field['name'])
+    sql_text += '\n\t' + ', \n\t'.join(fields_and_options) + ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
+    return sql_text
 
 
-def create_view_sql_texts(reports):  # makes the SQL statements to create the views from the table definition
-    sql_texts = {}
-    for report in reports:
-        name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
-        sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
-        report_fields = get_view_report_fields_list(report)
-        fields = []
-        calcs = []
-        key_fields = []
-        for field in report_fields:
-            if 'calculation' not in field.keys():
-                field_text = ''
-                if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
-                    key_fields.append(field['name'])
-                    field_text = report + '.'
-                field_text += field['name']
-                fields.append(field_text)
-            else:
-                calcs.append(field['calculation'] + ' AS ' + field['name'])
-        sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-        sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
-        join_clauses = []
-        for key_field in key_fields:
-            join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
-        sql_text += ' ON ' + ' AND '.join(join_clauses)
-        sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
-        sql_texts[report + VIEW_SUFFIX] = sql_text
-    return sql_texts
-
-
-def create_cost_table_sql_texts(report_types):
-    sql_texts = {}
-    for report_type in report_types:
-        sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
-        report_fields = get_cost_fields_list(report_type)
-        name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
-        fields_and_options = []
-        key_fields = []
-        for field in report_fields:
-            field_text = field['name'] + ' ' + field['type']
-            if field['options']:
-                field_text += ' ' + ' '.join(field['options'])
-            fields_and_options.append(field_text)
+def create_view_sql_texts(report):  # makes the SQL statements to create the views from the table definition
+    name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
+    sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
+    report_fields = get_view_report_fields_list(report)
+    fields = []
+    calcs = []
+    key_fields = []
+    for field in report_fields:
+        if 'calculation' not in field.keys():
+            field_text = ''
             if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
                 key_fields.append(field['name'])
-        sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
-        sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
-        sql_texts[report_type + COST_TABLE_SUFFIX] = sql_text
-    return sql_texts
+                field_text = report + '.'
+            field_text += field['name']
+            fields.append(field_text)
+        else:
+            calcs.append(field['calculation'] + ' AS ' + field['name'])
+    sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
+    sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
+    join_clauses = []
+    for key_field in key_fields:
+        join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
+    sql_text += ' ON ' + ' AND '.join(join_clauses)
+    sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
+    return sql_text
+
+
+def create_cost_table_sql_texts(report_type):
+    sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
+    report_fields = get_cost_fields_list(report_type)
+    name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
+    fields_and_options = []
+    key_fields = []
+    for field in report_fields:
+        field_text = field['name'] + ' ' + field['type']
+        if field['options']:
+            field_text += ' ' + ' '.join(field['options'])
+        fields_and_options.append(field_text)
+        if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
+            key_fields.append(field['name'])
+    sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
+    sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
+    return sql_text
 
 
 def replace_sql_text(file_name, report, data):  # makes the sql statement to 'replace or insert' data into a table
@@ -539,9 +530,10 @@ def run_select_sql(connection, sql_text, data=None):
 
 def setup_database(drop_tables):
     sql_texts = {}
-    sql_texts.update(create_table_sql_texts(ALL_REPORTS))
-    sql_texts.update(create_cost_table_sql_texts(REPORT_TYPE_SWITCHER.keys()))
-    sql_texts.update(create_view_sql_texts(ALL_REPORTS))
+    sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
+    sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
+                      REPORT_TYPE_SWITCHER.keys()})
+    sql_texts.update({report + VIEW_SUFFIX: create_view_sql_texts(report) for report in ALL_REPORTS})
     for key in sql_texts:  # testing
         print(sql_texts[key])
 
