@@ -1,7 +1,7 @@
 import sqlite3
 import os
 import csv
-from typing import Tuple, Dict, Sequence, Any, NoReturn
+from typing import Tuple, Dict, Sequence, Any, NoReturn, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 from VariableConstants import *
@@ -11,7 +11,7 @@ from ui import UpdateDatabaseProgressDialog
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report table
     :param report: the kind of the report
-    :return tuple: list of fields in this report's table"""
+    :returns: list of fields in this report's table"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -25,7 +25,7 @@ def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
 def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report month view
     :param report: the kind of the report
-    :return tuple: list of fields in this report's month view"""
+    :returns: list of fields in this report's month view"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
@@ -48,7 +48,7 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
 def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report chart
     :param report: the kind of the report
-    :return tuple: list of fields in this report's chart"""
+    :returns: list of fields in this report's chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
@@ -68,7 +68,7 @@ def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
 def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report top # chart
     :param report: the kind of the report
-    :return tuple: list of fields in this report's top # chart"""
+    :returns: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
@@ -87,7 +87,7 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
 def get_cost_fields_list(report_type: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report type cost table
     :param report_type: the type of the report (master report name)
-    :return tuple: list of fields in this report type's cost table"""
+    :returns: list of fields in this report type's cost table"""
     fields = []
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])  # name field only
     fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
@@ -99,11 +99,11 @@ def get_cost_fields_list(report_type: str) -> Sequence[Dict[str, Any]]:
     return tuple(fields)
 
 
-def get_field_attributes(report: str, field_name: str) -> Dict[str, Any]:
+def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], NoReturn]:
     """Gets the field attributes
     :param report: the kind of the report
     :param field_name: the name of the field
-    :return dict: attributes of the field"""
+    :returns: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     for field in report_fields:
         if field['name'] == field_name:
@@ -120,7 +120,7 @@ def get_field_attributes(report: str, field_name: str) -> Dict[str, Any]:
 def create_table_sql_texts(report: str) -> str:
     """Makes the SQL statement to create the tables from the table definition
     :param report: the kind of the report
-    :return str: the sql statement"""
+    :returns: the sql statement"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report + '('
     report_fields = get_report_fields_list(report)
     fields_and_options = []
@@ -139,7 +139,7 @@ def create_table_sql_texts(report: str) -> str:
 def create_view_sql_texts(report: str) -> str:
     """Makes the SQL statement to create the views from the table definition
     :param report: the kind of the report
-    :return str: the sql statement"""
+    :returns: the sql statement"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'CREATE VIEW IF NOT EXISTS ' + report + VIEW_SUFFIX + ' AS SELECT'
     report_fields = get_view_report_fields_list(report)
@@ -169,7 +169,7 @@ def create_view_sql_texts(report: str) -> str:
 def create_cost_table_sql_texts(report_type: str) -> str:
     """Makes the SQL statement to create the cost tables from the table definition
     :param report_type: the type of the report (master report name)
-    :return str: the sql statement"""
+    :returns: the sql statement"""
     sql_text = 'CREATE TABLE IF NOT EXISTS ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])
@@ -189,11 +189,13 @@ def create_cost_table_sql_texts(report_type: str) -> str:
 
 def replace_sql_text(file_name: str, report: str, data: Sequence[Dict[str, Any]]) \
         -> Tuple[str, Sequence[Sequence[Any]], str, Sequence[Sequence[Any]]]:
-    """Makes the sql statements to delete old date from a table and 'replace or insert' data into a table
+    """Makes the sql statements to delete old data from a table and 'replace or insert' data into a table
     :param file_name: the name of the file the data is from
     :param report: the kind of the report
-    :param data: the data from the file"""
-    # TODO (Chandler): add return to docstring
+    :param data: the data from the file
+    :returns: (sql_delete_text, delete_values, sql_replace_text, replace_values) a Tuple with the parameterized SQL
+    statement to delete the old data, the values for it, the parameterized SQL statement to 'replace or insert' data
+    into the table, and the values for it"""
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
@@ -223,8 +225,9 @@ def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> Tup
     """Makes the sql statement to update the vendor's name in a table
     :param table: the name of the table to replace in
     :param old_name: the old name of the vendor
-    :param new_name: the new name of the vendor"""
-    # TODO (Chandler): add return to docstring
+    :param new_name: the new name of the vendor
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to update the vendor name in the table,
+    and the values for it"""
     sql_text = 'UPDATE ' + table + ' SET'
     values = []
     sql_text += '\n\t' + 'vendor' + ' = ?'
@@ -263,8 +266,9 @@ def update_vendor_in_all_tables(old_name: str, new_name: str) -> NoReturn:
 def replace_costs_sql_text(report_type: str, data: Sequence[Dict[str, Any]]) -> Tuple[str, Sequence[Sequence[Any]]]:
     """Makes the SQL statement to 'replace or insert' data into a cost table
     :param report_type: the type of the report (master report name)
-    :param data: the new data for the table"""
-    # TODO (Chandler): add return to docstring
+    :param data: the new data for the table
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to 'replace or insert' the costs, and the
+    values for it"""
     sql_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
@@ -293,8 +297,9 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -
     :param report_type: the type of the report (master report name)
     :param vendor: the vendor name of the cost
     :param year: the year of the cost
-    :param name: the name the cost is associated with (database/item/platform/title)"""
-    # TODO (Chandler): add return to docstring
+    :param name: the name the cost is associated with (database/item/platform/title)
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to delete the costs row, and the values
+    for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
@@ -308,12 +313,13 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -
     return sql_text, (values,)
 
 
-def read_report_file(file_name: str, vendor: str, year: int) -> Tuple[str, str, Sequence[Dict[str, Any]]]:
+def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str, str, Sequence[Dict[str, Any]]],
+                                                                      NoReturn]:
     """Reads a specific csv/tsv file and returns the kind of report and the values for inserting
     :param file_name: the name of the file the data is from
     :param vendor: the vendor name of the data in the file
-    :param year: the year of the data in the file"""
-    # TODO (Chandler): add return to docstring
+    :param year: the year of the data in the file
+    :returns: (file_name, report, values) a Tuple with the file name, the kind of report, and the data from the file"""
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -360,11 +366,10 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Tuple[str, str, 
         return None
 
 
-def read_costs_file(file_name: str) -> Sequence[Dict[str, Any]]:
+def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], NoReturn]:
     """Reads a specific csv/tsv cost file and returns the values for inserting
     :param file_name: the name of the file the data is from
-    :return tuple: list of values from the file"""
-    # TODO (Chandler): add return to docstring
+    :returns: list of values from the file"""
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -384,7 +389,8 @@ def read_costs_file(file_name: str) -> Sequence[Dict[str, Any]]:
 
 
 def get_all_report_files() -> Sequence[Dict[str, Any]]:
-    # TODO (Chandler): add docstring
+    """Gets the list of the report files in the protected directory
+    :returns: list of report files"""
     files = []
     for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in FILE_LOCATION
         if upper_directory.is_dir():
@@ -400,7 +406,8 @@ def get_all_report_files() -> Sequence[Dict[str, Any]]:
 
 
 def get_all_cost_files() -> Sequence[Dict[str, Any]]:
-    # TODO (Chandler): add docstring
+    """Gets the list of the cost files in the costs directory
+    :returns: list of cost files"""
     files = []
     for file in os.scandir(COSTS_SAVE_FOLDER):
         if file.name[-4:] in DELIMITERS:
@@ -409,7 +416,10 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
 
 
 def insert_single_file(file_path: str, vendor: str, year: int) -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Inserts a single file's data into the database
+    :param file_path: the path of the file the data is from
+    :param vendor: the vendor name of the data in the file
+    :param year: the year of the data in the file"""
     file, report, read_data = read_report_file(file_path, vendor, year)
     delete, delete_data, replace, replace_data = replace_sql_text(file, report, read_data)
 
@@ -423,7 +433,9 @@ def insert_single_file(file_path: str, vendor: str, year: int) -> NoReturn:
 
 
 def insert_single_cost_file(report_type: str, file_path: str) -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Inserts a single file's data into the database
+    :param report_type: the type of the report (master report name)
+    :param file_path: the path of the file the data is from"""
     read_data = read_costs_file(file_path)
     sql_text, data = replace_costs_sql_text(report_type, read_data)
 
@@ -437,8 +449,13 @@ def insert_single_cost_file(report_type: str, file_path: str) -> NoReturn:
 
 def search_sql_text(report: str, start_year: int, end_year: int,
                     search_parameters: Sequence[Sequence[Dict[str, Any]]]) -> Tuple[str, Sequence[Any]]:
-    """makes the sql statement to search the database; search_parameters in POS form"""
-    # TODO (Chandler): add docstring
+    """Makes the sql statement to search the database based on a search
+    :param report: the kind of the report
+    :param start_year: the starting year of the search
+    :param end_year: the ending year of the search
+    :param search_parameters: list of search parameters in POS form
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for
+    it"""
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -463,8 +480,14 @@ def search_sql_text(report: str, start_year: int, end_year: int,
 
 def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str) \
         -> Tuple[str, Sequence[Any]]:
-    """makes the sql statement to search the database for chart data"""
-    # TODO (Chandler): add docstring
+    """Makes the sql statement to search the database for chart data
+    :param report: the kind of the report
+    :param start_year: the starting year of the search
+    :param end_year: the ending year of the search
+    :param name: the name field (database/item/platform/title) value
+    :param metric_type: the metric type value
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for
+    it"""
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -489,8 +512,15 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
 
 def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
                                      number: int = None) -> Tuple[str, Sequence[Any]]:
-    """makes the sql statement to search the database for chart data"""
-    # TODO (Chandler): add docstring
+    """Makes the sql statement to search the database for chart data
+    :param report: the kind of the report
+    :param start_year: the starting year of the search
+    :param end_year: the ending year of the search
+    :param name: the name field (database/item/platform/title) value
+    :param metric_type: the metric type value
+    :param number: the number to show of the top months
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for
+    it"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'SELECT * FROM ('
     sql_text += '\nSELECT'
@@ -587,7 +617,7 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
 
 
 def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Any] = None) \
-        -> Sequence[Sequence[Any]]:
+        -> Union[Sequence[Sequence[Any]], NoReturn]:
     # TODO (Chandler): add docstring
     try:
         cursor = connection.cursor()
