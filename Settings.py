@@ -175,7 +175,7 @@ class SettingsController:
         if not self.is_restoring_database:  # check if already running
             if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
                 self.is_restoring_database = True
-                self.update_database_dialog.update_database(ManageDB.get_all_reports() + ManageDB.get_all_cost_files(),
+                self.update_database_dialog.update_database(ManageDB.get_all_report_files() + ManageDB.get_all_cost_files(),
                                                             True)
                 self.is_restoring_database = False
         else:
