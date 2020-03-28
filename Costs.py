@@ -102,10 +102,10 @@ class CostsController:
         self.name_parameter_combobox.clear()
         results = []
         sql_text = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+        print(sql_text)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            print(sql_text)
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text)
             print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
@@ -156,8 +156,8 @@ class CostsController:
                                                          'cost_in_local_currency_with_tax':
                                                              self.cost_in_local_currency_with_tax}])
         elif insert_or_delete == DELETE:
-            sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
-                                                      self.year_parameter, self.name_parameter)
+            sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                                      self.name_parameter)
         if insert_or_delete in (INSERT, DELETE):
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
@@ -177,7 +177,7 @@ class CostsController:
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
             connection.close()
