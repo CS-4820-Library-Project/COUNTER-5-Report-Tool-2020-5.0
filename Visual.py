@@ -64,6 +64,10 @@ class VisualController:
         self.data = []
         ManageDB.test_chart_search()
 
+    def load_vendor_list(self, vendors: list):
+        self.vendor.clear()
+        self.vendor.addItems([vendor.name for vendor in vendors])
+
     def on_report_type_combo_activated(self, text):
         self.metric.clear()
         if text in DATABASE_REPORTS:
