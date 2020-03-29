@@ -198,12 +198,14 @@ def create_cost_table_sql_texts(report_type: str) -> str:
 
 def replace_sql_text(file_name: str, report: str, data: Sequence[Dict[str, Any]]) \
         -> Tuple[str, Sequence[Sequence[Any]], str, Sequence[Sequence[Any]]]:
-    """Makes the sql statements to delete old data from a table and 'replace or insert' data into a table
+    """Makes the SQL statements to delete old data from a table and 'replace or insert' data into a table
 
     :param file_name: the name of the file the data is from
     :param report: the kind of the report
     :param data: the data from the file
-    :returns: (sql_delete_text, delete_values, sql_replace_text, replace_values) a Tuple with the parameterized SQL statement to delete the old data, the values for it, the parameterized SQL statement to 'replace or insert' data into the table, and the values for it"""
+    :returns: (sql_delete_text, delete_values, sql_replace_text, replace_values) a Tuple with the parameterized SQL
+        statement to delete the old data, the values for it, the parameterized SQL statement to 'replace or insert'
+        data into the table, and the values for it"""
     sql_replace_text = 'REPLACE INTO ' + report + '('
     report_fields = get_report_fields_list(report)
     fields = []
@@ -230,12 +232,13 @@ def replace_sql_text(file_name: str, report: str, data: Sequence[Dict[str, Any]]
 
 
 def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> Tuple[str, Sequence[Sequence[Any]]]:
-    """Makes the sql statement to update the vendor's name in a table
+    """Makes the SQL statement to update the vendor's name in a table
 
     :param table: the name of the table to replace in
     :param old_name: the old name of the vendor
     :param new_name: the new name of the vendor
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to update the vendor name in the table, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to update the vendor name in the table,
+        and the values for it"""
     sql_text = 'UPDATE ' + table + ' SET'
     values = []
     sql_text += '\n\t' + 'vendor' + ' = ?'
@@ -277,7 +280,8 @@ def replace_costs_sql_text(report_type: str, data: Sequence[Dict[str, Any]]) -> 
 
     :param report_type: the type of the report (master report name)
     :param data: the new data for the table
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to 'replace or insert' the costs, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to 'replace or insert' the costs, and the
+        values for it"""
     sql_text = 'REPLACE INTO ' + report_type + COST_TABLE_SUFFIX + '('
     report_fields = get_cost_fields_list(report_type)
     fields = []
@@ -308,7 +312,8 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -
     :param vendor: the vendor name of the cost
     :param year: the year of the cost
     :param name: the name the cost is associated with (database/item/platform/title)
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to delete the costs row, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to delete the costs row, and the values
+        for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
@@ -462,13 +467,14 @@ def insert_single_cost_file(report_type: str, file_path: str) -> NoReturn:
 
 def search_sql_text(report: str, start_year: int, end_year: int,
                     search_parameters: Sequence[Sequence[Dict[str, Any]]]) -> Tuple[str, Sequence[Any]]:
-    """Makes the sql statement to search the database based on a search
+    """Makes the SQL statement to search the database based on a search
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
     :param end_year: the ending year of the search
     :param search_parameters: list of search parameters in POS form
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
     clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
@@ -493,14 +499,15 @@ def search_sql_text(report: str, start_year: int, end_year: int,
 
 def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str) \
         -> Tuple[str, Sequence[Any]]:
-    """Makes the sql statement to search the database for chart data
+    """Makes the SQL statement to search the database for chart data
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
     :param end_year: the ending year of the search
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
@@ -525,7 +532,7 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
 
 def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
                                      number: int = None) -> Tuple[str, Sequence[Any]]:
-    """Makes the sql statement to search the database for chart data
+    """Makes the SQL statement to search the database for chart data
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
@@ -533,7 +540,8 @@ def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
     :param number: the number to show of the top months
-    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values for it"""
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     sql_text = 'SELECT * FROM ('
     sql_text += '\nSELECT'
@@ -577,7 +585,12 @@ def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int
 
 
 def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
-    # TODO (Chandler): add docstring
+    """Makes the SQL statement to get all the unique name values for a report and vendor
+
+    :param report: the kind of the report
+    :param vendor: the vendor name of the data in the file
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
 
     sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report \
@@ -587,7 +600,14 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
 
 
 def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Any]]:
-    # TODO (Chandler): add docstring
+    """Makes the SQL statement to get costs from the database
+
+    :param report_type: the type of the report (master report name)
+    :param vendor: the vendor name of the cost
+    :param year: the year of the cost
+    :param name: the name the cost is associated with (database/item/platform/title)
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'SELECT'
@@ -604,7 +624,10 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
 
 
 def create_connection(db_file: str) -> sqlite3.Connection:
-    # TODO (Chandler): add docstring
+    """Creates the connection to the database
+
+    :param db_file: the file the database is in
+    :returns: the connection to the database"""
     connection = None
     try:
         connection = sqlite3.connect(db_file)
@@ -617,7 +640,11 @@ def create_connection(db_file: str) -> sqlite3.Connection:
 
 
 def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None) -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Runs the SQL statement to modify the database
+
+    :param connection: the connection to the database
+    :param sql_text: the SQL statement
+    :param data: the parameters to the SQL statement"""
     try:
         cursor = connection.cursor()
         if data is not None:
@@ -631,7 +658,12 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
 
 def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Any] = None) \
         -> Union[Sequence[Sequence[Any]], NoReturn]:
-    # TODO (Chandler): add docstring
+    """Runs the SQL statement to get data from the database
+
+    :param connection: the connection to the database
+    :param sql_text: the SQL statement
+    :param data: the parameters to the SQL statement
+    :returns: a list of rows that return from the statement"""
     try:
         cursor = connection.cursor()
         if data is not None:
@@ -644,7 +676,9 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
 
 
 def setup_database(drop_tables: bool) -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Sets up the database
+
+    :param drop_tables: whether to drop the tables before creating them"""
     sql_texts = {}
     sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
     sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
@@ -668,7 +702,7 @@ def setup_database(drop_tables: bool) -> NoReturn:
 
 
 def first_time_setup() -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
@@ -678,7 +712,9 @@ def first_time_setup() -> NoReturn:
 
 
 def backup_costs_data(report_type: str) -> NoReturn:
-    # TODO (Chandler): add docstring
+    """Backs up the data in the costs table in a file in the costs directory
+
+    :param report_type: the type of the report (master report name)"""
     if not os.path.exists(COSTS_SAVE_FOLDER):
         os.mkdir(COSTS_SAVE_FOLDER)
     connection = create_connection(DATABASE_LOCATION)
