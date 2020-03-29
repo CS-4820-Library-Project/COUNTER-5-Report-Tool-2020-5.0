@@ -13,7 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_import_report_tab(object):
     def setupUi(self, import_report_tab):
         import_report_tab.setObjectName("import_report_tab")
-        import_report_tab.resize(630, 234)
+        import_report_tab.resize(630, 252)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/import_report_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        import_report_tab.setWindowIcon(icon)
         self.horizontalLayout = QtWidgets.QHBoxLayout(import_report_tab)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.frame_21 = QtWidgets.QFrame(import_report_tab)
@@ -176,6 +179,11 @@ class Ui_import_report_tab(object):
 
         self.retranslateUi(import_report_tab)
         QtCore.QMetaObject.connectSlotsByName(import_report_tab)
+        import_report_tab.setTabOrder(self.vendors_list_view_import, self.report_types_list_view_import)
+        import_report_tab.setTabOrder(self.report_types_list_view_import, self.report_year_date_edit)
+        import_report_tab.setTabOrder(self.report_year_date_edit, self.selected_file_edit)
+        import_report_tab.setTabOrder(self.selected_file_edit, self.select_file_button)
+        import_report_tab.setTabOrder(self.select_file_button, self.import_report_button)
 
     def retranslateUi(self, import_report_tab):
         _translate = QtCore.QCoreApplication.translate
@@ -188,3 +196,4 @@ class Ui_import_report_tab(object):
         self.label_36.setText(_translate("import_report_tab", "Target Report File"))
         self.select_file_button.setText(_translate("import_report_tab", "Select File"))
         self.import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
+import Resources_rc

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>251</height>
+    <height>338</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -18,6 +18,10 @@
   </property>
   <property name="windowTitle">
    <string>Fetch Special Reports</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/fetch_special_reports_icon.png</normaloff>:/ui/resources/tab_icons/fetch_special_reports_icon.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -53,12 +57,6 @@
       </item>
       <item>
        <widget class="QFrame" name="frame_32">
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <property name="leftMargin">
           <number>0</number>
@@ -115,7 +113,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>200</width>
+       <width>180</width>
        <height>0</height>
       </size>
      </property>
@@ -377,6 +375,59 @@
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QFrame" name="custom_dir_frame">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_26">
+            <item>
+             <widget class="QLabel" name="label_41">
+              <property name="text">
+               <string>Report(s) will be saved to:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="frame_39">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLineEdit" name="custom_dir_edit"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="custom_dir_button">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Change</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -419,6 +470,23 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>select_vendors_button_special</tabstop>
+  <tabstop>deselect_vendors_button_special</tabstop>
+  <tabstop>vendors_list_view_special</tabstop>
+  <tabstop>pr_radio_button</tabstop>
+  <tabstop>dr_radio_button</tabstop>
+  <tabstop>tr_radio_button</tabstop>
+  <tabstop>ir_radio_button</tabstop>
+  <tabstop>options_frame</tabstop>
+  <tabstop>begin_date_edit_special_year</tabstop>
+  <tabstop>begin_date_edit_special_month</tabstop>
+  <tabstop>end_date_edit_special_year</tabstop>
+  <tabstop>end_date_edit_special_month</tabstop>
+  <tabstop>fetch_special_data_button</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

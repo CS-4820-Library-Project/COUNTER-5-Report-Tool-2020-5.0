@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
+from PyQt5.QtGui import QIcon, QPixmap
 from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
     SearchTab, VisualTab, CostsTab
 from ManageVendors import ManageVendorsController
@@ -36,9 +37,7 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    font = app.font()
-    font.setPointSize(11)
-    app.setFont(font)
+    app.setStyleSheet("QWidget {font-size: 11pt;}")
 
     ManageDB.first_time_setup()
 
@@ -50,7 +49,7 @@ if __name__ == "__main__":
     manage_vendors_tab = QWidget(main_window)
     manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
     manage_vendors_ui.setupUi(manage_vendors_tab)
-    manage_vendors_controller = ManageVendorsController(manage_vendors_ui)
+    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui)
 
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()
@@ -91,23 +90,27 @@ if __name__ == "__main__":
     visual_ui = VisualTab.Ui_visual_tab()
     visual_ui.setupUi(visual_tab)
     visual_controller = VisualController(visual_ui)
+
     # # endregion
 
     # region Connect Signals
     manage_vendors_controller.vendors_changed_signal.connect(fetch_reports_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
+    manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
+    manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
     # endregion
 
     # region Add tabs to main window
-    main_window_ui.tab_widget.addTab(manage_vendors_tab, "Manage Vendors")
-    main_window_ui.tab_widget.addTab(fetch_reports_tab, "Fetch Reports")
-    main_window_ui.tab_widget.addTab(fetch_special_reports_tab, "Fetch Special Reports")
-    main_window_ui.tab_widget.addTab(import_report_tab, "Import Report")
-    main_window_ui.tab_widget.addTab(costs_tab, "Costs")
-    main_window_ui.tab_widget.addTab(search_tab, "Search")
-    main_window_ui.tab_widget.addTab(visual_tab, "Visual")
-    main_window_ui.tab_widget.addTab(settings_tab, "Settings")
+    main_window_ui.tab_widget.addTab(manage_vendors_tab, manage_vendors_tab.windowIcon(), "Manage Vendors")
+    main_window_ui.tab_widget.addTab(fetch_reports_tab, fetch_reports_tab.windowIcon(), "Fetch Reports")
+    main_window_ui.tab_widget.addTab(fetch_special_reports_tab, fetch_special_reports_tab.windowIcon(),
+                                     "Fetch Special Reports")
+    main_window_ui.tab_widget.addTab(import_report_tab, import_report_tab.windowIcon(), "Import Report")
+    main_window_ui.tab_widget.addTab(costs_tab, costs_tab.windowIcon(), "Costs")
+    main_window_ui.tab_widget.addTab(search_tab, search_tab.windowIcon(), "Search")
+    main_window_ui.tab_widget.addTab(visual_tab, visual_tab.windowIcon(), "Visual")
+    main_window_ui.tab_widget.addTab(settings_tab, settings_tab.windowIcon(), "Settings")
 
     main_window_ui.tab_widget.setCurrentIndex(1)
     # endregion
@@ -120,6 +123,8 @@ if __name__ == "__main__":
     help_frame_layout.setContentsMargins(-1, 2, -1, 5)
     help_frame.setLayout(help_frame_layout)
     help_button = QPushButton("Help", help_frame)
+    help_pixmap = QPixmap(":/ui/resources/help_icon.png")
+    help_button.setIcon(QIcon(help_pixmap))
     help_button.clicked.connect(lambda: GeneralUtils.open_in_browser(HELP_SITE))
     help_frame_layout.addWidget(help_button)
 

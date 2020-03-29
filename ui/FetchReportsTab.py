@@ -13,8 +13,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
         fetch_reports_tab.setObjectName("fetch_reports_tab")
-        fetch_reports_tab.resize(800, 408)
+        fetch_reports_tab.resize(800, 436)
         fetch_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        fetch_reports_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(fetch_reports_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_4 = QtWidgets.QFrame(fetch_reports_tab)
@@ -46,7 +49,6 @@ class Ui_fetch_reports_tab(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_28.sizePolicy().hasHeightForWidth())
         self.frame_28.setSizePolicy(sizePolicy)
-        self.frame_28.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_28.setObjectName("frame_28")
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout(self.frame_28)
         self.horizontalLayout_12.setSpacing(10)
@@ -83,8 +85,6 @@ class Ui_fetch_reports_tab(object):
         self.Adv_Fetch_text.setObjectName("Adv_Fetch_text")
         self.verticalLayout_3.addWidget(self.Adv_Fetch_text)
         self.frame_5 = QtWidgets.QFrame(self.frame_4)
-        self.frame_5.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_5.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_5.setObjectName("frame_5")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_5)
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -297,6 +297,21 @@ class Ui_fetch_reports_tab(object):
 
         self.retranslateUi(fetch_reports_tab)
         QtCore.QMetaObject.connectSlotsByName(fetch_reports_tab)
+        fetch_reports_tab.setTabOrder(self.All_reports_edit_fetch, self.fetch_all_data_button)
+        fetch_reports_tab.setTabOrder(self.fetch_all_data_button, self.select_vendors_button_fetch)
+        fetch_reports_tab.setTabOrder(self.select_vendors_button_fetch, self.deselect_vendors_button_fetch)
+        fetch_reports_tab.setTabOrder(self.deselect_vendors_button_fetch, self.vendors_list_view_fetch)
+        fetch_reports_tab.setTabOrder(self.vendors_list_view_fetch, self.select_report_types_button_fetch)
+        fetch_reports_tab.setTabOrder(self.select_report_types_button_fetch, self.deselect_report_types_button_fetch)
+        fetch_reports_tab.setTabOrder(self.deselect_report_types_button_fetch, self.report_types_help_button)
+        fetch_reports_tab.setTabOrder(self.report_types_help_button, self.report_types_list_view)
+        fetch_reports_tab.setTabOrder(self.report_types_list_view, self.begin_date_edit_fetch_year)
+        fetch_reports_tab.setTabOrder(self.begin_date_edit_fetch_year, self.begin_date_edit_fetch_month)
+        fetch_reports_tab.setTabOrder(self.begin_date_edit_fetch_month, self.end_date_edit_fetch_year)
+        fetch_reports_tab.setTabOrder(self.end_date_edit_fetch_year, self.end_date_edit_fetch_month)
+        fetch_reports_tab.setTabOrder(self.end_date_edit_fetch_month, self.custom_dir_edit)
+        fetch_reports_tab.setTabOrder(self.custom_dir_edit, self.custom_dir_button)
+        fetch_reports_tab.setTabOrder(self.custom_dir_button, self.fetch_advanced_button)
 
     def retranslateUi(self, fetch_reports_tab):
         _translate = QtCore.QCoreApplication.translate
@@ -320,7 +335,8 @@ class Ui_fetch_reports_tab(object):
         self.end_date_edit_fetch_year.setDisplayFormat(_translate("fetch_reports_tab", "yyyy"))
         self.label_10.setText(_translate("fetch_reports_tab", "End Date"))
         self.begin_date_edit_fetch_month.setDisplayFormat(_translate("fetch_reports_tab", "MM"))
-        self.label_38.setText(_translate("fetch_reports_tab", "Not a yearly date range"))
+        self.label_38.setText(_translate("fetch_reports_tab", "Date range is not a calendar year"))
         self.label_41.setText(_translate("fetch_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
+import Resources_rc

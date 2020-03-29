@@ -1,0 +1,20 @@
+<RCC>
+  <qresource>
+    <file>ui/resources/help_icon.png</file>
+    <file>ui/resources/undo_icon.png</file>
+    <file>ui/resources/save_icon.png</file>
+    <file>ui/resources/add_vendor_icon.png</file>
+    <file>ui/resources/export_vendors_icon.png</file>
+    <file>ui/resources/import_vendors_icon.png</file>
+    <file>ui/resources/remove_vendor_icon.png</file>
+    <file>ui/resources/folder_icon.png</file>
+    <file>ui/resources/tab_icons/costs_icon.png</file>
+    <file>ui/resources/tab_icons/fetch_reports_icon.png</file>
+    <file>ui/resources/tab_icons/fetch_special_reports_icon.png</file>
+    <file>ui/resources/tab_icons/import_report_icon.png</file>
+    <file>ui/resources/tab_icons/manage_vendors_icon.png</file>
+    <file>ui/resources/tab_icons/search_icon.png</file>
+    <file>ui/resources/tab_icons/settings_icon.png</file>
+    <file>ui/resources/tab_icons/visual_icon.png</file>
+  </qresource>
+</RCC>

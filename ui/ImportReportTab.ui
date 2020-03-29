@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>630</width>
-    <height>234</height>
+    <height>252</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Import Report</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/import_report_icon.png</normaloff>:/ui/resources/tab_icons/import_report_icon.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -315,6 +319,16 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>vendors_list_view_import</tabstop>
+  <tabstop>report_types_list_view_import</tabstop>
+  <tabstop>report_year_date_edit</tabstop>
+  <tabstop>selected_file_edit</tabstop>
+  <tabstop>select_file_button</tabstop>
+  <tabstop>import_report_button</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>794</width>
-    <height>472</height>
+    <height>492</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/settings_icon.png</normaloff>:/ui/resources/tab_icons/settings_icon.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -441,6 +445,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

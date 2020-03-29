@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Costs</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../Resources.qrc">
+    <normaloff>:/ui/resources/tab_icons/costs_icon.png</normaloff>:/ui/resources/tab_icons/costs_icon.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QFrame" name="costs_parameters_frame">
@@ -176,9 +180,9 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QPushButton" name="costs_load_from_disk_button">
+       <widget class="QPushButton" name="costs_import_costs_button">
         <property name="text">
-         <string>Load From Disk</string>
+         <string>Import Costs</string>
         </property>
        </widget>
       </item>
@@ -187,6 +191,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

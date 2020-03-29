@@ -2,16 +2,21 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
         costs_tab.setObjectName("costs_tab")
         costs_tab.resize(898, 671)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/costs_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        costs_tab.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(costs_tab)
         self.verticalLayout.setObjectName("verticalLayout")
         self.costs_parameters_frame = QtWidgets.QFrame(costs_tab)
@@ -97,9 +102,9 @@ class Ui_costs_tab(object):
         self.costs_insert_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_insert_button.setObjectName("costs_insert_button")
         self.gridLayout.addWidget(self.costs_insert_button, 0, 3, 1, 1)
-        self.costs_load_from_disk_button = QtWidgets.QPushButton(self.costs_control_frame)
-        self.costs_load_from_disk_button.setObjectName("costs_load_from_disk_button")
-        self.gridLayout.addWidget(self.costs_load_from_disk_button, 0, 0, 1, 1)
+        self.costs_import_costs_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_import_costs_button.setObjectName("costs_import_costs_button")
+        self.gridLayout.addWidget(self.costs_import_costs_button, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.costs_control_frame)
 
         self.retranslateUi(costs_tab)
@@ -120,7 +125,8 @@ class Ui_costs_tab(object):
         self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
-        self.costs_load_from_disk_button.setText(_translate("costs_tab", "Load From Disk"))
+        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
+import Resources_rc
 
 
 if __name__ == "__main__":
@@ -131,4 +137,3 @@ if __name__ == "__main__":
     ui.setupUi(costs_tab)
     costs_tab.show()
     sys.exit(app.exec_())
-
