@@ -19,7 +19,7 @@ from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, Rep
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
-from ManageDB import UpdateDatabaseProgressDialogController
+from ManageDB import UpdateDatabaseWorker
 from VariableConstants import *
 
 
@@ -711,7 +711,8 @@ class FetchReportsAbstract:
         # region Update Database Dialog
         self.is_updating_database = False
         self.add_to_database = True
-        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.widget)
+        self.database_thread = None
+        self.database_worker = None
 
         # endregion
 
@@ -765,12 +766,9 @@ class FetchReportsAbstract:
         :param vendor_result: The result of the vendor
         :param report_results: The results of the vendor's reports
         """
-        self.progress_bar.setValue(int(self.completed_processes / self.total_processes * 100))
-        if not self.is_cancelling:
-            if self.completed_processes != self.total_processes:
-                self.status_label.setText(f"Progress: {self.completed_processes}/{self.total_processes}")
-            else:
-                self.status_label.setText(f"Finishing...")
+        self.progress_bar.setValue(int((self.completed_processes / self.total_processes) * 100))
+        if not self.is_cancelling and self.completed_processes != self.total_processes:
+            self.status_label.setText(f"Vendor progress: {self.completed_processes}/{self.total_processes}")
 
         if vendor.name in self.vendor_result_widgets:
             vendor_results_widget, vendor_results_ui = self.vendor_result_widgets[vendor.name]
@@ -880,7 +878,7 @@ class FetchReportsAbstract:
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-        elif len(self.vendor_workers) == 0: self.finish()
+        elif len(self.vendor_workers) == 0: self.finish_fetching_reports()
 
     def start_progress_dialog(self, window_title: str):
         """Sets up and shows the fetch progress dialog
@@ -967,24 +965,28 @@ class FetchReportsAbstract:
             self.fetch_vendor_data(request_data)
             self.started_processes += 1
 
-    def finish(self):
-        """Finishes up the fetch process, updates the database"""
-        self.ok_button.setEnabled(True)
-        self.retry_button.setEnabled(True)
-        self.cancel_button.setEnabled(False)
-        self.status_label.setText("Done!")
-
-        # Update database...
-        if self.is_yearly_fetch:
-            self.update_database(self.database_report_data)
-
-        # Reset database data
-        self.database_report_data = []
-
+    def finish_fetching_reports(self):
+        """Finishes up the fetch process"""
         self.started_processes = 0
         self.completed_processes = 0
         self.total_processes = 0
         self.is_cancelling = False
+        self.cancel_button.setEnabled(False)
+
+        # Start updating database...
+        if self.is_yearly_fetch and len(self.database_report_data) > 0:
+            if not self.start_updating_database(): self.finish_updating_database()
+        else:
+            self.finish_updating_database()
+
+    def finish_updating_database(self):
+        """Finishes up the database update process"""
+        self.is_updating_database = False
+        self.database_report_data = []
+
+        self.ok_button.setEnabled(True)
+        self.retry_button.setEnabled(True)
+        self.status_label.setText("Done!")
         if SHOW_DEBUG_MESSAGES: print("Fin!")
 
     def cancel_workers(self):
@@ -1015,18 +1017,34 @@ class FetchReportsAbstract:
 
         return False
 
-    def update_database(self, files):
-        """Updates the database
+    def start_updating_database(self) -> bool:
+        """Starts a thread to update the database. Returns True if successfully started"""
+        if self.is_updating_database:
+            print("Error, already running")
+            return False
 
-        :param files: The files to be updated
-        """
+        self.is_updating_database = True
+        self.status_label.setText("Updating database...")
 
-        if not self.is_updating_database:  # check if already running
-            self.is_updating_database = True
-            self.update_database_dialog.update_database(files, False)
-            self.is_updating_database = False
-        else:
-            print('Error, already running')
+        self.database_thread = QThread()
+        self.database_worker = UpdateDatabaseWorker(self.database_report_data, False)
+        self.database_worker.moveToThread(self.database_thread)
+
+        def on_progress_changed(progress: int):
+            self.progress_bar.setValue(int((progress / len(self.database_report_data)) * 100))
+
+        def on_worker_finished(code):
+            self.database_thread.quit()
+            self.database_thread.wait()
+            self.finish_updating_database()
+
+        self.database_worker.progress_changed_signal.connect(on_progress_changed)
+        self.database_worker.worker_finished_signal.connect(on_worker_finished)
+
+        self.database_thread.started.connect(self.database_worker.work)
+        self.database_thread.start()
+
+        return True
 
 
 class FetchReportsController(FetchReportsAbstract):
