@@ -101,11 +101,11 @@ class CostsController:
     def fill_names(self):
         self.name_parameter_combobox.clear()
         results = []
-        sql_text = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             print(sql_text)
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
@@ -139,6 +139,7 @@ class CostsController:
         DELETE = 'delete'
         insert_or_delete = None
         sql_text = None
+        data = None
         if self.cost_in_original_currency > 0 and self.original_currency != '' \
                 and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
             insert_or_delete = INSERT
@@ -146,22 +147,24 @@ class CostsController:
                 and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0:
             insert_or_delete = DELETE
         if insert_or_delete == INSERT:
-            sql_text = ManageDB.replace_costs_sql_text(self.report_parameter,
-                                                       [{NAME_FIELD_SWITCHER[self.report_parameter]:
-                                                             self.name_parameter,
-                                                         'vendor': self.vendor_parameter, 'year': self.year_parameter,
-                                                         'cost_in_original_currency': self.cost_in_original_currency,
-                                                         'original_currency': self.original_currency,
-                                                         'cost_in_local_currency': self.cost_in_local_currency,
-                                                         'cost_in_local_currency_with_tax':
-                                                             self.cost_in_local_currency_with_tax}])
+            sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
+                                                             ({NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                                   self.name_parameter,
+                                                               'vendor': self.vendor_parameter,
+                                                               'year': self.year_parameter,
+                                                               'cost_in_original_currency':
+                                                                   self.cost_in_original_currency,
+                                                               'original_currency': self.original_currency,
+                                                               'cost_in_local_currency': self.cost_in_local_currency,
+                                                               'cost_in_local_currency_with_tax':
+                                                                   self.cost_in_local_currency_with_tax},))
         elif insert_or_delete == DELETE:
-            sql_text = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
-                                                      self.year_parameter, self.name_parameter)
+            sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
+                                                            self.year_parameter, self.name_parameter)
         if insert_or_delete in (INSERT, DELETE):
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
-                ManageDB.run_sql(connection, sql_text['sql_text'], sql_text['data'])
+                ManageDB.run_sql(connection, sql_text, data)
                 connection.close()
                 ManageDB.backup_costs_data(self.report_parameter)
                 if insert_or_delete == INSERT:
@@ -172,12 +175,12 @@ class CostsController:
             GeneralUtils.show_message('Invalid entry')
 
     def load_costs(self):
-        sql_text = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
-                                               self.name_parameter)
+        sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
+                                                     self.name_parameter)
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             if not results:
                 results.append((0.0, '', 0.0, 0.0))
             connection.close()

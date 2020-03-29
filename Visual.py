@@ -110,11 +110,11 @@ class VisualController:
     def fill_names(self):
         self.name_combobox.clear()
         results = []
-        sql_text = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
+        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
         print(sql_text)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             print(results)
             connection.close()
             self.name_combobox.addItems([result[0] for result in results])
@@ -133,15 +133,16 @@ class VisualController:
         metric = self.metric.currentText()
 
         # sql query to get search results
-        sql_text = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
+        sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
         print(sql_text)  # testing
 
-        headers = []
-        for field in ManageDB.get_chart_report_fields_list(report):
-            headers.append(field['name'])
+        headers = tuple([field['name'] for field in ManageDB.get_chart_report_fields_list(report)])
+        # headers = []
+        # for field in ManageDB.get_chart_report_fields_list(report):
+        #     headers.append(field['name'])
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            self.results = ManageDB.run_select_sql(connection, sql_text['sql_text'], sql_text['data'])
+            self.results = ManageDB.run_select_sql(connection, sql_text, data)
             print(self.results)
 
             self.results.insert(0, headers)
