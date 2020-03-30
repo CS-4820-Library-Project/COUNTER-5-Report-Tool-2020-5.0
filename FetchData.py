@@ -1064,8 +1064,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         # region General
         current_date = QDate.currentDate()
-        begin_date = QDate(current_date.year(), 1, current_date.day())
-        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        begin_date = QDate(current_date.year(), 1, 1)
+        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         self.fetch_all_begin_date = QDate(begin_date)
         self.adv_begin_date = QDate(begin_date)
         self.fetch_all_end_date = QDate(end_date)
@@ -1161,10 +1161,10 @@ class FetchReportsController(FetchReportsAbstract):
         current_date = QDate.currentDate()
         if date.year() == current_date.year():
             self.fetch_all_begin_date = QDate(current_date.year(), 1, 1)
-            self.fetch_all_end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+            self.fetch_all_end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         elif date.year() < current_date.year():
             self.fetch_all_begin_date = QDate(date.year(), 1, 1)
-            self.fetch_all_end_date = QDate(date.year(), 12, current_date.day())
+            self.fetch_all_end_date = QDate(date.year(), 12, 1)
         else:
             self.all_date_edit.setDate(current_date)
 
@@ -1327,8 +1327,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_report_type = None
         self.selected_options = SpecialReportOptions()
         current_date = QDate.currentDate()
-        self.begin_date = QDate(current_date.year(), 1, current_date.day())
-        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        self.begin_date = QDate(current_date.year(), 1, 1)
+        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         # endregion
 
         # region Start Fetch Button
