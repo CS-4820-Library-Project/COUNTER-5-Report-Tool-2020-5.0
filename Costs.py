@@ -6,13 +6,15 @@ from PyQt5.QtWidgets import QDialog
 import GeneralUtils
 import ManageDB
 import ManageVendors
+from Settings import SettingsModel
 from ui import CostsTab, ReportTypeDialog
 from VariableConstants import *
 
 
 class CostsController:
-    def __init__(self, costs_ui: CostsTab.Ui_costs_tab):
+    def __init__(self, costs_ui: CostsTab.Ui_costs_tab, settings: SettingsModel):
         self.costs_ui = costs_ui
+        self.settings = settings
 
         # set parameters
         self.report_parameter_combobox = costs_ui.costs_report_parameter_combobox
@@ -35,7 +37,7 @@ class CostsController:
         self.cost_in_original_currency = 0.0
 
         self.original_currency_combobox = costs_ui.costs_original_currency_value_combobox
-        self.original_currency_combobox.addItems(CURRENCY_LIST)
+        self.load_currency_list()
         self.original_currency = ''
 
         self.cost_in_local_currency_doublespinbox = costs_ui.costs_cost_in_local_currency_doublespinbox
@@ -46,8 +48,8 @@ class CostsController:
         self.cost_in_local_currency_with_tax = 0.0
 
         # set up buttons
-        self.insert_button = costs_ui.costs_insert_button
-        self.insert_button.clicked.connect(self.insert_costs)
+        self.save_costs_button = costs_ui.costs_save_button
+        self.save_costs_button.clicked.connect(self.save_costs)
 
         self.load_button = costs_ui.costs_load_button
         self.load_button.clicked.connect(self.load_costs)
@@ -84,6 +86,13 @@ class CostsController:
         self.vendor_parameter_combobox.clear()
         self.vendor_parameter_combobox.addItems([vendor.name for vendor in vendors])
 
+    def load_currency_list(self):
+        self.original_currency_combobox.clear()
+        self.original_currency_combobox.addItem(self.settings.default_currency)
+        self.original_currency_combobox.addItems([currency for currency in CURRENCY_LIST if currency !=
+                                                  self.settings.default_currency])
+        self.original_currency_combobox.setCurrentText('')
+
     def on_report_parameter_changed(self):
         self.report_parameter = self.report_parameter_combobox.currentText()
         self.name_label.setText(NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
@@ -117,6 +126,7 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
+            self.load_currency_list()
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
@@ -134,7 +144,7 @@ class CostsController:
     def on_cost_in_local_currency_with_tax_changed(self):
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
-    def insert_costs(self):
+    def save_costs(self):
         INSERT = 'insert'
         DELETE = 'delete'
         insert_or_delete = None
