@@ -110,7 +110,7 @@ class SearchController:
         value_lineedit = or_clause_ui.search_value_parameter_lineedit
 
         def on_field_changed():
-            type_label.setText(field_combobox.currentData())
+            type_label.setText(field_combobox.currentData().capitalize() + " Input")
             value_lineedit.setText(None)
             if field_combobox.currentData() == 'INTEGER':
                 value_lineedit.setValidator(QIntValidator())
