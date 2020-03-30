@@ -180,11 +180,14 @@ class ImportReportController:
                 header = {}
                 for row in range(HEADER_ROWS):  # reads header row data
                     cells = next(reader)
-                    key = cells[0].lower()
-                    if key != HEADER_ENTRIES[row]:
-                        raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
+                    if cells:
+                        key = cells[0].lower()
+                        if key != HEADER_ENTRIES[row]:
+                            raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
+                        else:
+                            header[key] = cells[1].strip()
                     else:
-                        header[key] = cells[1].strip()
+                        raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
                 for row in range(BLANK_ROWS):
                     cells = next(reader)
                     if cells:
