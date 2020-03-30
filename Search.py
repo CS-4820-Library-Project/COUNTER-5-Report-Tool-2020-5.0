@@ -16,7 +16,7 @@ from VariableConstants import *
 class SearchController:
     """Controls the Search tab
 
-    :param search_ui: The UI for the search_widget"""
+    :param search_ui: the UI for the search_widget"""
     def __init__(self, search_ui: SearchTab.Ui_search_tab):
         self.main_window = search_ui
 
@@ -104,7 +104,7 @@ class SearchController:
 
         return and_clause_ui
 
-    def add_or_clause(self, and_clause: SearchAndClauseFrame) -> NoReturn:
+    def add_or_clause(self, and_clause: SearchAndClauseFrame.Ui_search_and_clause_parameter_frame) -> NoReturn:
         """Adds an or clause to the search
 
         :param and_clause: the and clause the or clause is added to"""

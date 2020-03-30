@@ -4,6 +4,7 @@ import csv
 from typing import Tuple, Dict, Sequence, Any, NoReturn, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
+
 from VariableConstants import *
 from ui import UpdateDatabaseProgressDialog
 
