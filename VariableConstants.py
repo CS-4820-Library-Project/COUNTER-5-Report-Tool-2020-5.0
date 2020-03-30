@@ -396,7 +396,6 @@ EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
 # region Variable Constants for FetchData
-SHOW_DEBUG_MESSAGES = False
 
 
 class MajorReportType(Enum):
