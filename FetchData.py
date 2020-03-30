@@ -459,6 +459,19 @@ class UnacceptableCodeException(Exception):
 # endregion
 
 
+def exception_models_to_message(exceptions: list) -> str:
+    """Formats a list of exception models into a single string """
+    message = ""
+    for exception in exceptions:
+        if message: message += "\n\n"
+        message += f"Code: {exception.code}" \
+                   f"\nMessage: {exception.message}" \
+                   f"\nSeverity: {exception.severity}" \
+                   f"\nData: {exception.data}"
+
+    return message
+
+
 def get_models(model_key: str, model_type, json_dict: dict) -> list:
     """This converts json lists into a list of the specified SUSHI model type
 
@@ -479,19 +492,6 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
             models.append(model_type.from_json(json_dict[model_key]))
 
     return models
-
-
-def exception_models_to_message(exceptions: list) -> str:
-    """Formats a list of exception models into a single string """
-    message = ""
-    for exception in exceptions:
-        if message: message += "\n\n"
-        message += f"Code: {exception.code}" \
-                   f"\nMessage: {exception.message}" \
-                   f"\nSeverity: {exception.severity}" \
-                   f"\nData: {exception.data}"
-
-    return message
 
 
 def get_major_report_type(report_type: str) -> MajorReportType:
