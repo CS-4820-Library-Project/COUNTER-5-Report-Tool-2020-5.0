@@ -27,6 +27,7 @@ class VisualController:
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
         self.v_bar_radio = visual_ui.radioButton_3
+        self.v_bar_radio.setChecked(True)
         self.line_radio = visual_ui.radioButton_4
 
         # set up options radio buttons
@@ -149,15 +150,12 @@ class VisualController:
         message1 = ""
         message2 = ""
         message3 = ""
-        if name == "" or name != "":
-            if name == "":
-                message1 = "Enter/Select " + self.name_label.text() + "\n"
-            if self.h_bar_radio.isChecked() == False and self.v_bar_radio.isChecked() == False and self.line_radio.isChecked() == False:
-                message2 = " Select Chart Type \n"
-            if start_year > end_year:
-                currentYear = datetime.datetime.now().year
-                message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + to_string(currentYear) + "\n"
-        message = message1 + message2 + message3
+        if name == "":
+            message1 = "Enter/Select " + self.name_label.text() + "\n"
+        if start_year > end_year:
+            currentYear = datetime.datetime.now().year
+            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + to_string(currentYear) + "\n"
+        message = message1 + message3
         if message != "":
             message = "To Create Chart Check the following: \n" + message
             self.messageDialog(message)
@@ -179,7 +177,7 @@ class VisualController:
                 print('Error, no connection')
             if len(self.results) > 1:
                 self.process_default_data()
-            elif name != "" and (self.h_bar_radio.isChecked() != False or self.v_bar_radio.isChecked() != False or self.line_radio.isChecked() != False) and start_year <= end_year:
+            elif name != "" and start_year <= end_year:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message4)
 

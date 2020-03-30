@@ -150,13 +150,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="radioButton_4">
-              <property name="text">
-               <string>Line</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QRadioButton" name="radioButton_3">
               <property name="text">
                <string>Vertical Bar</string>
@@ -167,6 +160,13 @@
              <widget class="QRadioButton" name="radioButton">
               <property name="text">
                <string>Horizontal Bar</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_4">
+              <property name="text">
+               <string>Line</string>
               </property>
              </widget>
             </item>
