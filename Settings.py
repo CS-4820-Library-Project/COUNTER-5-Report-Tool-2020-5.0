@@ -51,6 +51,7 @@ class SettingsModel(JsonModel):
     :param concurrent_reports: The max number of reports to work on at a time, per vendor.
     :param empty_cell: The default empty cell value in generated tabular reports.
     :param user_agent: The user-agent that's included in the header when making requests.
+    :param default_currency: The currency to show first in the Costs tab
     """
     def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
                  request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
