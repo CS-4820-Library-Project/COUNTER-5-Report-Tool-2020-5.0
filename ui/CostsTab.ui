@@ -130,6 +130,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="maximum">
+         <double>999999999.990000009536743</double>
+        </property>
        </widget>
       </item>
       <item row="2" column="1">
@@ -137,12 +140,18 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="maximum">
+         <double>999999999.990000009536743</double>
+        </property>
        </widget>
       </item>
       <item row="3" column="1">
        <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_with_tax_doublespinbox">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="maximum">
+         <double>999999999.990000009536743</double>
         </property>
        </widget>
       </item>
