@@ -173,9 +173,9 @@
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QPushButton" name="costs_insert_button">
+       <widget class="QPushButton" name="costs_save_button">
         <property name="text">
-         <string>Insert</string>
+         <string>Save Costs</string>
         </property>
        </widget>
       </item>

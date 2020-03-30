@@ -5,6 +5,7 @@ from enum import Enum
 from PyQt5.QtWidgets import QFileDialog, QWidget
 from ui import SettingsTab
 import ManageDB
+from VariableConstants import *
 import GeneralUtils
 from GeneralUtils import JsonModel
 
@@ -34,6 +35,7 @@ CONCURRENT_VENDORS = 5
 CONCURRENT_REPORTS = 5
 EMPTY_CELL = ""
 USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
+DEFAULT_CURRENCY = 'USD'
 
 
 class SettingsModel(JsonModel):
@@ -51,7 +53,7 @@ class SettingsModel(JsonModel):
     """
     def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
                  request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
-                 user_agent: str):
+                 user_agent: str, default_currency: str):
         self.show_debug_messages = show_debug_messages
         self.yearly_directory = yearly_directory
         self.other_directory = other_directory
@@ -61,6 +63,7 @@ class SettingsModel(JsonModel):
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
         self.user_agent = user_agent
+        self.default_currency = default_currency
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -82,9 +85,11 @@ class SettingsModel(JsonModel):
             if "empty_cell" in json_dict else EMPTY_CELL
         user_agent = json_dict["user_agent"]\
             if "user_agent" in json_dict else USER_AGENT
+        default_currency = json_dict["default_currency"]\
+            if "default_currency" in json_dict else DEFAULT_CURRENCY
 
         return cls(show_debug_messages, yearly_directory, other_directory, request_interval, request_timeout,
-                   concurrent_vendors, concurrent_reports, empty_cell, user_agent)
+                   concurrent_vendors, concurrent_reports, empty_cell, user_agent, default_currency)
 
 
 class SettingsController:
@@ -150,6 +155,12 @@ class SettingsController:
 
         # endregion
 
+        # region Costs
+        self.default_currency_combobox = settings_ui.settings_costs_default_currency_combobox
+        self.default_currency_combobox.addItems(CURRENCY_LIST)
+        self.default_currency_combobox.setCurrentText(self.settings.default_currency)
+        # endregion
+
         # region Search
         # set up restore database button
         self.is_restoring_database = False
@@ -201,6 +212,7 @@ class SettingsController:
         self.settings.concurrent_reports = self.concurrent_reports_spin_box.value()
         self.settings.empty_cell = self.empty_cell_edit.text()
         self.settings.user_agent = self.user_agent_edit.text()
+        self.settings.default_currency = self.default_currency_combobox.currentText()
 
     def save_settings_to_disk(self):
         """Saves all settings to disk"""

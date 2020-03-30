@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -99,9 +97,9 @@ class Ui_costs_tab(object):
         self.costs_load_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_load_button.setObjectName("costs_load_button")
         self.gridLayout.addWidget(self.costs_load_button, 0, 1, 1, 1)
-        self.costs_insert_button = QtWidgets.QPushButton(self.costs_control_frame)
-        self.costs_insert_button.setObjectName("costs_insert_button")
-        self.gridLayout.addWidget(self.costs_insert_button, 0, 3, 1, 1)
+        self.costs_save_button = QtWidgets.QPushButton(self.costs_control_frame)
+        self.costs_save_button.setObjectName("costs_save_button")
+        self.gridLayout.addWidget(self.costs_save_button, 0, 3, 1, 1)
         self.costs_import_costs_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_import_costs_button.setObjectName("costs_import_costs_button")
         self.gridLayout.addWidget(self.costs_import_costs_button, 0, 0, 1, 1)
@@ -124,10 +122,10 @@ class Ui_costs_tab(object):
         self.costs_cost_in_local_currency_with_tax_label.setText(_translate("costs_tab", "Cost in Local Currency with Tax"))
         self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
-        self.costs_insert_button.setText(_translate("costs_tab", "Insert"))
+        self.costs_save_button.setText(_translate("costs_tab", "Save Costs"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
-import Resources_rc
 
+import Resources_rc
 
 if __name__ == "__main__":
     import sys
@@ -137,3 +135,4 @@ if __name__ == "__main__":
     ui.setupUi(costs_tab)
     costs_tab.show()
     sys.exit(app.exec_())
+
