@@ -10,6 +10,7 @@ Welcome to Libly's documentation!
    :maxdepth: 2
    :caption: Modules:
 
+   Constants
    Costs
    FetchData
    GeneralUtils
@@ -19,7 +20,6 @@ Welcome to Libly's documentation!
    ManageVendors
    Search
    Settings
-   VariableConstants
    Visual
 
 

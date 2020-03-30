@@ -1,7 +1,7 @@
-VariableConstants module
+Constants module
 ========================
 
-.. automodule:: VariableConstants
+.. automodule:: Constants
    :members:
    :undoc-members:
    :show-inheritance:
