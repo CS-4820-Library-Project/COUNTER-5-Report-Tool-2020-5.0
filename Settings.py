@@ -23,6 +23,7 @@ class Setting(Enum):
     CONCURRENT_REPORTS = 5
     EMPTY_CELL = 6
     USER_AGENT = 7
+    DEFAULT_CURRENCY = 8
 
 
 # Default Settings
@@ -163,10 +164,10 @@ class SettingsController:
 
         # region Search
         # set up restore database button
-        self.is_restoring_database = False
+        self.is_rebuilding_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
-        self.restore_database_button = settings_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
+        self.rebuild_database_button = settings_ui.settings_rebuild_database_button
+        self.rebuild_database_button.clicked.connect(self.on_rebuild_database_clicked)
         # endregion
 
         settings_ui.save_button.clicked.connect(self._on_save_button_clicked)
@@ -189,15 +190,15 @@ class SettingsController:
         self.save_settings_to_disk()
         GeneralUtils.show_message("Changes saved!")
 
-    def on_restore_database_clicked(self):
+    def on_rebuild_database_clicked(self):
         """Restores the database when the restore database button is clicked"""
-        if not self.is_restoring_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
-                self.is_restoring_database = True
+        if not self.is_rebuilding_database:  # check if already running
+            if GeneralUtils.ask_confirmation('Are you sure you want to rebuild the database?'):
+                self.is_rebuilding_database = True
                 self.update_database_dialog.update_database(ManageDB.get_all_report_files() +
                                                             ManageDB.get_all_cost_files(),
                                                             True)
-                self.is_restoring_database = False
+                self.is_rebuilding_database = False
         else:
             print('Error, already running')
 

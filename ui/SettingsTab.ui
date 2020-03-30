@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>783</width>
-    <height>1170</height>
+    <height>1381</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -431,9 +431,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="settings_restore_database_button">
+          <widget class="QPushButton" name="settings_rebuild_database_button">
            <property name="text">
-            <string>Restore Database</string>
+            <string>Rebuild Database</string>
            </property>
           </widget>
          </item>
