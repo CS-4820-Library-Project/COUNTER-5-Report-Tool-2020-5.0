@@ -1,4 +1,5 @@
 import calendar
+import datetime
 import json
 
 import xlsxwriter
@@ -144,6 +145,23 @@ class VisualController:
         # get metric
         metric = self.metric.currentText()
 
+        message = ""
+        message1 = ""
+        message2 = ""
+        message3 = ""
+        if name == "" or name != "":
+            if name == "":
+                message1 = "Enter/Select " + self.name_label.text() + "\n"
+            if self.h_bar_radio.isChecked() == False and self.v_bar_radio.isChecked() == False and self.line_radio.isChecked() == False:
+                message2 = " Select Chart Type \n"
+            if start_year > end_year:
+                currentYear = datetime.datetime.now().year
+                message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + to_string(currentYear) + "\n"
+        message = message1 + message2 + message3
+        if message != "":
+            message = "To Create Chart Check the following: \n" + message
+            self.messageDialog(message)
+
         if self.default.isChecked():
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
@@ -159,7 +177,11 @@ class VisualController:
                 connection.close()
             else:
                 print('Error, no connection')
-            self.process_default_data()
+            if len(self.results) > 1:
+                self.process_default_data()
+            elif name != "" and (self.h_bar_radio.isChecked() != False or self.v_bar_radio.isChecked() != False or self.line_radio.isChecked() != False) and start_year <= end_year:
+                message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+                self.messageDialog(message4)
 
         if self.top_5.isChecked():
             self.top_num = 5
@@ -169,7 +191,8 @@ class VisualController:
             self.top_num = 15
 
         if self.top_num != None:
-            sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric, self.top_num)
+            sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric,
+                                                                       self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
@@ -181,21 +204,37 @@ class VisualController:
                 connection.close()
             else:
                 print('Error, no connection')
-            self.process_top_X_data()
+            if len(self.results) > 1:
+                self.process_top_X_data()
+            elif name != "" and (self.h_bar_radio.isChecked() != False or self.v_bar_radio.isChecked() != False or self.line_radio.isChecked() != False) and start_year <= end_year:
+                message5 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+                self.messageDialog(message5)
+
+    def messageDialog(self, text):
+        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        message_dialog_ui = MessageDialog.Ui_message_dialog()
+        message_dialog_ui.setupUi(message_dialog)
+
+        message_label = message_dialog_ui.message_label
+        message_label.setText(text)
+
+        message_dialog.exec_()
 
     # process_data distributes the usage data in an array accordingly
     def process_default_data(self):
         m = len(self.results)
         print(m)
-        if m == 1:
-            message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-            message_dialog_ui = MessageDialog.Ui_message_dialog()
-            message_dialog_ui.setupUi(message_dialog)
-
-            message_label = message_dialog_ui.message_label
-            message_label.setText("PLEASE ENTER A VALID INPUT")
-
-            message_dialog.exec_()
+        # # if m == 1:
+        # #     message = "DATA NOT FOUND"
+        #     self.messageDialog(message)
+        # message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
+        # message_dialog_ui = MessageDialog.Ui_message_dialog()
+        # message_dialog_ui.setupUi(message_dialog)
+        #
+        # message_label = message_dialog_ui.message_label
+        # message_label.setText("PLEASE ENTER A VALID INPUT")
+        #
+        # message_dialog.exec_()
 
         self.legendEntry = []  # legend entry data
         for i in range(1, m):
@@ -219,7 +258,6 @@ class VisualController:
         self.chart_type()
 
     def process_top_X_data(self):
-        print("Im here")
         m = len(self.results)
 
         self.legendEntry = []  # legend entry data
