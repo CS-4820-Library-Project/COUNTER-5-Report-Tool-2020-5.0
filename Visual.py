@@ -20,6 +20,8 @@ class VisualController:
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
         # set up report combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
+        self.calculation_parameter = visual_ui.calculation_type_combobox
+        self.calculation_parameter.addItems(CALCULATION_TYPE_ALL)
         self.report_parameter.addItems(ALL_REPORTS)
         # self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
         self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
@@ -31,11 +33,6 @@ class VisualController:
         self.line_radio = visual_ui.radioButton_4
 
         # set up options radio buttons
-        self.default = visual_ui.radioButton_8
-        self.default.setChecked(True)
-        self.top_5 = visual_ui.radioButton_5
-        self.top_10 = visual_ui.radioButton_6
-        self.top_15 = visual_ui.radioButton_7
 
         # set up start year dateedit
         self.start_year_parameter = visual_ui.search_start_year_parameter_dateedit_2
@@ -160,7 +157,7 @@ class VisualController:
             message = "To Create Chart Check the following: \n" + message
             self.messageDialog(message)
 
-        if self.default.isChecked():
+        if self.calculation_parameter.currentText() == 'Monthly':
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
             print(sql_text)  # testing
@@ -181,11 +178,11 @@ class VisualController:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message4)
 
-        if self.top_5.isChecked():
+        if self.calculation_parameter.currentText() == 'Top 5':
             self.top_num = 5
-        if self.top_10.isChecked():
+        if self.calculation_parameter.currentText() == 'Top 10':
             self.top_num = 10
-        if self.top_15.isChecked():
+        if self.calculation_parameter.currentText() == 'Top 15':
             self.top_num = 15
 
         if self.top_num != None:

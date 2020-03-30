@@ -280,7 +280,7 @@
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>0</y>
+              <y>30</y>
               <width>183</width>
               <height>15</height>
              </rect>
@@ -303,84 +303,6 @@
              <enum>Qt::AutoText</enum>
             </property>
            </widget>
-           <widget class="QRadioButton" name="radioButton_5">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>70</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 5</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_6">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>100</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 10</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_7">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>130</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 15</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_8">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>20</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Monthly</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_9">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>160</y>
-              <width>111</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Cost Ratio</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_10">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>40</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Yearly</string>
-            </property>
-           </widget>
            <widget class="QFrame" name="frame">
             <property name="geometry">
              <rect>
@@ -400,7 +322,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>30</y>
+               <y>50</y>
                <width>111</width>
                <height>26</height>
               </rect>
@@ -410,7 +332,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>10</y>
+               <y>20</y>
                <width>183</width>
                <height>15</height>
               </rect>
@@ -433,16 +355,16 @@
               <enum>Qt::AutoText</enum>
              </property>
             </widget>
-            <widget class="QComboBox" name="calculation_type_combobox">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>80</y>
-               <width>111</width>
-               <height>26</height>
-              </rect>
-             </property>
-            </widget>
+           </widget>
+           <widget class="QComboBox" name="calculation_type_combobox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>70</y>
+              <width>111</width>
+              <height>26</height>
+             </rect>
+            </property>
            </widget>
           </widget>
          </item>
