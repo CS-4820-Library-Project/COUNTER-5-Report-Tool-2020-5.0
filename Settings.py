@@ -5,7 +5,7 @@ from enum import Enum
 from PyQt5.QtWidgets import QFileDialog, QWidget
 from ui import SettingsTab
 import ManageDB
-from VariableConstants import *
+from Constants import *
 import GeneralUtils
 from GeneralUtils import JsonModel
 

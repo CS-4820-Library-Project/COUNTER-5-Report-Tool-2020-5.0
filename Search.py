@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerIt
 import ManageDB
 import GeneralUtils
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
-from VariableConstants import *
+from Constants import *
 
 
 class SearchController:

@@ -8,7 +8,7 @@ import ManageDB
 import ManageVendors
 from Settings import SettingsModel
 from ui import CostsTab, ReportTypeDialog
-from VariableConstants import *
+from Constants import *
 
 
 class CostsController:
