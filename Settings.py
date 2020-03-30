@@ -25,6 +25,7 @@ class Setting(Enum):
 
 
 # Default Settings
+SHOW_DEBUG_MESSAGES = False
 YEARLY_DIR = "./all_data/yearly_files/"
 OTHER_DIR = "./all_data/other_files/"
 REQUEST_INTERVAL = 3  # Seconds
@@ -48,8 +49,10 @@ class SettingsModel(JsonModel):
     :param empty_cell: The default empty cell value in generated tabular reports.
     :param user_agent: The user-agent that's included in the header when making requests.
     """
-    def __init__(self, yearly_directory: str, other_directory: str, request_interval: int, request_timeout: int,
-                 concurrent_vendors: int, concurrent_reports: int, empty_cell: str, user_agent: str):
+    def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
+                 request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
+                 user_agent: str):
+        self.show_debug_messages = show_debug_messages
         self.yearly_directory = yearly_directory
         self.other_directory = other_directory
         self.request_interval = request_interval
@@ -61,6 +64,8 @@ class SettingsModel(JsonModel):
 
     @classmethod
     def from_json(cls, json_dict: dict):
+        show_debug_messages = json_dict["show_debug_messages"]\
+            if "show_debug_messages" in json_dict else SHOW_DEBUG_MESSAGES
         yearly_directory = json_dict["yearly_directory"]\
             if "yearly_directory" in json_dict else YEARLY_DIR
         other_directory = json_dict["other_directory"]\
@@ -78,8 +83,8 @@ class SettingsModel(JsonModel):
         user_agent = json_dict["user_agent"]\
             if "user_agent" in json_dict else USER_AGENT
 
-        return cls(yearly_directory, other_directory, request_interval, request_timeout, concurrent_vendors,
-                   concurrent_reports, empty_cell, user_agent)
+        return cls(show_debug_messages, yearly_directory, other_directory, request_interval, request_timeout,
+                   concurrent_vendors, concurrent_reports, empty_cell, user_agent)
 
 
 class SettingsController:
@@ -95,6 +100,9 @@ class SettingsController:
         json_string = GeneralUtils.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
         json_dict = json.loads(json_string)
         self.settings = SettingsModel.from_json(json_dict)
+
+        self.show_debug_checkbox = settings_ui.show_debug_check_box
+        self.show_debug_checkbox.setChecked(self.settings.show_debug_messages)
         # endregion
 
         # region Reports
@@ -184,6 +192,7 @@ class SettingsController:
 
     def update_settings(self):
         """Updates the app's settings using the values entered on the UI"""
+        self.settings.show_debug_messages = self.show_debug_checkbox.isChecked()
         self.settings.yearly_directory = self.yearly_dir_edit.text()
         self.settings.other_directory = self.other_dir_edit.text()
         self.settings.request_interval = self.request_interval_spin_box.value()

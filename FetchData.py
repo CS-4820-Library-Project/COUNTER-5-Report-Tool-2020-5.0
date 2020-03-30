@@ -459,6 +459,19 @@ class UnacceptableCodeException(Exception):
 # endregion
 
 
+def exception_models_to_message(exceptions: list) -> str:
+    """Formats a list of exception models into a single string """
+    message = ""
+    for exception in exceptions:
+        if message: message += "\n\n"
+        message += f"Code: {exception.code}" \
+                   f"\nMessage: {exception.message}" \
+                   f"\nSeverity: {exception.severity}" \
+                   f"\nData: {exception.data}"
+
+    return message
+
+
 def get_models(model_key: str, model_type, json_dict: dict) -> list:
     """This converts json lists into a list of the specified SUSHI model type
 
@@ -479,19 +492,6 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
             models.append(model_type.from_json(json_dict[model_key]))
 
     return models
-
-
-def exception_models_to_message(exceptions: list) -> str:
-    """Formats a list of exception models into a single string """
-    message = ""
-    for exception in exceptions:
-        if message: message += "\n\n"
-        message += f"Code: {exception.code}" \
-                   f"\nMessage: {exception.message}" \
-                   f"\nSeverity: {exception.severity}" \
-                   f"\nData: {exception.data}"
-
-    return message
 
 
 def get_major_report_type(report_type: str) -> MajorReportType:
@@ -756,7 +756,7 @@ class FetchReportsAbstract:
         vendor_thread.started.connect(vendor_worker.work)
         vendor_thread.start()
 
-        if SHOW_DEBUG_MESSAGES: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
+        if self.settings.show_debug_messages: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
         self.update_results_ui(request_data.vendor)
 
     def update_results_ui(self, vendor: Vendor, vendor_result: ProcessResult = None, report_results: list = None):
@@ -987,7 +987,7 @@ class FetchReportsAbstract:
         self.ok_button.setEnabled(True)
         self.retry_button.setEnabled(True)
         self.status_label.setText("Done!")
-        if SHOW_DEBUG_MESSAGES: print("Fin!")
+        if self.settings.show_debug_messages: print("Fin!")
 
     def cancel_workers(self):
         """Sends a cancel signal to all vendor workers, updates the UI accordingly"""
@@ -1064,8 +1064,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         # region General
         current_date = QDate.currentDate()
-        begin_date = QDate(current_date.year(), 1, current_date.day())
-        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        begin_date = QDate(current_date.year(), 1, 1)
+        end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         self.fetch_all_begin_date = QDate(begin_date)
         self.adv_begin_date = QDate(begin_date)
         self.fetch_all_end_date = QDate(end_date)
@@ -1161,10 +1161,10 @@ class FetchReportsController(FetchReportsAbstract):
         current_date = QDate.currentDate()
         if date.year() == current_date.year():
             self.fetch_all_begin_date = QDate(current_date.year(), 1, 1)
-            self.fetch_all_end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+            self.fetch_all_end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         elif date.year() < current_date.year():
             self.fetch_all_begin_date = QDate(date.year(), 1, 1)
-            self.fetch_all_end_date = QDate(date.year(), 12, current_date.day())
+            self.fetch_all_end_date = QDate(date.year(), 12, 1)
         else:
             self.all_date_edit.setDate(current_date)
 
@@ -1231,7 +1231,7 @@ class FetchReportsController(FetchReportsAbstract):
         """Fetches all reports for the selected year"""
         if self.total_processes > 0:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
-            if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
+            if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
@@ -1270,7 +1270,7 @@ class FetchReportsController(FetchReportsAbstract):
         """Fetches reports based on the selected options in the advanced view of the UI"""
         if self.total_processes > 0:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
-            if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
+            if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
@@ -1327,8 +1327,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.selected_report_type = None
         self.selected_options = SpecialReportOptions()
         current_date = QDate.currentDate()
-        self.begin_date = QDate(current_date.year(), 1, current_date.day())
-        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), current_date.day())
+        self.begin_date = QDate(current_date.year(), 1, 1)
+        self.end_date = QDate(current_date.year(), max(current_date.month() - 1, 1), 1)
         # endregion
 
         # region Start Fetch Button
@@ -1669,7 +1669,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         """Fetches reports based on the selected options in the UI"""
         if self.total_processes > 0:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
-            if SHOW_DEBUG_MESSAGES: print(f"Waiting for pending processes to complete...")
+            if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
 
         if len(self.vendors) == 0:
@@ -1721,6 +1721,7 @@ class VendorWorker(QObject):
         self.request_data = request_data
         self.vendor = request_data.vendor
         self.target_report_types = request_data.target_report_types
+        self.show_debug = request_data.settings.show_debug_messages
         self.concurrent_reports = request_data.settings.concurrent_reports
         self.request_interval = request_data.settings.request_interval
         self.request_timeout = request_data.settings.request_timeout
@@ -1740,7 +1741,7 @@ class VendorWorker(QObject):
 
         Requests the vendor's supported reports before requesting only the supported reports
         """
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Fetching supported reports")
+        if self.show_debug: print(f"{self.vendor.name}: Fetching supported reports")
         request_query = {}
         if self.vendor.customer_id.strip(): request_query["customer_id"] = self.vendor.customer_id
         if self.vendor.requestor_id.strip(): request_query["requestor_id"] = self.vendor.requestor_id
@@ -1753,7 +1754,7 @@ class VendorWorker(QObject):
             # Some vendors only work if they think a web browser is making the request...
             response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
-            if SHOW_DEBUG_MESSAGES: print(response.url)
+            if self.show_debug: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
             else:
@@ -1762,11 +1763,11 @@ class VendorWorker(QObject):
         except requests.exceptions.Timeout as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
+            if self.show_debug: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request Exception: {e}")
+            if self.show_debug: print(f"{self.vendor.name}: Request Exception: {e}")
 
         if len(self.report_workers) == 0: self.notify_worker_finished()
 
@@ -1830,11 +1831,11 @@ class VendorWorker(QObject):
         except json.JSONDecodeError as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"JSON Exception: {e}"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: JSON Exception: {e.msg}")
+            if self.show_debug: print(f"{self.vendor.name}: JSON Exception: {e.msg}")
         except Exception as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Exception: {e}")
+            if self.show_debug: print(f"{self.vendor.name}: Exception: {e}")
 
     def fetch_report(self, report_type: str):
         """Initiates the process to fetch a report
@@ -1927,6 +1928,7 @@ class ReportWorker(QObject):
         self.vendor = request_data.vendor
         self.begin_date = request_data.begin_date
         self.end_date = request_data.end_date
+        self.show_debug = request_data.settings.show_debug_messages
         self.request_timeout = request_data.settings.request_timeout
         self.empty_cell = request_data.settings.empty_cell
         self.user_agent = request_data.settings.user_agent
@@ -1941,11 +1943,11 @@ class ReportWorker(QObject):
 
     def work(self):
         """Processes the report request"""
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Fetching Report")
+        if self.show_debug: print(f"{self.vendor.name}-{self.report_type}: Fetching Report")
 
         self.make_request()
 
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Done")
+        if self.show_debug: print(f"{self.vendor.name}-{self.report_type}: Done")
         self.notify_worker_finished()
 
     def make_request(self):
@@ -1992,7 +1994,7 @@ class ReportWorker(QObject):
             # Some vendors only work if they think a web browser is making the request...
             response = requests.get(request_url, request_query, headers={'User-Agent': self.user_agent},
                                     timeout=self.request_timeout)
-            if SHOW_DEBUG_MESSAGES: print(response.url)
+            if self.show_debug: print(response.url)
             if response.status_code == 200:
                 self.process_response(response)
             else:
@@ -2001,11 +2003,11 @@ class ReportWorker(QObject):
         except requests.exceptions.Timeout as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request timed out after {self.request_timeout} second(s)"
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}: Request timed out")
+            if self.show_debug: print(f"{self.vendor.name}: Request timed out")
         except requests.exceptions.RequestException as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = f"Request Exception: {e}"
-            if SHOW_DEBUG_MESSAGES: print(
+            if self.show_debug: print(
                 f"{self.vendor.name}-{self.report_type}: Request Exception: {e}")
 
     def process_response(self, response: requests.Response):
@@ -2032,11 +2034,11 @@ class ReportWorker(QObject):
                 self.process_result.message = f"Vendor did not return any data"
             else:
                 self.process_result.message = f"JSON Exception: {e.msg}"
-            if SHOW_DEBUG_MESSAGES: print(
+            if self.show_debug: print(
                 f"{self.vendor.name}-{self.report_type}: JSON Exception: {e.msg}")
         except RetryLaterException as e:
             if not self.retried_request:
-                if SHOW_DEBUG_MESSAGES:
+                if self.show_debug:
                     print(f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
                     print(f"{self.vendor.name}-{self.report_type}: Retrying in {RETRY_WAIT_TIME} seconds...")
                 QThread.currentThread().sleep(RETRY_WAIT_TIME)  # Wait some time before retrying request
@@ -2048,26 +2050,26 @@ class ReportWorker(QObject):
                 if message: self.process_result.message += "\n\n" + message
                 self.process_result.completion_status = CompletionStatus.FAILED
                 self.process_result.retry = True
-                if SHOW_DEBUG_MESSAGES: print(
+                if self.show_debug: print(
                     f"{self.vendor.name}-{self.report_type}: Retry Later Exception: {e}")
         except ReportHeaderMissingException as e:
             self.process_result.message = "Report_Header not received, no file was created"
             message = exception_models_to_message(e.exceptions)
             if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
-            if SHOW_DEBUG_MESSAGES: print(
+            if self.show_debug: print(
                 f"{self.vendor.name}-{self.report_type}: Report Header Missing Exception: {e}")
         except UnacceptableCodeException as e:
             self.process_result.message = "Unsupported exception code received"
             message = exception_models_to_message(e.exceptions)
             if message: self.process_result.message += "\n\n" + message
             self.process_result.completion_status = CompletionStatus.FAILED
-            if SHOW_DEBUG_MESSAGES: print(
+            if self.show_debug: print(
                 f"{self.vendor.name}-{self.report_type}: Unsupported Code Exception: {e}")
         except Exception as e:
             self.process_result.completion_status = CompletionStatus.FAILED
             self.process_result.message = str(e)
-            if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
+            if self.show_debug: print(f"{self.vendor.name}-{self.report_type}: Exception: {e}")
 
     def process_report_model(self, report_model: ReportModel):
         """Processes the report model into a TSV report
@@ -2082,7 +2084,7 @@ class ReportWorker(QObject):
         file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         file_path = f"{file_dir}{file_name}"
 
-        if SHOW_DEBUG_MESSAGES: print(f"{self.vendor.name}-{self.report_type}: Processing report")
+        if self.show_debug: print(f"{self.vendor.name}-{self.report_type}: Processing report")
 
         for report_item in report_items:
             metric_row_dict = {}  # <k = metric_type, v = ReportRow> Some metric_types have a list of components
@@ -2271,7 +2273,7 @@ class ReportWorker(QObject):
                                     metric_row.parent_uri = item_id.value
 
                     else:
-                        if SHOW_DEBUG_MESSAGES: print(
+                        if self.show_debug: print(
                             f"{self.vendor.name}-{self.report_type}: Unexpected report type")
 
                     month_counts = metric_row.month_counts
