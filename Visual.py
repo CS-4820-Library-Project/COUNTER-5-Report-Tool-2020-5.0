@@ -13,7 +13,7 @@ import GeneralUtils
 import ManageDB
 import ManageVendors
 from ui import MessageDialog, VisualTab
-from VariableConstants import *
+from Constants import *
 
 
 class VisualController:

@@ -12,7 +12,7 @@ from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
-from VariableConstants import *
+from Constants import *
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
