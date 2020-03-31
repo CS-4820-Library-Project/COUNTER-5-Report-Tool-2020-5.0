@@ -254,7 +254,7 @@ def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> Tup
     return sql_text, (values,)
 
 
-def update_vendor_in_all_tables(old_name: str, new_name: str) -> None:
+def update_vendor_in_all_tables(old_name: str, new_name: str):
     """Updates the vendor's name in all tables
 
     :param old_name: the old name of the vendor
@@ -432,7 +432,7 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
     return tuple(files)
 
 
-def insert_single_file(file_path: str, vendor: str, year: int) -> None:
+def insert_single_file(file_path: str, vendor: str, year: int):
     """Inserts a single file's data into the database
 
     :param file_path: the path of the file the data is from
@@ -450,7 +450,7 @@ def insert_single_file(file_path: str, vendor: str, year: int) -> None:
         print('Error, no connection')
 
 
-def insert_single_cost_file(report_type: str, file_path: str) -> None:
+def insert_single_cost_file(report_type: str, file_path: str):
     """Inserts a single file's data into the database
 
     :param report_type: the type of the report (master report name)
@@ -640,7 +640,7 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None) -> None:
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None):
     """Runs the SQL statement to modify the database
 
     :param connection: the connection to the database
@@ -676,7 +676,7 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
         print(error)
 
 
-def setup_database(drop_tables: bool) -> None:
+def setup_database(drop_tables: bool):
     """Sets up the database
 
     :param drop_tables: whether to drop the tables before creating them"""
@@ -702,7 +702,7 @@ def setup_database(drop_tables: bool) -> None:
         print('Error, no connection')
 
 
-def first_time_setup() -> None:
+def first_time_setup():
     """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
         os.makedirs(DATABASE_FOLDER)
@@ -712,7 +712,7 @@ def first_time_setup() -> None:
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
-def backup_costs_data(report_type: str) -> None:
+def backup_costs_data(report_type: str):
     """Backs up the data in the costs table in a file in the costs directory
 
     :param report_type: the type of the report (master report name)"""
@@ -787,7 +787,7 @@ class UpdateDatabaseProgressDialogController:
 
         self.is_updating_database = False
 
-    def update_database(self, files: Sequence[Dict[str, Any]], recreate_tables: bool) -> None:
+    def update_database(self, files: Sequence[Dict[str, Any]], recreate_tables: bool):
         """Updates the database with the given files
 
         :param files: a list of files to insert into the database
@@ -825,26 +825,26 @@ class UpdateDatabaseProgressDialogController:
 
         self.update_database_thread.start()
 
-    def on_status_changed(self, status: str) -> None:
+    def on_status_changed(self, status: str):
         """Invoked when the status of the worker changes
 
         :param status: the new status of the worker"""
         self.update_status_label.setText(status)
 
-    def on_progress_changed(self, progress: int) -> None:
+    def on_progress_changed(self, progress: int):
         """Invoked when the progress of the worker changes
 
         :param progress: the new progress completed"""
         self.update_progress_bar.setValue(progress)
 
-    def on_task_finished(self, task: str) -> None:
+    def on_task_finished(self, task: str):
         """Invoked when the worker finishes a task
 
         :param task: the name of the task that was completed"""
         label = QLabel(task)
         self.update_task_finished_widget.layout().addWidget(label)
 
-    def on_thread_finish(self, code: int) -> None:
+    def on_thread_finish(self, code: int):
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
@@ -869,7 +869,7 @@ class UpdateDatabaseWorker(QObject):
         self.recreate_tables = recreate_tables
         self.files = files
 
-    def work(self) -> None:
+    def work(self):
         """Performs the work of the worker"""
         current = 0
         if self.recreate_tables:
