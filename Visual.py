@@ -31,8 +31,7 @@ class VisualController:
         #frame
         self.frame_cost = visual_ui.edit_cost_ratio_frame
         self.frame_cost.setEnabled(False)
-        if self.calculation_parameter.currentText() == 'Cost Ratio':
-            self.frame_cost.setEnabled(True)
+        self.calculation_parameter.currentTextChanged[str].connect(self.on_calculation_parameter_changed)
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
         self.v_bar_radio = visual_ui.radioButton_3
@@ -98,6 +97,12 @@ class VisualController:
     #     if text in TITLE_REPORTS:
     #         self.metric.addItems(TITLE_REPORTS_METRIC)
     #         self.name_label.setText('Title')
+
+    def on_calculation_parameter_changed(self, text):
+        if text == 'Cost Ratio':
+            self.frame_cost.setEnabled(True)
+        else:
+            self.frame_cost.setEnabled(False)
 
     def on_report_parameter_changed(self, text):
         # self.report_parameter = self.report_parameter.currentText()
