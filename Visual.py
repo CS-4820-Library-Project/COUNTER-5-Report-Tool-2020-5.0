@@ -31,7 +31,12 @@ class VisualController:
         #frame
         self.frame_cost = visual_ui.edit_cost_ratio_frame
         self.frame_cost.setEnabled(False)
+        self.top_num_frame = visual_ui.edit_top_num_frame
+        self.top_num_frame.setEnabled(False)
         self.calculation_parameter.currentTextChanged[str].connect(self.on_calculation_parameter_changed)
+        self.top_num_edit = visual_ui.top_num_lineEdit
+        self.top_num_edit.setMaximum(15)
+        self.top_num_edit.setMinimum(1)
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
         self.v_bar_radio = visual_ui.radioButton_3
@@ -103,6 +108,10 @@ class VisualController:
             self.frame_cost.setEnabled(True)
         else:
             self.frame_cost.setEnabled(False)
+        if text == 'Top #':
+            self.top_num_frame.setEnabled(True)
+        else:
+            self.top_num_frame.setEnabled(False)
 
     def on_report_parameter_changed(self, text):
         # self.report_parameter = self.report_parameter.currentText()
@@ -192,14 +201,15 @@ class VisualController:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message4)
 
-        if self.calculation_parameter.currentText() == 'Top 5':
-            self.top_num = 5
-        if self.calculation_parameter.currentText() == 'Top 10':
-            self.top_num = 10
-        if self.calculation_parameter.currentText() == 'Top 15':
-            self.top_num = 15
+        if self.calculation_parameter.currentText() == 'Top #':
+            self.top_num = int(self.top_num_edit.text())
+            #self.top_num = self.top_num.toInt()
+        # if self.calculation_parameter.currentText() == 'Top 10':
+        #     self.top_num = 10
+        # if self.calculation_parameter.currentText() == 'Top 15':
+        #     self.top_num = 15
 
-        if self.top_num == 5 or self.top_num == 10 or self.top_num == 15:
+        if self.calculation_parameter.currentText() == 'Top #':
             print(self.top_num) #testing
             sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric,
                                                                        self.top_num)

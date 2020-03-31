@@ -11,7 +11,7 @@ BLANK_ROWS = 1
 # endregion
 
 # region database report definitions
-CALCULATION_TYPE_ALL = ('Monthly', 'Yearly', 'Top 5', 'Top 10', 'Top 15', 'Cost Ratio')
+CALCULATION_TYPE_ALL = ('Monthly', 'Yearly', 'Top #', 'Cost Ratio')
 COST_TYPE_ALL =('Local Cost with Tax', 'Local Cost', 'Original Cost')
 DATABASE_REPORTS = ('DR', 'DR_D1', 'DR_D2')
 DATABASE_REPORTS_METRIC = ('Searches_Automated',
