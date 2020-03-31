@@ -1,5 +1,5 @@
 import json
-from typing import Sequence, NoReturn
+from typing import Sequence
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog
 
@@ -86,14 +86,14 @@ class CostsController:
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
 
-    def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]) -> NoReturn:
+    def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]) -> None:
         """Updates the vendor list combobox
 
         :param vendors: the new list of vendors"""
         self.vendor_parameter_combobox.clear()
         self.vendor_parameter_combobox.addItems([vendor.name for vendor in vendors])
 
-    def load_currency_list(self) -> NoReturn:
+    def load_currency_list(self) -> None:
         """Updates the original currency combobox"""
         self.original_currency_combobox.clear()
         self.original_currency_combobox.addItem(self.settings.default_currency)
@@ -101,24 +101,24 @@ class CostsController:
                                                   self.settings.default_currency])
         self.original_currency_combobox.setCurrentText('')
 
-    def on_report_parameter_changed(self) -> NoReturn:
+    def on_report_parameter_changed(self) -> None:
         """Invoked when the report parameter changes"""
         self.report_parameter = self.report_parameter_combobox.currentText()
         self.name_label.setText(NAME_FIELD_SWITCHER[self.report_parameter].capitalize())
         if self.vendor_parameter:
             self.fill_names()
 
-    def on_vendor_parameter_changed(self) -> NoReturn:
+    def on_vendor_parameter_changed(self) -> None:
         """Invoked when the vendor parameter changes"""
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
         if self.report_parameter:
             self.fill_names()
 
-    def on_year_parameter_changed(self) -> NoReturn:
+    def on_year_parameter_changed(self) -> None:
         """Invoked when the year parameter changes"""
         self.year_parameter = int(self.year_parameter_dateedit.text())
 
-    def fill_names(self) -> NoReturn:
+    def fill_names(self) -> None:
         """Fills the name field combobox"""
         self.name_parameter_combobox.clear()
         results = []
@@ -133,7 +133,7 @@ class CostsController:
         else:
             print('Error, no connection')
 
-    def on_name_parameter_changed(self) -> NoReturn:
+    def on_name_parameter_changed(self) -> None:
         """Invoked when the name field parameter changes"""
         self.name_parameter = self.name_parameter_combobox.currentText()
         enable = False
@@ -145,23 +145,23 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
         self.cost_in_local_currency_with_tax_doublespinbox.setEnabled(enable)
 
-    def on_cost_in_original_currency_changed(self) -> NoReturn:
+    def on_cost_in_original_currency_changed(self) -> None:
         """Invoked when the cost in original currency parameter changes"""
         self.cost_in_original_currency = self.cost_in_original_currency_doublespinbox.value()
 
-    def on_original_currency_changed(self) -> NoReturn:
+    def on_original_currency_changed(self) -> None:
         """Invoked when the original currency parameter changes"""
         self.original_currency = self.original_currency_combobox.currentText()
 
-    def on_cost_in_local_currency_changed(self) -> NoReturn:
+    def on_cost_in_local_currency_changed(self) -> None:
         """Invoked when the cost in local currency parameter changes"""
         self.cost_in_local_currency = self.cost_in_local_currency_doublespinbox.value()
 
-    def on_cost_in_local_currency_with_tax_changed(self) -> NoReturn:
+    def on_cost_in_local_currency_with_tax_changed(self) -> None:
         """Invoked when the cost in local currency with tax parameter changes"""
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
-    def save_costs(self) -> NoReturn:
+    def save_costs(self) -> None:
         """Saves the cost data: if it is nonzero, add it to the database; if it is zero, delete it from the database"""
         INSERT = 'insert'
         DELETE = 'delete'
@@ -202,7 +202,7 @@ class CostsController:
         else:
             GeneralUtils.show_message('Invalid entry')
 
-    def load_costs(self) -> NoReturn:
+    def load_costs(self) -> None:
         """Fills the costs fields with data from the database"""
         sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
                                                      self.name_parameter)
@@ -223,14 +223,14 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
 
-    def clear_costs(self) -> NoReturn:
+    def clear_costs(self) -> None:
         """Empties the costs fields"""
         self.cost_in_original_currency_doublespinbox.setValue(0.0)
         self.original_currency_combobox.setCurrentText('')
         self.cost_in_local_currency_doublespinbox.setValue(0.0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
 
-    def import_costs(self) -> NoReturn:
+    def import_costs(self) -> None:
         """Import a file with costs data in it into the database"""
         report_type_dialog = QDialog()
         report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()

@@ -1,7 +1,7 @@
 import sqlite3
 import os
 import csv
-from typing import Tuple, Dict, Sequence, Any, NoReturn, Union
+from typing import Tuple, Dict, Sequence, Any, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 
@@ -105,7 +105,7 @@ def get_cost_fields_list(report_type: str) -> Sequence[Dict[str, Any]]:
     return tuple(fields)
 
 
-def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], NoReturn]:
+def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], None]:
     """Gets the field attributes
 
     :param report: the kind of the report
@@ -254,7 +254,7 @@ def update_vendor_name_sql_text(table: str, old_name: str, new_name: str) -> Tup
     return sql_text, (values,)
 
 
-def update_vendor_in_all_tables(old_name: str, new_name: str) -> NoReturn:
+def update_vendor_in_all_tables(old_name: str, new_name: str) -> None:
     """Updates the vendor's name in all tables
 
     :param old_name: the old name of the vendor
@@ -329,7 +329,7 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -
 
 
 def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str, str, Sequence[Dict[str, Any]]],
-                                                                      NoReturn]:
+                                                                      None]:
     """Reads a specific csv/tsv file and returns the kind of report and the values for inserting
 
     :param file_name: the name of the file the data is from
@@ -381,7 +381,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
         print('Error: could not open file ' + file_name)
 
 
-def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], NoReturn]:
+def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
     """Reads a specific csv/tsv cost file and returns the values for inserting
 
     :param file_name: the name of the file the data is from
@@ -432,7 +432,7 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
     return tuple(files)
 
 
-def insert_single_file(file_path: str, vendor: str, year: int) -> NoReturn:
+def insert_single_file(file_path: str, vendor: str, year: int) -> None:
     """Inserts a single file's data into the database
 
     :param file_path: the path of the file the data is from
@@ -450,7 +450,7 @@ def insert_single_file(file_path: str, vendor: str, year: int) -> NoReturn:
         print('Error, no connection')
 
 
-def insert_single_cost_file(report_type: str, file_path: str) -> NoReturn:
+def insert_single_cost_file(report_type: str, file_path: str) -> None:
     """Inserts a single file's data into the database
 
     :param report_type: the type of the report (master report name)
@@ -640,7 +640,7 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None) -> NoReturn:
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None) -> None:
     """Runs the SQL statement to modify the database
 
     :param connection: the connection to the database
@@ -658,7 +658,7 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
 
 
 def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Any] = None) \
-        -> Union[Sequence[Sequence[Any]], NoReturn]:
+        -> Union[Sequence[Sequence[Any]], None]:
     """Runs the SQL statement to get data from the database
 
     :param connection: the connection to the database
@@ -676,7 +676,7 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
         print(error)
 
 
-def setup_database(drop_tables: bool) -> NoReturn:
+def setup_database(drop_tables: bool) -> None:
     """Sets up the database
 
     :param drop_tables: whether to drop the tables before creating them"""
@@ -702,7 +702,7 @@ def setup_database(drop_tables: bool) -> NoReturn:
         print('Error, no connection')
 
 
-def first_time_setup() -> NoReturn:
+def first_time_setup() -> None:
     """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
         os.makedirs(DATABASE_FOLDER)
@@ -712,7 +712,7 @@ def first_time_setup() -> NoReturn:
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
-def backup_costs_data(report_type: str) -> NoReturn:
+def backup_costs_data(report_type: str) -> None:
     """Backs up the data in the costs table in a file in the costs directory
 
     :param report_type: the type of the report (master report name)"""
@@ -787,7 +787,7 @@ class UpdateDatabaseProgressDialogController:
 
         self.is_updating_database = False
 
-    def update_database(self, files: Sequence[Dict[str, Any]], recreate_tables: bool) -> NoReturn:
+    def update_database(self, files: Sequence[Dict[str, Any]], recreate_tables: bool) -> None:
         """Updates the database with the given files
 
         :param files: a list of files to insert into the database
@@ -825,26 +825,26 @@ class UpdateDatabaseProgressDialogController:
 
         self.update_database_thread.start()
 
-    def on_status_changed(self, status: str) -> NoReturn:
+    def on_status_changed(self, status: str) -> None:
         """Invoked when the status of the worker changes
 
         :param status: the new status of the worker"""
         self.update_status_label.setText(status)
 
-    def on_progress_changed(self, progress: int) -> NoReturn:
+    def on_progress_changed(self, progress: int) -> None:
         """Invoked when the progress of the worker changes
 
         :param progress: the new progress completed"""
         self.update_progress_bar.setValue(progress)
 
-    def on_task_finished(self, task: str) -> NoReturn:
+    def on_task_finished(self, task: str) -> None:
         """Invoked when the worker finishes a task
 
         :param task: the name of the task that was completed"""
         label = QLabel(task)
         self.update_task_finished_widget.layout().addWidget(label)
 
-    def on_thread_finish(self, code: int) -> NoReturn:
+    def on_thread_finish(self, code: int) -> None:
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
@@ -869,7 +869,7 @@ class UpdateDatabaseWorker(QObject):
         self.recreate_tables = recreate_tables
         self.files = files
 
-    def work(self) -> NoReturn:
+    def work(self) -> None:
         """Performs the work of the worker"""
         current = 0
         if self.recreate_tables:

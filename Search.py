@@ -2,7 +2,7 @@ import csv
 import os
 import sip
 import json
-from typing import Tuple, Dict, Sequence, Any, NoReturn
+from typing import Tuple, Dict, Sequence, Any
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
@@ -50,7 +50,7 @@ class SearchController:
         self.import_button.clicked.connect(self.import_parameters)
 
         # set up add and clause button
-        def add_and_and_or_clause() -> NoReturn:
+        def add_and_and_or_clause() -> None:
             """Invoked to add an and clause containing an or clause to the search"""
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
@@ -59,7 +59,7 @@ class SearchController:
         self.add_and_button.clicked.connect(add_and_and_or_clause)
 
         # resets the search clauses when the report type is changed
-        def refresh_and_add_clauses() -> NoReturn:
+        def refresh_and_add_clauses() -> None:
             """Resets the search clauses, then adds an and clause containing an or clause"""
             self.refresh_clauses()
             add_and_and_or_clause()
@@ -69,7 +69,7 @@ class SearchController:
         self.and_clause_parameters_frame = None
         refresh_and_add_clauses()
 
-    def refresh_clauses(self) -> NoReturn:
+    def refresh_clauses(self) -> None:
         """Resets the search clauses"""
         self.and_clause_parameters_frame = QFrame()
         self.and_clause_parameters_frame.setLayout(QVBoxLayout())
@@ -77,21 +77,21 @@ class SearchController:
                                                                       QSizePolicy.Expanding))
         self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
-    def add_and_clause(self) -> NoReturn:
+    def add_and_clause(self) -> None:
         """Adds an and clause to the search"""
         and_clause = QFrame()
         and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
 
         # set up add or clause button
-        def add_or_to_this_and() -> NoReturn:
+        def add_or_to_this_and() -> None:
             """Adds an or clause to this and clause"""
             self.add_or_clause(and_clause_ui)
 
         and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
 
         # set up remove current and clause button
-        def remove_this_and() -> NoReturn:
+        def remove_this_and() -> None:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
@@ -104,7 +104,7 @@ class SearchController:
 
         return and_clause_ui
 
-    def add_or_clause(self, and_clause: SearchAndClauseFrame.Ui_search_and_clause_parameter_frame) -> NoReturn:
+    def add_or_clause(self, and_clause: SearchAndClauseFrame.Ui_search_and_clause_parameter_frame) -> None:
         """Adds an or clause to the search
 
         :param and_clause: the and clause the or clause is added to"""
@@ -122,7 +122,7 @@ class SearchController:
 
         value_lineedit = or_clause_ui.search_value_parameter_lineedit
 
-        def on_field_changed() -> NoReturn:
+        def on_field_changed() -> None:
             """Invoked when the field parameter is changed"""
             type_label.setText(field_combobox.currentData().capitalize() + " Input")
             value_lineedit.setText(None)
@@ -141,7 +141,7 @@ class SearchController:
         comparison_combobox.addItems(COMPARISON_OPERATORS)
         comparison_combobox.addItems(NON_COMPARISONS)
 
-        def on_comparison_changed() -> NoReturn:
+        def on_comparison_changed() -> None:
             """Invoked when the comparison parameter is changed"""
             if comparison_combobox.currentText() in NON_COMPARISONS:
                 value_lineedit.setText(None)
@@ -152,7 +152,7 @@ class SearchController:
         comparison_combobox.currentTextChanged.connect(on_comparison_changed)
 
         # set up remove current or clause button
-        def remove_this_or() -> NoReturn:
+        def remove_this_or() -> None:
             """Removes this or clause"""
             and_clause.search_or_clause_parameters_frame.layout().removeWidget(or_clause)
             sip.delete(or_clause)
@@ -164,7 +164,7 @@ class SearchController:
 
         return or_clause_ui
 
-    def export_parameters(self) -> NoReturn:
+    def export_parameters(self) -> None:
         """Exports the current search parameters to the selected file"""
         file_name = GeneralUtils.choose_save(JSON_FILTER)
         if file_name != '':
@@ -177,7 +177,7 @@ class SearchController:
         else:
             print('Error, no file location selected')
 
-    def import_parameters(self) -> NoReturn:
+    def import_parameters(self) -> None:
         """Imports a new set of search parameters from the selected file"""
         file_name = GeneralUtils.choose_file(JSON_FILTER)
         if file_name != '':
@@ -195,7 +195,7 @@ class SearchController:
                     or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause['comparison'])
                     or_clause.search_value_parameter_lineedit.setText(sub_clause['value'])
 
-    def search(self) -> NoReturn:
+    def search(self) -> None:
         """Queries the database based on the current search parameters and saves the results to the selected file"""
         report, start_year, end_year, search_parameters = self.get_search_parameters()
 
