@@ -22,26 +22,31 @@ class VisualController:
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.calculation_parameter = visual_ui.calculation_type_combobox
         self.calculation_parameter.addItems(CALCULATION_TYPE_ALL)
+        self.calculation_parameter.currentTextChanged[str].connect(self.on_calculation_parameter_changed)
         self.cost_parameter = visual_ui.cost_ratio_option_combobox
         self.cost_parameter.addItems(COST_TYPE_ALL)
         self.report_parameter.addItems(ALL_REPORTS)
         # self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
         self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
 
-        #frame
+        # set up cost ratio frame
         self.frame_cost = visual_ui.edit_cost_ratio_frame
         self.frame_cost.setEnabled(False)
+
+        # set up top num frame
         self.top_num_frame = visual_ui.edit_top_num_frame
         self.top_num_frame.setEnabled(False)
-        self.calculation_parameter.currentTextChanged[str].connect(self.on_calculation_parameter_changed)
-        self.top_num_edit = visual_ui.top_num_lineEdit
+
+        # set up top num spinbox
+        self.top_num_edit = visual_ui.top_num_spinbox
         self.top_num_edit.setMaximum(15)
         self.top_num_edit.setMinimum(1)
+
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
         self.v_bar_radio = visual_ui.radioButton_3
-        self.v_bar_radio.setChecked(True)
         self.line_radio = visual_ui.radioButton_4
+        self.v_bar_radio.setChecked(True)
 
         # set up options radio buttons
 
@@ -229,6 +234,10 @@ class VisualController:
             elif name != "" and (self.h_bar_radio.isChecked() != False or self.v_bar_radio.isChecked() != False or self.line_radio.isChecked() != False) and start_year <= end_year:
                 message5 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message5)
+
+        #if self.calculation_parameter.currentText() == 'Yearly':
+
+        #if self.calculation_parameter.currentText() == 'Cost Ratio':
 
     def messageDialog(self, text):
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)

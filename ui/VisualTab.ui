@@ -320,7 +320,7 @@
               <enum>Qt::AutoText</enum>
              </property>
             </widget>
-            <widget class="QSpinBox" name="top_num_lineEdit">
+            <widget class="QSpinBox" name="top_num_spinbox">
              <property name="geometry">
               <rect>
                <x>10</x>
