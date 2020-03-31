@@ -22,10 +22,17 @@ class VisualController:
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.calculation_parameter = visual_ui.calculation_type_combobox
         self.calculation_parameter.addItems(CALCULATION_TYPE_ALL)
+        self.cost_parameter = visual_ui.cost_ratio_option_combobox
+        self.cost_parameter.addItems(COST_TYPE_ALL)
         self.report_parameter.addItems(ALL_REPORTS)
         # self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
         self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
 
+        #frame
+        self.frame_cost = visual_ui.edit_cost_ratio_frame
+        self.frame_cost.setEnabled(False)
+        if self.calculation_parameter.currentText() == 'Cost Ratio':
+            self.frame_cost.setEnabled(True)
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
         self.v_bar_radio = visual_ui.radioButton_3
@@ -142,6 +149,8 @@ class VisualController:
         name = self.name_combobox.currentText()
         # get metric
         metric = self.metric.currentText()
+        self.top_num = 0
+        print(self.calculation_parameter.currentText())
 
         message = ""
         message1 = ""
@@ -185,7 +194,8 @@ class VisualController:
         if self.calculation_parameter.currentText() == 'Top 15':
             self.top_num = 15
 
-        if self.top_num != None:
+        if self.top_num == 5 or self.top_num == 10 or self.top_num == 15:
+            print(self.top_num) #testing
             sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
