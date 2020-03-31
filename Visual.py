@@ -189,7 +189,7 @@ class VisualController:
             self.top_num = 15
 
         if self.top_num != None:
-            sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric,
+            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, name, metric,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)

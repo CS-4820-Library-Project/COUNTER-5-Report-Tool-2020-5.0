@@ -531,7 +531,7 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     return sql_text, tuple(data)
 
 
-def chart_top_number_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
+def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
                                      number: int = None) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to search the database for chart data
 
@@ -739,6 +739,7 @@ def backup_costs_data(report_type: str) -> NoReturn:
 
 
 def test_chart_search():
+    """temporary method to show how to use chart_search_sql_text"""
     headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
     sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
     print(sql_text)
@@ -753,8 +754,9 @@ def test_chart_search():
 
 
 def test_top_number_chart_search():
+    """temporary method to show how to use top_number_chart_search_sql_text"""
     headers = tuple([field['name'] for field in get_top_number_chart_report_fields_list('DR_D1')])
-    sql_text, data = chart_top_number_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
+    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
                                                       'Searches_Automated', 10)
     print(sql_text)
     print(data)
@@ -768,6 +770,7 @@ def test_top_number_chart_search():
 
 
 class UpdateDatabaseProgressDialogController:
+    """Controls the Update Database Progress Dialog"""
 
     def __init__(self, parent_widget: QObject = None):
         self.parent_widget = parent_widget
@@ -784,7 +787,11 @@ class UpdateDatabaseProgressDialogController:
 
         self.is_updating_database = False
 
-    def update_database(self, files, recreate_tables):
+    def update_database(self, files: Sequence[Dict[str, Any]], recreate_tables: bool) -> NoReturn:
+        """Updates the database with the given files
+
+        :param files: a list of files to insert into the database
+        :param recreate_tables: whether or not to drop the tables and recreated the tables before inserting"""
         self.update_database_progress_dialog = QDialog(self.parent_widget)
 
         dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
@@ -818,17 +825,29 @@ class UpdateDatabaseProgressDialogController:
 
         self.update_database_thread.start()
 
-    def on_status_changed(self, status: str):
+    def on_status_changed(self, status: str) -> NoReturn:
+        """Invoked when the status of the worker changes
+
+        :param status: the new status of the worker"""
         self.update_status_label.setText(status)
 
-    def on_progress_changed(self, progress: int):
+    def on_progress_changed(self, progress: int) -> NoReturn:
+        """Invoked when the progress of the worker changes
+
+        :param progress: the new progress completed"""
         self.update_progress_bar.setValue(progress)
 
-    def on_task_finished(self, task: str):
+    def on_task_finished(self, task: str) -> NoReturn:
+        """Invoked when the worker finishes a task
+
+        :param task: the name of the task that was completed"""
         label = QLabel(task)
         self.update_task_finished_widget.layout().addWidget(label)
 
-    def on_thread_finish(self, code):
+    def on_thread_finish(self, code: int) -> NoReturn:
+        """Invoked when the worker's thread finishes
+
+        :param code: the exit code of the thread"""
         print(code)  # testing
         # exit thread
         self.update_database_thread.quit()
@@ -836,17 +855,22 @@ class UpdateDatabaseProgressDialogController:
 
 
 class UpdateDatabaseWorker(QObject):
+    """The worker that updates the database
+
+    :param files: a list of files to insert into the database
+    :param recreate_tables: whether or not to drop the tables and recreated the tables before inserting"""
     worker_finished_signal = pyqtSignal(int)
     status_changed_signal = pyqtSignal(str)
     progress_changed_signal = pyqtSignal(int)
     task_finished_signal = pyqtSignal(str)
 
-    def __init__(self, files, recreate_tables):
+    def __init__(self, files: Sequence[Dict[str, Any]], recreate_tables: bool):
         super().__init__()
         self.recreate_tables = recreate_tables
         self.files = files
 
-    def work(self):
+    def work(self) -> NoReturn:
+        """Performs the work of the worker"""
         current = 0
         if self.recreate_tables:
             self.status_changed_signal.emit('Recreating tables...')
