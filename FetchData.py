@@ -20,7 +20,7 @@ from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
-from VariableConstants import *
+from Constants import *
 
 
 # region Models
