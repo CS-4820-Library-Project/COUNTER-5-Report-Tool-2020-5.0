@@ -88,7 +88,7 @@ class ManageVendorsController(QObject):
         self.requestor_id_line_edit = manage_vendors_ui.requestorIdEdit
         self.api_key_line_edit = manage_vendors_ui.apiKeyEdit
         self.platform_line_edit = manage_vendors_ui.platformEdit
-        self.local_only_check_box = manage_vendors_ui.local_only_check_box
+        self.non_Sushi_check_box = manage_vendors_ui.non_Sushi_check_box
         self.description_text_edit = manage_vendors_ui.descriptionEdit
         self.companies_text_edit = manage_vendors_ui.companiesEdit
 
@@ -255,7 +255,7 @@ class ManageVendorsController(QObject):
             GeneralUtils.show_message(message)
             return
 
-        if not self.local_only_check_box.isChecked():
+        if not self.non_Sushi_check_box.isChecked():
             url = self.base_url_line_edit.text()
             is_valid, message = self.validate_url(url)
             if not is_valid:
@@ -271,7 +271,7 @@ class ManageVendorsController(QObject):
         selected_vendor.requestor_id = self.requestor_id_line_edit.text()
         selected_vendor.api_key = self.api_key_line_edit.text()
         selected_vendor.platform = self.platform_line_edit.text()
-        selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
+        selected_vendor.is_local = self.non_Sushi_check_box.checkState() == Qt.Checked
         selected_vendor.description = self.description_text_edit.toPlainText()
         selected_vendor.companies = self.companies_text_edit.toPlainText()
 
@@ -388,7 +388,7 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
-        local_only_check_box = vendor_dialog_ui.local_only_check_box
+        non_Sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
         companies_edit = vendor_dialog_ui.companiesEdit
 
@@ -404,7 +404,7 @@ class ManageVendorsController(QObject):
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
-                            api_key_edit.text(), platform_edit.text(), local_only_check_box.checkState() == Qt.Checked,
+                            api_key_edit.text(), platform_edit.text(), non_Sushi_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText(), companies_edit.toPlainText())
 
             is_valid, message = self.add_vendor(vendor)
@@ -464,7 +464,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
-            self.local_only_check_box.setChecked(selected_vendor.is_local)
+            self.non_Sushi_check_box.setChecked(selected_vendor.is_local)
             self.description_text_edit.setPlainText(selected_vendor.description)
             self.companies_text_edit.setPlainText(selected_vendor.companies)
 
@@ -485,7 +485,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText("")
             self.api_key_line_edit.setText("")
             self.platform_line_edit.setText("")
-            self.local_only_check_box.setChecked(False)
+            self.non_Sushi_check_box.setChecked(False)
             self.description_text_edit.setPlainText("")
             self.companies_text_edit.setPlainText("")
 

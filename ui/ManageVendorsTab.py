@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'ManageVendorsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_manage_vendors_tab(object):
     def setupUi(self, manage_vendors_tab):
@@ -150,9 +148,9 @@ class Ui_manage_vendors_tab(object):
         self.descriptionEdit.setBackgroundVisible(False)
         self.descriptionEdit.setObjectName("descriptionEdit")
         self.gridLayout_5.addWidget(self.descriptionEdit, 11, 1, 1, 1)
-        self.local_only_check_box = QtWidgets.QCheckBox(self.edit_vendor_details_frame)
-        self.local_only_check_box.setObjectName("local_only_check_box")
-        self.gridLayout_5.addWidget(self.local_only_check_box, 10, 1, 1, 1)
+        self.non_Sushi_check_box = QtWidgets.QCheckBox(self.edit_vendor_details_frame)
+        self.non_Sushi_check_box.setObjectName("non_Sushi_check_box")
+        self.gridLayout_5.addWidget(self.non_Sushi_check_box, 10, 1, 1, 1)
         self.label_28 = QtWidgets.QLabel(self.edit_vendor_details_frame)
         self.label_28.setObjectName("label_28")
         self.gridLayout_5.addWidget(self.label_28, 11, 0, 1, 1, QtCore.Qt.AlignTop)
@@ -200,8 +198,8 @@ class Ui_manage_vendors_tab(object):
         manage_vendors_tab.setTabOrder(self.customerIdEdit, self.requestorIdEdit)
         manage_vendors_tab.setTabOrder(self.requestorIdEdit, self.apiKeyEdit)
         manage_vendors_tab.setTabOrder(self.apiKeyEdit, self.platformEdit)
-        manage_vendors_tab.setTabOrder(self.platformEdit, self.local_only_check_box)
-        manage_vendors_tab.setTabOrder(self.local_only_check_box, self.descriptionEdit)
+        manage_vendors_tab.setTabOrder(self.platformEdit, self.non_Sushi_check_box)
+        manage_vendors_tab.setTabOrder(self.non_Sushi_check_box, self.descriptionEdit)
         manage_vendors_tab.setTabOrder(self.descriptionEdit, self.companiesEdit)
         manage_vendors_tab.setTabOrder(self.companiesEdit, self.saveVendorChangesButton)
         manage_vendors_tab.setTabOrder(self.saveVendorChangesButton, self.undoVendorChangesButton)
@@ -223,10 +221,11 @@ class Ui_manage_vendors_tab(object):
         self.label.setText(_translate("manage_vendors_tab", "Name"))
         self.label_4.setText(_translate("manage_vendors_tab", "Requestor ID"))
         self.companiesText.setText(_translate("manage_vendors_tab", "External Companies"))
-        self.label_39.setText(_translate("manage_vendors_tab", "Local Only Vendor"))
+        self.label_39.setText(_translate("manage_vendors_tab", "Non-Sushi Vendor"))
         self.label_28.setText(_translate("manage_vendors_tab", "Description"))
         self.url_validation_label.setText(_translate("manage_vendors_tab", "Validation label"))
         self.saveVendorChangesButton.setText(_translate("manage_vendors_tab", "Save Changes"))
         self.undoVendorChangesButton.setText(_translate("manage_vendors_tab", "Undo Changes"))
         self.removeVendorButton.setText(_translate("manage_vendors_tab", "Remove Vendor"))
+
 import Resources_rc
