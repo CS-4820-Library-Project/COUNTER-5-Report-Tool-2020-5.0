@@ -663,6 +663,7 @@ class ProcessResult:
         self.file_name = ""
         self.file_dir = ""
         self.file_path = ""
+        self.protected_file_path = ""
         self.year = ""
 
 
@@ -860,14 +861,15 @@ class FetchReportsAbstract:
         worker, thread = self.vendor_workers[worker_id]
         self.update_results_ui(worker.vendor, worker.process_result, worker.report_process_results)
 
-        process_result: ProcessResult
-        for process_result in worker.report_process_results:
-            if process_result.completion_status != CompletionStatus.SUCCESSFUL:
-                continue
+        if self.is_yearly_fetch:
+            process_result: ProcessResult
+            for process_result in worker.report_process_results:
+                if process_result.completion_status != CompletionStatus.SUCCESSFUL:
+                    continue
 
-            self.database_report_data.append({'file': process_result.file_path,
-                                              'vendor': process_result.vendor.name,
-                                              'year': process_result.year})
+                self.database_report_data.append({'file': process_result.protected_file_path,
+                                                  'vendor': process_result.vendor.name,
+                                                  'year': process_result.year})
 
         thread.quit()
         thread.wait()
@@ -2445,6 +2447,7 @@ class ReportWorker(QObject):
             self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
 
             protected_file.close()
+            self.process_result.protected_file_path = protected_file_path
 
     def add_report_header_to_file(self, report_header: ReportHeaderModel, file, include_attributes: bool):
         """Adds the report header to a TSV file
