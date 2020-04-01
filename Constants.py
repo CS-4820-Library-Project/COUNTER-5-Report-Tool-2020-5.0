@@ -412,6 +412,7 @@ EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
 # region Variable Constants for FetchData
+MASTER_REPORTS = ("DR", "IR", "PR", "TR")
 
 
 class MajorReportType(Enum):

@@ -1960,8 +1960,8 @@ class ReportWorker(QObject):
         request_query["begin_date"] = self.begin_date.toString("yyyy-MM")
         request_query["end_date"] = self.end_date.toString("yyyy-MM")
 
+        attributes_to_show = ""
         if self.is_special:
-            attributes_to_show = ""
             attr_count = 0
             special_options_dict = self.special_options.__dict__
             for option in special_options_dict:
@@ -1985,8 +1985,18 @@ class ReportWorker(QObject):
                         elif attr_count > 0:
                             attributes_to_show += f"|{option_name}"
                             attr_count += 1
+        elif self.report_type in MASTER_REPORTS:
+            major_report_type = get_major_report_type(self.report_type)
+            if major_report_type == MajorReportType.PLATFORM:
+                attributes_to_show = "|".join(PLATFORM_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.DATABASE:
+                attributes_to_show = "|".join(DATABASE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.TITLE:
+                attributes_to_show = "|".join(TITLE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.ITEM:
+                attributes_to_show = "|".join(ITEM_REPORTS_ATTRIBUTES)
 
-            if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
+        if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
         request_url = f"{self.vendor.base_url}/{self.report_type.lower()}"
 
