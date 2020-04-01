@@ -1495,7 +1495,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         option_type, option_name, option_list = special_option
         __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
 
-        dialog = QDialog(self.options_frame)
+        dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
         layout = QVBoxLayout(dialog)
 
@@ -1547,7 +1547,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         option_type, option_name = special_option
         __, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
 
-        dialog = QDialog(self.options_frame)
+        dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
         layout = QVBoxLayout(dialog)
 
