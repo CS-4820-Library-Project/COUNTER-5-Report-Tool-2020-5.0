@@ -1935,8 +1935,9 @@ class ReportWorker(QObject):
         self.save_dir = request_data.save_location
         self.special_options = request_data.special_options
 
-        self.is_yearly_dir = self.save_dir == request_data.settings.yearly_directory
+        self.is_yearly = self.save_dir == request_data.settings.yearly_directory
         self.is_special = self.special_options is not None
+        self.is_master = self.report_type in MASTER_REPORTS
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
         self.retried_request = False
@@ -1960,8 +1961,8 @@ class ReportWorker(QObject):
         request_query["begin_date"] = self.begin_date.toString("yyyy-MM")
         request_query["end_date"] = self.end_date.toString("yyyy-MM")
 
+        attributes_to_show = ""
         if self.is_special:
-            attributes_to_show = ""
             attr_count = 0
             special_options_dict = self.special_options.__dict__
             for option in special_options_dict:
@@ -1985,8 +1986,18 @@ class ReportWorker(QObject):
                         elif attr_count > 0:
                             attributes_to_show += f"|{option_name}"
                             attr_count += 1
+        elif self.is_yearly and self.is_master:
+            major_report_type = get_major_report_type(self.report_type)
+            if major_report_type == MajorReportType.PLATFORM:
+                attributes_to_show = "|".join(PLATFORM_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.DATABASE:
+                attributes_to_show = "|".join(DATABASE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.TITLE:
+                attributes_to_show = "|".join(TITLE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.ITEM:
+                attributes_to_show = "|".join(ITEM_REPORTS_ATTRIBUTES)
 
-            if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
+        if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
         request_url = f"{self.vendor.base_url}/{self.report_type.lower()}"
 
@@ -2019,7 +2030,7 @@ class ReportWorker(QObject):
         """
         try:
             json_string = response.text
-            if self.is_yearly_dir: self.save_json_file(json_string)
+            if self.is_yearly: self.save_json_file(json_string)
 
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
@@ -2390,7 +2401,7 @@ class ReportWorker(QObject):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        if self.is_yearly_dir:
+        if self.is_yearly:
             file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
         elif self.is_special:
@@ -2406,9 +2417,12 @@ class ReportWorker(QObject):
 
         file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
-        self.add_report_header_to_file(report_header, file)
+        if self.is_master:
+            self.add_report_header_to_file(report_header, file, False)
+        else:
+            self.add_report_header_to_file(report_header, file, True)
 
-        if not self.add_report_rows_to_file(report_type, report_rows, file):
+        if not self.add_report_rows_to_file(report_type, report_rows, file, False):
             self.process_result.completion_status = CompletionStatus.WARNING
 
         file.close()
@@ -2418,7 +2432,7 @@ class ReportWorker(QObject):
         self.process_result.year = self.begin_date.toString('yyyy')
 
         # Save protected tsv file
-        if self.is_yearly_dir:
+        if self.is_yearly:
             protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
             if not path.isdir(protected_file_dir):
                 makedirs(protected_file_dir)
@@ -2427,15 +2441,17 @@ class ReportWorker(QObject):
 
             protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
-            self.add_report_header_to_file(report_header, protected_file)
-            self.add_report_rows_to_file(report_type, report_rows, protected_file)
+            self.add_report_header_to_file(report_header, protected_file, True)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
+
             protected_file.close()
 
-    def add_report_header_to_file(self, report_header: ReportHeaderModel, file):
+    def add_report_header_to_file(self, report_header: ReportHeaderModel, file, include_attributes: bool):
         """Adds the report header to a TSV file
 
         :param report_header: The report header model
         :param file: The TSV file to write to
+        :param include_attributes: Include the Report_Attributes value
         """
         tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
@@ -2462,8 +2478,9 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Report_Filters", report_filters_str.rstrip("; ")])
 
         report_attributes_str = ""
-        for report_attribute in report_header.report_attributes:
-            report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
+        if include_attributes:
+            for report_attribute in report_header.report_attributes:
+                report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
         tsv_writer.writerow(["Report_Attributes", report_attributes_str.rstrip("; ")])
 
         exceptions_str = ""
@@ -2476,12 +2493,13 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-    def add_report_rows_to_file(self, report_type: str, report_rows: list, file) -> bool:
+    def add_report_rows_to_file(self, report_type: str, report_rows: list, file, include_all_attributes: bool) -> bool:
         """Adds the report's rows to a TSV file
 
         :param report_type: The report type
         :param report_rows: The report's rows
         :param file: The TSV file to write to
+        :param include_all_attributes: Option to include all possible attributes for this report type to the report
         """
         column_names = []
         row_dicts = []
@@ -2492,6 +2510,9 @@ class ReportWorker(QObject):
                 special_options_dict = self.special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2504,6 +2525,9 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2528,6 +2552,9 @@ class ReportWorker(QObject):
                 special_options_dict = self.special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2545,6 +2572,9 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2577,6 +2607,12 @@ class ReportWorker(QObject):
                 if special_options_dict["yop"][0]: column_names.append("YOP")
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Section_Type")
+                column_names.append("YOP")
+                column_names.append("Access_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2602,6 +2638,12 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Section_Type"] = row.section_type
+                        row_dict["YOP"] = row.yop
+                        row_dict["Access_Type"] = row.access_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2727,6 +2769,10 @@ class ReportWorker(QObject):
                 if special_options_dict["authors"][0]: column_names.append("Authors")
                 if special_options_dict["publication_date"][0]: column_names.append("Publication_Date")
                 if special_options_dict["article_version"][0]: column_names.append("Article_version")
+            elif include_all_attributes:
+                column_names.append("Authors")
+                column_names.append("Publication_Date")
+                column_names.append("Article_version")
             column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
             if self.is_special:
                 special_options_dict = self.special_options.__dict__
@@ -2743,6 +2789,11 @@ class ReportWorker(QObject):
                 if special_options_dict["yop"][0]: column_names.append("YOP")
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("YOP")
+                column_names.append("Access_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2793,6 +2844,14 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Authors"] = row.authors
+                        row_dict["Publication_Date"] = row.publication_date
+                        row_dict["Article_version"] = row.article_version
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["YOP"] = row.yop
+                        row_dict["Access_Type"] = row.access_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
