@@ -30,19 +30,19 @@ class Vendor(JsonModel):
     :param requestor_id: The requestor id id used in sushi report calls
     :param api_key: The api key id used in sushi report calls
     :param platform: The platform id used in sushi report calls
-    :param is_local: This indicates if this vendor is sushi compatible
+    :param is_non_sushi: This indicates if this vendor is sushi compatible
     :param description: A description of this vendor
     :param companies: More information about the vendor
     """
     def __init__(self, name: str, base_url: str, customer_id: str, requestor_id: str, api_key: str, platform: str,
-                 is_local: bool, description: str, companies: str):
+                 is_non_sushi: bool, description: str, companies: str):
         self.name = name
         self.base_url = base_url
         self.customer_id = customer_id
         self.requestor_id = requestor_id
         self.api_key = api_key
         self.platform = platform
-        self.is_local = is_local
+        self.is_non_sushi = is_non_sushi
         self.description = description
         self.companies = companies
 
@@ -59,11 +59,11 @@ class Vendor(JsonModel):
         requestor_id = json_dict["requestor_id"] if "requestor_id" in json_dict else ""
         api_key = json_dict["api_key"] if "api_key" in json_dict else ""
         platform = json_dict["platform"] if "platform" in json_dict else ""
-        is_local = json_dict["is_local"] if "is_local" in json_dict else False
+        is_non_sushi = json_dict["is_non_sushi"] if "is_non_sushi" in json_dict else False
         description = json_dict["description"] if "description" in json_dict else ""
         companies = json_dict["companies"] if "companies" in json_dict else ""
 
-        return cls(name, base_url, customer_id, requestor_id, api_key, platform, is_local, description, companies)
+        return cls(name, base_url, customer_id, requestor_id, api_key, platform, is_non_sushi, description, companies)
 
 
 class ManageVendorsController(QObject):
@@ -229,7 +229,7 @@ class ManageVendorsController(QObject):
         if not is_valid:
             return is_valid, message
 
-        if not new_vendor.is_local:
+        if not new_vendor.is_non_sushi:
             is_valid, message = self.validate_url(new_vendor.base_url)
             if not is_valid:
                 return is_valid, message
@@ -271,7 +271,7 @@ class ManageVendorsController(QObject):
         selected_vendor.requestor_id = self.requestor_id_line_edit.text()
         selected_vendor.api_key = self.api_key_line_edit.text()
         selected_vendor.platform = self.platform_line_edit.text()
-        selected_vendor.is_local = self.non_Sushi_check_box.checkState() == Qt.Checked
+        selected_vendor.is_non_sushi = self.non_Sushi_check_box.checkState() == Qt.Checked
         selected_vendor.description = self.description_text_edit.toPlainText()
         selected_vendor.companies = self.companies_text_edit.toPlainText()
 
@@ -464,7 +464,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
-            self.non_Sushi_check_box.setChecked(selected_vendor.is_local)
+            self.non_Sushi_check_box.setChecked(selected_vendor.is_non_sushi)
             self.description_text_edit.setPlainText(selected_vendor.description)
             self.companies_text_edit.setPlainText(selected_vendor.companies)
 
@@ -546,17 +546,17 @@ class ManageVendorsController(QObject):
             tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
             reader = csv.DictReader(tsv_file, delimiter='\t')
             for row in reader:
-                if 'is_local' in row:
-                    is_local = row['is_local'].lower() == "true"
+                if 'is_non_sushi' in row:
+                    is_non_sushi = row['is_non_sushi'].lower() == "true"
                 else:
-                    is_local = False
+                    is_non_sushi = False
                 vendor = Vendor(row['name'] if 'name' in row else "",
                                 row['base_url'] if 'base_url' in row else "",
                                 row['customer_id'] if 'customer_id' in row else "",
                                 row['requestor_id'] if 'requestor_id' in row else "",
                                 row['api_key'] if 'api_key' in row else "",
                                 row['platform'] if 'platform' in row else "",
-                                is_local,
+                                is_non_sushi,
                                 row['description'] if 'description' in row else "",
                                 row['companies'] if 'companies' in row else "")
 
@@ -591,7 +591,7 @@ class ManageVendorsController(QObject):
                         "requestor_id",
                         "api_key",
                         "platform",
-                        "is_local",
+                        "is_non_sushi",
                         "description",
                         "companies"]
         try:

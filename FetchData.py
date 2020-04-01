@@ -731,7 +731,7 @@ class FetchReportsAbstract:
         """
         self.vendors = []
         for vendor in vendors:
-            if vendor.is_local: continue
+            if vendor.is_non_sushi: continue
             self.vendors.append(vendor)
 
     def update_vendors_ui(self):
@@ -1248,7 +1248,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
-            if self.vendors[i].is_local: continue
+            if self.vendors[i].is_non_sushi: continue
 
             request_data = RequestData(self.vendors[i], ALL_REPORTS, self.begin_date, self.end_date,
                                        self.save_dir, self.settings)
