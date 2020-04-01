@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'SearchOrClauseFrame.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_search_or_clause_parameter_frame(object):
     def setupUi(self, search_or_clause_parameter_frame):
@@ -22,8 +24,6 @@ class Ui_search_or_clause_parameter_frame(object):
         self.gridLayout = QtWidgets.QGridLayout(search_or_clause_parameter_frame)
         self.gridLayout.setObjectName("gridLayout")
         self.frame = QtWidgets.QFrame(search_or_clause_parameter_frame)
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -73,4 +73,3 @@ class Ui_search_or_clause_parameter_frame(object):
         search_or_clause_parameter_frame.setWindowTitle(_translate("search_or_clause_parameter_frame", "Frame"))
         self.search_type_label.setText(_translate("search_or_clause_parameter_frame", "Type"))
         self.search_remove_or_clause_button.setText(_translate("search_or_clause_parameter_frame", "Remove \"Or\" Clause"))
-
