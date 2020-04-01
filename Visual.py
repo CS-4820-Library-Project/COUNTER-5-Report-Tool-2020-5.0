@@ -7,7 +7,6 @@ from datetime import date
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
-from jinja2.runtime import to_string
 
 import GeneralUtils
 import ManageDB
@@ -154,7 +153,7 @@ class VisualController:
             message1 = "Enter/Select " + self.name_label.text() + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
-            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + to_string(currentYear) + "\n"
+            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + str(currentYear) + "\n"
         message = message1 + message3
         if message != "":
             message = "To Create Chart Check the following: \n" + message
@@ -268,8 +267,8 @@ class VisualController:
         data2 = []
         data3 = []
         for i in range(1, m):
-            a = to_string(calendar.month_name[self.results[i][4]])
-            b = to_string(self.results[i][3])
+            a = str(calendar.month_name[self.results[i][4]])
+            b = str(self.results[i][3])
             data = a + '-' + b
             print(data)
             # data = self.results[i][4]
