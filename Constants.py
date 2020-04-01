@@ -23,6 +23,8 @@ DATABASE_REPORTS_METRIC = ('Searches_Automated',
                            'Unique_Title_Requests',
                            'Limit_Exceeded',
                            'No_License')
+DATABASE_REPORTS_ATTRIBUTES = ("Data_Type",
+                               "Access_Method")
 DATABASE_REPORT_FIELDS = ({'name': 'database',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
@@ -61,6 +63,13 @@ ITEM_REPORTS_METRIC = ('Total_Item_Investigations',
                        'Unique_Item_Requests',
                        'Limit_Exceeded',
                        'No_License')
+ITEM_REPORTS_ATTRIBUTES = ("Data_Type",
+                           "Access_Type",
+                           "Access_Method",
+                           "YOP",
+                           "Authors",
+                           "Publication_Date",
+                           "Article_Version")
 ITEM_REPORT_FIELDS = ({'name': 'item',
                        'type': 'TEXT',
                        'options': ('NOT NULL',),
@@ -220,6 +229,8 @@ PLATFORM_REPORTS_METRIC = ('Searches_Platform',
                            'Unique_Item_Requests',
                            'Unique_Title_Investigations',
                            'Unique_Title_Requests')
+PLATFORM_REPORTS_ATTRIBUTES = ("Data_Type",
+                               "Access_Method")
 PLATFORM_REPORT_FIELDS = ({'name': 'platform',
                            'type': 'TEXT',
                            'options': ('NOT NULL',),
@@ -244,6 +255,11 @@ TITLE_REPORTS_METRIC = ('Total_Item_Investigations',
                         'Unique_Title_Requests',
                         'Limit_Exceeded',
                         'No_License')
+TITLE_REPORTS_ATTRIBUTES = ("Data_Type",
+                            "Section_Type",
+                            "Access_Type",
+                            "Access_Method",
+                            "YOP")
 TITLE_REPORT_FIELDS = ({'name': 'title',
                         'type': 'TEXT',
                         'options': ('NOT NULL',),
