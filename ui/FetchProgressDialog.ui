@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
-    <height>353</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -88,8 +88,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>660</width>
-        <height>236</height>
+        <width>780</width>
+        <height>480</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="scroll_area_vertical_layout"/>
