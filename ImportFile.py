@@ -11,7 +11,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
 
 import GeneralUtils
-from VariableConstants import *
+from Constants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import ALL_REPORTS, CompletionStatus
@@ -180,15 +180,19 @@ class ImportReportController:
                 header = {}
                 for row in range(HEADER_ROWS):  # reads header row data
                     cells = next(reader)
-                    key = cells[0].lower()
-                    if key != HEADER_ENTRIES[row]:
-                        raise Exception('File has invalid header (missing a row)')
+                    if cells:
+                        key = cells[0].lower()
+                        if key != HEADER_ENTRIES[row]:
+                            raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
+                        else:
+                            header[key] = cells[1].strip()
                     else:
-                        header[key] = cells[1].strip()
+                        raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
                 for row in range(BLANK_ROWS):
                     cells = next(reader)
-                    if cells[0].strip():
-                        raise Exception('File has invalid header (not enough blank rows)')
+                    if cells:
+                        if cells[0].strip():
+                            raise Exception('File has invalid header (not enough blank rows)')
                 print(report_type)
                 if header['report_id'] != report_type:
                     raise Exception('File has invalid header (wrong Report_Id)')

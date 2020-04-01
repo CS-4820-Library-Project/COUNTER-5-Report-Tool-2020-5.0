@@ -12,7 +12,7 @@ from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
-from VariableConstants import *
+from Constants import *
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
@@ -372,8 +372,6 @@ class ManageVendorsController(QObject):
                     new_file_path = workingPath4 + os.path.sep + theFile.replace(original_name, new_name)
                     os.rename(old_file_path, new_file_path)
 
-
-
     def on_add_vendor_clicked(self):
         """Handles the signal emitted when the add vendor button is clicked
 
@@ -438,7 +436,6 @@ class ManageVendorsController(QObject):
         file_path = GeneralUtils.choose_file(TSV_FILTER)
         if file_path:
             self.import_vendors_tsv(file_path)
-            GeneralUtils.show_message(f"Import successful!")
 
     def on_export_vendors_clicked(self):
         """Handles the signal emitted when the export vendors button is clicked.
@@ -449,7 +446,6 @@ class ManageVendorsController(QObject):
         dir_path = GeneralUtils.choose_directory()
         if dir_path:
             self.export_vendors_tsv(dir_path)
-            GeneralUtils.show_message(f"Exported as {EXPORT_VENDORS_FILE_NAME}")
 
     def populate_edit_vendor_view(self):
         """Populates the edit vendor view with the selected vendors's information"""
@@ -577,8 +573,11 @@ class ManageVendorsController(QObject):
             self.populate_edit_vendor_view()
             self.vendors_changed_signal.emit(self.vendors)
             self.save_all_vendors_to_disk()
+
+            GeneralUtils.show_message(f"Import successful!")
         except Exception as e:
             print(f"File import failed: {e}")
+            GeneralUtils.show_message(f"File import failed: {e}")
 
     def export_vendors_tsv(self, dir_path):
         """Exports all vendor information as a TSV file to a directory
@@ -604,7 +603,9 @@ class ManageVendorsController(QObject):
                 tsv_dict_writer.writerow(vendor.__dict__)
 
             tsv_file.close()
+            GeneralUtils.show_message(f"Exported to {file_path}")
 
         except Exception as e:
             print(f"File export failed: {e}")
+            GeneralUtils.show_message(f"File export failed: {e}")
 

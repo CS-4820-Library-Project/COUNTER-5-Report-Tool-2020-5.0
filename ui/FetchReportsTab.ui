@@ -77,9 +77,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <property name="spacing">
              <number>10</number>
@@ -521,7 +518,7 @@
                   <item>
                    <widget class="QLabel" name="label_38">
                     <property name="text">
-                     <string>Not a yearly date range</string>
+                     <string>Date range is not a calendar year</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>

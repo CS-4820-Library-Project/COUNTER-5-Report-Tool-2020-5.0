@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_addVendorDialog(object):
     def setupUi(self, addVendorDialog):
         addVendorDialog.setObjectName("addVendorDialog")
-        addVendorDialog.resize(600, 548)
+        addVendorDialog.resize(600, 608)
         font = QtGui.QFont()
         font.setPointSize(11)
         addVendorDialog.setFont(font)
@@ -101,10 +101,10 @@ class Ui_addVendorDialog(object):
         self.label_2.setText(_translate("addVendorDialog", "Customer ID"))
         self.label_3.setText(_translate("addVendorDialog", "Base URL"))
         self.label_7.setText(_translate("addVendorDialog", "Description"))
-        self.label_6.setText(_translate("addVendorDialog", "Platform (optional)"))
+        self.label_6.setText(_translate("addVendorDialog", "Platform"))
         self.label_9.setText(_translate("addVendorDialog", "External Companies"))
-        self.label_5.setText(_translate("addVendorDialog", "API Key (optional)"))
-        self.label_4.setText(_translate("addVendorDialog", "Requestor ID (oprtional)"))
+        self.label_5.setText(_translate("addVendorDialog", "API Key"))
+        self.label_4.setText(_translate("addVendorDialog", "Requestor ID"))
         self.label_8.setText(_translate("addVendorDialog", "Local Only Vendor"))
         self.url_validation_label.setText(_translate("addVendorDialog", "Validation label"))
 

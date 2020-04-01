@@ -10,17 +10,17 @@ Welcome to Libly's documentation!
    :maxdepth: 2
    :caption: Modules:
 
-   Costs
-   FetchData
-   GeneralUtils
-   ImportFile
-   MainDriver
-   ManageDB
-   ManageVendors
-   Search
-   Settings
-   VariableConstants
-   Visual
+   Constants.py
+   Costs.py
+   FetchData.py
+   GeneralUtils.py
+   ImportFile.py
+   MainDriver.py
+   ManageDB.py
+   ManageVendors.py
+   Search.py
+   Settings.py
+   Visual.py
 
 
 Indices and tables

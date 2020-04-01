@@ -119,7 +119,7 @@
          <enum>QFrame::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_13">
-         <item row="3" column="0" colspan="2">
+         <item row="4" column="0">
           <widget class="QFrame" name="frame_18">
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -150,13 +150,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="radioButton_4">
-              <property name="text">
-               <string>Line</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QRadioButton" name="radioButton_3">
               <property name="text">
                <string>Vertical Bar</string>
@@ -170,62 +163,10 @@
               </property>
              </widget>
             </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="4" column="0" colspan="2">
-          <widget class="QFrame" name="frame_17">
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_27">
             <item>
-             <widget class="QLabel" name="label_46">
+             <widget class="QRadioButton" name="radioButton_4">
               <property name="text">
-               <string>IMPORTANT</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_47">
-              <property name="text">
-               <string>Name must correspond to Report:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_48">
-              <property name="text">
-               <string>Examples :   Report is PR, Name must be a Platform</string>
-              </property>
-              <property name="indent">
-               <number>10</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_49">
-              <property name="text">
-               <string>Report is DR, Name must be a Database</string>
-              </property>
-              <property name="indent">
-               <number>85</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_50">
-              <property name="text">
-               <string>Report is TR, Name must be a Title</string>
-              </property>
-              <property name="indent">
-               <number>85</number>
+               <string>Line</string>
               </property>
              </widget>
             </item>
@@ -240,72 +181,40 @@
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
            </property>
-           <widget class="QLabel" name="label_8">
+           <widget class="QLabel" name="visual_name_label">
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>40</y>
+              <y>110</y>
               <width>97</width>
               <height>21</height>
              </rect>
             </property>
             <property name="text">
-             <string>Name *   :</string>
+             <string>Database</string>
             </property>
            </widget>
-           <widget class="QLineEdit" name="name_lineEdit">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>40</y>
-              <width>311</width>
-              <height>21</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_14">
+           <widget class="QLabel" name="visual_metric_parameter_label">
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>80</y>
+              <y>150</y>
               <width>213</width>
               <height>20</height>
              </rect>
             </property>
             <property name="text">
-             <string>Metric Type *   :</string>
+             <string>Metric Type </string>
             </property>
            </widget>
            <widget class="QComboBox" name="metric_Type_comboBox">
             <property name="geometry">
              <rect>
-              <x>110</x>
-              <y>80</y>
-              <width>311</width>
+              <x>90</x>
+              <y>150</y>
+              <width>331</width>
               <height>26</height>
              </rect>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_15">
-            <property name="geometry">
-             <rect>
-              <x>270</x>
-              <y>20</y>
-              <width>212</width>
-              <height>16</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Required fields*</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
             </property>
            </widget>
            <widget class="QLabel" name="label">
@@ -319,6 +228,131 @@
             </property>
             <property name="text">
              <string>Create Chart</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="visual_vendor_parameter_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>70</y>
+              <width>44</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Vendor</string>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="visual_vendor_parameter_combobox">
+            <property name="geometry">
+             <rect>
+              <x>90</x>
+              <y>70</y>
+              <width>331</width>
+              <height>26</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QComboBox" name="visual_name_parameter_combobox">
+            <property name="geometry">
+             <rect>
+              <x>90</x>
+              <y>110</y>
+              <width>331</width>
+              <height>28</height>
+             </rect>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QFrame" name="frame_options">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QLabel" name="label_46">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>183</width>
+              <height>15</height>
+             </rect>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial</family>
+             </font>
+            </property>
+            <property name="text">
+             <string>Options</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::AutoText</enum>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioButton_5">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>90</y>
+              <width>185</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Top 5</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioButton_6">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>120</y>
+              <width>185</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Top 10</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioButton_7">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>150</y>
+              <width>185</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Top 15</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="radioButton_8">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>185</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Default</string>
             </property>
            </widget>
           </widget>

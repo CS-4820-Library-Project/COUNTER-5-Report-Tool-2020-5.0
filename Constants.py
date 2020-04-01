@@ -366,8 +366,9 @@ COST_TABLE_SUFFIX = '_costs'
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
+FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
 FIELDS_NOT_IN_TOP_NUMBER_CHARTS = ('file', 'updated_on')
-COST_FIELDS_IN_CHARTS = ('cost_in_local_currency', 'cost_in_local_currency_with_tax')
+COST_FIELDS_IN_CHARTS = ('cost_in_local_currency_with_tax',)
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 
@@ -395,7 +396,6 @@ EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
 # region Variable Constants for FetchData
-SHOW_DEBUG_MESSAGES = False
 
 
 class MajorReportType(Enum):
