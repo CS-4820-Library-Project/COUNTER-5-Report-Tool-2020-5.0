@@ -2417,7 +2417,10 @@ class ReportWorker(QObject):
 
         file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
-        self.add_report_header_to_file(report_header, file, False)
+        if self.is_master:
+            self.add_report_header_to_file(report_header, file, False)
+        else:
+            self.add_report_header_to_file(report_header, file, True)
 
         if not self.add_report_rows_to_file(report_type, report_rows, file, False):
             self.process_result.completion_status = CompletionStatus.WARNING
@@ -2438,13 +2441,9 @@ class ReportWorker(QObject):
 
             protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
+            self.add_report_header_to_file(report_header, protected_file, True)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
 
-            if self.is_master:
-                self.add_report_header_to_file(report_header, protected_file, True)
-                self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
-            else:
-                self.add_report_header_to_file(report_header, protected_file, False)
-                self.add_report_rows_to_file(report_type, report_rows, protected_file, False)
             protected_file.close()
 
     def add_report_header_to_file(self, report_header: ReportHeaderModel, file, include_attributes: bool):
