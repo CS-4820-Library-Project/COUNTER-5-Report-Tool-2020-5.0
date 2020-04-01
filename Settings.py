@@ -1,7 +1,7 @@
 """This module handles all operations involving the user's settings."""
 
 import json
-from os.path import abspath
+from os import path
 from PyQt5.QtWidgets import QFileDialog, QWidget
 from ui import SettingsTab
 import ManageDB
@@ -55,8 +55,8 @@ class SettingsModel(JsonModel):
                  request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
                  user_agent: str, default_currency: str):
         self.show_debug_messages = show_debug_messages
-        self.yearly_directory = abspath(yearly_directory)
-        self.other_directory = abspath(other_directory)
+        self.yearly_directory = path.abspath(yearly_directory) + path.sep
+        self.other_directory = path.abspath(other_directory) + path.sep
         self.request_interval = request_interval
         self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
