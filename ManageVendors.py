@@ -358,13 +358,19 @@ class ManageVendorsController(QObject):
                         os.rename(original_folder_path, new_folder_path)
 
         if (os.path.exists(default_other_path)):
-            filesList = os.listdir(default_other_path)
+            original_folder_path = default_other_path + os.path.sep + original_name
+            new_folder_path = default_other_path + os.path.sep + new_name
 
-            for theFile in filesList:
-                if original_name in theFile:
-                    old_file_path = default_other_path + os.path.sep + theFile
-                    new_file_path = default_other_path + os.path.sep + theFile.replace(original_name, new_name)
+            if os.path.exists(original_folder_path):
+                filesList = os.listdir(original_folder_path)
+
+                for theFile in filesList:
+                    old_file_path = original_folder_path + os.path.sep + theFile
+                    new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                         new_name)
                     os.rename(old_file_path, new_file_path)
+
+                os.rename(original_folder_path, new_folder_path)
 
         if (os.path.exists(custom_year_path)):
             folderList = os.listdir(custom_year_path)
