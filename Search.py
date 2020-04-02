@@ -169,6 +169,8 @@ class SearchController:
         """Exports the current search parameters to the selected file"""
         file_name = choose_save(JSON_FILTER)
         if file_name != '':
+            if not file_name.lower().endswith('.dat'):
+                file_name += '.dat'
             report, start_year, end_year, search_parameters = self.get_search_parameters()
             file = open(file_name, 'w', encoding='utf-8-sig')
             if file.mode == 'w':
@@ -211,6 +213,8 @@ class SearchController:
 
         file_name = choose_save(TSV_FILTER)
         if file_name != '':
+            if not file_name.lower().endswith('.tsv'):
+                file_name += '.tsv'
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, sql_text, data)
