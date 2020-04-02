@@ -1998,6 +1998,8 @@ class ReportWorker(QObject):
                 attributes_to_show = "|".join(TITLE_REPORTS_ATTRIBUTES)
             elif major_report_type == MajorReportType.ITEM:
                 attributes_to_show = "|".join(ITEM_REPORTS_ATTRIBUTES)
+                request_query["include_parent_details"] = True
+                request_query["include_component_details"] = True
 
         if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
@@ -2793,6 +2795,12 @@ class ReportWorker(QObject):
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
             elif include_all_attributes:
+                column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date", "Parent_Article_Version",
+                                 "Parent_Data_Type", "Parent_DOI", "Parent_Proprietary_ID", "Parent_ISBN",
+                                 "Parent_Print_ISSN", "Parent_Online_ISSN", "Parent_URI"]
+                column_names += ["Component_Title", "Component_Authors", "Component_Publication_Date",
+                                 "Component_Data_Type", "Component_DOI", "Component_Proprietary_ID", "Component_ISBN",
+                                 "Component_Print_ISSN", "Component_Online_ISSN", "Component_URI"]
                 column_names.append("Data_Type")
                 column_names.append("YOP")
                 column_names.append("Access_Type")
@@ -2851,6 +2859,27 @@ class ReportWorker(QObject):
                         row_dict["Authors"] = row.authors
                         row_dict["Publication_Date"] = row.publication_date
                         row_dict["Article_version"] = row.article_version
+                        row_dict.update({"Parent_Title": row.parent_title,
+                                         "Parent_Authors": row.parent_authors,
+                                         "Parent_Publication_Date": row.parent_publication_date,
+                                         "Parent_Article_Version": row.parent_article_version,
+                                         "Parent_Data_Type": row.parent_data_type,
+                                         "Parent_DOI": row.parent_doi,
+                                         "Parent_Proprietary_ID": row.parent_proprietary_id,
+                                         "Parent_ISBN": row.parent_isbn,
+                                         "Parent_Print_ISSN": row.parent_print_issn,
+                                         "Parent_Online_ISSN": row.parent_online_issn,
+                                         "Parent_URI": row.parent_uri})
+                        row_dict.update({"Component_Title": row.component_title,
+                                         "Component_Authors": row.component_authors,
+                                         "Component_Publication_Date": row.component_publication_date,
+                                         "Component_Data_Type": row.component_data_type,
+                                         "Component_DOI": row.component_doi,
+                                         "Component_Proprietary_ID": row.component_proprietary_id,
+                                         "Component_ISBN": row.component_isbn,
+                                         "Component_Print_ISSN": row.component_print_issn,
+                                         "Component_Online_ISSN": row.component_online_issn,
+                                         "Component_URI": row.component_uri})
                         row_dict["Data_Type"] = row.data_type
                         row_dict["YOP"] = row.yop
                         row_dict["Access_Type"] = row.access_type
