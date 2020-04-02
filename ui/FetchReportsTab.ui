@@ -434,7 +434,7 @@
                      </datetime>
                     </property>
                     <property name="displayFormat">
-                     <string>MM</string>
+                     <string>MMM</string>
                     </property>
                    </widget>
                   </item>
@@ -502,7 +502,7 @@
                      </datetime>
                     </property>
                     <property name="displayFormat">
-                     <string>MM</string>
+                     <string>MMM</string>
                     </property>
                    </widget>
                   </item>
