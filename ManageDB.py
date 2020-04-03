@@ -60,12 +60,10 @@ def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
         if field['name'] not in FIELDS_NOT_IN_CHARTS:
             fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in COST_FIELDS:  # cost table fields
-        if field['name'] in COST_FIELDS_IN_CHARTS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'options': ()})
     for key in sorted(MONTHS):  # month columns
-        fields.append({'name': MONTHS[key], 'type': 'INTEGER',
-                       'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
-                           key) + ' THEN ' + 'metric' + ' END), 0)'})
+        fields.append({'name': MONTHS[key], 'type': 'INTEGER', 'options': ()})
     return tuple(fields)
 
 
@@ -76,16 +74,16 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     :returns: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
-    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options'],
-                   'source': report})
+    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_TOP_NUMBER_CHARTS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+        if field['name'] not in FIELDS_NOT_IN_CHARTS:
+            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
     for field in COST_FIELDS:  # cost table fields
-        if field['name'] in COST_FIELDS_IN_CHARTS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
-                           'source': report[:2] + COST_TABLE_SUFFIX})
-    fields.append({'name': RANKING, 'type': 'INTEGER', 'calculation': 'RANK() OVER(ORDER BY ' + 'metric' + ' DESC)'})
+        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+    fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'options': ()})
+    for key in sorted(MONTHS):  # month columns
+        fields.append({'name': MONTHS[key], 'type': 'INTEGER', 'options': ()})
+    fields.append({'name': RANKING, 'type': 'INTEGER', 'calculation': 'RANK() OVER(ORDER BY ' + YEAR_TOTAL + ' DESC)'})
     return tuple(fields)
 
 
@@ -498,7 +496,7 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     return sql_text, tuple(data)
 
 
-def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str) \
+def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str, vendor: str) \
         -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to search the database for chart data
 
@@ -507,6 +505,7 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     :param end_year: the ending year of the search
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
+    :param vendor: the vendor name you want to search for
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     sql_text = 'SELECT'
@@ -520,7 +519,8 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     clauses = [{'field': 'year', 'comparison': '>=', 'value': start_year},
                {'field': 'year', 'comparison': '<=', 'value': end_year},
                {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
-               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
+               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type},
+               {'field': 'vendor', 'comparison': 'LIKE', 'value': vendor}]
     clauses_texts = []
     data = []
     for clause in clauses:
@@ -531,15 +531,15 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     return sql_text, tuple(data)
 
 
-def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
-                                     number: int = None) -> Tuple[str, Sequence[Any]]:
+def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int, metric_type: str,
+                                     vendor: str = None, number: int = None) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to search the database for chart data
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
     :param end_year: the ending year of the search
-    :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
+    :param vendor: the vendor name you want to search for
     :param number: the number to show of the top months
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
@@ -552,25 +552,17 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     key_fields = []
     for field in chart_fields:
         if 'calculation' not in field.keys():
-            field_text = ''
-            if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
-                key_fields.append(field['name'])
-                field_text = report + '.'
-            field_text += field['name']
-            fields.append(field_text)
+            fields.append(field['name'])
         else:
             calcs.append(field['calculation'] + ' AS ' + field['name'])
     sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-    sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
-    join_clauses = []
-    for key_field in key_fields:
-        join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
-    sql_text += ' ON ' + ' AND '.join(join_clauses)
+    sql_text += '\nFROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
-    clauses = [{'field': report + '.' + 'year', 'comparison': '>=', 'value': start_year},
-               {'field': report + '.' + 'year', 'comparison': '<=', 'value': end_year},
-               {'field': report + '.' + name_field['name'], 'comparison': 'LIKE', 'value': name},
+    clauses = [{'field': 'year', 'comparison': '>=', 'value': start_year},
+               {'field': 'year', 'comparison': '<=', 'value': end_year},
                {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
+    if vendor:
+        clauses.append({'field': 'vendor', 'comparison': 'LIKE', 'value': vendor})
     clauses_texts = []
     data = []
     for clause in clauses:
@@ -741,7 +733,8 @@ def backup_costs_data(report_type: str):
 def test_chart_search():
     """temporary method to show how to use chart_search_sql_text"""
     headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
-    sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated')
+    sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated',
+                                           'EBSCO')
     print(sql_text)
     print(data)
     connection = create_connection(DATABASE_LOCATION)
@@ -756,8 +749,7 @@ def test_chart_search():
 def test_top_number_chart_search():
     """temporary method to show how to use top_number_chart_search_sql_text"""
     headers = tuple([field['name'] for field in get_top_number_chart_report_fields_list('DR_D1')])
-    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, '19th Century British Pamphlets',
-                                                      'Searches_Automated', 10)
+    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, 'Searches_Automated', 'EBSCO', 10)
     print(sql_text)
     print(data)
     connection = create_connection(DATABASE_LOCATION)
@@ -893,3 +885,5 @@ class UpdateDatabaseWorker(QObject):
             self.progress_changed_signal.emit(current)
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
+
+test_top_number_chart_search()
