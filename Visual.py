@@ -20,9 +20,6 @@ class VisualController:
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
         # set up report combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
-        self.calculation_parameter = visual_ui.calculation_type_combobox
-        self.calculation_parameter.addItems(CALCULATION_TYPE_ALL)
-        self.calculation_parameter.currentTextChanged[str].connect(self.on_calculation_parameter_changed)
         self.cost_parameter = visual_ui.cost_ratio_option_combobox
         self.cost_parameter.addItems(COST_TYPE_ALL)
         self.report_parameter.addItems(ALL_REPORTS)
@@ -47,6 +44,17 @@ class VisualController:
         self.v_bar_radio = visual_ui.radioButton_3
         self.line_radio = visual_ui.radioButton_4
         self.v_bar_radio.setChecked(True)
+
+        # set up calculations type radio buttons
+        self.monthly_radio = visual_ui.monthly_radioButton
+        self.yearly_radio = visual_ui.yearly_radioButton
+        self.topNum_radio = visual_ui.topnum_radioButton
+        self.costRatio_radio = visual_ui.costratio_radioButton
+        self.monthly_radio.setChecked(True)
+        self.monthly_radio.toggled.connect(self.on_calculation_type_changed)
+        self.yearly_radio.toggled.connect(self.on_calculation_type_changed)
+        self.topNum_radio.toggled.connect(self.on_calculation_type_changed)
+        self.costRatio_radio.toggled.connect(self.on_calculation_type_changed)
 
         # set up options radio buttons
 
@@ -108,15 +116,26 @@ class VisualController:
     #         self.metric.addItems(TITLE_REPORTS_METRIC)
     #         self.name_label.setText('Title')
 
-    def on_calculation_parameter_changed(self, text):
-        if text == 'Cost Ratio':
-            self.frame_cost.setEnabled(True)
-        else:
-            self.frame_cost.setEnabled(False)
-        if text == 'Top #':
+    # def on_calculation_parameter_changed(self, text):
+    #     if text == 'Cost Ratio':
+    #         self.frame_cost.setEnabled(True)
+    #     else:
+    #         self.frame_cost.setEnabled(False)
+    #     if text == 'Top #':
+    #         self.top_num_frame.setEnabled(True)
+    #     else:
+    #         self.top_num_frame.setEnabled(False)
+
+    def on_calculation_type_changed(self):
+        if self.topNum_radio.isChecked():
             self.top_num_frame.setEnabled(True)
-        else:
+            self.frame_cost.setEnabled(False)
+        if self.costRatio_radio.isChecked():
             self.top_num_frame.setEnabled(False)
+            self.frame_cost.setEnabled(True)
+        if self.monthly_radio.isChecked() or self.yearly_radio.isChecked():
+            self.top_num_frame.setEnabled(False)
+            self.frame_cost.setEnabled(False)
 
     def on_report_parameter_changed(self, text):
         # self.report_parameter = self.report_parameter.currentText()
@@ -168,8 +187,7 @@ class VisualController:
         name = self.name_combobox.currentText()
         # get metric
         metric = self.metric.currentText()
-        self.top_num = 0
-        print(self.calculation_parameter.currentText())
+        self.top_num = None
 
         message = ""
         message1 = ""
@@ -185,7 +203,7 @@ class VisualController:
             message = "To Create Chart Check the following: \n" + message
             self.messageDialog(message)
 
-        if self.calculation_parameter.currentText() == 'Monthly':
+        if self.monthly_radio.isChecked():
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
             print(sql_text)  # testing
@@ -206,7 +224,7 @@ class VisualController:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message4)
 
-        if self.calculation_parameter.currentText() == 'Top #':
+        if self.topNum_radio.isChecked():
             self.top_num = int(self.top_num_edit.text())
             #self.top_num = self.top_num.toInt()
         # if self.calculation_parameter.currentText() == 'Top 10':
@@ -214,7 +232,7 @@ class VisualController:
         # if self.calculation_parameter.currentText() == 'Top 15':
         #     self.top_num = 15
 
-        if self.calculation_parameter.currentText() == 'Top #':
+        if self.topNum_radio.isChecked():
             print(self.top_num) #testing
             sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric,
                                                                        self.top_num)

@@ -128,6 +128,9 @@
             <enum>QFrame::Raised</enum>
            </property>
            <widget class="QLabel" name="visual_name_label">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -200,6 +203,9 @@
             </property>
            </widget>
            <widget class="QComboBox" name="visual_name_parameter_combobox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>90</x>
@@ -368,14 +374,56 @@
              <enum>Qt::AutoText</enum>
             </property>
            </widget>
-           <widget class="QComboBox" name="calculation_type_combobox">
+           <widget class="QRadioButton" name="monthly_radioButton">
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>70</y>
-              <width>111</width>
-              <height>26</height>
+              <y>60</y>
+              <width>112</width>
+              <height>20</height>
              </rect>
+            </property>
+            <property name="text">
+             <string>Monthly</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="yearly_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>90</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Yearly</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="topnum_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>120</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Top #</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="costratio_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>150</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Cost Ratio</string>
             </property>
            </widget>
           </widget>
