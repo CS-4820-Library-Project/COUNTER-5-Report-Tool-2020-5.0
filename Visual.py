@@ -21,6 +21,7 @@ class VisualController:
         # set up report combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.cost_parameter = visual_ui.cost_ratio_option_combobox
+        COST_TYPE_ALL = ('Local Cost with Tax', 'Local Cost', 'Original Cost')
         self.cost_parameter.addItems(COST_TYPE_ALL)
         self.report_parameter.addItems(ALL_REPORTS)
         # self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
@@ -97,7 +98,7 @@ class VisualController:
         self.temp_results = []
         self.top_num = None
         self.results = None
-        ManageDB.test_chart_search()
+        #ManageDB.test_chart_search()
 
     def load_vendor_list(self, vendors: list):
         self.vendor.clear()
@@ -208,7 +209,7 @@ class VisualController:
             message = "To Create Chart Check the following: \n" + message
             self.messageDialog(message)
 
-        if self.monthly_radio.isChecked():
+        if self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked():
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
             print(sql_text)  # testing
@@ -223,9 +224,13 @@ class VisualController:
                 connection.close()
             else:
                 print('Error, no connection')
-            if len(self.results) > 1:
+            if len(self.results) > 1 and self.monthly_radio.isChecked():
                 self.process_default_data()
-            elif name != "" and start_year <= end_year:
+            if len(self.results) > 1 and self.yearly_radio.isChecked():
+                self.process_yearly_data()
+            if len(self.results) > 1 and self.costRatio_radio.isChecked():
+                self.process_cost_ratio_data()
+            if name != "" and start_year <= end_year and len(self.results) <= 1:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message4)
 
@@ -239,7 +244,7 @@ class VisualController:
 
         if self.topNum_radio.isChecked():
             print(self.top_num) #testing
-            sql_text, data = ManageDB.chart_top_number_search_sql_text(report, start_year, end_year, name, metric, self.top_num)
+            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor, self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
@@ -257,9 +262,6 @@ class VisualController:
                 message5 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message5)
 
-        #if self.calculation_parameter.currentText() == 'Yearly':
-
-        #if self.calculation_parameter.currentText() == 'Cost Ratio':
 
     def messageDialog(self, text):
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
@@ -275,18 +277,6 @@ class VisualController:
     def process_default_data(self):
         m = len(self.results)
         print(m)
-        # # if m == 1:
-        # #     message = "DATA NOT FOUND"
-        #     self.messageDialog(message)
-        # message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        # message_dialog_ui = MessageDialog.Ui_message_dialog()
-        # message_dialog_ui.setupUi(message_dialog)
-        #
-        # message_label = message_dialog_ui.message_label
-        # message_label.setText("PLEASE ENTER A VALID INPUT")
-        #
-        # message_dialog.exec_()
-
         self.legendEntry = []  # legend entry data
         for i in range(1, m):
             print(self.results[i][3])
@@ -298,9 +288,75 @@ class VisualController:
             data1 = []
             print(self.results[i])
             n = len(self.results[i])
-            for j in range(4, n):
+            for j in range(9, n):#from jan to dec only
                 data1.append(self.results[i][j])
             self.data.append(data1)
+        # testing to make sure its working good
+        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
+        print(self.data[1])
+        # print(self.data[2])
+        print(len(self.data))
+        self.chart_type()
+
+    def process_yearly_data(self):
+        m = len(self.results)
+        self.legendEntry = []  # legend entry data
+        self.legendEntry.append(self.results[0][8])
+
+        # data is an array with the sorted usage figures
+        self.data = []
+        data1 = []
+        data2 = []
+        for i in range(1, m):
+            data1.append(self.results[i][3])
+        self.data.append(data1)
+        for i in range(1, m):
+            data2.append(self.results[i][8])
+        self.data.append(data2)
+
+        # testing to make sure its working good
+        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
+        print(self.data[1])
+        # print(self.data[2])
+        print(len(self.data))
+        self.chart_type()
+
+    def process_cost_ratio_data(self):
+        m = len(self.results)
+        self.legendEntry = []  # legend entry data
+
+        # data is an array with the sorted usage figures
+        self.data = []
+        data1 = []
+        data2 = []
+        for i in range(1, m):
+            data1.append(self.results[i][3])
+        self.data.append(data1)
+        if self.cost_parameter.currentText() == 'Local Cost with Tax':
+            self.legendEntry.append('Local Cost with Tax Per Metric')
+            for i in range(1, m):
+                cost = self.results[i][7]
+                if self.results[i][7] is None:
+                    cost = 0
+                data2.append(cost/self.results[i][8])
+            self.data.append(data2)
+        if self.cost_parameter.currentText() == 'Local Cost':
+            self.legendEntry.append('Local Cost Per Metric')
+            for i in range(1, m):
+                cost = self.results[i][6]
+                if self.results[i][6] is None:
+                    cost = 0
+                data2.append(cost/self.results[i][8])
+            self.data.append(data2)
+        if self.cost_parameter.currentText() == 'Original Cost':
+            self.legendEntry.append('Original Cost Per Metric')
+            for i in range(1, m):
+                cost = self.results[i][4]
+                if self.results[i][4] is None:
+                    cost = 0
+                data2.append(cost/self.results[i][8])
+            self.data.append(data2)
+
         # testing to make sure its working good
         print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
         print(self.data[1])
@@ -317,33 +373,41 @@ class VisualController:
         self.legendEntry = []  # legend entry data
         self.legendEntry.append(self.results[0][21])
         self.legendEntry.append(self.results[0][22])
-        for i in range(1,m):
+        for i in range(1, m):
             self.temp_results.append(self.results[i])
+        print(len(self.temp_results))
         print(self.temp_results)
         self.temp_results = sorted(self.temp_results, key=itemgetter(22))
         print(self.temp_results)
+        n = len(self.temp_results)
 
         # data is an array with the sorted usage figures
         self.data = []
         data1 = []
         data2 = []
         data3 = []
-        for i in range(0, m-1):#get database
+        for i in range(0, n):#get database
             data = self.temp_results[i][0]
             #print(data)
             # data = self.results[i][4]
+            if n == 1:
+                data1.append(data)
             if self.temp_results[i][0] != self.temp_results[i-1][0]:
                 data1.append(data)
         self.data.append(data1)
-        for i in range(0, m-1):#get reporting total
+        for i in range(0, n):#get reporting total
             #print(self.results[i])
             metri = self.temp_results[i][21]
+            if n == 1:
+                data2.append(metri)
             if self.temp_results[i][21] != self.temp_results[i-1][21]:
                 data2.append(metri)
         self.data.append(data2)
-        for i in range(0, m-1):#
+        for i in range(0, n):#
             #print(self.results[i])
             rank = self.temp_results[i][22]
+            if n == 1:
+                data3.append(rank)
             if self.temp_results[i][22] != self.temp_results[i - 1][22]:
                 data3.append(rank)
         self.data.append(data3)
