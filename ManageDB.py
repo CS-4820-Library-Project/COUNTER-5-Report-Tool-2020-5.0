@@ -93,8 +93,8 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')',
                    SOURCE_KEY: 'totals'})
     fields.append(
-        {NAME_KEY: RANKING, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'RANK() OVER(ORDER BY ' + 'total_of_' + YEAR_TOTAL
-                                                                  + ' DESC)', SOURCE_KEY: 'joined'})
+        {NAME_KEY: RANKING, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'RANK() OVER(ORDER BY ' + 'SUM(' + YEAR_TOTAL + ')'
+                                                                  + ' DESC)', SOURCE_KEY: 'totals'})
     return tuple(fields)
 
 
@@ -561,18 +561,12 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
                                                   if field[SOURCE_KEY] == 'data'])
     sql_text += ',\n\t' + ',\n\t'.join(['totals.' + field[NAME_KEY] for field in chart_fields
                                         if field[SOURCE_KEY] == 'totals'])
-    joined_fields = []
     data_fields = []
     totals_fields = [name_field[NAME_KEY]] + list(CHART_KEY_FIELDS)
     key_fields = []
     for field in chart_fields:
         if field[NAME_KEY] in CHART_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
             key_fields.append(field[NAME_KEY])
-        if field[SOURCE_KEY] == 'joined':
-            if CALCULATION_KEY not in field.keys():
-                joined_fields.append(field[NAME_KEY])
-            else:
-                joined_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
         if field[SOURCE_KEY] == 'data':
             if CALCULATION_KEY not in field.keys():
                 data_fields.append(field[NAME_KEY])
@@ -583,7 +577,6 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
                 totals_fields.append(field[NAME_KEY])
             else:
                 totals_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
-    sql_text += ',\n\t' + ',\n\t'.join(joined_fields)
     sql_text += '\nFROM \n\t(SELECT ' + ', '.join(data_fields)
     sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
     sql_text += '\n\tWHERE'
@@ -925,6 +918,3 @@ class UpdateDatabaseWorker(QObject):
             self.progress_changed_signal.emit(current)
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
-
-
-test_top_number_chart_search()
