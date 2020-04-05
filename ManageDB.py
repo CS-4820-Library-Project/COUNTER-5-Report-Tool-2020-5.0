@@ -17,10 +17,10 @@ def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
-        if report in field['reports']:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        if report in field[REPORTS_KEY]:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     return tuple(fields)
 
 
@@ -32,19 +32,22 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     fields = []
     for field in report_fields:  # fields specific to this report
-        if report in field['reports']:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+        if report in field[REPORTS_KEY]:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+                           SOURCE_KEY: report})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_VIEWS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'], 'source': report})
+        if field[NAME_KEY] not in FIELDS_NOT_IN_VIEWS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+                           SOURCE_KEY: report})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options'],
-                       'source': report[:2] + COST_TABLE_SUFFIX})
-    fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'calculation': 'SUM(' + 'metric' + ')'})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+                       SOURCE_KEY: report[:2] + COST_TABLE_SUFFIX})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + 'metric' + ')',
+                   SOURCE_KEY: 'joined'})
     for key in sorted(MONTHS):  # month columns
-        fields.append({'name': MONTHS[key], 'type': 'INTEGER',
-                       'calculation': 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
-                           key) + ' THEN ' + 'metric' + ' END), 0)'})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER',
+                       CALCULATION_KEY: 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
+                           key) + ' THEN ' + 'metric' + ' END), 0)', SOURCE_KEY: 'joined'})
     return tuple(fields)
 
 
@@ -55,15 +58,16 @@ def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     :returns: list of fields in this report's chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
-    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
+    fields.append(
+        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY], OPTIONS_KEY: name_field[OPTIONS_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_CHARTS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
-    fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'options': ()})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
     for key in sorted(MONTHS):  # month columns
-        fields.append({'name': MONTHS[key], 'type': 'INTEGER', 'options': ()})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
     return tuple(fields)
 
 
@@ -74,16 +78,23 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     :returns: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
-    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
+    fields.append({NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY], OPTIONS_KEY: name_field[OPTIONS_KEY],
+                   SOURCE_KEY: 'data'})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] not in FIELDS_NOT_IN_CHARTS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+                           SOURCE_KEY: 'data'})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
-    fields.append({'name': YEAR_TOTAL, 'type': 'INTEGER', 'options': ()})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+                       SOURCE_KEY: 'data'})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
     for key in sorted(MONTHS):  # month columns
-        fields.append({'name': MONTHS[key], 'type': 'INTEGER', 'options': ()})
-    fields.append({'name': RANKING, 'type': 'INTEGER', 'calculation': 'RANK() OVER(ORDER BY ' + YEAR_TOTAL + ' DESC)'})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
+    fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')',
+                   SOURCE_KEY: 'totals'})
+    fields.append(
+        {NAME_KEY: RANKING, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'RANK() OVER(ORDER BY ' + 'total_of_' + YEAR_TOTAL
+                                                                  + ' DESC)', SOURCE_KEY: 'joined'})
     return tuple(fields)
 
 
@@ -94,12 +105,13 @@ def get_cost_fields_list(report_type: str) -> Sequence[Dict[str, Any]]:
     :returns: list of fields in this report type's cost table"""
     fields = []
     name_field = get_field_attributes(report_type, NAME_FIELD_SWITCHER[report_type])  # name field only
-    fields.append({'name': name_field['name'], 'type': name_field['type'], 'options': name_field['options']})
+    fields.append(
+        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY], OPTIONS_KEY: name_field[OPTIONS_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field['name'] in COSTS_KEY_FIELDS:
-            fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        if field[NAME_KEY] in COSTS_KEY_FIELDS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({'name': field['name'], 'type': field['type'], 'options': field['options']})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     return tuple(fields)
 
 
@@ -111,14 +123,14 @@ def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], 
     :returns: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
     for field in report_fields:
-        if field['name'] == field_name:
-            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+        if field[NAME_KEY] == field_name:
+            return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
     for field in ALL_REPORT_FIELDS:
-        if field['name'] == field_name:
-            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+        if field[NAME_KEY] == field_name:
+            return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
     for field in COST_FIELDS:
-        if field['name'] == field_name:
-            return {'name': field['name'], 'type': field['type'], 'options': field['options']}
+        if field[NAME_KEY] == field_name:
+            return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
     return None
 
 
@@ -132,12 +144,12 @@ def create_table_sql_texts(report: str) -> str:
     fields_and_options = []
     key_fields = []
     for field in report_fields:
-        field_text = field['name'] + ' ' + field['type']
-        if field['options']:
-            field_text += ' ' + ' '.join(field['options'])
+        field_text = field[NAME_KEY] + ' ' + field[TYPE_KEY]
+        if field[OPTIONS_KEY]:
+            field_text += ' ' + ' '.join(field[OPTIONS_KEY])
         fields_and_options.append(field_text)
-        if field['name'] not in FIELDS_NOT_IN_KEYS:
-            key_fields.append(field['name'])
+        if field[NAME_KEY] not in FIELDS_NOT_IN_KEYS:
+            key_fields.append(field[NAME_KEY])
     sql_text += '\n\t' + ', \n\t'.join(fields_and_options) + ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
     return sql_text
 
@@ -154,15 +166,15 @@ def create_view_sql_texts(report: str) -> str:
     calcs = []
     key_fields = []
     for field in report_fields:
-        if 'calculation' not in field.keys():
+        if CALCULATION_KEY not in field.keys():
             field_text = ''
-            if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
-                key_fields.append(field['name'])
+            if field[NAME_KEY] in COSTS_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
+                key_fields.append(field[NAME_KEY])
                 field_text = report + '.'
-            field_text += field['name']
+            field_text += field[NAME_KEY]
             fields.append(field_text)
         else:
-            calcs.append(field['calculation'] + ' AS ' + field['name'])
+            calcs.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
     sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
     sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
     join_clauses = []
@@ -184,12 +196,12 @@ def create_cost_table_sql_texts(report_type: str) -> str:
     fields_and_options = []
     key_fields = []
     for field in report_fields:
-        field_text = field['name'] + ' ' + field['type']
-        if field['options']:
-            field_text += ' ' + ' '.join(field['options'])
+        field_text = field[NAME_KEY] + ' ' + field[TYPE_KEY]
+        if field[OPTIONS_KEY]:
+            field_text += ' ' + ' '.join(field[OPTIONS_KEY])
         fields_and_options.append(field_text)
-        if field['name'] in COSTS_KEY_FIELDS or field['name'] == name_field['name']:
-            key_fields.append(field['name'])
+        if field[NAME_KEY] in COSTS_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
+            key_fields.append(field[NAME_KEY])
     sql_text += '\n\t' + ', \n\t'.join(fields_and_options)
     sql_text += ',\n\tPRIMARY KEY(' + ', '.join(key_fields) + '));'
     return sql_text
@@ -209,7 +221,7 @@ def replace_sql_text(file_name: str, report: str, data: Sequence[Dict[str, Any]]
     report_fields = get_report_fields_list(report)
     fields = []
     for field in report_fields:
-        fields.append(field['name'])
+        fields.append(field[NAME_KEY])
     sql_replace_text += ', '.join(fields) + ')'
     sql_replace_text += '\nVALUES'
     placeholders = ['?'] * len(fields)
@@ -285,7 +297,7 @@ def replace_costs_sql_text(report_type: str, data: Sequence[Dict[str, Any]]) -> 
     report_fields = get_cost_fields_list(report_type)
     fields = []
     for field in report_fields:
-        fields.append(field['name'])
+        fields.append(field[NAME_KEY])
     sql_text += ', '.join(fields) + ')'
     sql_text += '\nVALUES'
     placeholders = ['?'] * len(fields)
@@ -476,8 +488,8 @@ def search_sql_text(report: str, start_year: int, end_year: int,
         for it"""
     sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
-    clauses = [[{'field': 'year', 'comparison': '>=', 'value': start_year}],
-               [{'field': 'year', 'comparison': '<=', 'value': end_year}]]
+    clauses = [[{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year}],
+               [{FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year}]]
     clauses.extend(search_parameters)
     print(clauses)
     clauses_texts = []
@@ -485,10 +497,10 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     for clause in clauses:
         sub_clauses_text = []
         for sub_clause in clause:
-            current_text = sub_clause['field'] + ' ' + sub_clause['comparison']
-            if sub_clause['comparison'] not in NON_COMPARISONS:
+            current_text = sub_clause[FIELD_KEY] + ' ' + sub_clause[COMPARISON_KEY]
+            if sub_clause[COMPARISON_KEY] not in NON_COMPARISONS:
                 current_text += ' ?'
-                data.append(sub_clause['value'])
+                data.append(sub_clause[VALUE_KEY])
             sub_clauses_text.append(current_text)
         clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
@@ -512,20 +524,20 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     chart_fields = get_chart_report_fields_list(report)
     fields = []
     for field in chart_fields:
-        fields.append(field['name'])
+        fields.append(field[NAME_KEY])
     sql_text += '\n\t' + ', '.join(fields)
     sql_text += '\nFROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
-    clauses = [{'field': 'year', 'comparison': '>=', 'value': start_year},
-               {'field': 'year', 'comparison': '<=', 'value': end_year},
-               {'field': chart_fields[0]['name'], 'comparison': 'LIKE', 'value': name},
-               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type},
-               {'field': 'vendor', 'comparison': 'LIKE', 'value': vendor}]
+    clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+               {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
+               {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
+               {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},
+               {FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor}]
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
-        data.append(clause['value'])
+        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        data.append(clause[VALUE_KEY])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
     sql_text += ';'
     return sql_text, tuple(data)
@@ -544,32 +556,60 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
-    sql_text = 'SELECT * FROM ('
-    sql_text += '\nSELECT'
     chart_fields = get_top_number_chart_report_fields_list(report)
-    fields = []
-    calcs = []
+    sql_text = 'SELECT ' + '\n\t' + ',\n\t'.join(['data.' + field[NAME_KEY] for field in chart_fields
+                                                  if field[SOURCE_KEY] == 'data'])
+    sql_text += ',\n\t' + ',\n\t'.join(['totals.' + field[NAME_KEY] for field in chart_fields
+                                        if field[SOURCE_KEY] == 'totals'])
+    joined_fields = []
+    data_fields = []
+    totals_fields = [name_field[NAME_KEY]] + list(CHART_KEY_FIELDS)
     key_fields = []
     for field in chart_fields:
-        if 'calculation' not in field.keys():
-            fields.append(field['name'])
-        else:
-            calcs.append(field['calculation'] + ' AS ' + field['name'])
-    sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-    sql_text += '\nFROM ' + report + VIEW_SUFFIX
-    sql_text += '\nWHERE'
-    clauses = [{'field': 'year', 'comparison': '>=', 'value': start_year},
-               {'field': 'year', 'comparison': '<=', 'value': end_year},
-               {'field': 'metric_type', 'comparison': 'LIKE', 'value': metric_type}]
+        if field[NAME_KEY] in CHART_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
+            key_fields.append(field[NAME_KEY])
+        if field[SOURCE_KEY] == 'joined':
+            if CALCULATION_KEY not in field.keys():
+                joined_fields.append(field[NAME_KEY])
+            else:
+                joined_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+        if field[SOURCE_KEY] == 'data':
+            if CALCULATION_KEY not in field.keys():
+                data_fields.append(field[NAME_KEY])
+            else:
+                data_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+        if field[SOURCE_KEY] == 'totals':
+            if CALCULATION_KEY not in field.keys():
+                totals_fields.append(field[NAME_KEY])
+            else:
+                totals_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+    sql_text += ',\n\t' + ',\n\t'.join(joined_fields)
+    sql_text += '\nFROM \n\t(SELECT ' + ', '.join(data_fields)
+    sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
+    sql_text += '\n\tWHERE'
+    clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+               {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
+               {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type}]
     if vendor:
-        clauses.append({'field': 'vendor', 'comparison': 'LIKE', 'value': vendor})
+        clauses.append({FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor})
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause['field'] + ' ' + clause['comparison'] + ' ?')
-        data.append(clause['value'])
-    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
-    sql_text += ')'
+        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        data.append(clause[VALUE_KEY])
+    sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
+    sql_text += ') AS ' + 'data' + ' JOIN '
+    sql_text += '\n\t(SELECT ' + ', '.join(totals_fields)
+    sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
+    sql_text += '\n\tWHERE'
+    sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
+    sql_text += '\n\tGROUP BY ' + ', '.join(key_fields)
+    data += data
+    sql_text += ') AS ' + 'totals'
+    join_clauses = []
+    for key_field in key_fields:
+        join_clauses.append('data.' + key_field + ' = ' + 'totals.' + key_field)
+    sql_text += ' ON ' + ' AND '.join(join_clauses)
     if number is not None:
         sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
         data.append(number)
@@ -604,7 +644,7 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
     name_field = NAME_FIELD_SWITCHER[report_type]
     values = []
     sql_text = 'SELECT'
-    fields = [field['name'] for field in COST_FIELDS]
+    fields = [field[NAME_KEY] for field in COST_FIELDS]
     sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
     sql_text += '\nWHERE '
     sql_text += '\n\t' + 'vendor' + ' = ?'
@@ -714,7 +754,7 @@ def backup_costs_data(report_type: str):
     if connection is not None:
         headers = []
         for field in get_cost_fields_list(report_type):
-            headers.append(field['name'])
+            headers.append(field[NAME_KEY])
         sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
         sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
         print(sql_text)
@@ -732,7 +772,7 @@ def backup_costs_data(report_type: str):
 
 def test_chart_search():
     """temporary method to show how to use chart_search_sql_text"""
-    headers = tuple([field['name'] for field in get_chart_report_fields_list('DR_D1')])
+    headers = tuple([field[NAME_KEY] for field in get_chart_report_fields_list('DR_D1')])
     sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated',
                                            'EBSCO')
     print(sql_text)
@@ -748,7 +788,7 @@ def test_chart_search():
 
 def test_top_number_chart_search():
     """temporary method to show how to use top_number_chart_search_sql_text"""
-    headers = tuple([field['name'] for field in get_top_number_chart_report_fields_list('DR_D1')])
+    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('DR_D1')])
     sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, 'Searches_Automated', 'EBSCO', 10)
     print(sql_text)
     print(data)
@@ -885,5 +925,6 @@ class UpdateDatabaseWorker(QObject):
             self.progress_changed_signal.emit(current)
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
+
 
 test_top_number_chart_search()
