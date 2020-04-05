@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import json
+from _operator import itemgetter
 
 import xlsxwriter
 from datetime import date
@@ -72,8 +73,10 @@ class VisualController:
         self.vertical_axis_edit = visual_ui.vertical_axis_lineEdit
 
         self.data = []
+        self.temp_results = []
         self.top_num = None
         self.results = None
+        ManageDB.test_chart_search()
 
     def load_vendor_list(self, vendors: list):
         self.vendor.clear()
@@ -144,7 +147,10 @@ class VisualController:
         name = self.name_combobox.currentText()
         # get metric
         metric = self.metric.currentText()
+        #get vendor
+        vendor = self.vendor.currentText()
 
+        self.temp_results =[]
         message = ""
         message1 = ""
         message2 = ""
@@ -161,7 +167,7 @@ class VisualController:
 
         if self.default.isChecked():
             # sql query to get search results
-            sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric)
+            sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
             print(sql_text)  # testing
             headers = tuple([field['name'] for field in ManageDB.get_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
@@ -188,7 +194,7 @@ class VisualController:
             self.top_num = 15
 
         if self.top_num != None:
-            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, name, metric,
+            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
@@ -256,33 +262,42 @@ class VisualController:
 
     def process_top_X_data(self):
         m = len(self.results)
+        print("Im here")
+        print(m)
+        print(self.results)
 
         self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.results[0][5])
-        self.legendEntry.append(self.results[0][7])
+        self.legendEntry.append(self.results[0][21])
+        self.legendEntry.append(self.results[0][22])
+        for i in range(1,m):
+            self.temp_results.append(self.results[i])
+        print(self.temp_results)
+        self.temp_results = sorted(self.temp_results, key=itemgetter(22))
+        print(self.temp_results)
 
         # data is an array with the sorted usage figures
         self.data = []
         data1 = []
         data2 = []
         data3 = []
-        for i in range(1, m):
-            a = str(calendar.month_name[self.results[i][4]])
-            b = str(self.results[i][3])
-            data = a + '-' + b
-            print(data)
+        for i in range(0, m-1):#get database
+            data = self.temp_results[i][0]
+            #print(data)
             # data = self.results[i][4]
-            data1.append(data)
+            if self.temp_results[i][0] != self.temp_results[i-1][0]:
+                data1.append(data)
         self.data.append(data1)
-        for i in range(1, m):
-            print(self.results[i])
-            metri = self.results[i][5]
-            data2.append(metri)
+        for i in range(0, m-1):#get reporting total
+            #print(self.results[i])
+            metri = self.temp_results[i][21]
+            if self.temp_results[i][21] != self.temp_results[i-1][21]:
+                data2.append(metri)
         self.data.append(data2)
-        for i in range(1, m):
-            print(self.results[i])
-            rank = self.results[i][7]
-            data3.append(rank)
+        for i in range(0, m-1):#
+            #print(self.results[i])
+            rank = self.temp_results[i][22]
+            if self.temp_results[i][22] != self.temp_results[i - 1][22]:
+                data3.append(rank)
         self.data.append(data3)
         # testing to make sure its working good
         print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
