@@ -4,6 +4,7 @@ import subprocess
 import platform
 from os import path, makedirs, system
 from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
+from PyQt5.QtCore import QDate
 
 
 class JsonModel:
@@ -80,10 +81,6 @@ def choose_directory() -> str:
     return dir_path
 
 
-def open_in_browser(url: str):
-    webbrowser.open_new_tab(url)
-
-
 def choose_save(name_filters) -> str:
     file_path = ""
     dialog = QFileDialog()
@@ -94,3 +91,31 @@ def choose_save(name_filters) -> str:
         file_path = dialog.selectedFiles()[0]
 
     return file_path
+
+
+def open_in_browser(url: str):
+    webbrowser.open_new_tab(url)
+
+
+def get_yearly_file_dir(base_path: str, vendor_name: str, begin_date: QDate) -> str:
+    return f"{base_path}{begin_date.toString('yyyy')}/{vendor_name}/"
+
+
+def get_yearly_file_name(vendor_name: str, report_type: str, begin_date: QDate) -> str:
+    return f"{begin_date.toString('yyyy')}_{vendor_name}_{report_type}.tsv"
+
+
+def get_special_file_dir(base_path: str, vendor_name: str) -> str:
+    return f"{base_path}{vendor_name}/special/"
+
+
+def get_special_file_name(vendor_name: str, report_type: str, begin_date: QDate, end_date: QDate) -> str:
+    return f"{vendor_name}_{report_type}_{begin_date.toString('yyyy-MMM')}_{end_date.toString('yyyy-MMM')}_S.tsv"
+
+
+def get_other_file_dir(base_path: str, vendor_name: str) -> str:
+    return f"{base_path}{vendor_name}/"
+
+
+def get_other_file_name(vendor_name: str, report_type: str, begin_date: QDate, end_date: QDate) -> str:
+    return f"{vendor_name}_{report_type}_{begin_date.toString('yyyy-MMM')}_{end_date.toString('yyyy-MMM')}.tsv"
