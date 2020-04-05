@@ -1470,37 +1470,28 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
         for i in range(len(special_options)):
             option_name = special_options[i][1]
-            label = QLabel(option_name, self.options_frame)
+            checkbox = QCheckBox(option_name, self.options_frame)
+            checkbox.toggled.connect(
+                lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
+            self.options_layout.addWidget(checkbox, i, 0)
 
             option_type: SpecialOptionType = special_options[i][0]
-            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS:
+            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS\
+                    or option_type == SpecialOptionType.ADP:
                 line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
                 line_edit.setReadOnly(True)
                 button = QPushButton("Choose", self.options_frame)
-                button.clicked.connect(
-                    lambda c, so=special_options[i], edit=line_edit: self.on_special_parameter_option_button_clicked(so, edit))
+                if option_type == SpecialOptionType.ADP:
+                    button.clicked.connect(
+                        lambda c, so=special_options[i], edit=line_edit:
+                        self.on_special_date_parameter_option_button_clicked(so, edit))
+                else:
+                    button.clicked.connect(
+                        lambda c, so=special_options[i], edit=line_edit:
+                        self.on_special_parameter_option_button_clicked(so, edit))
 
                 self.options_layout.addWidget(line_edit, i, 1)
                 self.options_layout.addWidget(button, i, 2)
-
-            elif option_type == SpecialOptionType.ADP:
-                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
-                line_edit.setReadOnly(True)
-                button = QPushButton("Choose", self.options_frame)
-                button.clicked.connect(
-                    lambda c, so=special_options[i], edit=line_edit: self.on_special_date_parameter_option_button_clicked(so, edit))
-
-                self.options_layout.addWidget(line_edit, i, 1)
-                self.options_layout.addWidget(button, i, 2)
-
-            else:
-                checkbox = QCheckBox(self.options_frame)
-                checkbox.toggled.connect(
-                    lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
-
-                self.options_layout.addWidget(checkbox, i, 1)
-
-            self.options_layout.addWidget(label, i, 0)
 
     def on_special_option_toggled(self, option: str, is_checked: bool):
         """Handles the signal emitted when a special option is checked or un-checked
@@ -1519,7 +1510,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         :param line_edit: The line edit to show the selected parameters for this option
         """
         option_type, option_name, option_list = special_option
-        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
+        is_selected, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
 
         dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
@@ -1548,10 +1539,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                     checked_list.append(model.item(i).text())
 
             if len(checked_list) == 0:
-                is_selected = False
                 checked_list = [DEFAULT_SPECIAL_OPTION_VALUE]
-            else:
-                is_selected = True
+
             line_edit.setText("|".join(checked_list))
             self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, checked_list))
             dialog.close()
@@ -1571,7 +1560,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         :param line_edit: The line edit to show the selected date parameters for this option
         """
         option_type, option_name = special_option
-        __, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
+        is_selected, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
 
         dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
@@ -1626,14 +1615,10 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
         def on_ok_button_clicked():
             new_selection = [DEFAULT_SPECIAL_OPTION_VALUE]
-            is_selected = False
-
             checked_button = radio_button_group.checkedButton()
             if checked_button == single_date_radio_btn:
-                is_selected = True
                 new_selection = [single_date_edit.date().toString("yyyy")]
             elif checked_button == range_date_radio_btn:
-                is_selected = True
                 new_selection = [begin_date_edit.date().toString("yyyy") + "-" + end_date_edit.date().toString("yyyy")]
 
             line_edit.setText(new_selection[0])
