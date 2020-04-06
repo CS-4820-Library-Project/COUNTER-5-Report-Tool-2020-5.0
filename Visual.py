@@ -98,7 +98,7 @@ class VisualController:
         self.temp_results = []
         self.top_num = None
         self.results = None
-        #ManageDB.test_chart_search()
+        #ManageDB.test_top_number_chart_search()
 
     def load_vendor_list(self, vendors: list):
         self.vendor.clear()
@@ -369,6 +369,7 @@ class VisualController:
         print("Im here")
         print(m)
         print(self.results)
+        self.temp_results = []
 
         self.legendEntry = []  # legend entry data
         self.legendEntry.append(self.results[0][21])
@@ -386,29 +387,32 @@ class VisualController:
         data1 = []
         data2 = []
         data3 = []
-        for i in range(0, n):#get database
+
+        data = self.temp_results[0][0]
+        data1.append(data)
+        for i in range(1, n):#get database
             data = self.temp_results[i][0]
             #print(data)
             # data = self.results[i][4]
-            if n == 1:
-                data1.append(data)
-            if self.temp_results[i][0] != self.temp_results[i-1][0]:
+            if data != self.temp_results[i-1][0]:
                 data1.append(data)
         self.data.append(data1)
-        for i in range(0, n):#get reporting total
+
+        metri = self.temp_results[0][21]
+        data2.append(metri)
+        for i in range(1, n):#get reporting total
             #print(self.results[i])
             metri = self.temp_results[i][21]
-            if n == 1:
-                data2.append(metri)
-            if self.temp_results[i][21] != self.temp_results[i-1][21]:
+            if metri != self.temp_results[i-1][21]:
                 data2.append(metri)
         self.data.append(data2)
-        for i in range(0, n):#
+
+        rank = self.temp_results[0][22]
+        data3.append(rank)
+        for i in range(1, n):#
             #print(self.results[i])
             rank = self.temp_results[i][22]
-            if n == 1:
-                data3.append(rank)
-            if self.temp_results[i][22] != self.temp_results[i - 1][22]:
+            if rank != self.temp_results[i-1][22]:
                 data3.append(rank)
         self.data.append(data3)
         # testing to make sure its working good
