@@ -18,24 +18,25 @@ from Constants import *
 
 class VisualController:
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
-        # set up report combobox
+        # set up and configure report type combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
+        self.report_parameter.addItems(ALL_REPORTS)
+        self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
+
+        # set up and configure cost ratio combobox
         self.cost_parameter = visual_ui.cost_ratio_option_combobox
         COST_TYPE_ALL = ('Local Cost with Tax', 'Local Cost', 'Original Cost')
         self.cost_parameter.addItems(COST_TYPE_ALL)
-        self.report_parameter.addItems(ALL_REPORTS)
-        # self.report_parameter.activated[str].connect(self.on_report_type_combo_activated)
-        self.report_parameter.currentTextChanged[str].connect(self.on_report_parameter_changed)
 
-        # set up cost ratio frame
+        # set up and configure cost ratio frame
         self.frame_cost = visual_ui.edit_cost_ratio_frame
         self.frame_cost.setEnabled(False)
 
-        # set up top num frame
+        # set up and configure top num frame
         self.top_num_frame = visual_ui.edit_top_num_frame
         self.top_num_frame.setEnabled(False)
 
-        # set up top num spinbox
+        # set up top num spinbox and configure lower and upper bounds
         self.top_num_edit = visual_ui.top_num_spinbox
         self.top_num_edit.setMaximum(15)
         self.top_num_edit.setMinimum(1)
@@ -51,13 +52,13 @@ class VisualController:
         self.yearly_radio = visual_ui.yearly_radioButton
         self.topNum_radio = visual_ui.topnum_radioButton
         self.costRatio_radio = visual_ui.costratio_radioButton
+
+        # configure calculation type radio buttons and connect with method
         self.monthly_radio.setChecked(True)
         self.monthly_radio.toggled.connect(self.on_calculation_type_changed)
         self.yearly_radio.toggled.connect(self.on_calculation_type_changed)
         self.topNum_radio.toggled.connect(self.on_calculation_type_changed)
         self.costRatio_radio.toggled.connect(self.on_calculation_type_changed)
-
-        # set up options radio buttons
 
         # set up start year dateedit
         self.start_year_parameter = visual_ui.search_start_year_parameter_dateedit_2
@@ -67,7 +68,10 @@ class VisualController:
         self.end_year_parameter = visual_ui.search_end_year_parameter_dateedit_2
         self.end_year_parameter.setDate(date.today())
 
+        # set up name label
         self.name_label = visual_ui.visual_name_label
+
+        # set up name combobox
         self.name_combobox = visual_ui.visual_name_parameter_combobox
         self.name = None
         self.metric = visual_ui.metric_Type_comboBox
@@ -103,31 +107,6 @@ class VisualController:
     def load_vendor_list(self, vendors: list):
         self.vendor.clear()
         self.vendor.addItems([vendor.name for vendor in vendors])
-
-    # def on_report_type_combo_activated(self, text):
-    #     self.metric.clear()
-    #     if text in DATABASE_REPORTS:
-    #         self.metric.addItems(DATABASE_REPORTS_METRIC)
-    #         self.name_label.setText('Database')
-    #     if text in ITEM_REPORTS:
-    #         self.metric.addItems(ITEM_REPORTS_METRIC)
-    #         self.name_label.setText('Item')
-    #     if text in PLATFORM_REPORTS:
-    #         self.metric.addItems(PLATFORM_REPORTS_METRIC)
-    #         self.name_label.setText('Platform')
-    #     if text in TITLE_REPORTS:
-    #         self.metric.addItems(TITLE_REPORTS_METRIC)
-    #         self.name_label.setText('Title')
-
-    # def on_calculation_parameter_changed(self, text):
-    #     if text == 'Cost Ratio':
-    #         self.frame_cost.setEnabled(True)
-    #     else:
-    #         self.frame_cost.setEnabled(False)
-    #     if text == 'Top #':
-    #         self.top_num_frame.setEnabled(True)
-    #     else:
-    #         self.top_num_frame.setEnabled(False)
 
     def on_calculation_type_changed(self):
         if self.topNum_radio.isChecked():
@@ -199,7 +178,7 @@ class VisualController:
         message1 = ""
         message2 = ""
         message3 = ""
-        if name == "":
+        if name == "" and self.topNum_radio.isChecked() == False:
             message1 = "Enter/Select " + self.name_label.text() + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
@@ -236,30 +215,20 @@ class VisualController:
 
         if self.topNum_radio.isChecked():
             self.top_num = int(self.top_num_edit.text())
-            #self.top_num = self.top_num.toInt()
-        # if self.calculation_parameter.currentText() == 'Top 10':
-        #     self.top_num = 10
-        # if self.calculation_parameter.currentText() == 'Top 15':
-        #     self.top_num = 15
-
-        if self.topNum_radio.isChecked():
-            print(self.top_num) #testing
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor, self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
-                print(self.results)
 
                 self.results.insert(0, headers)
-                print(self.results)
                 connection.close()
             else:
                 print('Error, no connection')
             if len(self.results) > 1:
                 self.process_top_X_data()
-            elif name != "" and (self.h_bar_radio.isChecked() != False or self.v_bar_radio.isChecked() != False or self.line_radio.isChecked() != False) and start_year <= end_year:
-                message5 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+            elif start_year <= end_year:
+                message5 = self.name_label.text() + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message5)
 
 
@@ -276,17 +245,14 @@ class VisualController:
     # process_data distributes the usage data in an array accordingly
     def process_default_data(self):
         m = len(self.results)
-        print(m)
         self.legendEntry = []  # legend entry data
         for i in range(1, m):
-            print(self.results[i][3])
             self.legendEntry.append(self.results[i][3])
 
         # data is an array with the sorted usage figures
         self.data = []
         for i in range(0, m):
             data1 = []
-            print(self.results[i])
             n = len(self.results[i])
             for j in range(9, n):#from jan to dec only
                 data1.append(self.results[i][j])
@@ -423,6 +389,7 @@ class VisualController:
         print(len(self.data[0]))
         self.chart_type()
 
+    # get chart type checked
     def chart_type(self):
         if self.h_bar_radio.isChecked():
             self.horizontal_bar_chart()
@@ -493,7 +460,7 @@ class VisualController:
             'values': '=Sheet1!$B$2:$B$18',
         })
 
-        # Configure a second series. Note use of alternative syntax to define ranges.
+        # Configure any subsequent series. Note use of alternative syntax to define ranges.
         if self.top_num is None:
             m = 2
             for i in range(2, len(self.data)):
