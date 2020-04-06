@@ -16,7 +16,7 @@ from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import ALL_REPORTS, CompletionStatus
 from Settings import SettingsModel
-from ManageDB import UpdateDatabaseProgressDialogController
+from ManageDB import UpdateDatabaseWorker
 
 
 class ProcessResult:
@@ -89,10 +89,6 @@ class ImportReportController:
         self.import_report_button = import_report_ui.import_report_button
         self.import_report_button.clicked.connect(self.on_import_clicked)
         # endregion
-
-        # set up restore database button
-        self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.import_report_widget)
 
     def on_vendors_changed(self, vendors: list):
         """Handles the signal emitted when the system's vendor list is updated
@@ -174,6 +170,7 @@ class ImportReportController:
             if not path.isdir(dest_file_dir):
                 makedirs(dest_file_dir)
 
+            # Validate report header
             delimiter = DELIMITERS[self.selected_file_path[-4:].lower()]
             file = open(self.selected_file_path, 'r', encoding='utf-8-sig')
             reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -221,12 +218,11 @@ class ImportReportController:
             self.copy_file(self.selected_file_path, protected_file_path)
 
             # Add file to database
-            self.is_restoring_database = True
-            self.update_database_dialog.update_database([{'file': protected_file_path,
-                                                          'vendor': vendor.name,
-                                                          'year': int(self.date.toString('yyyy'))}],
-                                                        False)
-            self.is_restoring_database = False
+            database_worker = UpdateDatabaseWorker([{'file': protected_file_path,
+                                                     'vendor': vendor.name,
+                                                     'year': int(self.date.toString('yyyy'))}],
+                                                   False)
+            database_worker.work()
 
         except Exception as e:
             process_result.message = f"Exception: {e}"
