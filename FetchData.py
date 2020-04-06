@@ -2391,14 +2391,16 @@ class ReportWorker(QObject):
         major_report_type = report_header.major_report_type
 
         if self.is_yearly:
-            file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-            file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+            file_dir = GeneralUtils.get_yearly_file_dir(self.save_dir, self.vendor.name, self.begin_date)
+            file_name = GeneralUtils.get_yearly_file_name(self.vendor.name, self.report_type, self.begin_date)
         elif self.is_special:
-            file_dir = f"{self.save_dir}{self.vendor.name}/special/"
-            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}_S.tsv"
+            file_dir = GeneralUtils.get_special_file_dir(self.save_dir, self.vendor.name)
+            file_name = GeneralUtils.get_special_file_name(self.vendor.name, self.report_type, self.begin_date,
+                                                           self.end_date)
         else:
-            file_dir = f"{self.save_dir}{self.vendor.name}/"
-            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
+            file_dir = GeneralUtils.get_other_file_dir(self.save_dir, self.vendor.name)
+            file_name = GeneralUtils.get_other_file_name(self.vendor.name, self.report_type, self.begin_date,
+                                                         self.end_date)
 
         # Save user tsv file
         if not path.isdir(file_dir):
@@ -2422,7 +2424,8 @@ class ReportWorker(QObject):
 
         # Save protected tsv file
         if self.is_yearly:
-            protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+            protected_file_dir = GeneralUtils.get_yearly_file_dir(PROTECTED_DATABASE_FILE_DIR, self.vendor.name,
+                                                                  self.begin_date)
             if not path.isdir(protected_file_dir):
                 makedirs(protected_file_dir)
                 if platform.system() == "Windows":
