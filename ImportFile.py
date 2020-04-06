@@ -165,8 +165,9 @@ class ImportReportController:
         process_result = ProcessResult(vendor, report_type)
 
         try:
-            dest_file_dir = f"{self.settings.yearly_directory}{self.date.toString('yyyy')}/{vendor.name}/"
-            dest_file_name = f"{self.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
+
+            dest_file_dir = GeneralUtils.get_yearly_file_dir(self.settings.yearly_directory, vendor.name, self.date)
+            dest_file_name = GeneralUtils.get_yearly_file_name(vendor.name, report_type, self.date)
             dest_file_path = f"{dest_file_dir}{dest_file_name}"
 
             # Verify that dest_file_dir exists
