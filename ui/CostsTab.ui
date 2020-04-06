@@ -17,186 +17,236 @@
    <iconset resource="../Resources.qrc">
     <normaloff>:/ui/resources/tab_icons/costs_icon.png</normaloff>:/ui/resources/tab_icons/costs_icon.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QFrame" name="costs_parameters_frame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="0">
-       <widget class="QLabel" name="costs_report_parameter_label">
-        <property name="text">
-         <string>Report</string>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>120</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QFrame" name="costs_parameters_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
         </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QFormLayout" name="formLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="costs_report_parameter_label">
+           <property name="text">
+            <string>Report</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="costs_report_parameter_combobox"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="costs_vendor_parameter_label">
+           <property name="text">
+            <string>Vendor</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="costs_vendor_parameter_combobox"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="costs_year_parameter_label">
+           <property name="text">
+            <string>Year</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDateEdit" name="costs_year_parameter_dateedit">
+           <property name="displayFormat">
+            <string>yyyy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="costs_name_parameter_label">
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="costs_name_parameter_combobox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="costs_report_parameter_combobox"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="costs_vendor_parameter_label">
-        <property name="text">
-         <string>Vendor</string>
+      <item>
+       <widget class="QFrame" name="costs_values_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
         </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="costs_cost_in_original_currency_label">
+           <property name="text">
+            <string>Cost in Original Currency</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="costs_original_currency_label">
+           <property name="text">
+            <string>Original Currency</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="costs_original_currency_value_combobox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="costs_cost_in_local_currency_label">
+           <property name="text">
+            <string>Cost in Local Currency</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="costs_cost_in_local_currency_with_tax_label">
+           <property name="text">
+            <string>Cost in Local Currency with Tax</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>999999999.990000009536743</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_doublespinbox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>999999999.990000009536743</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_with_tax_doublespinbox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>999999999.990000009536743</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="costs_vendor_parameter_combobox"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="costs_year_parameter_label">
-        <property name="text">
-         <string>Year</string>
+      <item>
+       <widget class="QFrame" name="costs_control_frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QDateEdit" name="costs_year_parameter_dateedit">
-        <property name="displayFormat">
-         <string>yyyy</string>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
         </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="costs_name_parameter_label">
-        <property name="text">
-         <string>Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="costs_name_parameter_combobox">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="2">
+          <widget class="QPushButton" name="costs_clear_button">
+           <property name="text">
+            <string>Clear</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="costs_load_button">
+           <property name="text">
+            <string>Load</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="costs_save_button">
+           <property name="text">
+            <string>Save Costs</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="costs_import_costs_button">
+           <property name="text">
+            <string>Import Costs</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="costs_values_frame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="costs_cost_in_original_currency_label">
-        <property name="text">
-         <string>Cost in Original Currency</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="costs_original_currency_label">
-        <property name="text">
-         <string>Original Currency</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="costs_original_currency_value_combobox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="costs_cost_in_local_currency_label">
-        <property name="text">
-         <string>Cost in Local Currency</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="costs_cost_in_local_currency_with_tax_label">
-        <property name="text">
-         <string>Cost in Local Currency with Tax</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <double>999999999.990000009536743</double>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_doublespinbox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <double>999999999.990000009536743</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_with_tax_doublespinbox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <double>999999999.990000009536743</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="costs_control_frame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>120</width>
+       <height>20</height>
+      </size>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="2">
-       <widget class="QPushButton" name="costs_clear_button">
-        <property name="text">
-         <string>Clear</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="costs_load_button">
-        <property name="text">
-         <string>Load</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="costs_save_button">
-        <property name="text">
-         <string>Save Costs</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="costs_import_costs_button">
-        <property name="text">
-         <string>Import Costs</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+    </spacer>
    </item>
   </layout>
  </widget>

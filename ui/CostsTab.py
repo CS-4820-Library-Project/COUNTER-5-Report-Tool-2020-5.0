@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -15,9 +17,16 @@ class Ui_costs_tab(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/costs_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         costs_tab.setWindowIcon(icon)
-        self.verticalLayout = QtWidgets.QVBoxLayout(costs_tab)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.costs_parameters_frame = QtWidgets.QFrame(costs_tab)
+        self.horizontalLayout = QtWidgets.QHBoxLayout(costs_tab)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(120, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.frame = QtWidgets.QFrame(costs_tab)
+        self.frame.setObjectName("frame")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.costs_parameters_frame = QtWidgets.QFrame(self.frame)
         self.costs_parameters_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.costs_parameters_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.costs_parameters_frame.setObjectName("costs_parameters_frame")
@@ -48,8 +57,8 @@ class Ui_costs_tab(object):
         self.costs_name_parameter_combobox.setEditable(True)
         self.costs_name_parameter_combobox.setObjectName("costs_name_parameter_combobox")
         self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.costs_name_parameter_combobox)
-        self.verticalLayout.addWidget(self.costs_parameters_frame)
-        self.costs_values_frame = QtWidgets.QFrame(costs_tab)
+        self.verticalLayout_2.addWidget(self.costs_parameters_frame)
+        self.costs_values_frame = QtWidgets.QFrame(self.frame)
         self.costs_values_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.costs_values_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.costs_values_frame.setObjectName("costs_values_frame")
@@ -87,8 +96,8 @@ class Ui_costs_tab(object):
         self.costs_cost_in_local_currency_with_tax_doublespinbox.setMaximum(999999999.99)
         self.costs_cost_in_local_currency_with_tax_doublespinbox.setObjectName("costs_cost_in_local_currency_with_tax_doublespinbox")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.costs_cost_in_local_currency_with_tax_doublespinbox)
-        self.verticalLayout.addWidget(self.costs_values_frame)
-        self.costs_control_frame = QtWidgets.QFrame(costs_tab)
+        self.verticalLayout_2.addWidget(self.costs_values_frame)
+        self.costs_control_frame = QtWidgets.QFrame(self.frame)
         self.costs_control_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.costs_control_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.costs_control_frame.setObjectName("costs_control_frame")
@@ -106,7 +115,10 @@ class Ui_costs_tab(object):
         self.costs_import_costs_button = QtWidgets.QPushButton(self.costs_control_frame)
         self.costs_import_costs_button.setObjectName("costs_import_costs_button")
         self.gridLayout.addWidget(self.costs_import_costs_button, 0, 0, 1, 1)
-        self.verticalLayout.addWidget(self.costs_control_frame)
+        self.verticalLayout_2.addWidget(self.costs_control_frame)
+        self.horizontalLayout.addWidget(self.frame)
+        spacerItem1 = QtWidgets.QSpacerItem(120, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
 
         self.retranslateUi(costs_tab)
         QtCore.QMetaObject.connectSlotsByName(costs_tab)
@@ -127,15 +139,4 @@ class Ui_costs_tab(object):
         self.costs_load_button.setText(_translate("costs_tab", "Load"))
         self.costs_save_button.setText(_translate("costs_tab", "Save Costs"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
-
 import Resources_rc
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    costs_tab = QtWidgets.QWidget()
-    ui = Ui_costs_tab()
-    ui.setupUi(costs_tab)
-    costs_tab.show()
-    sys.exit(app.exec_())
-
