@@ -54,9 +54,6 @@
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
         <layout class="QFormLayout" name="formLayout_3">
          <item row="0" column="0">
           <widget class="QLabel" name="costs_report_parameter_label">
@@ -113,9 +110,6 @@
        <widget class="QFrame" name="costs_values_frame">
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
         </property>
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
@@ -193,9 +187,6 @@
        <widget class="QFrame" name="costs_control_frame">
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="2">
