@@ -17,6 +17,7 @@ class SearchController:
     """Controls the Search tab
 
     :param search_ui: the UI for the search_widget"""
+
     def __init__(self, search_ui: SearchTab.Ui_search_tab):
         self.main_window = search_ui
 
@@ -63,6 +64,7 @@ class SearchController:
             """Resets the search clauses, then adds an and clause containing an or clause"""
             self.refresh_clauses()
             add_and_and_or_clause()
+
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
         self.and_clause_parameters_scrollarea = search_ui.search_and_clause_parameters_scrollarea
@@ -116,8 +118,8 @@ class SearchController:
         # fill field combobox
         field_combobox = or_clause_ui.search_field_parameter_combobox
         for field in ManageDB.get_view_report_fields_list(self.report_parameter.currentText()):
-            if field['name'] not in FIELDS_NOT_IN_SEARCH_DROPDOWN:
-                field_combobox.addItem(field['name'], field['type'])
+            if field[NAME_KEY] not in FIELDS_NOT_IN_SEARCH_DROPDOWN:
+                field_combobox.addItem(field[NAME_KEY], field['type'])
 
         type_label = or_clause_ui.search_type_label
 
@@ -194,9 +196,9 @@ class SearchController:
                 and_clause = self.add_and_clause()
                 for sub_clause in clause:
                     or_clause = self.add_or_clause(and_clause)
-                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause['field'])
-                    or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause['comparison'])
-                    or_clause.search_value_parameter_lineedit.setText(sub_clause['value'])
+                    or_clause.search_field_parameter_combobox.setCurrentText(sub_clause[FIELD_KEY])
+                    or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause[COMPARISON_KEY])
+                    or_clause.search_value_parameter_lineedit.setText(sub_clause[VALUE_KEY])
 
     def search(self):
         """Queries the database based on the current search parameters and saves the results to the selected file"""
@@ -209,7 +211,7 @@ class SearchController:
 
         headers = []
         for field in ManageDB.get_view_report_fields_list(report):
-            headers.append(field['name'])
+            headers.append(field[NAME_KEY])
 
         file_name = choose_save(TSV_FILTER)
         if file_name != '':
@@ -281,7 +283,7 @@ class SearchController:
                 else:
                     value_parameter = value_parameter_lineedit.text()
                 or_clauses.append(
-                    {'field': field_parameter, 'comparison': comparison_parameter, 'value': value_parameter})
+                    {FIELD_KEY: field_parameter, COMPARISON_KEY: comparison_parameter, VALUE_KEY: value_parameter})
             search_parameters.append(or_clauses)
 
         return report, start_year, end_year, search_parameters

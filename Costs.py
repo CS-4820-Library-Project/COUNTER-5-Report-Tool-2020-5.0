@@ -16,6 +16,7 @@ class CostsController:
 
     :param costs_ui: the UI for the costs_widget
     :param settings: the user's settings"""
+
     def __init__(self, costs_ui: CostsTab.Ui_costs_tab, settings: SettingsModel):
         self.costs_ui = costs_ui
         self.settings = settings
@@ -69,7 +70,7 @@ class CostsController:
         vendors_json_string = read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.clear()
-        self.vendor_parameter_combobox.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
+        self.vendor_parameter_combobox.addItems([vendor_dict[NAME_KEY] for vendor_dict in vendor_dicts])
 
         self.on_report_parameter_changed()
         self.on_vendor_parameter_changed()
@@ -216,7 +217,7 @@ class CostsController:
         values = {}
         index = 0
         for field in COST_FIELDS:
-            values[field['name']] = results[0][index]
+            values[field[NAME_KEY]] = results[0][index]
             index += 1
         self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
         self.original_currency_combobox.setCurrentText(values['original_currency'])
