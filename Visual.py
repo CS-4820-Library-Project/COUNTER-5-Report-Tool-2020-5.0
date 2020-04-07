@@ -200,7 +200,7 @@ class VisualController:
         message = message1 + message3
         if message != "":
             message = "To Create Chart Check the following: \n" + message
-            self.messageDialog(message)
+            GeneralUtils.show_message(message)
 
         if self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked():
             # sql query to get search results
@@ -225,7 +225,7 @@ class VisualController:
                 self.process_cost_ratio_data()
             if name != "" and start_year <= end_year and len(self.results) <= 1:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
-                self.messageDialog(message4)
+                GeneralUtils.show_message(message4)
 
         if self.topNum_radio.isChecked():
             self.top_num = int(self.top_num_edit.text())
@@ -244,18 +244,7 @@ class VisualController:
                 self.process_top_X_data()
             elif start_year <= end_year:
                 message5 = self.name_label.text() + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
-                self.messageDialog(message5)
-
-    def messageDialog(self, text):
-        """Invoked when user need to be made aware of something"""
-        message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
-        message_dialog_ui = MessageDialog.Ui_message_dialog()
-        message_dialog_ui.setupUi(message_dialog)
-
-        message_label = message_dialog_ui.message_label
-        message_label.setText(text)
-
-        message_dialog.exec_()
+                GeneralUtils.show_message(message5)
 
     # process_data distributes the usage data for monthly in an array accordingly
     def process_default_data(self):
@@ -522,7 +511,7 @@ class VisualController:
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
         message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
-        self.messageDialog(message_completion)
+        GeneralUtils.show_message(message_completion)
 
     def vertical_bar_chart(self):
         """Invoked to create a vertical bar chart"""
@@ -551,7 +540,7 @@ class VisualController:
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
         message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
-        self.messageDialog(message_completion)
+        GeneralUtils.show_message(message_completion)
 
     def line_chart(self):
         """Invoked to create a line chart"""
@@ -580,4 +569,4 @@ class VisualController:
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
         message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
-        self.messageDialog(message_completion)
+        GeneralUtils.show_message(message_completion)
