@@ -1011,8 +1011,7 @@ class FetchReportsAbstract:
             return False
 
         if begin_date.year() == current_date.year():
-            if begin_date.month() == 1 and end_date.month() == max(current_date.month() - 1, 1):
-                return True
+            return True
         else:
             if begin_date.month() == 1 and end_date.month() == 12:
                 return True
