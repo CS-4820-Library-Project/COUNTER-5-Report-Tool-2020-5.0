@@ -524,6 +524,13 @@
                    </widget>
                   </item>
                   <item>
+                   <widget class="QLabel" name="label">
+                    <property name="text">
+                     <string>The date range contains some month's without data available</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QLabel" name="label_41">
                     <property name="text">
                      <string>Report(s) will be saved to:</string>

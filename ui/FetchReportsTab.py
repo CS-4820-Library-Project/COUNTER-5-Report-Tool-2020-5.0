@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'FetchReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
@@ -252,6 +250,9 @@ class Ui_fetch_reports_tab(object):
         self.label_38.setAlignment(QtCore.Qt.AlignCenter)
         self.label_38.setObjectName("label_38")
         self.verticalLayout_26.addWidget(self.label_38)
+        self.label = QtWidgets.QLabel(self.custom_dir_frame)
+        self.label.setObjectName("label")
+        self.verticalLayout_26.addWidget(self.label)
         self.label_41 = QtWidgets.QLabel(self.custom_dir_frame)
         self.label_41.setAlignment(QtCore.Qt.AlignCenter)
         self.label_41.setObjectName("label_41")
@@ -338,7 +339,9 @@ class Ui_fetch_reports_tab(object):
         self.label_10.setText(_translate("fetch_reports_tab", "End Date"))
         self.begin_date_edit_fetch_month.setDisplayFormat(_translate("fetch_reports_tab", "MMM"))
         self.label_38.setText(_translate("fetch_reports_tab", "Date range is not a calendar year"))
+        self.label.setText(_translate("fetch_reports_tab", "The date range contains some month\'s without data available"))
         self.label_41.setText(_translate("fetch_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
+
 import Resources_rc

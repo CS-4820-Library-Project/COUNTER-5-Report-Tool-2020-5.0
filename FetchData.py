@@ -1011,7 +1011,8 @@ class FetchReportsAbstract:
             return False
 
         if begin_date.year() == current_date.year():
-            return True
+            if begin_date.month() == 1 and end_date.month() <= max(current_date.month() - 1, 1):
+                return True
         else:
             if begin_date.month() == 1 and end_date.month() == 12:
                 return True
@@ -1139,6 +1140,10 @@ class FetchReportsController(FetchReportsAbstract):
         # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
+        self.custom_dir_frame_message1 = fetch_reports_ui.label_38
+        self.custom_dir_frame_message1.hide()
+        self.custom_dir_frame_message2 = fetch_reports_ui.label
+        self.custom_dir_frame_message2.hide()
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
@@ -1183,8 +1188,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
 
     def on_date_month_changed(self, date: QDate, date_type: str):
         """Handles the signal emitted when a date's month is changed
@@ -1200,8 +1213,31 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
+
+
+    def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
+        """Checks if a date range will retrieve all available reports for one year
+
+        :param begin_date: The begin date
+        :param end_date: The end date
+        """
+        current_date = QDate.currentDate()
+
+        if begin_date.year() == end_date.year() == current_date.year():
+            if begin_date.month() == 1 and end_date.month() >= current_date.month():
+                return True
+
+        return False
 
     def on_custom_dir_clicked(self):
         """Handles the signal emitted when the choose custom directory button is clicked"""
