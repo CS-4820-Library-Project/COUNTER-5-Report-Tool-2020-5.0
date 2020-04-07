@@ -133,13 +133,12 @@ class CostsController:
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            if self.settings.show_debug_messages: print(sql_text)
             results = ManageDB.run_select_sql(connection, sql_text, data)
             if self.settings.show_debug_messages: print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
-            if self.settings.show_debug_messages: print('Error, no connection')
+            print('Error, no connection')
 
     def on_name_parameter_changed(self):
         """Invoked when the name field parameter changes"""
@@ -253,6 +252,6 @@ class CostsController:
                     ManageDB.backup_costs_data(report_type)
                     show_message('File ' + file_name + ' imported')
                 else:
-                    if self.settings.show_debug_messages: print('Error, no file location selected')
+                    print('Error, no file location selected')
             else:
-                if self.settings.show_debug_messages: print('Error, no report type selected')
+                print('Error, no report type selected')

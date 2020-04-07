@@ -158,7 +158,6 @@ class VisualController:
         self.name_combobox.clear()
         results = []
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
-        print(sql_text)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)

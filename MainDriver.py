@@ -9,7 +9,7 @@ from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
 from Costs import CostsController
 from Search import SearchController
-from Settings import SettingsController
+from Settings import SettingsController, SettingsModel
 from Visual import VisualController
 import GeneralUtils
 import ManageDB
@@ -56,6 +56,10 @@ if __name__ == "__main__":
     settings_ui.setupUi(settings_tab)
     settings_controller = SettingsController(settings_tab, settings_ui)
 
+    def update_settings_in_managedb(settings: SettingsModel):
+        ManageDB.settings = settings
+    update_settings_in_managedb(settings_controller.settings)
+
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
     fetch_reports_ui.setupUi(fetch_reports_tab)
@@ -100,6 +104,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
     manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
 
+    settings_controller.settings_changed_signal.connect(update_settings_in_managedb)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
     # endregion
 

@@ -6,7 +6,11 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 
 from Constants import *
+from Settings import SettingsModel
 from ui import UpdateDatabaseProgressDialog
+
+
+settings = None
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
@@ -346,6 +350,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
     :param vendor: the vendor name of the data in the file
     :param year: the year of the data in the file
     :returns: (file_name, report, values) a Tuple with the file name, the kind of report, and the data from the file"""
+    if settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -358,12 +363,12 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
                 header[key] = cells[1].strip()
             else:
                 header[key] = None
-        # print(header)
+        if settings.show_debug_messages: print(header)
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
-        # print(column_headers)
+        if settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             for month in MONTHS:  # makes value from each month with metric > 0 for each row
@@ -396,12 +401,14 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
 
     :param file_name: the name of the file the data is from
     :returns: list of values from the file"""
+    if settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        if settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             value = {}
@@ -491,7 +498,6 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     clauses = [[{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year}],
                [{FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year}]]
     clauses.extend(search_parameters)
-    print(clauses)
     clauses_texts = []
     data = []
     for clause in clauses:
@@ -657,7 +663,6 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     connection = None
     try:
         connection = sqlite3.connect(db_file)
-        # print(sqlite3.version)
         return connection
     except sqlite3.Error as error:
         print(error)
@@ -673,7 +678,9 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
     :param data: the parameters to the SQL statement"""
     try:
         cursor = connection.cursor()
+        if settings.show_debug_messages: print(sql_text)
         if data is not None:
+            if settings.show_debug_messages: print(data)
             cursor.executemany(sql_text, data)
         else:
             cursor.execute(sql_text)
@@ -692,7 +699,9 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
     :returns: a list of rows that return from the statement"""
     try:
         cursor = connection.cursor()
+        if settings.show_debug_messages: print(sql_text)
         if data is not None:
+            if settings.show_debug_messages: print(data)
             cursor.execute(sql_text, data)
         else:
             cursor.execute(sql_text)
@@ -710,8 +719,6 @@ def setup_database(drop_tables: bool):
     sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
                       REPORT_TYPE_SWITCHER.keys()})
     sql_texts.update({report + VIEW_SUFFIX: create_view_sql_texts(report) for report in ALL_REPORTS})
-    for key in sql_texts:  # testing
-        print(sql_texts[key])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -730,10 +737,13 @@ def setup_database(drop_tables: bool):
 def first_time_setup():
     """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
+        if settings.show_debug_messages: print('CREATE ' + DATABASE_FOLDER)
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
+        if settings.show_debug_messages: print('CREATE ' + DATABASE_LOCATION)
         setup_database(False)
     if not os.path.exists(COSTS_SAVE_FOLDER):
+        if settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER)
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
@@ -750,9 +760,9 @@ def backup_costs_data(report_type: str):
             headers.append(field[NAME_KEY])
         sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
         sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
-        print(sql_text)
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
+        if settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
         file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
         if file.mode == 'w':
             output = csv.writer(file, delimiter='\t', quotechar='\"')
@@ -761,37 +771,6 @@ def backup_costs_data(report_type: str):
         connection.close()
     else:
         print('Error, no connection')
-
-
-def test_chart_search():
-    """temporary method to show how to use chart_search_sql_text"""
-    headers = tuple([field[NAME_KEY] for field in get_chart_report_fields_list('DR_D1')])
-    sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated',
-                                           'EBSCO')
-    print(sql_text)
-    print(data)
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        results.insert(0, headers)
-        # print(results)
-        for row in results:
-            print(row)
-
-
-def test_top_number_chart_search():
-    """temporary method to show how to use top_number_chart_search_sql_text"""
-    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('DR_D1')])
-    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, 'Searches_Automated', 'EBSCO', 10)
-    print(sql_text)
-    print(data)
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        results.insert(0, headers)
-        # print(results)
-        for row in results:
-            print(row)
 
 
 class UpdateDatabaseProgressDialogController:
@@ -873,7 +852,7 @@ class UpdateDatabaseProgressDialogController:
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
-        print(code)  # testing
+        if settings.show_debug_messages: print('update database thread exited with code ' + code)
         # exit thread
         self.update_database_thread.quit()
         self.update_database_thread.wait()
