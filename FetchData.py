@@ -1226,7 +1226,7 @@ class FetchReportsController(FetchReportsAbstract):
 
 
     def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
-        """Checks if a date range will retrieve all available reports for one year
+        """Checks which message will show on the custom dir frame
 
         :param begin_date: The begin date
         :param end_date: The end date
