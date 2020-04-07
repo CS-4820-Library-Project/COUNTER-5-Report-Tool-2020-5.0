@@ -87,6 +87,13 @@ class CostsController:
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
 
+    def update_settings(self, settings: SettingsModel):
+        """Called when the settings are saved
+
+        :param settings: the new settings"""
+        self.settings = settings
+        self.load_currency_list()
+
     def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]):
         """Updates the vendor list combobox
 
@@ -126,13 +133,13 @@ class CostsController:
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            print(sql_text)
+            if self.settings.show_debug_messages: print(sql_text)
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            print(results)
+            if self.settings.show_debug_messages: print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
-            print('Error, no connection')
+            if self.settings.show_debug_messages: print('Error, no connection')
 
     def on_name_parameter_changed(self):
         """Invoked when the name field parameter changes"""
@@ -140,7 +147,6 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
-            self.load_currency_list()
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
@@ -247,6 +253,6 @@ class CostsController:
                     ManageDB.backup_costs_data(report_type)
                     show_message('File ' + file_name + ' imported')
                 else:
-                    print('Error, no file location selected')
+                    if self.settings.show_debug_messages: print('Error, no file location selected')
             else:
-                print('Error, no report type selected')
+                if self.settings.show_debug_messages: print('Error, no report type selected')
