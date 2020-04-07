@@ -1,3 +1,5 @@
+"""This module handles all operations involving the visual tab."""
+
 import calendar
 import datetime
 import json
@@ -17,6 +19,11 @@ from Constants import *
 
 
 class VisualController:
+    """Controls the Visual tab
+
+        :param visual_ui: The UI for visual_widget.
+        """
+
     def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
         # set up and configure report type combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
@@ -102,13 +109,16 @@ class VisualController:
         self.temp_results = []
         self.top_num = None
         self.results = None
-        #ManageDB.test_top_number_chart_search()
 
     def load_vendor_list(self, vendors: list):
+        """Updates the vendor list combobox
+
+        :param vendors: the new list of vendors"""
         self.vendor.clear()
         self.vendor.addItems([vendor.name for vendor in vendors])
 
     def on_calculation_type_changed(self):
+        """Invoke when calculation type is changed"""
         if self.topNum_radio.isChecked():
             self.top_num_frame.setEnabled(True)
             self.frame_cost.setEnabled(False)
@@ -120,8 +130,7 @@ class VisualController:
             self.frame_cost.setEnabled(False)
 
     def on_report_parameter_changed(self, text):
-        # self.report_parameter = self.report_parameter.currentText()
-        # self.name_label.setText(NAME_FIELD_SWITCHER[self.report_parameter.currentText].capitalize())
+        """Invoke when report type is changed"""
         self.metric.clear()
         if text in DATABASE_REPORTS:
             self.metric.addItems(DATABASE_REPORTS_METRIC)
@@ -139,11 +148,13 @@ class VisualController:
             self.fill_names()
 
     def on_vendor_changed(self):
+        """Invoke when vendor is changed"""
         self.vendor_parameter = self.vendor.currentText()
         if self.report_parameter.currentText():
             self.fill_names()
 
     def fill_names(self):
+        """Fill name field combobox"""
         self.name_combobox.clear()
         results = []
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
@@ -157,7 +168,9 @@ class VisualController:
         else:
             print('Error, no connection')
 
-    def createChart(self):  # submit search result to database and open results
+    # submit search result to database and open results
+    def createChart(self):
+        """Invoke when user click on create chart"""
 
         # get report type
         report = self.report_parameter.currentText()
@@ -169,11 +182,11 @@ class VisualController:
         name = self.name_combobox.currentText()
         # get metric
         metric = self.metric.currentText()
-        #get vendor
+        # get vendor
         vendor = self.vendor.currentText()
         self.top_num = None
 
-        self.temp_results =[]
+        self.temp_results = []
         message = ""
         message1 = ""
         message2 = ""
@@ -182,7 +195,8 @@ class VisualController:
             message1 = "Enter/Select " + self.name_label.text() + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
-            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + str(currentYear) + "\n"
+            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + str(
+                currentYear) + "\n"
         message = message1 + message3
         if message != "":
             message = "To Create Chart Check the following: \n" + message
@@ -215,7 +229,8 @@ class VisualController:
 
         if self.topNum_radio.isChecked():
             self.top_num = int(self.top_num_edit.text())
-            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor, self.top_num)
+            sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
+                                                                       self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
@@ -231,8 +246,8 @@ class VisualController:
                 message5 = self.name_label.text() + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 self.messageDialog(message5)
 
-
     def messageDialog(self, text):
+        """Invoked when user need to be made aware of something"""
         message_dialog = QDialog(flags=Qt.WindowCloseButtonHint)
         message_dialog_ui = MessageDialog.Ui_message_dialog()
         message_dialog_ui.setupUi(message_dialog)
@@ -242,8 +257,9 @@ class VisualController:
 
         message_dialog.exec_()
 
-    # process_data distributes the usage data in an array accordingly
+    # process_data distributes the usage data for monthly in an array accordingly
     def process_default_data(self):
+        """Invoked when calculation type: monthly is selected"""
         m = len(self.results)
         self.legendEntry = []  # legend entry data
         for i in range(1, m):
@@ -254,7 +270,7 @@ class VisualController:
         for i in range(0, m):
             data1 = []
             n = len(self.results[i])
-            for j in range(9, n):#from jan to dec only
+            for j in range(9, n):  # from jan to dec only
                 data1.append(self.results[i][j])
             self.data.append(data1)
         # testing to make sure its working good
@@ -265,6 +281,7 @@ class VisualController:
         self.chart_type()
 
     def process_yearly_data(self):
+        """Invoked when calculation type: yearly is selected"""
         m = len(self.results)
         self.legendEntry = []  # legend entry data
         self.legendEntry.append(self.results[0][8])
@@ -288,6 +305,7 @@ class VisualController:
         self.chart_type()
 
     def process_cost_ratio_data(self):
+        """Invoked when calculation type: cost ratio is selected"""
         m = len(self.results)
         self.legendEntry = []  # legend entry data
 
@@ -304,7 +322,7 @@ class VisualController:
                 cost = self.results[i][7]
                 if self.results[i][7] is None:
                     cost = 0
-                data2.append(cost/self.results[i][8])
+                data2.append(cost / self.results[i][8])
             self.data.append(data2)
         if self.cost_parameter.currentText() == 'Local Cost':
             self.legendEntry.append('Local Cost Per Metric')
@@ -312,7 +330,7 @@ class VisualController:
                 cost = self.results[i][6]
                 if self.results[i][6] is None:
                     cost = 0
-                data2.append(cost/self.results[i][8])
+                data2.append(cost / self.results[i][8])
             self.data.append(data2)
         if self.cost_parameter.currentText() == 'Original Cost':
             self.legendEntry.append('Original Cost Per Metric')
@@ -320,7 +338,7 @@ class VisualController:
                 cost = self.results[i][4]
                 if self.results[i][4] is None:
                     cost = 0
-                data2.append(cost/self.results[i][8])
+                data2.append(cost / self.results[i][8])
             self.data.append(data2)
 
         # testing to make sure its working good
@@ -331,10 +349,8 @@ class VisualController:
         self.chart_type()
 
     def process_top_X_data(self):
+        """Invoked when calculation type: top # is selected"""
         m = len(self.results)
-        print("Im here")
-        print(m)
-        print(self.results)
         self.temp_results = []
 
         self.legendEntry = []  # legend entry data
@@ -342,10 +358,7 @@ class VisualController:
         self.legendEntry.append(self.results[0][22])
         for i in range(1, m):
             self.temp_results.append(self.results[i])
-        print(len(self.temp_results))
-        print(self.temp_results)
         self.temp_results = sorted(self.temp_results, key=itemgetter(22))
-        print(self.temp_results)
         n = len(self.temp_results)
 
         # data is an array with the sorted usage figures
@@ -356,41 +369,32 @@ class VisualController:
 
         data = self.temp_results[0][0]
         data1.append(data)
-        for i in range(1, n):#get database
+        for i in range(1, n):  # get database
             data = self.temp_results[i][0]
-            #print(data)
-            # data = self.results[i][4]
-            if data != self.temp_results[i-1][0]:
+            if data != self.temp_results[i - 1][0]:
                 data1.append(data)
         self.data.append(data1)
 
         metri = self.temp_results[0][21]
         data2.append(metri)
-        for i in range(1, n):#get reporting total
-            #print(self.results[i])
+        for i in range(1, n):  # get reporting total
             metri = self.temp_results[i][21]
-            if metri != self.temp_results[i-1][21]:
+            if metri != self.temp_results[i - 1][21]:
                 data2.append(metri)
         self.data.append(data2)
 
         rank = self.temp_results[0][22]
         data3.append(rank)
-        for i in range(1, n):#
-            #print(self.results[i])
+        for i in range(1, n):
             rank = self.temp_results[i][22]
-            if rank != self.temp_results[i-1][22]:
+            if rank != self.temp_results[i - 1][22]:
                 data3.append(rank)
         self.data.append(data3)
-        # testing to make sure its working good
-        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
-        print(self.data[1])
-        print(self.data[2])
-        print(len(self.data))
-        print(len(self.data[0]))
         self.chart_type()
 
     # get chart type checked
     def chart_type(self):
+        """Invoked to determine which chart type is selected by user"""
         if self.h_bar_radio.isChecked():
             self.horizontal_bar_chart()
 
@@ -402,6 +406,9 @@ class VisualController:
 
     # get file name and titles from user
     def customizeChart(self):
+        """Invoked to get information from user to customize chart.
+
+        It is highly recommended that user write the details like year, report type, calculation type,.. in chart title"""
         file_name = self.file_name_edit.text()
         chart_title = self.chart_title_edit.text()
         horizontal_axis_title = self.horizontal_axis_edit.text()
@@ -411,6 +418,7 @@ class VisualController:
     # get directory to save file from user
     @staticmethod
     def chooseDirectory():
+        """Invoked to prompt user to choose folder for xlsx file to be saved"""
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.Directory)
         if dialog.exec_():
@@ -420,6 +428,13 @@ class VisualController:
     # add titles to chart and styles
     @staticmethod
     def add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title):
+        """Invoked to add information to customize the chart
+
+        :param chart1: the chart to add details to
+        :param chart_title: the chart title
+        :param horizontal_axis_title: the horizontal axis title
+        :param vertical_axis_title: the vertical axis title"""
+
         # Add a chart title and some axis labels.
         chart1.set_title({'name': chart_title})
         chart1.set_x_axis({'name': horizontal_axis_title})
@@ -430,6 +445,12 @@ class VisualController:
     # create file with ext and add sheet to file
     @staticmethod
     def createFile(directory, file_name, ext):
+        """Invoked to create xlsx file
+
+        :param directory: the directory to save the file
+        :param file_name: the file name
+        :param ext: the extension depending on chart type"""
+
         # create xlsx file
         workbook = xlsxwriter.Workbook(directory + file_name + ext + '.xlsx')
         # add sheet to xlsx file
@@ -438,6 +459,12 @@ class VisualController:
 
     # Add the worksheet data that the charts will refer to.
     def populateData(self, vertical_axis_title, worksheet, workbook):
+        """Invoked to create xlsx file
+
+        :param vertical_axis_title: the vertical axis title
+        :param worksheet: the worksheet in the xlsx file
+        :param workbook: the workbook"""
+
         bold = workbook.add_format({'bold': 1})
         headings = [vertical_axis_title]
         for i in range(0, len(self.legendEntry)):
@@ -451,6 +478,11 @@ class VisualController:
 
     # create chart and add series to it
     def configureSeries(self, workbook, chart_type):
+        """Invoked to create xlsx file
+
+        :param workbook: the workbook
+        :param chart_type: the chart type"""
+
         chart1 = workbook.add_chart({'type': chart_type})
 
         # Configure the first series.
@@ -473,6 +505,7 @@ class VisualController:
         return chart1
 
     def horizontal_bar_chart(self):
+        """Invoked to create a horizontal bar chart"""
 
         # get file name and titles from customizeChart
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
@@ -495,8 +528,11 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
+        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        self.messageDialog(message_completion)
 
     def vertical_bar_chart(self):
+        """Invoked to create a vertical bar chart"""
 
         # get file name and titles from customizeChart
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
@@ -519,8 +555,11 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
+        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        self.messageDialog(message_completion)
 
     def line_chart(self):
+        """Invoked to create a line chart"""
 
         # get file name and titles from customizeChart
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
@@ -543,3 +582,5 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
+        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        self.messageDialog(message_completion)
