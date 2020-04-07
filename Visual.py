@@ -415,16 +415,6 @@ class VisualController:
         vertical_axis_title = self.vertical_axis_edit.text()
         return file_name, chart_title, horizontal_axis_title, vertical_axis_title
 
-    # get directory to save file from user
-    @staticmethod
-    def chooseDirectory():
-        """Invoked to prompt user to choose folder for xlsx file to be saved"""
-        dialog = QFileDialog()
-        dialog.setFileMode(QFileDialog.Directory)
-        if dialog.exec_():
-            directory = dialog.selectedFiles()[0] + "/"
-            return directory
-
     # add titles to chart and styles
     @staticmethod
     def add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title):
@@ -511,7 +501,10 @@ class VisualController:
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # get directory to save file
-        directory = self.chooseDirectory()
+        directory = GeneralUtils.choose_directory()
+        if not directory:
+            return
+
 
         # create xlsx file and add sheet file
         workbook, worksheet = self.createFile(directory, file_name, '_hbar')
@@ -538,7 +531,9 @@ class VisualController:
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # get directory to save file
-        directory = self.chooseDirectory()
+        directory = GeneralUtils.choose_directory()
+        if not directory:
+            return
 
         # create xlsx file and add sheet file
         workbook, worksheet = self.createFile(directory, file_name, '_vbar')
@@ -565,7 +560,9 @@ class VisualController:
         file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # get directory to save file
-        directory = self.chooseDirectory()
+        directory = GeneralUtils.choose_directory()
+        if not directory:
+            return
 
         # create xlsx file and add sheet file
         workbook, worksheet = self.createFile(directory, file_name, '_line')
