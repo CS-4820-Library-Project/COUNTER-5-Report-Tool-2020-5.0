@@ -2,7 +2,8 @@
 
 import json
 from os import path
-from PyQt5.QtWidgets import QFileDialog, QWidget
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal
 from ui import SettingsTab
 import ManageDB
 from Constants import *
@@ -98,6 +99,8 @@ class SettingsController:
     :param settings_widget: The settings widget.
     :param settings_ui: The UI for settings_widget.
     """
+    settings_changed_signal = pyqtSignal(SettingsModel)
+
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         self.settings_widget = settings_widget
@@ -169,7 +172,7 @@ class SettingsController:
         self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
         # endregion
 
-        settings_ui.save_button.clicked.connect(self._on_save_button_clicked)
+        settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
 
     def on_directory_setting_clicked(self, setting: Setting):
         """Handles the signal emitted when a choose folder button is clicked
@@ -183,10 +186,11 @@ class SettingsController:
             elif setting == Setting.OTHER_DIR:
                 self.other_dir_edit.setText(dir_path)
 
-    def _on_save_button_clicked(self):
+    def on_save_button_clicked(self):
         """Handles the signal emitted when the save button is clicked"""
         self.update_settings()
         self.save_settings_to_disk()
+        self.settings_changed_signal.emit(self.settings)
         GeneralUtils.show_message("Changes saved!")
 
     def on_restore_database_clicked(self):
