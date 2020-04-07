@@ -3,7 +3,7 @@
 import json
 from os import path
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from ui import SettingsTab
 import ManageDB
 from Constants import *
@@ -77,7 +77,7 @@ class SettingsModel(JsonModel):
                    concurrent_vendors, concurrent_reports, empty_cell, user_agent, default_currency)
 
 
-class SettingsController:
+class SettingsController(QObject):
     """Controls the Settings tab
 
     :param settings_widget: The settings widget.
@@ -87,6 +87,7 @@ class SettingsController:
 
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
+        super().__init__()
         self.settings_widget = settings_widget
 
         json_string = GeneralUtils.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
