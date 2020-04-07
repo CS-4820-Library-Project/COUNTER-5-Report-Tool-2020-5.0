@@ -218,3 +218,10 @@ class SettingsController:
         """Saves all settings to disk"""
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
+
+    def on_setting_change(self, setting: Setting):
+        """Handles the signal emitted when the system's vendor list is updated
+
+        :param vendors: An updated list of the system's vendors
+        """
+        self.update_settings(setting)
