@@ -2,7 +2,8 @@
 
 import json
 from os import path
-from PyQt5.QtWidgets import QFileDialog, QWidget
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal
 from ui import SettingsTab
 import ManageDB
 from Constants import *
@@ -98,6 +99,8 @@ class SettingsController:
     :param settings_widget: The settings widget.
     :param settings_ui: The UI for settings_widget.
     """
+    settings_changed_signal = pyqtSignal(SettingsModel)
+
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
         self.settings_widget = settings_widget
@@ -187,6 +190,7 @@ class SettingsController:
         """Handles the signal emitted when the save button is clicked"""
         self.update_settings()
         self.save_settings_to_disk()
+        self.settings_changed_signal.emit()
         GeneralUtils.show_message("Changes saved!")
 
     def on_restore_database_clicked(self):
@@ -218,10 +222,3 @@ class SettingsController:
         """Saves all settings to disk"""
         json_string = json.dumps(self.settings, default=lambda o: o.__dict__)
         GeneralUtils.save_json_file(SETTINGS_FILE_DIR, SETTINGS_FILE_NAME, json_string)
-
-    def on_setting_change(self, setting: Setting):
-        """Handles the signal emitted when the system's vendor list is updated
-
-        :param vendors: An updated list of the system's vendors
-        """
-        self.update_settings(setting)
