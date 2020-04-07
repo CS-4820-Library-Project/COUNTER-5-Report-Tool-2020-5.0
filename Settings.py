@@ -10,9 +10,6 @@ from Constants import *
 import GeneralUtils
 from GeneralUtils import JsonModel
 
-SETTINGS_FILE_DIR = "./all_data/settings/"
-SETTINGS_FILE_NAME = "settings.dat"
-
 
 class Setting(Enum):
     """An enum of all settings"""
@@ -24,19 +21,6 @@ class Setting(Enum):
     CONCURRENT_REPORTS = 5
     EMPTY_CELL = 6
     USER_AGENT = 7
-
-
-# Default Settings
-SHOW_DEBUG_MESSAGES = False
-YEARLY_DIR = "./all_data/yearly_files/"
-OTHER_DIR = "./all_data/other_files/"
-REQUEST_INTERVAL = 3  # Seconds
-REQUEST_TIMEOUT = 120  # Seconds
-CONCURRENT_VENDORS = 5
-CONCURRENT_REPORTS = 5
-EMPTY_CELL = ""
-USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
-DEFAULT_CURRENCY = 'USD'
 
 
 class SettingsModel(JsonModel):
