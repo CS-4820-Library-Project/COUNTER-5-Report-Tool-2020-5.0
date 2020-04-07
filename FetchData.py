@@ -1467,13 +1467,16 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             widget.deleteLater()
 
         # Add new options
+        self.options_layout.addWidget(QLabel("Show", self.options_frame), 0, 0)
+        self.options_layout.addWidget(QLabel("Filters", self.options_frame), 0, 1)
+
         special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
         for i in range(len(special_options)):
             option_name = special_options[i][1]
             checkbox = QCheckBox(option_name, self.options_frame)
             checkbox.toggled.connect(
                 lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
-            self.options_layout.addWidget(checkbox, i, 0)
+            self.options_layout.addWidget(checkbox, i + 1, 0)
 
             option_type: SpecialOptionType = special_options[i][0]
             if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS\
@@ -1490,8 +1493,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                         lambda c, so=special_options[i], edit=line_edit:
                         self.on_special_parameter_option_button_clicked(so, edit))
 
-                self.options_layout.addWidget(line_edit, i, 1)
-                self.options_layout.addWidget(button, i, 2)
+                self.options_layout.addWidget(line_edit, i + 1, 1)
+                self.options_layout.addWidget(button, i + 1, 2)
 
     def on_special_option_toggled(self, option: str, is_checked: bool):
         """Handles the signal emitted when a special option is checked or un-checked
