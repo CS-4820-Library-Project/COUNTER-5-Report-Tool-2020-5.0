@@ -2,7 +2,6 @@
 
 import csv
 import os
-import platform
 import json
 import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
@@ -13,6 +12,7 @@ import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
 from Constants import *
+from Settings import SettingsModel
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
@@ -74,7 +74,7 @@ class ManageVendorsController(QObject):
     """
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
+    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab, settings: SettingsModel ):
         super().__init__()
         self.manage_vendors_widget = manage_vendors_widget
         self.selected_index = -1
@@ -115,6 +115,8 @@ class ManageVendorsController(QObject):
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
+
+        self.settings = settings
 
         self.vendors = []
         self.vendor_names = set()  # Hash set for faster operations
@@ -264,7 +266,7 @@ class ManageVendorsController(QObject):
 
         # Apply Changes
         if original_name != new_name:
-            self.update_file_folder(original_name,new_name)
+            self.update_name_of_file_and_folder(original_name,new_name)
         selected_vendor.name = self.name_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
         selected_vendor.customer_id = self.customer_id_line_edit.text()
@@ -287,24 +289,20 @@ class ManageVendorsController(QObject):
 
         GeneralUtils.show_message("Changes Saved!")
 
-    def update_file_folder(self,original_name, new_name):
+    def update_name_of_file_and_folder(self,original_name, new_name):
+        DO_NOT_MODIFY_json_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + ".DO_NOT_MODIFY" + os.path.sep + "_json"
+        DO_NOT_MODIFY_year_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + ".DO_NOT_MODIFY"
+        default_year_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + "yearly_files"
+        default_other_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + "other_files"
 
-        if platform.system() == "Darwin":
-            workingPath1 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY/_json"
-            workingPath2 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY"
-            workingPath3 = os.getcwd() + os.path.sep + "all_data/yearly_files"
-            workingPath4 = os.getcwd() + os.path.sep + "all_data/other_files"
-        else:
-            workingPath1 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY\_json"
-            workingPath2 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY"
-            workingPath3 = os.getcwd() + os.path.sep + "all_data\yearly_files"
-            workingPath4 = os.getcwd() + os.path.sep + "all_data\other_files"
-        print(os.path.sep)
-        if(os.path.exists(workingPath1)):
-            folderList = os.listdir(workingPath1)
+        custom_year_path = self.settings.yearly_directory
+        custom_other_path = self.settings.other_directory
+
+        if(os.path.exists(DO_NOT_MODIFY_json_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath1 + os.path.sep + folder
+                    year_path = DO_NOT_MODIFY_json_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -315,17 +313,15 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,new_name)
-                            #print("change fileName from: " + old_file_path + " to: "+ new_file_path)
                             os.rename(old_file_path,new_file_path)
 
                         os.rename(original_folder_path,new_folder_path)
-                        #print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath2)):
-            folderList = os.listdir(workingPath1)
+        if (os.path.exists(DO_NOT_MODIFY_year_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath2 + os.path.sep + folder
+                    year_path = DO_NOT_MODIFY_year_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -336,17 +332,16 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
-                            # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
+
                             os.rename(old_file_path, new_file_path)
 
                         os.rename(original_folder_path, new_folder_path)
-                        # print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath3)):
-            folderList = os.listdir(workingPath1)
+        if (os.path.exists(default_year_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath3 + os.path.sep + folder
+                    year_path = default_year_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -357,20 +352,60 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
-                            # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
+
                             os.rename(old_file_path, new_file_path)
 
                         os.rename(original_folder_path, new_folder_path)
-                        # print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath4)):
-            filesList = os.listdir(workingPath4)
+        if (os.path.exists(default_other_path)):
+            original_folder_path = default_other_path + os.path.sep + original_name
+            new_folder_path = default_other_path + os.path.sep + new_name
 
-            for theFile in filesList:
-                if original_name in theFile:
-                    old_file_path = workingPath4 + os.path.sep + theFile
-                    new_file_path = workingPath4 + os.path.sep + theFile.replace(original_name, new_name)
+            if os.path.exists(original_folder_path):
+                filesList = os.listdir(original_folder_path)
+
+                for theFile in filesList:
+                    old_file_path = original_folder_path + os.path.sep + theFile
+                    new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                         new_name)
                     os.rename(old_file_path, new_file_path)
+
+                os.rename(original_folder_path, new_folder_path)
+
+        if (os.path.exists(custom_year_path)):
+            folderList = os.listdir(custom_year_path)
+            for folder in folderList:
+                if folder[0] == "2" and folder[1] == "0":
+                    year_path = custom_year_path + os.path.sep + folder
+
+                    original_folder_path = year_path + os.path.sep + original_name
+                    new_folder_path = year_path + os.path.sep + new_name
+
+                    if os.path.exists(original_folder_path):
+                        filesList = os.listdir(original_folder_path)
+
+                        for theFile in filesList:
+                            old_file_path = original_folder_path + os.path.sep + theFile
+                            new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                                 new_name)
+                            os.rename(old_file_path, new_file_path)
+
+                        os.rename(original_folder_path, new_folder_path)
+
+        if (os.path.exists(custom_other_path)):
+            original_folder_path = custom_other_path + os.path.sep + original_name
+            new_folder_path = custom_other_path + os.path.sep + new_name
+
+            if os.path.exists(original_folder_path):
+                filesList = os.listdir(original_folder_path)
+
+                for theFile in filesList:
+                    old_file_path = original_folder_path + os.path.sep + theFile
+                    new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                                 new_name)
+                    os.rename(old_file_path, new_file_path)
+
+                os.rename(original_folder_path, new_folder_path)
 
     def on_add_vendor_clicked(self):
         """Handles the signal emitted when the add vendor button is clicked
