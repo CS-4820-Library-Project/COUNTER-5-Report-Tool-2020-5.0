@@ -3,7 +3,7 @@
 This project uses the SUSHI API to request usage reports from library vendors. The JSON data received is used to generate TSV reports that follow the COUNTER 5 standards.
 The project is written with Python 3.7. The PyQt GUI framework is used to create a user friendly (hopefully) GUI.
 
-# Features
+## Features
 - Manage library vendor credentials
 - Fetch reports that strictly adhere to the COUNTER 5 standards
 - Fetch customized reports using the available parameters in the SUSHI API
@@ -12,13 +12,13 @@ The project is written with Python 3.7. The PyQt GUI framework is used to create
 - Search the sqlite database of fetched and imported reports
 - Generate charts using the data in the database
 
-# Developer Documentation
+## Developer Documentation
 https://libly.readthedocs.io/en/latest/
 
-# Latest Executables
+## Latest Executables
 https://github.com/CS-4820-Library-Project/Libly/releases/tag/v0.9-beta
 
-# Setup Instructions (Windows)
+## Setup Instructions (Windows)
 - Install Python 3.8.2 [https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe]
 ### Add Python to environment variables [https://datatofish.com/add-python-to-windows-path/]
 - Open control panel
@@ -51,16 +51,16 @@ type pip -v into command prompt, this should return the version of PIP that is i
 
 
 
-# Developer Setup (using Anaconda and Pycharm)
+## Developer Setup (using Anaconda and Pycharm)
 - Download and install Anaconda: https://www.anaconda.com/distribution/#download-section
 - Download and install PyCharm: https://www.jetbrains.com/pycharm/download/
 
-## Using Anaconda
+### Using Anaconda
 - Launch Anaconda Navigator (Anaconda GUI)
 - Go to Environments on the left pane
 - Search for and ensure that pyqt and requests packages are installed
 
-## Using PyCharm
+### Using PyCharm
 - Download and open the project using PyCharm
 - Go to File->Settings
 - On the left pane, select Project->Project Interpreter
