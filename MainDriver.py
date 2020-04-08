@@ -9,7 +9,7 @@ from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
 from Costs import CostsController
 from Search import SearchController
-from Settings import SettingsController
+from Settings import SettingsController, SettingsModel
 from Visual import VisualController
 import GeneralUtils
 import ManageDB
@@ -56,6 +56,8 @@ if __name__ == "__main__":
     manage_vendors_ui.setupUi(manage_vendors_tab)
     manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui, settings_controller.settings)
 
+    ManageDB.update_settings(settings_controller.settings)
+
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
     fetch_reports_ui.setupUi(fetch_reports_tab)
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     search_tab = QWidget(main_window)
     search_ui = SearchTab.Ui_search_tab()
     search_ui.setupUi(search_tab)
-    search_controller = SearchController(search_ui)
+    search_controller = SearchController(search_ui, settings_controller.settings)
 
     visual_tab = QWidget(main_window)
     visual_ui = VisualTab.Ui_visual_tab()
@@ -99,6 +101,13 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
     manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
+
+    settings_controller.settings_changed_signal.connect(ManageDB.update_settings)
+    settings_controller.settings_changed_signal.connect(search_controller.update_settings)
+    settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
+
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(visual_controller.database_updated)
     # endregion
 
     # region Add tabs to main window

@@ -6,7 +6,31 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 
 from Constants import *
+from Settings import SettingsModel
 from ui import UpdateDatabaseProgressDialog
+
+
+class ManageDBSignalHandler(QObject):
+    """Object for emitting the database changed signal"""
+    database_changed_signal = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+
+    def emit_database_changed_signal(self):
+        """Emits the database changed signal"""
+        self.database_changed_signal.emit(0)
+
+
+managedb_signal_handler = ManageDBSignalHandler()
+
+
+class ManageDBSettingsHandler:
+    settings = None
+
+
+def update_settings(new_settings: SettingsModel):
+    ManageDBSettingsHandler.settings = new_settings
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
@@ -280,7 +304,8 @@ def update_vendor_in_all_tables(old_name: str, new_name: str):
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         for sql_text in sql_texts:
-            run_sql(connection, sql_text['sql_text'], sql_text['data'])
+            run_sql(connection, sql_text['sql_text'], sql_text['data'], emit_signal=False)
+        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
@@ -346,6 +371,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
     :param vendor: the vendor name of the data in the file
     :param year: the year of the data in the file
     :returns: (file_name, report, values) a Tuple with the file name, the kind of report, and the data from the file"""
+    if ManageDBSettingsHandler.settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -358,12 +384,12 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
                 header[key] = cells[1].strip()
             else:
                 header[key] = None
-        # print(header)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(header)
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
-        # print(column_headers)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             for month in MONTHS:  # makes value from each month with metric > 0 for each row
@@ -396,12 +422,14 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
 
     :param file_name: the name of the file the data is from
     :returns: list of values from the file"""
+    if ManageDBSettingsHandler.settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             value = {}
@@ -442,35 +470,39 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
     return tuple(files)
 
 
-def insert_single_file(file_path: str, vendor: str, year: int):
+def insert_single_file(file_path: str, vendor: str, year: int, emit_signal: bool = True):
     """Inserts a single file's data into the database
 
     :param file_path: the path of the file the data is from
     :param vendor: the vendor name of the data in the file
-    :param year: the year of the data in the file"""
+    :param year: the year of the data in the file
+    :param emit_signal: whether to emit a signal upon completion"""
     file, report, read_data = read_report_file(file_path, vendor, year)
     delete, delete_data, replace, replace_data = replace_sql_text(file, report, read_data)
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, delete, delete_data)
-        run_sql(connection, replace, replace_data)
+        run_sql(connection, delete, delete_data, emit_signal=False)
+        run_sql(connection, replace, replace_data, emit_signal=False)
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
 
 
-def insert_single_cost_file(report_type: str, file_path: str):
+def insert_single_cost_file(report_type: str, file_path: str, emit_signal: bool = True):
     """Inserts a single file's data into the database
 
     :param report_type: the type of the report (master report name)
-    :param file_path: the path of the file the data is from"""
+    :param file_path: the path of the file the data is from
+    :param emit_signal: whether to emit a signal upon completion"""
     read_data = read_costs_file(file_path)
     sql_text, data = replace_costs_sql_text(report_type, read_data)
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, sql_text, data)
+        run_sql(connection, sql_text, data, emit_signal)
         connection.close()
     else:
         print('Error, no connection')
@@ -491,7 +523,6 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     clauses = [[{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year}],
                [{FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year}]]
     clauses.extend(search_parameters)
-    print(clauses)
     clauses_texts = []
     data = []
     for clause in clauses:
@@ -657,7 +688,6 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     connection = None
     try:
         connection = sqlite3.connect(db_file)
-        # print(sqlite3.version)
         return connection
     except sqlite3.Error as error:
         print(error)
@@ -665,19 +695,25 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None):
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None, 
+            emit_signal: bool = True):
     """Runs the SQL statement to modify the database
 
     :param connection: the connection to the database
     :param sql_text: the SQL statement
-    :param data: the parameters to the SQL statement"""
+    :param data: the parameters to the SQL statement
+    :param emit_signal: whether to emit a signal upon completion"""
     try:
         cursor = connection.cursor()
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(sql_text)
         if data is not None:
+            if ManageDBSettingsHandler.settings.show_debug_messages: print(data)
             cursor.executemany(sql_text, data)
         else:
             cursor.execute(sql_text)
         connection.commit()
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
     except sqlite3.Error as error:
         print(error)
 
@@ -692,7 +728,9 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
     :returns: a list of rows that return from the statement"""
     try:
         cursor = connection.cursor()
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(sql_text)
         if data is not None:
+            if ManageDBSettingsHandler.settings.show_debug_messages: print(data)
             cursor.execute(sql_text, data)
         else:
             cursor.execute(sql_text)
@@ -701,17 +739,16 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
         print(error)
 
 
-def setup_database(drop_tables: bool):
+def setup_database(drop_tables: bool, emit_signal: bool = True):
     """Sets up the database
 
-    :param drop_tables: whether to drop the tables before creating them"""
+    :param drop_tables: whether to drop the tables before creating them
+    :param emit_signal: whether to emit a signal upon completion"""
     sql_texts = {}
     sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
     sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
                       REPORT_TYPE_SWITCHER.keys()})
     sql_texts.update({report + VIEW_SUFFIX: create_view_sql_texts(report) for report in ALL_REPORTS})
-    for key in sql_texts:  # testing
-        print(sql_texts[key])
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
@@ -719,9 +756,11 @@ def setup_database(drop_tables: bool):
             if drop_tables:
                 print('DROP ' + key)
                 run_sql(connection,
-                        'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';')
+                        'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';',
+                        emit_signal=False)
             print('CREATE ' + key)
-            run_sql(connection, sql_texts[key])
+            run_sql(connection, sql_texts[key], emit_signal=False)
+        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
@@ -730,10 +769,13 @@ def setup_database(drop_tables: bool):
 def first_time_setup():
     """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + DATABASE_FOLDER)
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + DATABASE_LOCATION)
         setup_database(False)
     if not os.path.exists(COSTS_SAVE_FOLDER):
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER)
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
@@ -750,9 +792,10 @@ def backup_costs_data(report_type: str):
             headers.append(field[NAME_KEY])
         sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
         sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
-        print(sql_text)
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
+        if ManageDBSettingsHandler.settings.show_debug_messages:
+            print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
         file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
         if file.mode == 'w':
             output = csv.writer(file, delimiter='\t', quotechar='\"')
@@ -761,37 +804,6 @@ def backup_costs_data(report_type: str):
         connection.close()
     else:
         print('Error, no connection')
-
-
-def test_chart_search():
-    """temporary method to show how to use chart_search_sql_text"""
-    headers = tuple([field[NAME_KEY] for field in get_chart_report_fields_list('DR_D1')])
-    sql_text, data = chart_search_sql_text('DR_D1', 2019, 2020, '19th Century British Pamphlets', 'Searches_Automated',
-                                           'EBSCO')
-    print(sql_text)
-    print(data)
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        results.insert(0, headers)
-        # print(results)
-        for row in results:
-            print(row)
-
-
-def test_top_number_chart_search():
-    """temporary method to show how to use top_number_chart_search_sql_text"""
-    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('DR_D1')])
-    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, 'Searches_Automated', 'EBSCO', 10)
-    print(sql_text)
-    print(data)
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        results.insert(0, headers)
-        # print(results)
-        for row in results:
-            print(row)
 
 
 class UpdateDatabaseProgressDialogController:
@@ -873,7 +885,8 @@ class UpdateDatabaseProgressDialogController:
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
-        print(code)  # testing
+        if ManageDBSettingsHandler.settings.show_debug_messages:
+            print('update database thread exited with code ' + str(code))
         # exit thread
         self.update_database_thread.quit()
         self.update_database_thread.wait()
@@ -899,7 +912,7 @@ class UpdateDatabaseWorker(QObject):
         current = 0
         if self.recreate_tables:
             self.status_changed_signal.emit('Recreating tables...')
-            setup_database(True)
+            setup_database(True, emit_signal=False)
             current += 1
             self.progress_changed_signal.emit(current)
             self.task_finished_signal.emit('Recreated tables')
@@ -908,13 +921,13 @@ class UpdateDatabaseWorker(QObject):
         self.status_changed_signal.emit('Filling tables...')
         for file in self.files:
             filename = os.path.basename(file['file'])
-            print('READ ' + filename)
             if not filename[:-4].endswith(COST_TABLE_SUFFIX):
-                insert_single_file(file['file'], file['vendor'], file['year'])
+                insert_single_file(file['file'], file['vendor'], file['year'], emit_signal=False)
             else:
-                insert_single_cost_file(file['report'], file['file'])
+                insert_single_cost_file(file['report'], file['file'], emit_signal=False)
             self.task_finished_signal.emit(filename)
             current += 1
             self.progress_changed_signal.emit(current)
+        managedb_signal_handler.emit_database_changed_signal()
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)

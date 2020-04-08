@@ -409,7 +409,7 @@ COSTS_SAVE_FOLDER = r'./all_data/costs/'
 
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
-COMPARISON_OPERATORS = ('=', '<=', '<', '>=', '>', '<>', 'LIKE', 'NOT LIKE')
+COMPARISON_OPERATORS = ('LIKE', 'NOT LIKE', '=', '<=', '<', '>=', '>', '<>')
 NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')

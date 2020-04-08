@@ -1,6 +1,5 @@
 import json
 from typing import Sequence
-from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog
 
 import ManageDB
@@ -62,15 +61,15 @@ class CostsController:
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_costs)
 
-        self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
-        self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
-        self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
-        self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
-
         vendors_json_string = read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.clear()
         self.vendor_parameter_combobox.addItems([vendor_dict[NAME_KEY] for vendor_dict in vendor_dicts])
+
+        self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
+        self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
+        self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
+        self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
         self.on_report_parameter_changed()
         self.on_vendor_parameter_changed()
@@ -86,6 +85,19 @@ class CostsController:
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
+
+    def update_settings(self, settings: SettingsModel):
+        """Called when the settings are saved
+
+        :param settings: the new settings"""
+        self.settings = settings
+        self.load_currency_list()
+
+    def database_updated(self, code: int):
+        """Called when the database is updated
+
+        :param code: the exit code of the update"""
+        self.fill_names()
 
     def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]):
         """Updates the vendor list combobox
@@ -126,9 +138,8 @@ class CostsController:
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            print(sql_text)
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            print(results)
+            if self.settings.show_debug_messages: print(results)
             connection.close()
             self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
@@ -140,7 +151,6 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
-            self.load_currency_list()
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)

@@ -110,6 +110,12 @@ class VisualController:
         self.top_num = None
         self.results = None
 
+    def database_updated(self, code: int):
+        """Called when the database is updated
+
+        :param code: the exit code of the update"""
+        self.fill_names()
+
     def load_vendor_list(self, vendors: list):
         """Updates the vendor list combobox
 
@@ -158,7 +164,6 @@ class VisualController:
         self.name_combobox.clear()
         results = []
         sql_text, data = ManageDB.get_names_sql_text(self.report_parameter.currentText(), self.vendor.currentText())
-        print(sql_text)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
