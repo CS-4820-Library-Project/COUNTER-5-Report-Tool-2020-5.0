@@ -14,6 +14,7 @@ settings = None
 
 
 class ManageDBSignalHandler(QObject):
+    """Object for emitting the database changed signal"""
     database_changed_signal = pyqtSignal(int)
 
     def __init__(self):
