@@ -26,11 +26,15 @@ managedb_signal_handler = ManageDBSignalHandler()
 
 
 class ManageDBSettingsHandler:
+    """Class for holding the settings for ManageDB"""
     settings = None
 
 
-def update_settings(new_settings: SettingsModel):
-    ManageDBSettingsHandler.settings = new_settings
+def update_settings(settings: SettingsModel):
+    """Called when the settings are saved
+
+    :param settings: the new settings"""
+    ManageDBSettingsHandler.settings = settings
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'SearchAndClauseFrame.ui'
+# Form implementation generated from reading ui file 'SearchAndFrame.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -18,7 +18,7 @@ class Ui_search_and_clause_parameter_frame(object):
         sizePolicy.setHeightForWidth(search_and_clause_parameter_frame.sizePolicy().hasHeightForWidth())
         search_and_clause_parameter_frame.setSizePolicy(sizePolicy)
         search_and_clause_parameter_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        search_and_clause_parameter_frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        search_and_clause_parameter_frame.setFrameShadow(QtWidgets.QFrame.Plain)
         self.gridLayout = QtWidgets.QGridLayout(search_and_clause_parameter_frame)
         self.gridLayout.setObjectName("gridLayout")
         self.search_remove_and_clause_button = QtWidgets.QPushButton(search_and_clause_parameter_frame)
