@@ -1,4 +1,20 @@
-"""This module handles all operations involving fetching reports."""
+"""This module handles all operations involving fetching reports.
+
+The process of fetching reports is made up of these steps:
+
+1. Each vendor is queried for its supported reports using the SUSHI API
+2. The vendor is then queried for each supported report, also using the SUSHI API
+3. The raw JSON response is converted to JsonModel objects that make it easier to work with the JSON data.
+4. The model objects are then used to create create row objects that will be in the final TSV file.
+5. The row objects are then sorted by their primary columns, for example, item reports are sorted by the item column.
+6. The sorted rows are then used to create and save a final TSV report file that adheres to the COUNTER 5 standards.
+7. After all reports are processed, the database is updated with the new data
+
+.. NOTE::
+    All fetch operations are multi-threaded. Each vendor has it's own thread, each report for that vendor
+    also has it's own thread. The maximum concurrent vendors and reports (per vendor) can be changed in the settings tab
+    on the GUI
+"""
 
 from os import path, makedirs
 import csv
@@ -9,13 +25,12 @@ import copy
 import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton, QButtonGroup
 
 import GeneralUtils
-from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
-    VendorResultsWidget
+from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
