@@ -63,7 +63,20 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="costs_report_parameter_combobox"/>
+          <widget class="QComboBox" name="costs_report_parameter_combobox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="costs_vendor_parameter_label">
@@ -73,7 +86,23 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="costs_vendor_parameter_combobox"/>
+          <widget class="QComboBox" name="costs_vendor_parameter_combobox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="costs_year_parameter_label">
@@ -98,6 +127,18 @@
          </item>
          <item row="3" column="1">
           <widget class="QComboBox" name="costs_name_parameter_combobox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -116,6 +157,16 @@
           <widget class="QLabel" name="costs_cost_in_original_currency_label">
            <property name="text">
             <string>Cost in Original Currency</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="maximum">
+            <double>999999999.990000009536743</double>
            </property>
           </widget>
          </item>
@@ -143,23 +194,6 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="costs_cost_in_local_currency_with_tax_label">
-           <property name="text">
-            <string>Cost in Local Currency with Tax</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="maximum">
-            <double>999999999.990000009536743</double>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_doublespinbox">
            <property name="enabled">
@@ -167,6 +201,13 @@
            </property>
            <property name="maximum">
             <double>999999999.990000009536743</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="costs_cost_in_local_currency_with_tax_label">
+           <property name="text">
+            <string>Cost in Local Currency with Tax</string>
            </property>
           </widget>
          </item>
@@ -189,6 +230,13 @@
          <enum>QFrame::StyledPanel</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="costs_save_button">
+           <property name="text">
+            <string>Save Costs</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="2">
           <widget class="QPushButton" name="costs_clear_button">
            <property name="text">
@@ -196,24 +244,17 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="0" column="4">
           <widget class="QPushButton" name="costs_load_button">
            <property name="text">
-            <string>Load</string>
+            <string>Edit</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="3">
-          <widget class="QPushButton" name="costs_save_button">
-           <property name="text">
-            <string>Save Costs</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
+         <item row="0" column="5">
           <widget class="QPushButton" name="costs_import_costs_button">
            <property name="text">
-            <string>Import Costs</string>
+            <string>Import Costs File</string>
            </property>
           </widget>
          </item>
