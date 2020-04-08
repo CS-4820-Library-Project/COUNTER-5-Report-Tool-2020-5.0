@@ -7,6 +7,7 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
 
 import ManageDB
+from Settings import SettingsModel
 from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
 from Constants import *
 from GeneralUtils import *
@@ -15,10 +16,12 @@ from GeneralUtils import *
 class SearchController:
     """Controls the Search tab
 
-    :param search_ui: the UI for the search_widget"""
+    :param search_ui: the UI for the search_widget
+    :param settings: the user's settings"""
 
-    def __init__(self, search_ui: SearchTab.Ui_search_tab):
+    def __init__(self, search_ui: SearchTab.Ui_search_tab, settings: SettingsModel):
         self.main_window = search_ui
+        self.settings = settings
 
         # set up report types combobox
         self.report_parameter = search_ui.search_report_parameter_combobox
@@ -69,6 +72,12 @@ class SearchController:
         self.and_clause_parameters_scrollarea = search_ui.search_and_clause_parameters_scrollarea
         self.and_clause_parameters_frame = None
         refresh_and_add_clauses()
+
+    def update_settings(self, settings: SettingsModel):
+        """Called when the settings are saved
+
+        :param settings: the new settings"""
+        self.settings = settings
 
     def refresh_clauses(self):
         """Resets the search clauses"""
@@ -205,8 +214,6 @@ class SearchController:
 
         # sql query to get search results
         sql_text, data = ManageDB.search_sql_text(report, start_year, end_year, search_parameters)
-        print(sql_text)  # testing
-        print(data)  # testing
 
         headers = []
         for field in ManageDB.get_view_report_fields_list(report):
@@ -220,7 +227,7 @@ class SearchController:
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, sql_text, data)
                 results.insert(0, headers)
-                print(results)
+                if self.settings.show_debug_messages: print(results)
                 file = open(file_name, 'w', newline="", encoding='utf-8-sig')
                 if file.mode == 'w':
                     output = csv.writer(file, delimiter='\t', quotechar='\"')

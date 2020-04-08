@@ -88,7 +88,7 @@ if __name__ == "__main__":
     search_tab = QWidget(main_window)
     search_ui = SearchTab.Ui_search_tab()
     search_ui.setupUi(search_tab)
-    search_controller = SearchController(search_ui)
+    search_controller = SearchController(search_ui, settings_controller.settings)
 
     visual_tab = QWidget(main_window)
     visual_ui = VisualTab.Ui_visual_tab()
@@ -105,6 +105,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
 
     settings_controller.settings_changed_signal.connect(update_settings_in_managedb)
+    settings_controller.settings_changed_signal.connect(search_controller.update_settings)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
 
     ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
