@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'FetchProgressDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_FetchProgressDialog(object):
     def setupUi(self, FetchProgressDialog):
         FetchProgressDialog.setObjectName("FetchProgressDialog")
-        FetchProgressDialog.resize(680, 353)
+        FetchProgressDialog.resize(800, 600)
         FetchProgressDialog.setMinimumSize(QtCore.QSize(680, 0))
         font = QtGui.QFont()
         font.setPointSize(9)
@@ -57,7 +59,7 @@ class Ui_FetchProgressDialog(object):
         self.results_scroll_area.setWidgetResizable(True)
         self.results_scroll_area.setObjectName("results_scroll_area")
         self.scroll_area_widget_contents = QtWidgets.QWidget()
-        self.scroll_area_widget_contents.setGeometry(QtCore.QRect(0, 0, 660, 236))
+        self.scroll_area_widget_contents.setGeometry(QtCore.QRect(0, 0, 780, 480))
         self.scroll_area_widget_contents.setObjectName("scroll_area_widget_contents")
         self.scroll_area_vertical_layout = QtWidgets.QVBoxLayout(self.scroll_area_widget_contents)
         self.scroll_area_vertical_layout.setObjectName("scroll_area_vertical_layout")
@@ -76,4 +78,3 @@ class Ui_FetchProgressDialog(object):
         _translate = QtCore.QCoreApplication.translate
         FetchProgressDialog.setWindowTitle(_translate("FetchProgressDialog", "Fetch Progress"))
         self.status_label.setText(_translate("FetchProgressDialog", "Fetching..."))
-

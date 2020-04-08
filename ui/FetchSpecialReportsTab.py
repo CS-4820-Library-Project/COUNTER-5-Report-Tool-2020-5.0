@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'FetchSpecialReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
         fetch_special_reports_tab.setObjectName("fetch_special_reports_tab")
-        fetch_special_reports_tab.resize(800, 338)
+        fetch_special_reports_tab.resize(800, 347)
         fetch_special_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_special_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -278,14 +280,13 @@ class Ui_fetch_special_reports_tab(object):
         self.ir_radio_button.setText(_translate("fetch_special_reports_tab", "IR"))
         self.label_14.setText(_translate("fetch_special_reports_tab", "Options"))
         self.label_15.setText(_translate("fetch_special_reports_tab", "Date Range"))
-        self.end_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MM"))
+        self.end_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MMM"))
         self.label_24.setText(_translate("fetch_special_reports_tab", "Begin Date"))
         self.label_25.setText(_translate("fetch_special_reports_tab", "End Date"))
         self.end_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
-        self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MM"))
+        self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MMM"))
         self.begin_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
         self.label_41.setText(_translate("fetch_special_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_special_reports_tab", "Change"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
-
 import Resources_rc

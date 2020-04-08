@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>548</height>
+    <height>608</height>
    </rect>
   </property>
   <property name="font">
@@ -82,7 +82,7 @@
       <item row="7" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Platform (optional)</string>
+         <string>Platform</string>
         </property>
        </widget>
       </item>
@@ -102,7 +102,7 @@
       <item row="6" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>API Key (optional)</string>
+         <string>API Key</string>
         </property>
        </widget>
       </item>
@@ -118,19 +118,19 @@
       <item row="5" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Requestor ID (oprtional)</string>
+         <string>Requestor ID</string>
         </property>
        </widget>
       </item>
       <item row="8" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Local Only Vendor</string>
+         <string>Non-Sushi Vendor</string>
         </property>
        </widget>
       </item>
       <item row="8" column="1">
-       <widget class="QCheckBox" name="local_only_check_box">
+       <widget class="QCheckBox" name="non_Sushi_check_box">
         <property name="text">
          <string/>
         </property>

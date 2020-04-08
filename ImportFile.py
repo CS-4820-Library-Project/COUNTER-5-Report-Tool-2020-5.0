@@ -11,12 +11,12 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets
 
 import GeneralUtils
-from VariableConstants import *
+from Constants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
 from FetchData import ALL_REPORTS, CompletionStatus
 from Settings import SettingsModel
-from ManageDB import UpdateDatabaseProgressDialogController
+from ManageDB import UpdateDatabaseWorker
 
 
 class ProcessResult:
@@ -90,10 +90,6 @@ class ImportReportController:
         self.import_report_button.clicked.connect(self.on_import_clicked)
         # endregion
 
-        # set up restore database button
-        self.is_restoring_database = False
-        self.update_database_dialog = UpdateDatabaseProgressDialogController(self.import_report_widget)
-
     def on_vendors_changed(self, vendors: list):
         """Handles the signal emitted when the system's vendor list is updated
 
@@ -165,14 +161,16 @@ class ImportReportController:
         process_result = ProcessResult(vendor, report_type)
 
         try:
-            dest_file_dir = f"{self.settings.yearly_directory}{self.date.toString('yyyy')}/{vendor.name}/"
-            dest_file_name = f"{self.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
+
+            dest_file_dir = GeneralUtils.get_yearly_file_dir(self.settings.yearly_directory, vendor.name, self.date)
+            dest_file_name = GeneralUtils.get_yearly_file_name(vendor.name, report_type, self.date)
             dest_file_path = f"{dest_file_dir}{dest_file_name}"
 
             # Verify that dest_file_dir exists
             if not path.isdir(dest_file_dir):
                 makedirs(dest_file_dir)
 
+            # Validate report header
             delimiter = DELIMITERS[self.selected_file_path[-4:].lower()]
             file = open(self.selected_file_path, 'r', encoding='utf-8-sig')
             reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -180,15 +178,19 @@ class ImportReportController:
                 header = {}
                 for row in range(HEADER_ROWS):  # reads header row data
                     cells = next(reader)
-                    key = cells[0].lower()
-                    if key != HEADER_ENTRIES[row]:
-                        raise Exception('File has invalid header (missing a row)')
+                    if cells:
+                        key = cells[0].lower()
+                        if key != HEADER_ENTRIES[row]:
+                            raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
+                        else:
+                            header[key] = cells[1].strip()
                     else:
-                        header[key] = cells[1].strip()
+                        raise Exception('File has invalid header (missing row ' + HEADER_ENTRIES[row] + ')')
                 for row in range(BLANK_ROWS):
                     cells = next(reader)
-                    if cells[0].strip():
-                        raise Exception('File has invalid header (not enough blank rows)')
+                    if cells:
+                        if cells[0].strip():
+                            raise Exception('File has invalid header (not enough blank rows)')
                 print(report_type)
                 if header['report_id'] != report_type:
                     raise Exception('File has invalid header (wrong Report_Id)')
@@ -216,12 +218,11 @@ class ImportReportController:
             self.copy_file(self.selected_file_path, protected_file_path)
 
             # Add file to database
-            self.is_restoring_database = True
-            self.update_database_dialog.update_database([{'file': protected_file_path,
-                                                          'vendor': vendor.name,
-                                                          'year': int(self.date.toString('yyyy'))}],
-                                                        False)
-            self.is_restoring_database = False
+            database_worker = UpdateDatabaseWorker([{'file': protected_file_path,
+                                                     'vendor': vendor.name,
+                                                     'year': int(self.date.toString('yyyy'))}],
+                                                   False)
+            database_worker.work()
 
         except Exception as e:
             process_result.message = f"Exception: {e}"
@@ -261,8 +262,6 @@ class ImportReportController:
             report_result_ui.file_label.mousePressEvent = \
                 lambda event: GeneralUtils.open_file_or_dir(process_result.file_path)
 
-            folder_pixmap = QPixmap("./ui/resources/folder_icon.png")
-            report_result_ui.folder_button.setIcon(QIcon(folder_pixmap))
             report_result_ui.folder_button.clicked.connect(
                 lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 

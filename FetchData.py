@@ -1,4 +1,20 @@
-"""This module handles all operations involving fetching reports."""
+"""This module handles all operations involving fetching reports.
+
+The process of fetching reports is made up of these steps:
+
+1. Each vendor is queried for its supported reports using the SUSHI API
+2. The vendor is then queried for each supported report, also using the SUSHI API
+3. The raw JSON response is converted to JsonModel objects that make it easier to work with the JSON data.
+4. The model objects are then used to create create row objects that will be in the final TSV file.
+5. The row objects are then sorted by their primary columns, for example, item reports are sorted by the item column.
+6. The sorted rows are then used to create and save a final TSV report file that adheres to the COUNTER 5 standards.
+7. After all reports are processed, the database is updated with the new data
+
+.. NOTE::
+    All fetch operations are multi-threaded. Each vendor has it's own thread, each report for that vendor
+    also has it's own thread. The maximum concurrent vendors and reports (per vendor) can be changed in the settings tab
+    on the GUI
+"""
 
 from os import path, makedirs
 import csv
@@ -9,18 +25,17 @@ import copy
 import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton, QButtonGroup
 
 import GeneralUtils
-from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
-    VendorResultsWidget
+from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
-from VariableConstants import *
+from Constants import *
 
 
 # region Models
@@ -663,6 +678,7 @@ class ProcessResult:
         self.file_name = ""
         self.file_dir = ""
         self.file_path = ""
+        self.protected_file_path = ""
         self.year = ""
 
 
@@ -731,7 +747,7 @@ class FetchReportsAbstract:
         """
         self.vendors = []
         for vendor in vendors:
-            if vendor.is_local: continue
+            if vendor.is_non_sushi: continue
             self.vendors.append(vendor)
 
     def update_vendors_ui(self):
@@ -860,14 +876,15 @@ class FetchReportsAbstract:
         worker, thread = self.vendor_workers[worker_id]
         self.update_results_ui(worker.vendor, worker.process_result, worker.report_process_results)
 
-        process_result: ProcessResult
-        for process_result in worker.report_process_results:
-            if process_result.completion_status != CompletionStatus.SUCCESSFUL:
-                continue
+        if self.is_yearly_fetch:
+            process_result: ProcessResult
+            for process_result in worker.report_process_results:
+                if process_result.completion_status != CompletionStatus.SUCCESSFUL:
+                    continue
 
-            self.database_report_data.append({'file': process_result.file_path,
-                                              'vendor': process_result.vendor.name,
-                                              'year': process_result.year})
+                self.database_report_data.append({'file': process_result.protected_file_path,
+                                                  'vendor': process_result.vendor.name,
+                                                  'year': process_result.year})
 
         thread.quit()
         thread.wait()
@@ -1138,6 +1155,10 @@ class FetchReportsController(FetchReportsAbstract):
         # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
+        self.custom_dir_frame_message1 = fetch_reports_ui.label_38
+        self.custom_dir_frame_message1.hide()
+        self.custom_dir_frame_message2 = fetch_reports_ui.label
+        self.custom_dir_frame_message2.hide()
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
@@ -1182,8 +1203,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
 
     def on_date_month_changed(self, date: QDate, date_type: str):
         """Handles the signal emitted when a date's month is changed
@@ -1199,8 +1228,31 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
+
+
+    def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
+        """Checks which message will show on the custom dir frame
+
+        :param begin_date: The begin date
+        :param end_date: The end date
+        """
+        current_date = QDate.currentDate()
+
+        if begin_date.year() == end_date.year() == current_date.year():
+            if begin_date.month() == 1 and end_date.month() == 12:
+                return True
+
+        return False
 
     def on_custom_dir_clicked(self):
         """Handles the signal emitted when the choose custom directory button is clicked"""
@@ -1248,7 +1300,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.save_dir = self.settings.yearly_directory
         self.selected_data = []
         for i in range(len(self.vendors)):
-            if self.vendors[i].is_local: continue
+            if self.vendors[i].is_non_sushi: continue
 
             request_data = RequestData(self.vendors[i], ALL_REPORTS, self.begin_date, self.end_date,
                                        self.save_dir, self.settings)
@@ -1465,40 +1517,34 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             widget.deleteLater()
 
         # Add new options
+        self.options_layout.addWidget(QLabel("Show", self.options_frame), 0, 0)
+        self.options_layout.addWidget(QLabel("Filters", self.options_frame), 0, 1)
+
         special_options = SPECIAL_REPORT_OPTIONS[major_report_type]
         for i in range(len(special_options)):
             option_name = special_options[i][1]
-            label = QLabel(option_name, self.options_frame)
+            checkbox = QCheckBox(option_name, self.options_frame)
+            checkbox.toggled.connect(
+                lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
+            self.options_layout.addWidget(checkbox, i + 1, 0)
 
             option_type: SpecialOptionType = special_options[i][0]
-            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS:
+            if option_type == SpecialOptionType.AP or option_type == SpecialOptionType.POS\
+                    or option_type == SpecialOptionType.ADP:
                 line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
                 line_edit.setReadOnly(True)
                 button = QPushButton("Choose", self.options_frame)
-                button.clicked.connect(
-                    lambda c, so=special_options[i], edit=line_edit: self.on_special_parameter_option_button_clicked(so, edit))
+                if option_type == SpecialOptionType.ADP:
+                    button.clicked.connect(
+                        lambda c, so=special_options[i], edit=line_edit:
+                        self.on_special_date_parameter_option_button_clicked(so, edit))
+                else:
+                    button.clicked.connect(
+                        lambda c, so=special_options[i], edit=line_edit:
+                        self.on_special_parameter_option_button_clicked(so, edit))
 
-                self.options_layout.addWidget(line_edit, i, 1)
-                self.options_layout.addWidget(button, i, 2)
-
-            elif option_type == SpecialOptionType.ADP:
-                line_edit = QLineEdit(DEFAULT_SPECIAL_OPTION_VALUE, self.options_frame)
-                line_edit.setReadOnly(True)
-                button = QPushButton("Choose", self.options_frame)
-                button.clicked.connect(
-                    lambda c, so=special_options[i], edit=line_edit: self.on_special_date_parameter_option_button_clicked(so, edit))
-
-                self.options_layout.addWidget(line_edit, i, 1)
-                self.options_layout.addWidget(button, i, 2)
-
-            else:
-                checkbox = QCheckBox(self.options_frame)
-                checkbox.toggled.connect(
-                    lambda is_checked, option=option_name: self.on_special_option_toggled(option, is_checked))
-
-                self.options_layout.addWidget(checkbox, i, 1)
-
-            self.options_layout.addWidget(label, i, 0)
+                self.options_layout.addWidget(line_edit, i + 1, 1)
+                self.options_layout.addWidget(button, i + 1, 2)
 
     def on_special_option_toggled(self, option: str, is_checked: bool):
         """Handles the signal emitted when a special option is checked or un-checked
@@ -1517,9 +1563,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         :param line_edit: The line edit to show the selected parameters for this option
         """
         option_type, option_name, option_list = special_option
-        __, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
+        is_selected, option_type, option_name, curr_options = self.selected_options.__getattribute__(option_name.lower())
 
-        dialog = QDialog(self.options_frame)
+        dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
         layout = QVBoxLayout(dialog)
 
@@ -1546,10 +1592,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
                     checked_list.append(model.item(i).text())
 
             if len(checked_list) == 0:
-                is_selected = False
                 checked_list = [DEFAULT_SPECIAL_OPTION_VALUE]
-            else:
-                is_selected = True
+
             line_edit.setText("|".join(checked_list))
             self.selected_options.__setattr__(option_name.lower(), (is_selected, option_type, option_name, checked_list))
             dialog.close()
@@ -1569,9 +1613,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         :param line_edit: The line edit to show the selected date parameters for this option
         """
         option_type, option_name = special_option
-        __, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
+        is_selected, option_type, option_name, selected_options = self.selected_options.__getattribute__(option_name.lower())
 
-        dialog = QDialog(self.options_frame)
+        dialog = QDialog(self.options_frame, flags=Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         dialog.setWindowTitle(option_name + " options")
         layout = QVBoxLayout(dialog)
 
@@ -1624,14 +1668,10 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
         def on_ok_button_clicked():
             new_selection = [DEFAULT_SPECIAL_OPTION_VALUE]
-            is_selected = False
-
             checked_button = radio_button_group.checkedButton()
             if checked_button == single_date_radio_btn:
-                is_selected = True
                 new_selection = [single_date_edit.date().toString("yyyy")]
             elif checked_button == range_date_radio_btn:
-                is_selected = True
                 new_selection = [begin_date_edit.date().toString("yyyy") + "-" + end_date_edit.date().toString("yyyy")]
 
             line_edit.setText(new_selection[0])
@@ -1935,8 +1975,9 @@ class ReportWorker(QObject):
         self.save_dir = request_data.save_location
         self.special_options = request_data.special_options
 
-        self.is_yearly_dir = self.save_dir == request_data.settings.yearly_directory
+        self.is_yearly = self.save_dir == request_data.settings.yearly_directory
         self.is_special = self.special_options is not None
+        self.is_master = self.report_type in MASTER_REPORTS
 
         self.process_result = ProcessResult(self.vendor, self.report_type)
         self.retried_request = False
@@ -1960,8 +2001,8 @@ class ReportWorker(QObject):
         request_query["begin_date"] = self.begin_date.toString("yyyy-MM")
         request_query["end_date"] = self.end_date.toString("yyyy-MM")
 
+        attributes_to_show = ""
         if self.is_special:
-            attributes_to_show = ""
             attr_count = 0
             special_options_dict = self.special_options.__dict__
             for option in special_options_dict:
@@ -1985,8 +2026,20 @@ class ReportWorker(QObject):
                         elif attr_count > 0:
                             attributes_to_show += f"|{option_name}"
                             attr_count += 1
+        elif self.is_yearly and self.is_master:
+            major_report_type = get_major_report_type(self.report_type)
+            if major_report_type == MajorReportType.PLATFORM:
+                attributes_to_show = "|".join(PLATFORM_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.DATABASE:
+                attributes_to_show = "|".join(DATABASE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.TITLE:
+                attributes_to_show = "|".join(TITLE_REPORTS_ATTRIBUTES)
+            elif major_report_type == MajorReportType.ITEM:
+                attributes_to_show = "|".join(ITEM_REPORTS_ATTRIBUTES)
+                request_query["include_parent_details"] = True
+                request_query["include_component_details"] = True
 
-            if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
+        if attributes_to_show: request_query["attributes_to_show"] = attributes_to_show
 
         request_url = f"{self.vendor.base_url}/{self.report_type.lower()}"
 
@@ -2019,7 +2072,7 @@ class ReportWorker(QObject):
         """
         try:
             json_string = response.text
-            if self.is_yearly_dir: self.save_json_file(json_string)
+            if self.is_yearly: self.save_json_file(json_string)
 
             json_dict = json.loads(json_string)
             report_model = ReportModel.from_json(json_dict)
@@ -2390,15 +2443,17 @@ class ReportWorker(QObject):
         report_type = report_header.report_id
         major_report_type = report_header.major_report_type
 
-        if self.is_yearly_dir:
-            file_dir = f"{self.save_dir}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
-            file_name = f"{self.begin_date.toString('yyyy')}_{self.vendor.name}_{report_type}.tsv"
+        if self.is_yearly:
+            file_dir = GeneralUtils.get_yearly_file_dir(self.save_dir, self.vendor.name, self.begin_date)
+            file_name = GeneralUtils.get_yearly_file_name(self.vendor.name, self.report_type, self.begin_date)
         elif self.is_special:
-            file_dir = f"{self.save_dir}{self.vendor.name}/special/"
-            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}_S.tsv"
+            file_dir = GeneralUtils.get_special_file_dir(self.save_dir, self.vendor.name)
+            file_name = GeneralUtils.get_special_file_name(self.vendor.name, self.report_type, self.begin_date,
+                                                           self.end_date)
         else:
-            file_dir = f"{self.save_dir}{self.vendor.name}/"
-            file_name = f"{self.vendor.name}_{report_type}_{self.begin_date.toString('MMM-yyyy')}_{self.end_date.toString('MMM-yyyy')}.tsv"
+            file_dir = GeneralUtils.get_other_file_dir(self.save_dir, self.vendor.name)
+            file_name = GeneralUtils.get_other_file_name(self.vendor.name, self.report_type, self.begin_date,
+                                                         self.end_date)
 
         # Save user tsv file
         if not path.isdir(file_dir):
@@ -2406,9 +2461,12 @@ class ReportWorker(QObject):
 
         file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
-        self.add_report_header_to_file(report_header, file)
+        if self.is_yearly and self.is_master:
+            self.add_report_header_to_file(report_header, file, False)
+        else:
+            self.add_report_header_to_file(report_header, file, True)
 
-        if not self.add_report_rows_to_file(report_type, report_rows, file):
+        if not self.add_report_rows_to_file(report_type, report_rows, file, False):
             self.process_result.completion_status = CompletionStatus.WARNING
 
         file.close()
@@ -2418,8 +2476,9 @@ class ReportWorker(QObject):
         self.process_result.year = self.begin_date.toString('yyyy')
 
         # Save protected tsv file
-        if self.is_yearly_dir:
-            protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.begin_date.toString('yyyy')}/{self.vendor.name}/"
+        if self.is_yearly:
+            protected_file_dir = GeneralUtils.get_yearly_file_dir(PROTECTED_DATABASE_FILE_DIR, self.vendor.name,
+                                                                  self.begin_date)
             if not path.isdir(protected_file_dir):
                 makedirs(protected_file_dir)
                 if platform.system() == "Windows":
@@ -2427,15 +2486,18 @@ class ReportWorker(QObject):
 
             protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
-            self.add_report_header_to_file(report_header, protected_file)
-            self.add_report_rows_to_file(report_type, report_rows, protected_file)
-            protected_file.close()
+            self.add_report_header_to_file(report_header, protected_file, True)
+            self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
 
-    def add_report_header_to_file(self, report_header: ReportHeaderModel, file):
+            protected_file.close()
+            self.process_result.protected_file_path = protected_file_path
+
+    def add_report_header_to_file(self, report_header: ReportHeaderModel, file, include_attributes: bool):
         """Adds the report header to a TSV file
 
         :param report_header: The report header model
         :param file: The TSV file to write to
+        :param include_attributes: Include the Report_Attributes value
         """
         tsv_writer = csv.writer(file, delimiter='\t')
         tsv_writer.writerow(["Report_Name", report_header.report_name])
@@ -2462,8 +2524,9 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Report_Filters", report_filters_str.rstrip("; ")])
 
         report_attributes_str = ""
-        for report_attribute in report_header.report_attributes:
-            report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
+        if include_attributes:
+            for report_attribute in report_header.report_attributes:
+                report_attributes_str += f"{report_attribute.name}={report_attribute.value}; "
         tsv_writer.writerow(["Report_Attributes", report_attributes_str.rstrip("; ")])
 
         exceptions_str = ""
@@ -2476,12 +2539,13 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-    def add_report_rows_to_file(self, report_type: str, report_rows: list, file) -> bool:
+    def add_report_rows_to_file(self, report_type: str, report_rows: list, file, include_all_attributes: bool) -> bool:
         """Adds the report's rows to a TSV file
 
         :param report_type: The report type
         :param report_rows: The report's rows
         :param file: The TSV file to write to
+        :param include_all_attributes: Option to include all possible attributes for this report type to the report
         """
         column_names = []
         row_dicts = []
@@ -2492,6 +2556,9 @@ class ReportWorker(QObject):
                 special_options_dict = self.special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2504,6 +2571,9 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2528,6 +2598,9 @@ class ReportWorker(QObject):
                 special_options_dict = self.special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2545,6 +2618,9 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2577,6 +2653,12 @@ class ReportWorker(QObject):
                 if special_options_dict["yop"][0]: column_names.append("YOP")
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names.append("Data_Type")
+                column_names.append("Section_Type")
+                column_names.append("YOP")
+                column_names.append("Access_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2602,6 +2684,12 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["Section_Type"] = row.section_type
+                        row_dict["YOP"] = row.yop
+                        row_dict["Access_Type"] = row.access_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,
@@ -2727,6 +2815,10 @@ class ReportWorker(QObject):
                 if special_options_dict["authors"][0]: column_names.append("Authors")
                 if special_options_dict["publication_date"][0]: column_names.append("Publication_Date")
                 if special_options_dict["article_version"][0]: column_names.append("Article_version")
+            elif include_all_attributes:
+                column_names.append("Authors")
+                column_names.append("Publication_Date")
+                column_names.append("Article_version")
             column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
             if self.is_special:
                 special_options_dict = self.special_options.__dict__
@@ -2743,6 +2835,17 @@ class ReportWorker(QObject):
                 if special_options_dict["yop"][0]: column_names.append("YOP")
                 if special_options_dict["access_type"][0]: column_names.append("Access_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
+            elif include_all_attributes:
+                column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date", "Parent_Article_Version",
+                                 "Parent_Data_Type", "Parent_DOI", "Parent_Proprietary_ID", "Parent_ISBN",
+                                 "Parent_Print_ISSN", "Parent_Online_ISSN", "Parent_URI"]
+                column_names += ["Component_Title", "Component_Authors", "Component_Publication_Date",
+                                 "Component_Data_Type", "Component_DOI", "Component_Proprietary_ID", "Component_ISBN",
+                                 "Component_Print_ISSN", "Component_Online_ISSN", "Component_URI"]
+                column_names.append("Data_Type")
+                column_names.append("YOP")
+                column_names.append("Access_Type")
+                column_names.append("Access_Method")
 
             row: ReportRow
             for row in report_rows:
@@ -2793,6 +2896,35 @@ class ReportWorker(QObject):
                     if not special_options_dict["exclude_monthly_details"][0]:
                         row_dict.update(row.month_counts)
                 else:
+                    if include_all_attributes:
+                        row_dict["Authors"] = row.authors
+                        row_dict["Publication_Date"] = row.publication_date
+                        row_dict["Article_version"] = row.article_version
+                        row_dict.update({"Parent_Title": row.parent_title,
+                                         "Parent_Authors": row.parent_authors,
+                                         "Parent_Publication_Date": row.parent_publication_date,
+                                         "Parent_Article_Version": row.parent_article_version,
+                                         "Parent_Data_Type": row.parent_data_type,
+                                         "Parent_DOI": row.parent_doi,
+                                         "Parent_Proprietary_ID": row.parent_proprietary_id,
+                                         "Parent_ISBN": row.parent_isbn,
+                                         "Parent_Print_ISSN": row.parent_print_issn,
+                                         "Parent_Online_ISSN": row.parent_online_issn,
+                                         "Parent_URI": row.parent_uri})
+                        row_dict.update({"Component_Title": row.component_title,
+                                         "Component_Authors": row.component_authors,
+                                         "Component_Publication_Date": row.component_publication_date,
+                                         "Component_Data_Type": row.component_data_type,
+                                         "Component_DOI": row.component_doi,
+                                         "Component_Proprietary_ID": row.component_proprietary_id,
+                                         "Component_ISBN": row.component_isbn,
+                                         "Component_Print_ISSN": row.component_print_issn,
+                                         "Component_Online_ISSN": row.component_online_issn,
+                                         "Component_URI": row.component_uri})
+                        row_dict["Data_Type"] = row.data_type
+                        row_dict["YOP"] = row.yop
+                        row_dict["Access_Type"] = row.access_type
+                        row_dict["Access_Method"] = row.access_method
                     row_dict.update(row.month_counts)
 
                 row_dict.update({"Metric_Type": row.metric_type,

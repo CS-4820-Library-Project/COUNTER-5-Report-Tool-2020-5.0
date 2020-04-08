@@ -2,7 +2,6 @@
 
 import csv
 import os
-import platform
 import json
 import validators
 from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
@@ -12,7 +11,8 @@ from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
 import ManageDB
 import GeneralUtils
 from GeneralUtils import JsonModel
-from VariableConstants import *
+from Constants import *
+from Settings import SettingsModel
 
 VENDORS_FILE_DIR = "./all_data/vendor_manager/"
 VENDORS_FILE_NAME = "vendors.dat"
@@ -30,19 +30,19 @@ class Vendor(JsonModel):
     :param requestor_id: The requestor id id used in sushi report calls
     :param api_key: The api key id used in sushi report calls
     :param platform: The platform id used in sushi report calls
-    :param is_local: This indicates if this vendor is sushi compatible
+    :param is_non_sushi: This indicates if this vendor is sushi compatible
     :param description: A description of this vendor
     :param companies: More information about the vendor
     """
     def __init__(self, name: str, base_url: str, customer_id: str, requestor_id: str, api_key: str, platform: str,
-                 is_local: bool, description: str, companies: str):
+                 is_non_sushi: bool, description: str, companies: str):
         self.name = name
         self.base_url = base_url
         self.customer_id = customer_id
         self.requestor_id = requestor_id
         self.api_key = api_key
         self.platform = platform
-        self.is_local = is_local
+        self.is_non_sushi = is_non_sushi
         self.description = description
         self.companies = companies
 
@@ -59,11 +59,11 @@ class Vendor(JsonModel):
         requestor_id = json_dict["requestor_id"] if "requestor_id" in json_dict else ""
         api_key = json_dict["api_key"] if "api_key" in json_dict else ""
         platform = json_dict["platform"] if "platform" in json_dict else ""
-        is_local = json_dict["is_local"] if "is_local" in json_dict else False
+        is_non_sushi = json_dict["is_non_sushi"] if "is_non_sushi" in json_dict else False
         description = json_dict["description"] if "description" in json_dict else ""
         companies = json_dict["companies"] if "companies" in json_dict else ""
 
-        return cls(name, base_url, customer_id, requestor_id, api_key, platform, is_local, description, companies)
+        return cls(name, base_url, customer_id, requestor_id, api_key, platform, is_non_sushi, description, companies)
 
 
 class ManageVendorsController(QObject):
@@ -74,7 +74,7 @@ class ManageVendorsController(QObject):
     """
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab):
+    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab, settings: SettingsModel ):
         super().__init__()
         self.manage_vendors_widget = manage_vendors_widget
         self.selected_index = -1
@@ -88,7 +88,7 @@ class ManageVendorsController(QObject):
         self.requestor_id_line_edit = manage_vendors_ui.requestorIdEdit
         self.api_key_line_edit = manage_vendors_ui.apiKeyEdit
         self.platform_line_edit = manage_vendors_ui.platformEdit
-        self.local_only_check_box = manage_vendors_ui.local_only_check_box
+        self.non_Sushi_check_box = manage_vendors_ui.non_Sushi_check_box
         self.description_text_edit = manage_vendors_ui.descriptionEdit
         self.companies_text_edit = manage_vendors_ui.companiesEdit
 
@@ -115,6 +115,8 @@ class ManageVendorsController(QObject):
         self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
         self.vendor_list_view.setModel(self.vendor_list_model)
         self.vendor_list_view.clicked.connect(self.on_vendor_selected)
+
+        self.settings = settings
 
         self.vendors = []
         self.vendor_names = set()  # Hash set for faster operations
@@ -229,7 +231,7 @@ class ManageVendorsController(QObject):
         if not is_valid:
             return is_valid, message
 
-        if not new_vendor.is_local:
+        if not new_vendor.is_non_sushi:
             is_valid, message = self.validate_url(new_vendor.base_url)
             if not is_valid:
                 return is_valid, message
@@ -255,7 +257,7 @@ class ManageVendorsController(QObject):
             GeneralUtils.show_message(message)
             return
 
-        if not self.local_only_check_box.isChecked():
+        if not self.non_Sushi_check_box.isChecked():
             url = self.base_url_line_edit.text()
             is_valid, message = self.validate_url(url)
             if not is_valid:
@@ -264,14 +266,14 @@ class ManageVendorsController(QObject):
 
         # Apply Changes
         if original_name != new_name:
-            self.update_file_folder(original_name,new_name)
+            self.update_name_of_file_and_folder(original_name,new_name)
         selected_vendor.name = self.name_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
         selected_vendor.customer_id = self.customer_id_line_edit.text()
         selected_vendor.requestor_id = self.requestor_id_line_edit.text()
         selected_vendor.api_key = self.api_key_line_edit.text()
         selected_vendor.platform = self.platform_line_edit.text()
-        selected_vendor.is_local = self.local_only_check_box.checkState() == Qt.Checked
+        selected_vendor.is_non_sushi = self.non_Sushi_check_box.checkState() == Qt.Checked
         selected_vendor.description = self.description_text_edit.toPlainText()
         selected_vendor.companies = self.companies_text_edit.toPlainText()
 
@@ -287,24 +289,20 @@ class ManageVendorsController(QObject):
 
         GeneralUtils.show_message("Changes Saved!")
 
-    def update_file_folder(self,original_name, new_name):
+    def update_name_of_file_and_folder(self,original_name, new_name):
+        DO_NOT_MODIFY_json_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + ".DO_NOT_MODIFY" + os.path.sep + "_json"
+        DO_NOT_MODIFY_year_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + ".DO_NOT_MODIFY"
+        default_year_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + "yearly_files"
+        default_other_path = os.getcwd() + os.path.sep + "all_data" + os.path.sep + "other_files"
 
-        if platform.system() == "Darwin":
-            workingPath1 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY/_json"
-            workingPath2 = os.getcwd() + os.path.sep + "all_data/.DO_NOT_MODIFY"
-            workingPath3 = os.getcwd() + os.path.sep + "all_data/yearly_files"
-            workingPath4 = os.getcwd() + os.path.sep + "all_data/other_files"
-        else:
-            workingPath1 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY\_json"
-            workingPath2 = os.getcwd() + os.path.sep + "all_data\.DO_NOT_MODIFY"
-            workingPath3 = os.getcwd() + os.path.sep + "all_data\yearly_files"
-            workingPath4 = os.getcwd() + os.path.sep + "all_data\other_files"
-        print(os.path.sep)
-        if(os.path.exists(workingPath1)):
-            folderList = os.listdir(workingPath1)
+        custom_year_path = self.settings.yearly_directory
+        custom_other_path = self.settings.other_directory
+
+        if(os.path.exists(DO_NOT_MODIFY_json_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath1 + os.path.sep + folder
+                    year_path = DO_NOT_MODIFY_json_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -315,17 +313,15 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,new_name)
-                            #print("change fileName from: " + old_file_path + " to: "+ new_file_path)
                             os.rename(old_file_path,new_file_path)
 
                         os.rename(original_folder_path,new_folder_path)
-                        #print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath2)):
-            folderList = os.listdir(workingPath1)
+        if (os.path.exists(DO_NOT_MODIFY_year_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath2 + os.path.sep + folder
+                    year_path = DO_NOT_MODIFY_year_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -336,17 +332,16 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
-                            # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
+
                             os.rename(old_file_path, new_file_path)
 
                         os.rename(original_folder_path, new_folder_path)
-                        # print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath3)):
-            folderList = os.listdir(workingPath1)
+        if (os.path.exists(default_year_path)):
+            folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
-                    year_path = workingPath3 + os.path.sep + folder
+                    year_path = default_year_path + os.path.sep + folder
 
                     original_folder_path = year_path + os.path.sep + original_name
                     new_folder_path = year_path + os.path.sep + new_name
@@ -357,20 +352,60 @@ class ManageVendorsController(QObject):
                         for theFile in filesList:
                             old_file_path = original_folder_path + os.path.sep + theFile
                             new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name, new_name)
-                            # print("change fileName from: " + old_file_path + " to: "+ new_file_path)
+
                             os.rename(old_file_path, new_file_path)
 
                         os.rename(original_folder_path, new_folder_path)
-                        # print("change folderName from: " + original_folder_path + " to: " + new_folder_path)
 
-        if (os.path.exists(workingPath4)):
-            filesList = os.listdir(workingPath4)
+        if (os.path.exists(default_other_path)):
+            original_folder_path = default_other_path + os.path.sep + original_name
+            new_folder_path = default_other_path + os.path.sep + new_name
 
-            for theFile in filesList:
-                if original_name in theFile:
-                    old_file_path = workingPath4 + os.path.sep + theFile
-                    new_file_path = workingPath4 + os.path.sep + theFile.replace(original_name, new_name)
+            if os.path.exists(original_folder_path):
+                filesList = os.listdir(original_folder_path)
+
+                for theFile in filesList:
+                    old_file_path = original_folder_path + os.path.sep + theFile
+                    new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                         new_name)
                     os.rename(old_file_path, new_file_path)
+
+                os.rename(original_folder_path, new_folder_path)
+
+        if (os.path.exists(custom_year_path)):
+            folderList = os.listdir(custom_year_path)
+            for folder in folderList:
+                if folder[0] == "2" and folder[1] == "0":
+                    year_path = custom_year_path + os.path.sep + folder
+
+                    original_folder_path = year_path + os.path.sep + original_name
+                    new_folder_path = year_path + os.path.sep + new_name
+
+                    if os.path.exists(original_folder_path):
+                        filesList = os.listdir(original_folder_path)
+
+                        for theFile in filesList:
+                            old_file_path = original_folder_path + os.path.sep + theFile
+                            new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                                 new_name)
+                            os.rename(old_file_path, new_file_path)
+
+                        os.rename(original_folder_path, new_folder_path)
+
+        if (os.path.exists(custom_other_path)):
+            original_folder_path = custom_other_path + os.path.sep + original_name
+            new_folder_path = custom_other_path + os.path.sep + new_name
+
+            if os.path.exists(original_folder_path):
+                filesList = os.listdir(original_folder_path)
+
+                for theFile in filesList:
+                    old_file_path = original_folder_path + os.path.sep + theFile
+                    new_file_path = original_folder_path + os.path.sep + theFile.replace(original_name,
+                                                                                                 new_name)
+                    os.rename(old_file_path, new_file_path)
+
+                os.rename(original_folder_path, new_folder_path)
 
     def on_add_vendor_clicked(self):
         """Handles the signal emitted when the add vendor button is clicked
@@ -388,7 +423,7 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
-        local_only_check_box = vendor_dialog_ui.local_only_check_box
+        non_Sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
         companies_edit = vendor_dialog_ui.companiesEdit
 
@@ -404,7 +439,7 @@ class ManageVendorsController(QObject):
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
-                            api_key_edit.text(), platform_edit.text(), local_only_check_box.checkState() == Qt.Checked,
+                            api_key_edit.text(), platform_edit.text(), non_Sushi_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText(), companies_edit.toPlainText())
 
             is_valid, message = self.add_vendor(vendor)
@@ -464,7 +499,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText(selected_vendor.requestor_id)
             self.api_key_line_edit.setText(selected_vendor.api_key)
             self.platform_line_edit.setText(selected_vendor.platform)
-            self.local_only_check_box.setChecked(selected_vendor.is_local)
+            self.non_Sushi_check_box.setChecked(selected_vendor.is_non_sushi)
             self.description_text_edit.setPlainText(selected_vendor.description)
             self.companies_text_edit.setPlainText(selected_vendor.companies)
 
@@ -485,7 +520,7 @@ class ManageVendorsController(QObject):
             self.requestor_id_line_edit.setText("")
             self.api_key_line_edit.setText("")
             self.platform_line_edit.setText("")
-            self.local_only_check_box.setChecked(False)
+            self.non_Sushi_check_box.setChecked(False)
             self.description_text_edit.setPlainText("")
             self.companies_text_edit.setPlainText("")
 
@@ -546,17 +581,17 @@ class ManageVendorsController(QObject):
             tsv_file = open(file_path, 'r', encoding="utf-8", newline='')
             reader = csv.DictReader(tsv_file, delimiter='\t')
             for row in reader:
-                if 'is_local' in row:
-                    is_local = row['is_local'].lower() == "true"
+                if 'is_non_sushi' in row:
+                    is_non_sushi = row['is_non_sushi'].lower() == "true"
                 else:
-                    is_local = False
+                    is_non_sushi = False
                 vendor = Vendor(row['name'] if 'name' in row else "",
                                 row['base_url'] if 'base_url' in row else "",
                                 row['customer_id'] if 'customer_id' in row else "",
                                 row['requestor_id'] if 'requestor_id' in row else "",
                                 row['api_key'] if 'api_key' in row else "",
                                 row['platform'] if 'platform' in row else "",
-                                is_local,
+                                is_non_sushi,
                                 row['description'] if 'description' in row else "",
                                 row['companies'] if 'companies' in row else "")
 
@@ -591,7 +626,7 @@ class ManageVendorsController(QObject):
                         "requestor_id",
                         "api_key",
                         "platform",
-                        "is_local",
+                        "is_non_sushi",
                         "description",
                         "companies"]
         try:

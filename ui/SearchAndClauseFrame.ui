@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>542</width>
+    <width>296</width>
     <height>175</height>
    </rect>
   </property>
@@ -35,7 +35,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Remove &quot;And&quot; Clause</string>
+      <string>Remove &quot;And&quot;</string>
      </property>
     </widget>
    </item>
@@ -48,7 +48,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Add &quot;Or&quot; Clause</string>
+      <string>Add &quot;Or&quot;</string>
      </property>
     </widget>
    </item>

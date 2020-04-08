@@ -1,15 +1,14 @@
 """This module handles all operations involving the user's settings."""
 
 import json
-from enum import Enum
-from PyQt5.QtWidgets import QFileDialog, QWidget
+from os import path
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import QObject, pyqtSignal
 from ui import SettingsTab
 import ManageDB
+from Constants import *
 import GeneralUtils
 from GeneralUtils import JsonModel
-
-SETTINGS_FILE_DIR = "./all_data/settings/"
-SETTINGS_FILE_NAME = "settings.dat"
 
 
 class Setting(Enum):
@@ -22,18 +21,6 @@ class Setting(Enum):
     CONCURRENT_REPORTS = 5
     EMPTY_CELL = 6
     USER_AGENT = 7
-
-
-# Default Settings
-SHOW_DEBUG_MESSAGES = False
-YEARLY_DIR = "./all_data/yearly_files/"
-OTHER_DIR = "./all_data/other_files/"
-REQUEST_INTERVAL = 3  # Seconds
-REQUEST_TIMEOUT = 120  # Seconds
-CONCURRENT_VENDORS = 5
-CONCURRENT_REPORTS = 5
-EMPTY_CELL = ""
-USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 
 
 class SettingsModel(JsonModel):
@@ -51,16 +38,17 @@ class SettingsModel(JsonModel):
     """
     def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
                  request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
-                 user_agent: str):
+                 user_agent: str, default_currency: str):
         self.show_debug_messages = show_debug_messages
-        self.yearly_directory = yearly_directory
-        self.other_directory = other_directory
+        self.yearly_directory = path.abspath(yearly_directory) + path.sep
+        self.other_directory = path.abspath(other_directory) + path.sep
         self.request_interval = request_interval
         self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
         self.empty_cell = empty_cell
         self.user_agent = user_agent
+        self.default_currency = default_currency
 
     @classmethod
     def from_json(cls, json_dict: dict):
@@ -82,19 +70,24 @@ class SettingsModel(JsonModel):
             if "empty_cell" in json_dict else EMPTY_CELL
         user_agent = json_dict["user_agent"]\
             if "user_agent" in json_dict else USER_AGENT
+        default_currency = json_dict["default_currency"]\
+            if "default_currency" in json_dict else DEFAULT_CURRENCY
 
         return cls(show_debug_messages, yearly_directory, other_directory, request_interval, request_timeout,
-                   concurrent_vendors, concurrent_reports, empty_cell, user_agent)
+                   concurrent_vendors, concurrent_reports, empty_cell, user_agent, default_currency)
 
 
-class SettingsController:
+class SettingsController(QObject):
     """Controls the Settings tab
 
     :param settings_widget: The settings widget.
     :param settings_ui: The UI for settings_widget.
     """
+    settings_changed_signal = pyqtSignal(SettingsModel)
+
     def __init__(self, settings_widget: QWidget, settings_ui: SettingsTab.Ui_settings_tab):
         # region General
+        super().__init__()
         self.settings_widget = settings_widget
 
         json_string = GeneralUtils.read_json_file(SETTINGS_FILE_DIR + SETTINGS_FILE_NAME)
@@ -150,6 +143,12 @@ class SettingsController:
 
         # endregion
 
+        # region Costs
+        self.default_currency_combobox = settings_ui.settings_costs_default_currency_combobox
+        self.default_currency_combobox.addItems(CURRENCY_LIST)
+        self.default_currency_combobox.setCurrentText(self.settings.default_currency)
+        # endregion
+
         # region Search
         # set up restore database button
         self.is_restoring_database = False
@@ -158,7 +157,7 @@ class SettingsController:
         self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
         # endregion
 
-        settings_ui.save_button.clicked.connect(self._on_save_button_clicked)
+        settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
 
     def on_directory_setting_clicked(self, setting: Setting):
         """Handles the signal emitted when a choose folder button is clicked
@@ -172,10 +171,11 @@ class SettingsController:
             elif setting == Setting.OTHER_DIR:
                 self.other_dir_edit.setText(dir_path)
 
-    def _on_save_button_clicked(self):
+    def on_save_button_clicked(self):
         """Handles the signal emitted when the save button is clicked"""
         self.update_settings()
         self.save_settings_to_disk()
+        self.settings_changed_signal.emit(self.settings)
         GeneralUtils.show_message("Changes saved!")
 
     def on_restore_database_clicked(self):
@@ -201,6 +201,7 @@ class SettingsController:
         self.settings.concurrent_reports = self.concurrent_reports_spin_box.value()
         self.settings.empty_cell = self.empty_cell_edit.text()
         self.settings.user_agent = self.user_agent_edit.text()
+        self.settings.default_currency = self.default_currency_combobox.currentText()
 
     def save_settings_to_disk(self):
         """Saves all settings to disk"""

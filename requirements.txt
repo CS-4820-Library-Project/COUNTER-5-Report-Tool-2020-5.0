@@ -1,5 +1,6 @@
 xlsxwriter
 validators
+sphinx==2.4.4
 sphinx_autodoc_typehints
 certifi==2019.11.28
 chardet==3.0.4

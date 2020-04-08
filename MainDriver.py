@@ -9,7 +9,7 @@ from FetchData import FetchReportsController, FetchSpecialReportsController
 from ImportFile import ImportReportController
 from Costs import CostsController
 from Search import SearchController
-from Settings import SettingsController
+from Settings import SettingsController, SettingsModel
 from Visual import VisualController
 import GeneralUtils
 import ManageDB
@@ -46,15 +46,17 @@ if __name__ == "__main__":
     main_window_ui.setupUi(main_window)
 
     # region Setup Tab Controllers
-    manage_vendors_tab = QWidget(main_window)
-    manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
-    manage_vendors_ui.setupUi(manage_vendors_tab)
-    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui)
-
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()
     settings_ui.setupUi(settings_tab)
     settings_controller = SettingsController(settings_tab, settings_ui)
+
+    manage_vendors_tab = QWidget(main_window)
+    manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
+    manage_vendors_ui.setupUi(manage_vendors_tab)
+    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui, settings_controller.settings)
+
+    ManageDB.update_settings(settings_controller.settings)
 
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
@@ -73,7 +75,7 @@ if __name__ == "__main__":
     costs_tab = QWidget(main_window)
     costs_tab_ui = CostsTab.Ui_costs_tab()
     costs_tab_ui.setupUi(costs_tab)
-    costs_controller = CostsController(costs_tab_ui)
+    costs_controller = CostsController(costs_tab_ui, settings_controller.settings)
 
     import_report_tab = QWidget(main_window)
     import_report_ui = ImportReportTab.Ui_import_report_tab()
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     search_tab = QWidget(main_window)
     search_ui = SearchTab.Ui_search_tab()
     search_ui.setupUi(search_tab)
-    search_controller = SearchController(search_ui)
+    search_controller = SearchController(search_ui, settings_controller.settings)
 
     visual_tab = QWidget(main_window)
     visual_ui = VisualTab.Ui_visual_tab()
@@ -99,6 +101,13 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
     manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
+
+    settings_controller.settings_changed_signal.connect(ManageDB.update_settings)
+    settings_controller.settings_changed_signal.connect(search_controller.update_settings)
+    settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
+
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(visual_controller.database_updated)
     # endregion
 
     # region Add tabs to main window

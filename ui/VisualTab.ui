@@ -119,61 +119,7 @@
          <enum>QFrame::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_13">
-         <item row="4" column="0">
-          <widget class="QFrame" name="frame_18">
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_28">
-            <item>
-             <widget class="QLabel" name="label_45">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <family>Arial</family>
-               </font>
-              </property>
-              <property name="text">
-               <string>Select Chart Type</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::AutoText</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_3">
-              <property name="text">
-               <string>Vertical Bar</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton">
-              <property name="text">
-               <string>Horizontal Bar</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_4">
-              <property name="text">
-               <string>Line</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="2">
+         <item row="1" column="0" colspan="3">
           <widget class="QFrame" name="frame_2">
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
@@ -182,6 +128,9 @@
             <enum>QFrame::Raised</enum>
            </property>
            <widget class="QLabel" name="visual_name_label">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -254,6 +203,9 @@
             </property>
            </widget>
            <widget class="QComboBox" name="visual_name_parameter_combobox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="geometry">
              <rect>
               <x>90</x>
@@ -268,6 +220,125 @@
            </widget>
           </widget>
          </item>
+         <item row="4" column="2">
+          <widget class="QFrame" name="option_frame">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <widget class="QFrame" name="edit_cost_ratio_frame">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>10</y>
+              <width>141</width>
+              <height>81</height>
+             </rect>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <widget class="QLabel" name="label_47">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>183</width>
+               <height>15</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+              </font>
+             </property>
+             <property name="text">
+              <string>Cost Ratio Option</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::AutoText</enum>
+             </property>
+            </widget>
+            <widget class="QComboBox" name="cost_ratio_option_combobox">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>30</y>
+               <width>121</width>
+               <height>26</height>
+              </rect>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QFrame" name="edit_top_num_frame">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>100</y>
+              <width>141</width>
+              <height>81</height>
+             </rect>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <widget class="QLabel" name="label_48">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>183</width>
+               <height>15</height>
+              </rect>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+              </font>
+             </property>
+             <property name="text">
+              <string> Top # </string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::AutoText</enum>
+             </property>
+            </widget>
+            <widget class="QSpinBox" name="top_num_spinbox">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>30</y>
+               <width>101</width>
+               <height>24</height>
+              </rect>
+             </property>
+            </widget>
+           </widget>
+          </widget>
+         </item>
          <item row="4" column="1">
           <widget class="QFrame" name="frame_options">
            <property name="frameShape">
@@ -279,7 +350,7 @@
            <widget class="QLabel" name="label_46">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>20</x>
               <y>30</y>
               <width>183</width>
               <height>15</height>
@@ -297,64 +368,127 @@
              </font>
             </property>
             <property name="text">
-             <string>Options</string>
+             <string>Calculation Type</string>
             </property>
             <property name="textFormat">
              <enum>Qt::AutoText</enum>
             </property>
            </widget>
-           <widget class="QRadioButton" name="radioButton_5">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>90</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 5</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_6">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>120</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 10</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_7">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>150</y>
-              <width>185</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Top 15</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="radioButton_8">
+           <widget class="QRadioButton" name="monthly_radioButton">
             <property name="geometry">
              <rect>
               <x>10</x>
               <y>60</y>
-              <width>185</width>
+              <width>112</width>
               <height>20</height>
              </rect>
             </property>
             <property name="text">
-             <string>Default</string>
+             <string>Monthly</string>
             </property>
            </widget>
+           <widget class="QRadioButton" name="yearly_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>90</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Yearly</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="topnum_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>120</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Top #</string>
+            </property>
+           </widget>
+           <widget class="QRadioButton" name="costratio_radioButton">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>150</y>
+              <width>112</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Cost Ratio</string>
+            </property>
+           </widget>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QFrame" name="frame_18">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_28">
+            <item>
+             <widget class="QLabel" name="label_45">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <family>Arial</family>
+               </font>
+              </property>
+              <property name="text">
+               <string>Select Chart Type</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_3">
+              <property name="text">
+               <string>Vertical Bar</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton">
+              <property name="text">
+               <string>Horizontal Bar</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_4">
+              <property name="text">
+               <string>Line</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
