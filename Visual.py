@@ -128,12 +128,18 @@ class VisualController:
         if self.topNum_radio.isChecked():
             self.top_num_frame.setEnabled(True)
             self.frame_cost.setEnabled(False)
+            self.name_combobox.setEnabled(False)
+            self.name_label.setEnabled(False)
         if self.costRatio_radio.isChecked():
             self.top_num_frame.setEnabled(False)
             self.frame_cost.setEnabled(True)
+            self.name_combobox.setEnabled(True)
+            self.name_label.setEnabled(True)
         if self.monthly_radio.isChecked() or self.yearly_radio.isChecked():
             self.top_num_frame.setEnabled(False)
             self.frame_cost.setEnabled(False)
+            self.name_combobox.setEnabled(True)
+            self.name_label.setEnabled(True)
 
     def on_report_parameter_changed(self, text):
         """Invoke when report type is changed"""
