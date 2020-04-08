@@ -1011,7 +1011,7 @@ class FetchReportsAbstract:
             return False
 
         if begin_date.year() == current_date.year():
-            if begin_date.month() == 1 and end_date.month() <= max(current_date.month() - 1, 1):
+            if begin_date.month() == 1 and end_date.month() == max(current_date.month() - 1, 1):
                 return True
         else:
             if begin_date.month() == 1 and end_date.month() == 12:
@@ -1234,7 +1234,7 @@ class FetchReportsController(FetchReportsAbstract):
         current_date = QDate.currentDate()
 
         if begin_date.year() == end_date.year() == current_date.year():
-            if begin_date.month() == 1 and end_date.month() >= current_date.month():
+            if begin_date.month() == 1 and end_date.month() == 12:
                 return True
 
         return False
