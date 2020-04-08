@@ -1,6 +1,5 @@
 import json
 from typing import Sequence
-from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog
 
 import ManageDB
@@ -93,6 +92,12 @@ class CostsController:
         :param settings: the new settings"""
         self.settings = settings
         self.load_currency_list()
+
+    def database_updated(self, code: int):
+        """Called when the database is updated
+
+        :param code: the exit code of the update"""
+        self.fill_names()
 
     def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]):
         """Updates the vendor list combobox

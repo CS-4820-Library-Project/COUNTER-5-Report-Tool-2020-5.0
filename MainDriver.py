@@ -106,6 +106,8 @@ if __name__ == "__main__":
 
     settings_controller.settings_changed_signal.connect(update_settings_in_managedb)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
+
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
     # endregion
 
     # region Add tabs to main window

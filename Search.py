@@ -3,7 +3,6 @@ import os
 import sip
 import json
 from typing import Tuple, Dict, Sequence, Any
-from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
 

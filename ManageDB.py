@@ -13,6 +13,20 @@ from ui import UpdateDatabaseProgressDialog
 settings = None
 
 
+class ManageDBSignalHandler(QObject):
+    database_changed_signal = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+
+    def emit_database_changed_signal(self):
+        """Emits the database changed signal"""
+        self.database_changed_signal.emit(0)
+
+
+managedb_signal_handler = ManageDBSignalHandler()
+
+
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report table
 
@@ -284,7 +298,8 @@ def update_vendor_in_all_tables(old_name: str, new_name: str):
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         for sql_text in sql_texts:
-            run_sql(connection, sql_text['sql_text'], sql_text['data'])
+            run_sql(connection, sql_text['sql_text'], sql_text['data'], emit_signal=False)
+        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
@@ -449,35 +464,39 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
     return tuple(files)
 
 
-def insert_single_file(file_path: str, vendor: str, year: int):
+def insert_single_file(file_path: str, vendor: str, year: int, emit_signal: bool = True):
     """Inserts a single file's data into the database
 
     :param file_path: the path of the file the data is from
     :param vendor: the vendor name of the data in the file
-    :param year: the year of the data in the file"""
+    :param year: the year of the data in the file
+    :param emit_signal: whether to emit a signal upon completion"""
     file, report, read_data = read_report_file(file_path, vendor, year)
     delete, delete_data, replace, replace_data = replace_sql_text(file, report, read_data)
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, delete, delete_data)
-        run_sql(connection, replace, replace_data)
+        run_sql(connection, delete, delete_data, emit_signal=False)
+        run_sql(connection, replace, replace_data, emit_signal=False)
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
 
 
-def insert_single_cost_file(report_type: str, file_path: str):
+def insert_single_cost_file(report_type: str, file_path: str, emit_signal: bool = True):
     """Inserts a single file's data into the database
 
     :param report_type: the type of the report (master report name)
-    :param file_path: the path of the file the data is from"""
+    :param file_path: the path of the file the data is from
+    :param emit_signal: whether to emit a signal upon completion"""
     read_data = read_costs_file(file_path)
     sql_text, data = replace_costs_sql_text(report_type, read_data)
 
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
-        run_sql(connection, sql_text, data)
+        run_sql(connection, sql_text, data, emit_signal)
         connection.close()
     else:
         print('Error, no connection')
@@ -670,12 +689,14 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None):
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None, 
+            emit_signal: bool = True):
     """Runs the SQL statement to modify the database
 
     :param connection: the connection to the database
     :param sql_text: the SQL statement
-    :param data: the parameters to the SQL statement"""
+    :param data: the parameters to the SQL statement
+    :param emit_signal: whether to emit a signal upon completion"""
     try:
         cursor = connection.cursor()
         if settings.show_debug_messages: print(sql_text)
@@ -685,6 +706,8 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
         else:
             cursor.execute(sql_text)
         connection.commit()
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
     except sqlite3.Error as error:
         print(error)
 
@@ -710,10 +733,11 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
         print(error)
 
 
-def setup_database(drop_tables: bool):
+def setup_database(drop_tables: bool, emit_signal: bool = True):
     """Sets up the database
 
-    :param drop_tables: whether to drop the tables before creating them"""
+    :param drop_tables: whether to drop the tables before creating them
+    :param emit_signal: whether to emit a signal upon completion"""
     sql_texts = {}
     sql_texts.update({report: create_table_sql_texts(report) for report in ALL_REPORTS})
     sql_texts.update({report_type + COST_TABLE_SUFFIX: create_cost_table_sql_texts(report_type) for report_type in
@@ -726,9 +750,11 @@ def setup_database(drop_tables: bool):
             if drop_tables:
                 print('DROP ' + key)
                 run_sql(connection,
-                        'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';')
+                        'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';',
+                        emit_signal=False)
             print('CREATE ' + key)
-            run_sql(connection, sql_texts[key])
+            run_sql(connection, sql_texts[key], emit_signal=False)
+        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
     else:
         print('Error, no connection')
@@ -852,7 +878,7 @@ class UpdateDatabaseProgressDialogController:
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
-        if settings.show_debug_messages: print('update database thread exited with code ' + code)
+        if settings.show_debug_messages: print('update database thread exited with code ' + str(code))
         # exit thread
         self.update_database_thread.quit()
         self.update_database_thread.wait()
@@ -878,7 +904,7 @@ class UpdateDatabaseWorker(QObject):
         current = 0
         if self.recreate_tables:
             self.status_changed_signal.emit('Recreating tables...')
-            setup_database(True)
+            setup_database(True, emit_signal=False)
             current += 1
             self.progress_changed_signal.emit(current)
             self.task_finished_signal.emit('Recreated tables')
@@ -887,13 +913,13 @@ class UpdateDatabaseWorker(QObject):
         self.status_changed_signal.emit('Filling tables...')
         for file in self.files:
             filename = os.path.basename(file['file'])
-            print('READ ' + filename)
             if not filename[:-4].endswith(COST_TABLE_SUFFIX):
-                insert_single_file(file['file'], file['vendor'], file['year'])
+                insert_single_file(file['file'], file['vendor'], file['year'], emit_signal=False)
             else:
-                insert_single_cost_file(file['report'], file['file'])
+                insert_single_cost_file(file['report'], file['file'], emit_signal=False)
             self.task_finished_signal.emit(filename)
             current += 1
             self.progress_changed_signal.emit(current)
+        managedb_signal_handler.emit_database_changed_signal()
         self.status_changed_signal.emit('Done')
         self.worker_finished_signal.emit(0)
