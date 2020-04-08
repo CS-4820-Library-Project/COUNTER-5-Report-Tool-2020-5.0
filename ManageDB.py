@@ -10,9 +10,6 @@ from Settings import SettingsModel
 from ui import UpdateDatabaseProgressDialog
 
 
-settings = None
-
-
 class ManageDBSignalHandler(QObject):
     """Object for emitting the database changed signal"""
     database_changed_signal = pyqtSignal(int)
@@ -26,6 +23,14 @@ class ManageDBSignalHandler(QObject):
 
 
 managedb_signal_handler = ManageDBSignalHandler()
+
+
+class ManageDBSettingsHandler:
+    settings = None
+
+
+def update_settings(new_settings: SettingsModel):
+    ManageDBSettingsHandler.settings = new_settings
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
@@ -366,7 +371,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
     :param vendor: the vendor name of the data in the file
     :param year: the year of the data in the file
     :returns: (file_name, report, values) a Tuple with the file name, the kind of report, and the data from the file"""
-    if settings.show_debug_messages: print('READ ' + file_name)
+    if ManageDBSettingsHandler.settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
@@ -379,12 +384,12 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
                 header[key] = cells[1].strip()
             else:
                 header[key] = None
-        if settings.show_debug_messages: print(header)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(header)
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
-        if settings.show_debug_messages: print(column_headers)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             for month in MONTHS:  # makes value from each month with metric > 0 for each row
@@ -417,14 +422,14 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
 
     :param file_name: the name of the file the data is from
     :returns: list of values from the file"""
-    if settings.show_debug_messages: print('READ ' + file_name)
+    if ManageDBSettingsHandler.settings.show_debug_messages: print('READ ' + file_name)
     delimiter = DELIMITERS[file_name[-4:].lower()]
     file = open(file_name, 'r', encoding='utf-8-sig')
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         column_headers = next(reader)
         column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
-        if settings.show_debug_messages: print(column_headers)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
             value = {}
@@ -700,9 +705,9 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
     :param emit_signal: whether to emit a signal upon completion"""
     try:
         cursor = connection.cursor()
-        if settings.show_debug_messages: print(sql_text)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(sql_text)
         if data is not None:
-            if settings.show_debug_messages: print(data)
+            if ManageDBSettingsHandler.settings.show_debug_messages: print(data)
             cursor.executemany(sql_text, data)
         else:
             cursor.execute(sql_text)
@@ -723,9 +728,9 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
     :returns: a list of rows that return from the statement"""
     try:
         cursor = connection.cursor()
-        if settings.show_debug_messages: print(sql_text)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print(sql_text)
         if data is not None:
-            if settings.show_debug_messages: print(data)
+            if ManageDBSettingsHandler.settings.show_debug_messages: print(data)
             cursor.execute(sql_text, data)
         else:
             cursor.execute(sql_text)
@@ -764,13 +769,13 @@ def setup_database(drop_tables: bool, emit_signal: bool = True):
 def first_time_setup():
     """Sets up the folders and database when the program is set up for the first time"""
     if not os.path.exists(DATABASE_FOLDER):
-        if settings.show_debug_messages: print('CREATE ' + DATABASE_FOLDER)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + DATABASE_FOLDER)
         os.makedirs(DATABASE_FOLDER)
     if not os.path.exists(DATABASE_LOCATION):
-        if settings.show_debug_messages: print('CREATE ' + DATABASE_LOCATION)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + DATABASE_LOCATION)
         setup_database(False)
     if not os.path.exists(COSTS_SAVE_FOLDER):
-        if settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER)
+        if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER)
         os.makedirs(COSTS_SAVE_FOLDER)
 
 
@@ -789,7 +794,8 @@ def backup_costs_data(report_type: str):
         sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
         results = run_select_sql(connection, sql_text)
         results.insert(0, headers)
-        if settings.show_debug_messages: print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
+        if ManageDBSettingsHandler.settings.show_debug_messages:
+            print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
         file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
         if file.mode == 'w':
             output = csv.writer(file, delimiter='\t', quotechar='\"')
@@ -879,7 +885,8 @@ class UpdateDatabaseProgressDialogController:
         """Invoked when the worker's thread finishes
 
         :param code: the exit code of the thread"""
-        if settings.show_debug_messages: print('update database thread exited with code ' + str(code))
+        if ManageDBSettingsHandler.settings.show_debug_messages:
+            print('update database thread exited with code ' + str(code))
         # exit thread
         self.update_database_thread.quit()
         self.update_database_thread.wait()

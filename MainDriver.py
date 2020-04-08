@@ -56,9 +56,7 @@ if __name__ == "__main__":
     manage_vendors_ui.setupUi(manage_vendors_tab)
     manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui, settings_controller.settings)
 
-    def update_settings_in_managedb(settings: SettingsModel):
-        ManageDB.settings = settings
-    update_settings_in_managedb(settings_controller.settings)
+    ManageDB.update_settings(settings_controller.settings)
 
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
@@ -104,7 +102,7 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
     manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
 
-    settings_controller.settings_changed_signal.connect(update_settings_in_managedb)
+    settings_controller.settings_changed_signal.connect(ManageDB.update_settings)
     settings_controller.settings_changed_signal.connect(search_controller.update_settings)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
 
