@@ -46,15 +46,15 @@ if __name__ == "__main__":
     main_window_ui.setupUi(main_window)
 
     # region Setup Tab Controllers
-    manage_vendors_tab = QWidget(main_window)
-    manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
-    manage_vendors_ui.setupUi(manage_vendors_tab)
-    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui)
-
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()
     settings_ui.setupUi(settings_tab)
     settings_controller = SettingsController(settings_tab, settings_ui)
+
+    manage_vendors_tab = QWidget(main_window)
+    manage_vendors_ui = ManageVendorsTab.Ui_manage_vendors_tab()
+    manage_vendors_ui.setupUi(manage_vendors_tab)
+    manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui, settings_controller.settings)
 
     def update_settings_in_managedb(settings: SettingsModel):
         ManageDB.settings = settings

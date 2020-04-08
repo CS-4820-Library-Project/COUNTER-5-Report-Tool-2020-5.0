@@ -493,7 +493,6 @@ class VisualController:
         if not directory:
             return
 
-
         # create xlsx file and add sheet file
         workbook, worksheet = self.createFile(directory, file_name, '_hbar')
 
