@@ -110,6 +110,12 @@ class VisualController:
         self.top_num = None
         self.results = None
 
+    def database_updated(self, code: int):
+        """Called when the database is updated
+
+        :param code: the exit code of the update"""
+        self.fill_names()
+
     def load_vendor_list(self, vendors: list):
         """Updates the vendor list combobox
 
