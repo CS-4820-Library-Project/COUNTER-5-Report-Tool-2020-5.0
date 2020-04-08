@@ -1,9 +1,22 @@
 # Libly
 
-This project is written is Python 3.7. Anaconda is used to manage the packages and environment used in this project, everything is up to date.
-The required packages are PyQt5 and requests.
+This project uses the SUSHI API to request usage reports from library vendors. The JSON data received is used to generate TSV reports that follow the COUNTER 5 standards.
+The project is written with Python 3.7. The PyQt GUI framework is used to create a user friendly (hopefully) GUI.
 
-The project's UI is developed using PyQt
+# Features
+- Manage library vendor credentials
+- Fetch reports that strictly adhere to the COUNTER 5 standards
+- Fetch customized reports using the available parameters in the SUSHI API
+- Import COUNTER 5 reports into the local directories and database
+- Specify the costs of subscribed items
+- Search the sqlite database of fetched and imported reports
+- Generate charts using the data in the database
+
+# Developer Documentation
+https://libly.readthedocs.io/en/latest/
+
+# Latest Pre-Release
+https://github.com/CS-4820-Library-Project/Libly/releases/tag/v0.9-beta
 
 # Setup Instructions (Windows)
 - Install Python 3.8.2 [https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe]
