@@ -45,7 +45,6 @@ class VisualController:
 
         # set up top num spinbox and configure lower and upper bounds
         self.top_num_edit = visual_ui.top_num_spinbox
-        self.top_num_edit.setMaximum(15)
         self.top_num_edit.setMinimum(1)
 
         # set up chart type radio buttons
