@@ -61,15 +61,15 @@ class CostsController:
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_costs)
 
-        self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
-        self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
-        self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
-        self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
-
         vendors_json_string = read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.clear()
         self.vendor_parameter_combobox.addItems([vendor_dict[NAME_KEY] for vendor_dict in vendor_dicts])
+
+        self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
+        self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
+        self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
+        self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
         self.on_report_parameter_changed()
         self.on_vendor_parameter_changed()
