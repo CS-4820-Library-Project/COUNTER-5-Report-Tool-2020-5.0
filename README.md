@@ -15,7 +15,7 @@ The project is written with Python 3.7. The PyQt GUI framework is used to create
 # Developer Documentation
 https://libly.readthedocs.io/en/latest/
 
-# Latest Pre-Release
+# Latest Executables
 https://github.com/CS-4820-Library-Project/Libly/releases/tag/v0.9-beta
 
 # Setup Instructions (Windows)
