@@ -200,7 +200,7 @@ class VisualController:
             message1 = "Enter/Select " + self.name_label.text() + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
-            message3 = " Start Year must be less than End Year - AND - Years cannot be greater than " + str(
+            message3 = " Start Year must be less than End Year - & - Years cannot be greater than " + str(
                 currentYear) + "\n"
         message = message1 + message3
         if message != "":
@@ -248,7 +248,7 @@ class VisualController:
             if len(self.results) > 1:
                 self.process_top_X_data()
             elif start_year <= end_year:
-                message5 = self.name_label.text() + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+                message5 = self.name_label.text() + " of " + metric + " Not Found in " + report + " for the chosen year range!"
                 GeneralUtils.show_message(message5)
 
     # process_data distributes the usage data for monthly in an array accordingly
@@ -514,7 +514,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        message_completion = self.file_name_edit.text() + " File Created Successfully!"
         GeneralUtils.show_message(message_completion)
 
     def vertical_bar_chart(self):
@@ -543,7 +543,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        message_completion = self.file_name_edit.text() + " File Created Successfully!"
         GeneralUtils.show_message(message_completion)
 
     def line_chart(self):
@@ -572,5 +572,5 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " FILE CREATED SUCCESSFULLY!"
+        message_completion = self.file_name_edit.text() + " File Created Successfully!"
         GeneralUtils.show_message(message_completion)

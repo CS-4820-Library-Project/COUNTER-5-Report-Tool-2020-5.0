@@ -1,4 +1,20 @@
-"""This module handles all operations involving fetching reports."""
+"""This module handles all operations involving fetching reports.
+
+The process of fetching reports is made up of these steps:
+
+1. Each vendor is queried for its supported reports using the SUSHI API
+2. The vendor is then queried for each supported report, also using the SUSHI API
+3. The raw JSON response is converted to JsonModel objects that make it easier to work with the JSON data.
+4. The model objects are then used to create create row objects that will be in the final TSV file.
+5. The row objects are then sorted by their primary columns, for example, item reports are sorted by the item column.
+6. The sorted rows are then used to create and save a final TSV report file that adheres to the COUNTER 5 standards.
+7. After all reports are processed, the database is updated with the new data
+
+.. NOTE::
+    All fetch operations are multi-threaded. Each vendor has it's own thread, each report for that vendor
+    also has it's own thread. The maximum concurrent vendors and reports (per vendor) can be changed in the settings tab
+    on the GUI
+"""
 
 from os import path, makedirs
 import csv
@@ -9,13 +25,12 @@ import copy
 import ctypes
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QDate, Qt
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QPushButton, QDialog, QWidget, QProgressBar, QLabel, QVBoxLayout, QDialogButtonBox, \
     QCheckBox, QDateEdit, QFrame, QHBoxLayout, QSizePolicy, QLineEdit, QListView, QRadioButton, QButtonGroup
 
 import GeneralUtils
-from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget,\
-    VendorResultsWidget
+from ui import FetchReportsTab, FetchSpecialReportsTab, FetchProgressDialog, ReportResultWidget, VendorResultsWidget
 from GeneralUtils import JsonModel
 from ManageVendors import Vendor
 from Settings import SettingsModel
@@ -1140,6 +1155,10 @@ class FetchReportsController(FetchReportsAbstract):
         # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
+        self.custom_dir_frame_message1 = fetch_reports_ui.label_38
+        self.custom_dir_frame_message1.hide()
+        self.custom_dir_frame_message2 = fetch_reports_ui.label
+        self.custom_dir_frame_message2.hide()
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
@@ -1184,8 +1203,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
 
     def on_date_month_changed(self, date: QDate, date_type: str):
         """Handles the signal emitted when a date's month is changed
@@ -1201,8 +1228,31 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
+            self.custom_dir_frame_message1.hide()
+            self.custom_dir_frame_message2.hide()
         else:
             self.custom_dir_frame.show()
+            if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
+                self.custom_dir_frame_message2.show()
+                self.custom_dir_frame_message1.hide()
+            else:
+                self.custom_dir_frame_message1.show()
+                self.custom_dir_frame_message2.hide()
+
+
+    def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
+        """Checks which message will show on the custom dir frame
+
+        :param begin_date: The begin date
+        :param end_date: The end date
+        """
+        current_date = QDate.currentDate()
+
+        if begin_date.year() == end_date.year() == current_date.year():
+            if begin_date.month() == 1 and end_date.month() == 12:
+                return True
+
+        return False
 
     def on_custom_dir_clicked(self):
         """Handles the signal emitted when the choose custom directory button is clicked"""

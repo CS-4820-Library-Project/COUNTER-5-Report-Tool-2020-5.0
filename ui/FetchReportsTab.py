@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'FetchReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
         fetch_reports_tab.setObjectName("fetch_reports_tab")
-        fetch_reports_tab.resize(800, 436)
+        fetch_reports_tab.resize(1145, 714)
         fetch_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -244,6 +244,7 @@ class Ui_fetch_reports_tab(object):
         self.gridLayout.addWidget(self.begin_date_edit_fetch_month, 0, 2, 1, 1)
         self.verticalLayout_2.addWidget(self.frame_6)
         self.custom_dir_frame = QtWidgets.QFrame(self.frame_14)
+        self.custom_dir_frame.setMinimumSize(QtCore.QSize(0, 0))
         self.custom_dir_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.custom_dir_frame.setObjectName("custom_dir_frame")
         self.verticalLayout_26 = QtWidgets.QVBoxLayout(self.custom_dir_frame)
@@ -252,6 +253,9 @@ class Ui_fetch_reports_tab(object):
         self.label_38.setAlignment(QtCore.Qt.AlignCenter)
         self.label_38.setObjectName("label_38")
         self.verticalLayout_26.addWidget(self.label_38)
+        self.label = QtWidgets.QLabel(self.custom_dir_frame)
+        self.label.setObjectName("label")
+        self.verticalLayout_26.addWidget(self.label)
         self.label_41 = QtWidgets.QLabel(self.custom_dir_frame)
         self.label_41.setAlignment(QtCore.Qt.AlignCenter)
         self.label_41.setObjectName("label_41")
@@ -338,6 +342,7 @@ class Ui_fetch_reports_tab(object):
         self.label_10.setText(_translate("fetch_reports_tab", "End Date"))
         self.begin_date_edit_fetch_month.setDisplayFormat(_translate("fetch_reports_tab", "MMM"))
         self.label_38.setText(_translate("fetch_reports_tab", "Date range is not a calendar year"))
+        self.label.setText(_translate("fetch_reports_tab", "The date range contains months with no available data"))
         self.label_41.setText(_translate("fetch_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
