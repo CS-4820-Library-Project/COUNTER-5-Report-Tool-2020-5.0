@@ -350,6 +350,8 @@ class VisualController:
     def process_top_X_data(self):
         """Invoked when calculation type: top # is selected"""
         m = len(self.results)
+        print(self.results)
+        print(m)
         self.temp_results = []
 
         self.legendEntry = []  # legend entry data
@@ -358,6 +360,8 @@ class VisualController:
         for i in range(1, m):
             self.temp_results.append(self.results[i])
         self.temp_results = sorted(self.temp_results, key=itemgetter(22))
+        print(len(self.temp_results))
+        print(self.temp_results)
         n = len(self.temp_results)
 
         # data is an array with the sorted usage figures
@@ -370,25 +374,28 @@ class VisualController:
         data1.append(data)
         for i in range(1, n):  # get database
             data = self.temp_results[i][0]
-            if data != self.temp_results[i - 1][0]:
-                data1.append(data)
+            #if data != self.temp_results[i - 1][0]:
+            data1.append(data)
         self.data.append(data1)
+        print(data1)
 
         metri = self.temp_results[0][21]
         data2.append(metri)
         for i in range(1, n):  # get reporting total
             metri = self.temp_results[i][21]
-            if metri != self.temp_results[i - 1][21]:
-                data2.append(metri)
+            #if metri != self.temp_results[i - 1][21]:
+            data2.append(metri)
         self.data.append(data2)
+        print(data2)
 
         rank = self.temp_results[0][22]
         data3.append(rank)
         for i in range(1, n):
             rank = self.temp_results[i][22]
-            if rank != self.temp_results[i - 1][22]:
-                data3.append(rank)
+            #if rank != self.temp_results[i - 1][22]:
+            data3.append(rank)
         self.data.append(data3)
+        print(data3)
         self.chart_type()
 
     # get chart type checked
@@ -455,7 +462,8 @@ class VisualController:
         :param workbook: the workbook"""
 
         bold = workbook.add_format({'bold': 1})
-        headings = [vertical_axis_title]
+        #headings = [vertical_axis_title]
+        headings = [""]
         for i in range(0, len(self.legendEntry)):
             headings.append(self.legendEntry[i])
         worksheet.write_row('A1', headings, bold)
@@ -473,12 +481,12 @@ class VisualController:
         :param chart_type: the chart type"""
 
         chart1 = workbook.add_chart({'type': chart_type})
-
+        n = len(self.data[0]) + 1
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$18',
-            'values': '=Sheet1!$B$2:$B$18',
+            'categories': '=Sheet1!$A$2:$A$'+str(n),
+            'values': '=Sheet1!$B$2:$B$'+str(n),
         })
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
@@ -487,8 +495,8 @@ class VisualController:
             for i in range(2, len(self.data)):
                 chart1.add_series({
                     'name': ['Sheet1', 0, m],
-                    'categories': ['Sheet1', 1, 0, 18, 0],
-                    'values': ['Sheet1', 1, m, 18, m],
+                    'categories': ['Sheet1', 1, 0, n, 0],
+                    'values': ['Sheet1', 1, m, n, m],
                 })
                 m = m + 1
         return chart1
@@ -519,7 +527,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
     def vertical_bar_chart(self):
@@ -548,7 +556,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = self.file_name_edit.text() + "Done!"
         GeneralUtils.show_message(message_completion)
 
     def line_chart(self):
@@ -577,5 +585,5 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
