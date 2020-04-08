@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'AddVendorDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_addVendorDialog(object):
     def setupUi(self, addVendorDialog):
         addVendorDialog.setObjectName("addVendorDialog")
-        addVendorDialog.resize(600, 608)
+        addVendorDialog.resize(600, 620)
         font = QtGui.QFont()
         font.setPointSize(11)
         addVendorDialog.setFont(font)
@@ -92,6 +94,14 @@ class Ui_addVendorDialog(object):
 
         self.retranslateUi(addVendorDialog)
         QtCore.QMetaObject.connectSlotsByName(addVendorDialog)
+        addVendorDialog.setTabOrder(self.nameEdit, self.baseUrlEdit)
+        addVendorDialog.setTabOrder(self.baseUrlEdit, self.customerIdEdit)
+        addVendorDialog.setTabOrder(self.customerIdEdit, self.requestorIdEdit)
+        addVendorDialog.setTabOrder(self.requestorIdEdit, self.apiKeyEdit)
+        addVendorDialog.setTabOrder(self.apiKeyEdit, self.platformEdit)
+        addVendorDialog.setTabOrder(self.platformEdit, self.non_Sushi_check_box)
+        addVendorDialog.setTabOrder(self.non_Sushi_check_box, self.descriptionEdit)
+        addVendorDialog.setTabOrder(self.descriptionEdit, self.companiesEdit)
 
     def retranslateUi(self, addVendorDialog):
         _translate = QtCore.QCoreApplication.translate
@@ -107,4 +117,3 @@ class Ui_addVendorDialog(object):
         self.label_4.setText(_translate("addVendorDialog", "Requestor ID"))
         self.label_8.setText(_translate("addVendorDialog", "Non-Sushi Vendor"))
         self.url_validation_label.setText(_translate("addVendorDialog", "Validation label"))
-

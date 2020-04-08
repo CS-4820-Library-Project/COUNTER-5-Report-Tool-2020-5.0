@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>608</height>
+    <height>620</height>
    </rect>
   </property>
   <property name="font">
@@ -148,6 +148,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>nameEdit</tabstop>
+  <tabstop>baseUrlEdit</tabstop>
+  <tabstop>customerIdEdit</tabstop>
+  <tabstop>requestorIdEdit</tabstop>
+  <tabstop>apiKeyEdit</tabstop>
+  <tabstop>platformEdit</tabstop>
+  <tabstop>non_Sushi_check_box</tabstop>
+  <tabstop>descriptionEdit</tabstop>
+  <tabstop>companiesEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
