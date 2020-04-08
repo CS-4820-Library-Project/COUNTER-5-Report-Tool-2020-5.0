@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_search_and_clause_parameter_frame(object):
     def setupUi(self, search_and_clause_parameter_frame):
         search_and_clause_parameter_frame.setObjectName("search_and_clause_parameter_frame")
-        search_and_clause_parameter_frame.resize(542, 175)
+        search_and_clause_parameter_frame.resize(296, 175)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -56,8 +56,8 @@ class Ui_search_and_clause_parameter_frame(object):
     def retranslateUi(self, search_and_clause_parameter_frame):
         _translate = QtCore.QCoreApplication.translate
         search_and_clause_parameter_frame.setWindowTitle(_translate("search_and_clause_parameter_frame", "Frame"))
-        self.search_remove_and_clause_button.setText(_translate("search_and_clause_parameter_frame", "Remove \"And\" Clause"))
-        self.search_add_or_clause_button.setText(_translate("search_and_clause_parameter_frame", "Add \"Or\" Clause"))
+        self.search_remove_and_clause_button.setText(_translate("search_and_clause_parameter_frame", "Remove \"And\""))
+        self.search_add_or_clause_button.setText(_translate("search_and_clause_parameter_frame", "Add \"Or\""))
 
 
 if __name__ == "__main__":
