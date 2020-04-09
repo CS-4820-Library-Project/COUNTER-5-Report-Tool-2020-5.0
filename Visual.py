@@ -556,7 +556,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + "Done!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
     def line_chart(self):
