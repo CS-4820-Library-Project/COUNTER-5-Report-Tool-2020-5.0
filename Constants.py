@@ -572,7 +572,7 @@ class CompletionStatus(Enum):
 # endregion
 
 
-# region Variable Constants for FetchData
+# region Variable Constants for Settings
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
 
@@ -587,4 +587,13 @@ CONCURRENT_REPORTS = 5
 EMPTY_CELL = ""
 USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 DEFAULT_CURRENCY = 'USD'
+# endregion
+
+
+# region Variable Constants for ManageVendors
+VENDORS_FILE_DIR = "./all_data/vendor_manager/"
+VENDORS_FILE_NAME = "vendors.dat"
+VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
+
+EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 # endregion

@@ -14,12 +14,6 @@ from GeneralUtils import JsonModel
 from Constants import *
 from Settings import SettingsModel
 
-VENDORS_FILE_DIR = "./all_data/vendor_manager/"
-VENDORS_FILE_NAME = "vendors.dat"
-VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
-
-EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
-
 
 class Vendor(JsonModel):
     """This holds a vendor's information
