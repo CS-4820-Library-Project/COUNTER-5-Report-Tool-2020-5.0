@@ -65,7 +65,7 @@
          <item row="0" column="1">
           <widget class="QComboBox" name="costs_report_parameter_combobox">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>

@@ -35,7 +35,7 @@ class Ui_costs_tab(object):
         self.costs_report_parameter_label.setObjectName("costs_report_parameter_label")
         self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.costs_report_parameter_label)
         self.costs_report_parameter_combobox = QtWidgets.QComboBox(self.costs_parameters_frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.costs_report_parameter_combobox.sizePolicy().hasHeightForWidth())
