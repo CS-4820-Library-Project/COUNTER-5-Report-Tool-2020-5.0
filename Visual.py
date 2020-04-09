@@ -508,12 +508,12 @@ class VisualController:
         :param chart_type: the chart type"""
 
         chart1 = workbook.add_chart({'type': chart_type})
-        n = len(self.data[0]) + 1
+        n = len(self.data[0])
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$'+str(n),
-            'values': '=Sheet1!$B$2:$B$'+str(n),
+            'categories': '=Sheet1!$A$2:$A$'+str(n+1),
+            'values': '=Sheet1!$B$2:$B$'+str(n+1),
         })
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
