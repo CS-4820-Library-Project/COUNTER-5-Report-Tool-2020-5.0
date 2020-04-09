@@ -151,6 +151,7 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
+            self.load_costs()
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)

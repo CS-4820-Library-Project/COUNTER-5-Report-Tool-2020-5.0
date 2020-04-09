@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerIt
 
 import ManageDB
 from Settings import SettingsModel
-from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
+from ui import SearchTab, SearchAndFrame, SearchOrFrame
 from Constants import *
 from GeneralUtils import *
 
@@ -87,10 +87,10 @@ class SearchController:
                                                                       QSizePolicy.Expanding))
         self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
-    def add_and_clause(self) -> SearchAndClauseFrame.Ui_search_and_clause_parameter_frame:
+    def add_and_clause(self) -> SearchAndFrame.Ui_search_and_clause_parameter_frame:
         """Adds an and clause to the search"""
         and_clause = QFrame()
-        and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
+        and_clause_ui = SearchAndFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
 
         # set up add or clause button
@@ -114,13 +114,13 @@ class SearchController:
 
         return and_clause_ui
 
-    def add_or_clause(self, and_clause: SearchAndClauseFrame.Ui_search_and_clause_parameter_frame) \
-            -> SearchOrClauseFrame.Ui_search_or_clause_parameter_frame:
+    def add_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame) \
+            -> SearchOrFrame.Ui_search_or_clause_parameter_frame:
         """Adds an or clause to the search
 
         :param and_clause: the and clause the or clause is added to"""
         or_clause = QFrame()
-        or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
+        or_clause_ui = SearchOrFrame.Ui_search_or_clause_parameter_frame()
         or_clause_ui.setupUi(or_clause)
 
         # fill field combobox

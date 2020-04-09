@@ -2,12 +2,12 @@ import unittest
 import sys
 from PyQt5.QtWidgets import QApplication, QFrame
 
-from ui import SearchOrClauseFrame
+from ui import SearchOrFrame
 
 app = QApplication(sys.argv)
 
 search_or_clause_frame = QFrame()
-search_or_clause_frame_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
+search_or_clause_frame_ui = SearchOrFrame.Ui_search_or_clause_parameter_frame()
 search_or_clause_frame_ui.setupUi(search_or_clause_frame)
 
 class SearchOrClauseFrameTests(unittest.TestCase):

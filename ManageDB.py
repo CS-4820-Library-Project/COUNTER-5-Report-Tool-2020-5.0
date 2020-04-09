@@ -26,11 +26,15 @@ managedb_signal_handler = ManageDBSignalHandler()
 
 
 class ManageDBSettingsHandler:
+    """Class for holding the settings for ManageDB"""
     settings = None
 
 
-def update_settings(new_settings: SettingsModel):
-    ManageDBSettingsHandler.settings = new_settings
+def update_settings(settings: SettingsModel):
+    """Called when the settings are saved
+
+    :param settings: the new settings"""
+    ManageDBSettingsHandler.settings = settings
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
@@ -754,11 +758,11 @@ def setup_database(drop_tables: bool, emit_signal: bool = True):
     if connection is not None:
         for key in sql_texts:
             if drop_tables:
-                print('DROP ' + key)
+                if ManageDBSettingsHandler.settings.show_debug_messages: print('DROP ' + key)
                 run_sql(connection,
                         'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';',
                         emit_signal=False)
-            print('CREATE ' + key)
+            if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + key)
             run_sql(connection, sql_texts[key], emit_signal=False)
         managedb_signal_handler.emit_database_changed_signal()
         connection.close()

@@ -39,8 +39,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyleSheet("QWidget {font-size: 11pt;}")
 
-    ManageDB.first_time_setup()
-
     main_window = QMainWindow()
     main_window_ui = MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
@@ -57,6 +55,7 @@ if __name__ == "__main__":
     manage_vendors_controller = ManageVendorsController(manage_vendors_tab, manage_vendors_ui, settings_controller.settings)
 
     ManageDB.update_settings(settings_controller.settings)
+    ManageDB.first_time_setup()
 
     fetch_reports_tab = QWidget(main_window)
     fetch_reports_ui = FetchReportsTab.Ui_fetch_reports_tab()
