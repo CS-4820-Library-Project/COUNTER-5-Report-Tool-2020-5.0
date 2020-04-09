@@ -770,6 +770,8 @@ class FetchReportsAbstract:
         self.vendor_workers[worker_id] = vendor_worker, vendor_thread
         vendor_worker.moveToThread(vendor_thread)
         vendor_thread.started.connect(vendor_worker.work)
+        vendor_thread.finished.connect(vendor_thread.deleteLater)
+
         vendor_thread.start()
 
         if self.settings.show_debug_messages: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
@@ -886,6 +888,7 @@ class FetchReportsAbstract:
                                                   'vendor': process_result.vendor.name,
                                                   'year': process_result.year})
 
+        worker.deleteLater()
         thread.quit()
         thread.wait()
         self.vendor_workers.pop(worker_id, None)
@@ -1891,6 +1894,8 @@ class VendorWorker(QObject):
         self.report_workers[worker_id] = report_worker, report_thread
         report_worker.moveToThread(report_thread)
         report_thread.started.connect(report_worker.work)
+        report_thread.finished.connect(report_thread.deleteLater)
+
         report_thread.start()
 
     def check_for_exception(self, json_response) -> list:
@@ -1936,6 +1941,7 @@ class VendorWorker(QObject):
         worker, thread = self.report_workers[worker_id]
 
         self.report_process_results.append(worker.process_result)
+        worker.deleteLater()
         thread.quit()
         thread.wait()
         self.report_workers.pop(worker_id, None)

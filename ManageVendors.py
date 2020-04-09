@@ -68,7 +68,8 @@ class ManageVendorsController(QObject):
     """
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab, settings: SettingsModel ):
+    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab,
+                 settings: SettingsModel):
         super().__init__()
         self.manage_vendors_widget = manage_vendors_widget
         self.selected_index = -1
