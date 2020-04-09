@@ -172,7 +172,7 @@ class VisualController:
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            print(results)
+            #print(results)
             connection.close()
             self.name_combobox.addItems([result[0] for result in results])
         else:
