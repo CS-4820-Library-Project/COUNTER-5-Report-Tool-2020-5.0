@@ -365,10 +365,10 @@ class VisualController:
         self.legendEntry.append('reporting_period_total')
 
         # testing to see data in array of array
-        print(self.data[0])  # this is the first column in excel (year)
-        print(self.data[1]) # this is the second column (cost per metric)
-        # print(self.data[2]) # this is the third column (cost)
-        # print(self.data[4]) # this is the fourth column (total)
+        print(self.data[0])  # first column in excel (year)
+        print(self.data[1]) # second column (cost per metric)
+        # print(self.data[2]) # third column (cost)
+        # print(self.data[4]) # fourth column (total)
         # print(len(self.data)) #testing
         self.chart_type()
 
