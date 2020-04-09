@@ -202,17 +202,19 @@ class VisualController:
         message2 = ""
         message3 = ""
         if name == "" and self.topNum_radio.isChecked() == False:
-            message1 = "Enter/Select " + self.name_label.text() + "\n"
+            message1 = "- Enter/Select " + self.name_label.text() + "\n"
+        if self.file_name_edit.text() == "":
+            message2 = "- Enter File Name " + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
-            message3 = " Start Year must be less than End Year - & - Years cannot be greater than " + str(
+            message3 = "- Start Year must be less than End Year and cannot be greater than " + str(
                 currentYear) + "\n"
-        message = message1 + message3
+        message = message1 + message2 + message3
         if message != "":
-            message = "To Create Chart Check the following: \n" + message
+            message = "To Create Chart check the following: \n" + message
             GeneralUtils.show_message(message)
 
-        if self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked():
+        if (self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked()) and message == "":
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
             print(sql_text)  # testing
@@ -237,7 +239,7 @@ class VisualController:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 GeneralUtils.show_message(message4)
 
-        if self.topNum_radio.isChecked():
+        if self.topNum_radio.isChecked() and message == "":
             self.top_num = int(self.top_num_edit.text())
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
