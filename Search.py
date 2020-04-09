@@ -39,10 +39,8 @@ class SearchController:
         self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_file_radioButton = search_ui.open_file_radioButton
-        self.open_results_folder_radioButton = search_ui.open_folder_radioButton
-        self.open_results_both_radioButton = search_ui.open_both_radioButton
-        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
+        self.open_results_file_checkbox = search_ui.search_open_file_checkbox
+        self.open_results_folder_checkbox = search_ui.search_open_folder_checkbox
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -234,14 +232,11 @@ class SearchController:
                     for row in results:
                         output.writerow(row)
 
-                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
-                        open_file_or_dir(file_name)
-
-                    if self.open_results_folder_radioButton.isChecked() \
-                            or self.open_results_both_radioButton.isChecked():
+                    if self.open_results_folder_checkbox.isChecked():
                         open_file_or_dir(os.path.dirname(file_name))
-
-                    if self.dont_open_results_radioButton.isChecked():
+                    if self.open_results_file_checkbox.isChecked():
+                        open_file_or_dir(file_name)
+                    if not self.open_results_file_checkbox.isChecked():
                         show_message('Results saved to ' + file_name)
 
                 else:
