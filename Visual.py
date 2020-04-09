@@ -310,36 +310,51 @@ class VisualController:
 
         # data is an array with the sorted usage figures
         self.data = []
-        data1 = []
-        data2 = []
+        data1 = []  # year
+        data2 = []  # cost per metric
+        data3 = []  # reporting_period_total
+        data4 = []  # cost
         for i in range(1, m):
             data1.append(self.results[i][3])
         self.data.append(data1)
         if self.cost_parameter.currentText() == 'Local Cost with Tax':
             self.legendEntry.append('Local Cost with Tax Per Metric')
+            self.legendEntry.append('Local Cost with Tax')
             for i in range(1, m):
                 cost = self.results[i][7]
                 if self.results[i][7] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
+            self.data.append(data4)
         if self.cost_parameter.currentText() == 'Local Cost':
             self.legendEntry.append('Local Cost Per Metric')
+            self.legendEntry.append('Local Cost')
             for i in range(1, m):
                 cost = self.results[i][6]
                 if self.results[i][6] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
+            self.data.append(data4)
         if self.cost_parameter.currentText() == 'Original Cost':
             self.legendEntry.append('Original Cost Per Metric')
+            self.legendEntry.append('Original Cost')
             for i in range(1, m):
                 cost = self.results[i][4]
                 if self.results[i][4] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
-
+            self.data.append(data4)
+        # add reporting_period_total to excel chart
+        for i in range(1, m):
+            data3.append(self.results[i][8])
+        self.data.append(data3)
+        self.legendEntry.append('reporting_period_total')
         # testing to make sure its working good
         print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
         print(self.data[1])
@@ -490,7 +505,8 @@ class VisualController:
         })
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
-        if self.top_num is None:
+        # no more series will be added if top # or cost is selected
+        if self.top_num is None and self.costRatio_radio.isChecked() == False:
             m = 2
             for i in range(2, len(self.data)):
                 chart1.add_series({
