@@ -305,18 +305,23 @@ class VisualController:
 
     def process_cost_ratio_data(self):
         """Invoked when calculation type: cost ratio is selected"""
-        m = len(self.results)
-        self.legendEntry = []  # legend entry data
+        m = len(self.results) #length of self.results
+        self.legendEntry = []  # legend entry data contains column names
 
-        # data is an array with the sorted usage figures
+        # data is an array of array with year, cost per metric, total and cost in separate arrays
         self.data = []
+
         data1 = []  # year
         data2 = []  # cost per metric
         data3 = []  # reporting_period_total
         data4 = []  # cost
+
+        # retrieve year and add it to array
         for i in range(1, m):
             data1.append(self.results[i][3])
         self.data.append(data1)
+
+        # retrieve cost and total and finding cost per metric and adding it to array
         if self.cost_parameter.currentText() == 'Local Cost with Tax':
             self.legendEntry.append('Local Cost with Tax Per Metric')
             self.legendEntry.append('Local Cost with Tax')
@@ -350,16 +355,21 @@ class VisualController:
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
             self.data.append(data4)
-        # add reporting_period_total to excel chart
+
+        # retrieve reporting_period_total and add it to array
         for i in range(1, m):
             data3.append(self.results[i][8])
         self.data.append(data3)
+
+        # add column header to legend entry
         self.legendEntry.append('reporting_period_total')
-        # testing to make sure its working good
-        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
-        print(self.data[1])
-        # print(self.data[2])
-        print(len(self.data))
+
+        # testing to see data in array of array
+        print(self.data[0])  # this is the first column in excel (year)
+        print(self.data[1]) # this is the second column (cost per metric)
+        # print(self.data[2]) # this is the third column (cost)
+        # print(self.data[4]) # this is the fourth column (total)
+        # print(len(self.data)) #testing
         self.chart_type()
 
     def process_top_X_data(self):
@@ -505,7 +515,7 @@ class VisualController:
         })
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
-        # no more series will be added if top # or cost is selected
+        # no more series will be added if top # and cost ratio are not selected
         if self.top_num is None and self.costRatio_radio.isChecked() == False:
             m = 2
             for i in range(2, len(self.data)):
