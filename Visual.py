@@ -193,7 +193,7 @@ class VisualController:
         metric = self.metric.currentText()
         # get vendor
         vendor = self.vendor.currentText()
-        self.top_num = None
+        self.top_num = -1
 
         self.temp_results = []
         message = ""
@@ -240,6 +240,8 @@ class VisualController:
 
         if self.topNum_radio.isChecked() and message == "":
             self.top_num = int(self.top_num_edit.text())
+            if self.top_num == 0:
+                self.top_num = None
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
@@ -517,7 +519,7 @@ class VisualController:
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
         # no more series will be added if top # and cost ratio are not selected
-        if self.top_num is None and self.costRatio_radio.isChecked() == False:
+        if self.top_num == -1 and self.costRatio_radio.isChecked() == False:
             m = 2
             for i in range(2, len(self.data)):
                 chart1.add_series({
