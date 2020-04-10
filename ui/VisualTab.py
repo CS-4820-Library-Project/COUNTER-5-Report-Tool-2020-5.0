@@ -179,7 +179,7 @@ class Ui_visual_tab(object):
         self.frame_options.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_options.setObjectName("frame_options")
         self.label_46 = QtWidgets.QLabel(self.frame_options)
-        self.label_46.setGeometry(QtCore.QRect(10, 20, 121, 16))
+        self.label_46.setGeometry(QtCore.QRect(10, 20, 121, 21))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
