@@ -29,8 +29,8 @@ def read_json_file(file_path: str) -> str:
         file = open(file_path, 'r', encoding='utf-8-sig')
         json_string = file.read()
         file.close()
-    except IOError as e:
-        print(e)
+    except IOError:
+        pass
     finally:
         return json_string
 
@@ -38,7 +38,7 @@ def read_json_file(file_path: str) -> str:
 def show_message(message: str, parent: QWidget = None):
     message_box = QMessageBox(parent)
     message_box.setMinimumSize(800, 800)
-    message_box.setWindowTitle("Message")
+    message_box.setWindowTitle("Info")
     message_box.setText(message)
     message_box.exec_()
 
