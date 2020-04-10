@@ -192,7 +192,7 @@ class SettingsController(QObject):
                                                             True)
                 self.is_restoring_database = False
         else:
-            print('Error, already running')
+            if self.settings.show_debug_messages: print('Database is already being restored')
 
     def update_settings(self):
         """Updates the app's settings using the values entered on the UI"""
