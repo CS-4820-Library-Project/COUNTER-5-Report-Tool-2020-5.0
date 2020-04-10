@@ -88,6 +88,7 @@ class VisualController:
         vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor.clear()
+        self.vendor.addItem("")
         self.vendor.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
 
         # set up the search clauses
@@ -119,6 +120,7 @@ class VisualController:
 
         :param vendors: the new list of vendors"""
         self.vendor.clear()
+        self.vendor.addItem("")
         self.vendor.addItems([vendor.name for vendor in vendors])
 
     def on_calculation_type_changed(self):
@@ -201,7 +203,7 @@ class VisualController:
         message2 = ""
         message3 = ""
         if name == "" and self.topNum_radio.isChecked() == False:
-            message1 = "- Enter/Select " + self.name_label.text() + "\n"
+            message1 = "- Enter/Select " + self.name_label.text() + " or/and Vendor \n"
         if self.file_name_edit.text() == "":
             message2 = "- Enter File Name " + "\n"
         if start_year > end_year or (int(start_year) > datetime.datetime.now().year or int(end_year) > datetime.datetime.now().year) :
@@ -242,6 +244,8 @@ class VisualController:
             self.top_num = int(self.top_num_edit.text())
             if self.top_num == 0:
                 self.top_num = None
+            if self.vendor.currentText() == "":
+                vendor = None
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
