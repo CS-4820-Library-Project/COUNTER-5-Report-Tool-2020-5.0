@@ -364,7 +364,7 @@ class VisualController:
         self.data.append(data3)
 
         # add column header to legend entry
-        self.legendEntry.append('reporting_period_total')
+        self.legendEntry.append(self.metric.currentText())
 
         # testing to see data in array of array
         print(self.data[0])  # first column in excel (year)
