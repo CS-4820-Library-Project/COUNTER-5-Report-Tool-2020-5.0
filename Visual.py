@@ -401,6 +401,7 @@ class VisualController:
         data1 = []
         data2 = []
         data3 = []
+        data4 = [] # optional vendor column
 
         data = self.temp_results[0][0]
         data1.append(data)
@@ -427,7 +428,15 @@ class VisualController:
             #if rank != self.temp_results[i - 1][22]:
             data3.append(rank)
         self.data.append(data3)
-        print(data3)
+
+        if self.vendor.currentText() == "":
+            self.legendEntry.append(self.results[0][2])
+            for i in range(1, n):
+                rank = self.temp_results[i][2]
+                # if rank != self.temp_results[i - 1][22]:
+                data4.append(rank)
+            self.data.append(data4)
+
         self.chart_type()
 
     # get chart type checked
