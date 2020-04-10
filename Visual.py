@@ -570,7 +570,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
@@ -599,7 +599,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
@@ -628,7 +628,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
