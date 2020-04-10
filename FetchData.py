@@ -1406,6 +1406,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # region Options
         self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
+        fetch_special_reports_ui.options_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("Report filters and attributes used to customize the report")
+        )
         # endregion
 
         # region Report Types
