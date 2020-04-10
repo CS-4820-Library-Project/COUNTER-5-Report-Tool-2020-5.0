@@ -45,7 +45,6 @@ class VisualController:
 
         # set up top num spinbox and configure lower and upper bounds
         self.top_num_edit = visual_ui.top_num_spinbox
-        self.top_num_edit.setMaximum(15)
         self.top_num_edit.setMinimum(1)
 
         # set up chart type radio buttons
@@ -128,12 +127,18 @@ class VisualController:
         if self.topNum_radio.isChecked():
             self.top_num_frame.setEnabled(True)
             self.frame_cost.setEnabled(False)
+            self.name_combobox.setEnabled(False)
+            self.name_label.setEnabled(False)
         if self.costRatio_radio.isChecked():
             self.top_num_frame.setEnabled(False)
             self.frame_cost.setEnabled(True)
+            self.name_combobox.setEnabled(True)
+            self.name_label.setEnabled(True)
         if self.monthly_radio.isChecked() or self.yearly_radio.isChecked():
             self.top_num_frame.setEnabled(False)
             self.frame_cost.setEnabled(False)
+            self.name_combobox.setEnabled(True)
+            self.name_label.setEnabled(True)
 
     def on_report_parameter_changed(self, text):
         """Invoke when report type is changed"""
@@ -167,7 +172,7 @@ class VisualController:
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            print(results)
+            #print(results)
             connection.close()
             self.name_combobox.addItems([result[0] for result in results])
         else:
@@ -197,17 +202,19 @@ class VisualController:
         message2 = ""
         message3 = ""
         if name == "" and self.topNum_radio.isChecked() == False:
-            message1 = "Enter/Select " + self.name_label.text() + "\n"
+            message1 = "- Enter/Select " + self.name_label.text() + "\n"
+        if self.file_name_edit.text() == "":
+            message2 = "- Enter File Name " + "\n"
         if start_year > end_year:
             currentYear = datetime.datetime.now().year
-            message3 = " Start Year must be less than End Year - & - Years cannot be greater than " + str(
+            message3 = "- Start Year must be less than End Year and cannot be greater than " + str(
                 currentYear) + "\n"
-        message = message1 + message3
+        message = message1 + message2 + message3
         if message != "":
-            message = "To Create Chart Check the following: \n" + message
+            message = "To Create Chart check the following: \n" + message
             GeneralUtils.show_message(message)
 
-        if self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked():
+        if (self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked()) and message == "":
             # sql query to get search results
             sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
             print(sql_text)  # testing
@@ -232,7 +239,7 @@ class VisualController:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 GeneralUtils.show_message(message4)
 
-        if self.topNum_radio.isChecked():
+        if self.topNum_radio.isChecked() and message == "":
             self.top_num = int(self.top_num_edit.text())
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
@@ -300,51 +307,78 @@ class VisualController:
 
     def process_cost_ratio_data(self):
         """Invoked when calculation type: cost ratio is selected"""
-        m = len(self.results)
-        self.legendEntry = []  # legend entry data
+        m = len(self.results) #length of self.results
+        self.legendEntry = []  # legend entry data contains column names
 
-        # data is an array with the sorted usage figures
+        # data is an array of array with year, cost per metric, total and cost in separate arrays
         self.data = []
-        data1 = []
-        data2 = []
+
+        data1 = []  # year
+        data2 = []  # cost per metric
+        data3 = []  # reporting_period_total
+        data4 = []  # cost
+
+        # retrieve year and add it to array
         for i in range(1, m):
             data1.append(self.results[i][3])
         self.data.append(data1)
+
+        # retrieve cost and total and finding cost per metric and adding it to array
         if self.cost_parameter.currentText() == 'Local Cost with Tax':
             self.legendEntry.append('Local Cost with Tax Per Metric')
+            self.legendEntry.append('Local Cost with Tax')
             for i in range(1, m):
                 cost = self.results[i][7]
                 if self.results[i][7] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
+            self.data.append(data4)
         if self.cost_parameter.currentText() == 'Local Cost':
             self.legendEntry.append('Local Cost Per Metric')
+            self.legendEntry.append('Local Cost')
             for i in range(1, m):
                 cost = self.results[i][6]
                 if self.results[i][6] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
+            self.data.append(data4)
         if self.cost_parameter.currentText() == 'Original Cost':
             self.legendEntry.append('Original Cost Per Metric')
+            self.legendEntry.append('Original Cost')
             for i in range(1, m):
                 cost = self.results[i][4]
                 if self.results[i][4] is None:
                     cost = 0
+                data4.append(cost)
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
+            self.data.append(data4)
 
-        # testing to make sure its working good
-        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
-        print(self.data[1])
-        # print(self.data[2])
-        print(len(self.data))
+        # retrieve reporting_period_total and add it to array
+        for i in range(1, m):
+            data3.append(self.results[i][8])
+        self.data.append(data3)
+
+        # add column header to legend entry
+        self.legendEntry.append('reporting_period_total')
+
+        # testing to see data in array of array
+        print(self.data[0])  # first column in excel (year)
+        print(self.data[1]) # second column (cost per metric)
+        # print(self.data[2]) # third column (cost)
+        # print(self.data[4]) # fourth column (total)
+        # print(len(self.data)) #testing
         self.chart_type()
 
     def process_top_X_data(self):
         """Invoked when calculation type: top # is selected"""
         m = len(self.results)
+        print(self.results)
+        print(m)
         self.temp_results = []
 
         self.legendEntry = []  # legend entry data
@@ -353,6 +387,8 @@ class VisualController:
         for i in range(1, m):
             self.temp_results.append(self.results[i])
         self.temp_results = sorted(self.temp_results, key=itemgetter(22))
+        print(len(self.temp_results))
+        print(self.temp_results)
         n = len(self.temp_results)
 
         # data is an array with the sorted usage figures
@@ -365,25 +401,28 @@ class VisualController:
         data1.append(data)
         for i in range(1, n):  # get database
             data = self.temp_results[i][0]
-            if data != self.temp_results[i - 1][0]:
-                data1.append(data)
+            #if data != self.temp_results[i - 1][0]:
+            data1.append(data)
         self.data.append(data1)
+        print(data1)
 
         metri = self.temp_results[0][21]
         data2.append(metri)
         for i in range(1, n):  # get reporting total
             metri = self.temp_results[i][21]
-            if metri != self.temp_results[i - 1][21]:
-                data2.append(metri)
+            #if metri != self.temp_results[i - 1][21]:
+            data2.append(metri)
         self.data.append(data2)
+        print(data2)
 
         rank = self.temp_results[0][22]
         data3.append(rank)
         for i in range(1, n):
             rank = self.temp_results[i][22]
-            if rank != self.temp_results[i - 1][22]:
-                data3.append(rank)
+            #if rank != self.temp_results[i - 1][22]:
+            data3.append(rank)
         self.data.append(data3)
+        print(data3)
         self.chart_type()
 
     # get chart type checked
@@ -450,7 +489,8 @@ class VisualController:
         :param workbook: the workbook"""
 
         bold = workbook.add_format({'bold': 1})
-        headings = [vertical_axis_title]
+        #headings = [vertical_axis_title]
+        headings = [""]
         for i in range(0, len(self.legendEntry)):
             headings.append(self.legendEntry[i])
         worksheet.write_row('A1', headings, bold)
@@ -468,22 +508,23 @@ class VisualController:
         :param chart_type: the chart type"""
 
         chart1 = workbook.add_chart({'type': chart_type})
-
+        n = len(self.data[0])
         # Configure the first series.
         chart1.add_series({
             'name': '=Sheet1!$B$1',
-            'categories': '=Sheet1!$A$2:$A$18',
-            'values': '=Sheet1!$B$2:$B$18',
+            'categories': '=Sheet1!$A$2:$A$'+str(n+1),
+            'values': '=Sheet1!$B$2:$B$'+str(n+1),
         })
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
-        if self.top_num is None:
+        # no more series will be added if top # and cost ratio are not selected
+        if self.top_num is None and self.costRatio_radio.isChecked() == False:
             m = 2
             for i in range(2, len(self.data)):
                 chart1.add_series({
                     'name': ['Sheet1', 0, m],
-                    'categories': ['Sheet1', 1, 0, 18, 0],
-                    'values': ['Sheet1', 1, m, 18, m],
+                    'categories': ['Sheet1', 1, 0, n, 0],
+                    'values': ['Sheet1', 1, m, n, m],
                 })
                 m = m + 1
         return chart1
@@ -514,7 +555,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
     def vertical_bar_chart(self):
@@ -543,7 +584,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
     def line_chart(self):
@@ -572,5 +613,5 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        message_completion = self.file_name_edit.text() + " File Created Successfully!"
+        message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
