@@ -90,7 +90,7 @@ if __name__ == "__main__":
     visual_tab = QWidget(main_window)
     visual_ui = VisualTab.Ui_visual_tab()
     visual_ui.setupUi(visual_tab)
-    visual_controller = VisualController(visual_ui)
+    visual_controller = VisualController(visual_ui, settings_controller.settings)
 
     # # endregion
 
@@ -104,6 +104,7 @@ if __name__ == "__main__":
     settings_controller.settings_changed_signal.connect(ManageDB.update_settings)
     settings_controller.settings_changed_signal.connect(search_controller.update_settings)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
+    settings_controller.settings_changed_signal.connect(visual_controller.update_settings)
 
     ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
     ManageDB.managedb_signal_handler.database_changed_signal.connect(visual_controller.database_updated)
