@@ -384,10 +384,13 @@ NAME_FIELD_SWITCHER = {'DR': 'database', 'IR': 'item', 'PR': 'platform', 'TR': '
 
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
+MONTH_CALCULATION = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN {} THEN ' + 'metric' + ' END), 0)'
 
 YEAR_TOTAL = 'reporting_period_total'
+YEAR_TOTAL_CALCULATION = 'SUM(' + 'metric' + ')'
 
 RANKING = 'ranking'
+RANKING_CALCULATION = 'RANK() OVER(ORDER BY ' + 'SUM(' + 'metric' + ')' + ' DESC)'
 
 VIEW_SUFFIX = '_view'
 COST_TABLE_SUFFIX = '_costs'
@@ -396,6 +399,7 @@ FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
 FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
+FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_NOT_IN_CHARTS + ('year',)
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 CHART_KEY_FIELDS = ('vendor', 'metric_type')
