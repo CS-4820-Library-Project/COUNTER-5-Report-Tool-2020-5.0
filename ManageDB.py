@@ -745,7 +745,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         data.append(clause[VALUE_KEY])
     sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
     sql_text += '\n\tGROUP BY ' + ', '.join(key_fields) + ')'
-    if number is not None:
+    if number:
         sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
         data.append(number)
     sql_text += '\nORDER BY ' + RANKING
@@ -962,7 +962,7 @@ def test_top_number_chart_search():
     """temporary method to show how to use top_number_chart_search_sql_text"""
     headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('TR_J1')])
     sql_text, data = top_number_chart_search_sql_text('TR_J1', 2019, 2020, 'Unique_Item_Requests',
-                                                      vendor='Proquest', number=15)
+                                                      vendor='Proquest', number=0)
     print(sql_text)
     print(data)
     connection = create_connection(DATABASE_LOCATION)
