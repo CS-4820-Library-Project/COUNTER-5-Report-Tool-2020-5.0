@@ -1040,7 +1040,7 @@ class FetchReportsAbstract:
     def start_updating_database(self) -> bool:
         """Starts a thread to update the database. Returns True if successfully started"""
         if self.is_updating_database:
-            print("Error, already running")
+            if self.settings.show_debug_messages: print("Database is already updating")
             return False
 
         self.is_updating_database = True
