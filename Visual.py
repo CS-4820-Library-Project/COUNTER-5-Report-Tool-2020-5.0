@@ -284,7 +284,7 @@ class VisualController:
         """Invoked when calculation type: yearly is selected"""
         m = len(self.results)
         self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.results[0][8])
+        self.legendEntry.append(self.metric.currentText())
 
         # data is an array with the sorted usage figures
         self.data = []
