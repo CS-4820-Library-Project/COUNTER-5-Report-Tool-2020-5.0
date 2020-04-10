@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>882</width>
-    <height>576</height>
+    <width>913</width>
+    <height>578</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,8 +40,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>747</width>
-           <height>174</height>
+           <width>778</width>
+           <height>176</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -75,7 +75,7 @@
        </widget>
       </item>
       <item row="3" column="3">
-       <spacer name="horizontalSpacer">
+       <spacer name="search_initial_parameters_spacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -117,7 +117,7 @@
       <item row="1" column="2">
        <widget class="QLabel" name="search_end_year_parameter_label">
         <property name="text">
-         <string>End year</string>
+         <string>End Year</string>
         </property>
        </widget>
       </item>
@@ -133,41 +133,66 @@
    </item>
    <item>
     <widget class="QFrame" name="search_control_frame">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="3" column="3">
-       <widget class="QRadioButton" name="open_both_radioButton">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QPushButton" name="search_export_button">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Open Both</string>
+         <string>Export Search</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="4">
-       <widget class="QRadioButton" name="dont_open_radioButton">
+      <item row="0" column="3" rowspan="2">
+       <widget class="QPushButton" name="search_button">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="search_import_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Don't Open</string>
+         <string>Import Search</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="3">
-       <widget class="QRadioButton" name="open_file_radioButton">
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="search_open_file_checkbox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -180,10 +205,13 @@
         <property name="checked">
          <bool>true</bool>
         </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
        </widget>
       </item>
-      <item row="2" column="4">
-       <widget class="QRadioButton" name="open_folder_radioButton">
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="search_open_folder_checkbox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -195,44 +223,18 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="6">
-       <widget class="QPushButton" name="search_import_button">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="0" column="1" rowspan="2">
+       <spacer name="search_control_spacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-        <property name="text">
-         <string>Import Search</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="3" column="5">
-       <widget class="QPushButton" name="search_export_button">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Export Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="5" colspan="2">
-       <widget class="QPushButton" name="search_button">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
+       </spacer>
       </item>
      </layout>
     </widget>

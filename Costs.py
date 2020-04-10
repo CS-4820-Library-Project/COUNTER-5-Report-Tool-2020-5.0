@@ -98,6 +98,7 @@ class CostsController:
 
         :param code: the exit code of the update"""
         self.fill_names()
+        self.load_costs()
 
     def load_vendor_list(self, vendors: Sequence[ManageVendors.Vendor]):
         """Updates the vendor list combobox
