@@ -239,7 +239,7 @@ class ManageVendorsController(QObject):
     def modify_vendor(self):
         """Updates a vendor's information in the system if the vendor is valid"""
         if self.selected_index < 0:
-            print("No vendor selected")
+            if self.settings.show_debug_messages: print("No vendor selected")
             return
 
         selected_vendor = self.vendors[self.selected_index]
@@ -592,7 +592,7 @@ class ManageVendorsController(QObject):
 
                 is_valid, message = self.add_vendor(vendor)
                 if not is_valid:
-                    print(message)
+                    if self.settings.show_debug_messages: print(message)
 
             tsv_file.close()
 
@@ -606,7 +606,7 @@ class ManageVendorsController(QObject):
 
             GeneralUtils.show_message(f"Import successful!")
         except Exception as e:
-            print(f"File import failed: {e}")
+            if self.settings.show_debug_messages: print(f"File import failed: {e}")
             GeneralUtils.show_message(f"File import failed: {e}")
 
     def export_vendors_tsv(self, dir_path):
@@ -636,6 +636,6 @@ class ManageVendorsController(QObject):
             GeneralUtils.show_message(f"Exported to {file_path}")
 
         except Exception as e:
-            print(f"File export failed: {e}")
+            if self.settings.show_debug_messages: print(f"File export failed: {e}")
             GeneralUtils.show_message(f"File export failed: {e}")
 
