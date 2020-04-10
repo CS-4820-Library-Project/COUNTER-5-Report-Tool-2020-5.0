@@ -556,6 +556,9 @@
                 <height>24</height>
                </rect>
               </property>
+              <property name="maximum">
+               <number>999</number>
+              </property>
              </widget>
             </widget>
            </widget>

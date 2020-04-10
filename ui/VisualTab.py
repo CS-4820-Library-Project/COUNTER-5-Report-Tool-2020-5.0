@@ -262,6 +262,7 @@ class Ui_visual_tab(object):
         self.label_48.setObjectName("label_48")
         self.top_num_spinbox = QtWidgets.QSpinBox(self.edit_top_num_frame)
         self.top_num_spinbox.setGeometry(QtCore.QRect(10, 30, 101, 24))
+        self.top_num_spinbox.setMaximum(999)
         self.top_num_spinbox.setObjectName("top_num_spinbox")
         self.frame_16 = QtWidgets.QFrame(self.frame)
         self.frame_16.setGeometry(QtCore.QRect(460, 10, 601, 171))
