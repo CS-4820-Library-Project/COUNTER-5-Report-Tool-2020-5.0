@@ -94,9 +94,9 @@ def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
     for field in COST_FIELDS:  # cost table fields
         fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')'})
     for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + MONTHS[key] + ')'})
     return tuple(fields)
 
 
@@ -116,9 +116,11 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     for field in COST_FIELDS:  # cost table fields
         fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
                        SOURCE_KEY: 'data'})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')',
+                   SOURCE_KEY: 'data'})
     for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + MONTHS[key] + ')',
+                       SOURCE_KEY: 'data'})
     fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')',
                    SOURCE_KEY: 'totals'})
     fields.append(
@@ -560,8 +562,13 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     sql_text = 'SELECT'
     chart_fields = get_chart_report_fields_list(report)
     fields = []
+    key_fields = []
     for field in chart_fields:
-        fields.append(field[NAME_KEY])
+        if CALCULATION_KEY not in field.keys():
+            key_fields.append(field[NAME_KEY])
+            fields.append(field[NAME_KEY])
+        else:
+            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
     sql_text += '\n\t' + ', '.join(fields)
     sql_text += '\nFROM ' + report + VIEW_SUFFIX
     sql_text += '\nWHERE'
@@ -576,7 +583,7 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
         clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
         data.append(clause[VALUE_KEY])
     sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
-    sql_text += ';'
+    sql_text += '\nGROUP BY ' + ', '.join(key_fields) + ';'
     return sql_text, tuple(data)
 
 
@@ -599,6 +606,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     sql_text += ',\n\t' + ',\n\t'.join(['totals.' + field[NAME_KEY] for field in chart_fields
                                         if field[SOURCE_KEY] == 'totals'])
     data_fields = []
+    data_key_fields = []
     totals_fields = [name_field[NAME_KEY]] + list(CHART_KEY_FIELDS)
     key_fields = []
     for field in chart_fields:
@@ -607,6 +615,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         if field[SOURCE_KEY] == 'data':
             if CALCULATION_KEY not in field.keys():
                 data_fields.append(field[NAME_KEY])
+                data_key_fields.append(field[NAME_KEY])
             else:
                 data_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
         if field[SOURCE_KEY] == 'totals':
@@ -628,6 +637,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
         data.append(clause[VALUE_KEY])
     sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
+    sql_text += '\nGROUP BY ' + ', '.join(data_key_fields)
     sql_text += ') AS ' + 'data' + ' JOIN '
     sql_text += '\n\t(SELECT ' + ', '.join(totals_fields)
     sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
@@ -815,9 +825,9 @@ def backup_costs_data(report_type: str):
 
 def test_top_number_chart_search():
     """temporary method to show how to use top_number_chart_search_sql_text"""
-    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('TR_J1')])
-    sql_text, data = top_number_chart_search_sql_text('TR_J1', 2019, 2020, 'unique_item_requests',
-                                                      vendor='Proquest', number=15)
+    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('DR_D1')])
+    sql_text, data = top_number_chart_search_sql_text('DR_D1', 2017, 2020, 'Searches_Automated',
+                                                      vendor='EBSCO', number=15)
     print(sql_text)
     print(data)
     connection = create_connection(DATABASE_LOCATION)
