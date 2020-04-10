@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'FetchReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -301,6 +301,10 @@ class Ui_fetch_reports_tab(object):
         self.horizontalLayout_3.addWidget(self.frame_7)
         self.verticalLayout_3.addWidget(self.frame_5)
         self.verticalLayout.addWidget(self.frame_4)
+        self.label_2 = QtWidgets.QLabel(fetch_reports_tab)
+        self.label_2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_2.setObjectName("label_2")
+        self.verticalLayout.addWidget(self.label_2)
 
         self.retranslateUi(fetch_reports_tab)
         QtCore.QMetaObject.connectSlotsByName(fetch_reports_tab)
@@ -346,4 +350,5 @@ class Ui_fetch_reports_tab(object):
         self.label_41.setText(_translate("fetch_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
+        self.label_2.setText(_translate("fetch_reports_tab", "Note: Yearly reports cover all available data for one calender year. Only yearly reports are added to the search database."))
 import Resources_rc
