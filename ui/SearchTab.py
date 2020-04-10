@@ -144,7 +144,7 @@ class Ui_search_tab(object):
         self.search_add_and_button.setText(_translate("search_tab", "Add \"And\""))
         self.search_report_parameter_label.setText(_translate("search_tab", "Report"))
         self.search_start_year_parameter_label.setText(_translate("search_tab", "Start Year"))
-        self.search_end_year_parameter_label.setText(_translate("search_tab", "End year"))
+        self.search_end_year_parameter_label.setText(_translate("search_tab", "End Year"))
         self.search_end_year_parameter_dateedit.setDisplayFormat(_translate("search_tab", "yyyy"))
         self.search_export_button.setText(_translate("search_tab", "Export Search"))
         self.search_button.setText(_translate("search_tab", "Search"))

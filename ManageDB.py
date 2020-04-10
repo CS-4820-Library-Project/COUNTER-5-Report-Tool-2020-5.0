@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
 
 from Constants import *
+from GeneralUtils import *
 from Settings import SettingsModel
 from ui import UpdateDatabaseProgressDialog
 
@@ -440,6 +441,7 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
             for i in range(len(cells)):  # read columns
                 value[column_headers[i]] = cells[i]
             values.append(value)
+        file.close()
         return tuple(values)
     else:
         print('Error: could not open file ' + file_name)
@@ -641,6 +643,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     if number is not None:
         sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
         data.append(number)
+    sql_text += '\nORDER BY ' + RANKING
     sql_text += ';'
     return sql_text, tuple(data)
 
@@ -808,6 +811,29 @@ def backup_costs_data(report_type: str):
         connection.close()
     else:
         print('Error, no connection')
+
+
+def test_top_number_chart_search():
+    """temporary method to show how to use top_number_chart_search_sql_text"""
+    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('TR_J1')])
+    sql_text, data = top_number_chart_search_sql_text('TR_J1', 2019, 2020, 'unique_item_requests',
+                                                      vendor='Proquest', number=15)
+    print(sql_text)
+    print(data)
+    connection = create_connection(DATABASE_LOCATION)
+    if connection is not None:
+        results = run_select_sql(connection, sql_text, data)
+        results.insert(0, headers)
+        # print(results)
+        for row in results:
+            print(row)
+        file_name = r'./test_chart.tsv'
+        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
+        if file.mode == 'w':
+            output = csv.writer(file, delimiter='\t', quotechar='\"')
+            for row in results:
+                output.writerow(row)
+            open_file_or_dir(file_name)
 
 
 class UpdateDatabaseProgressDialogController:

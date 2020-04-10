@@ -117,7 +117,7 @@
       <item row="1" column="2">
        <widget class="QLabel" name="search_end_year_parameter_label">
         <property name="text">
-         <string>End year</string>
+         <string>End Year</string>
         </property>
        </widget>
       </item>
