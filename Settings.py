@@ -132,9 +132,13 @@ class SettingsController(QObject):
         settings_ui.request_timeout_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("The amount of time to wait before cancelling a request"))
         settings_ui.concurrent_vendors_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time"))
+            lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time. "
+                                              "If set too high, the UI might freeze while fetching reports but the "
+                                              "fetch process will continue"))
         settings_ui.concurrent_reports_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time, per vendor"))
+            lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time (per vendor). "
+                                              "If set too high, the UI might freeze while fetching reports but the "
+                                              "fetch process will continue"))
         settings_ui.empty_cell_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("Empty cells will be replaced by whatever is in here"))
         settings_ui.user_agent_help_button.clicked.connect(
