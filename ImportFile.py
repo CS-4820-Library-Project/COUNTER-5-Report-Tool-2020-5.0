@@ -191,7 +191,6 @@ class ImportReportController:
                     if cells:
                         if cells[0].strip():
                             raise Exception('File has invalid header (not enough blank rows)')
-                print(report_type)
                 if header['report_id'] != report_type:
                     raise Exception('File has invalid header (wrong Report_Id)')
                 if not header['created']:
