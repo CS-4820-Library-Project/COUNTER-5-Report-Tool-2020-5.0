@@ -45,7 +45,6 @@ class VisualController:
 
         # set up top num spinbox and configure lower and upper bounds
         self.top_num_edit = visual_ui.top_num_spinbox
-        self.top_num_edit.setMinimum(1)
 
         # set up chart type radio buttons
         self.h_bar_radio = visual_ui.radioButton
@@ -89,6 +88,7 @@ class VisualController:
         vendors_json_string = GeneralUtils.read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor.clear()
+        self.vendor.addItem("")
         self.vendor.addItems([vendor_dict['name'] for vendor_dict in vendor_dicts])
 
         # set up the search clauses
@@ -120,6 +120,7 @@ class VisualController:
 
         :param vendors: the new list of vendors"""
         self.vendor.clear()
+        self.vendor.addItem("")
         self.vendor.addItems([vendor.name for vendor in vendors])
 
     def on_calculation_type_changed(self):
@@ -194,22 +195,25 @@ class VisualController:
         metric = self.metric.currentText()
         # get vendor
         vendor = self.vendor.currentText()
-        self.top_num = None
+        self.top_num = -1
 
         self.temp_results = []
         message = ""
         message1 = ""
         message2 = ""
         message3 = ""
+        message4 = ""
         if name == "" and self.topNum_radio.isChecked() == False:
-            message1 = "- Enter/Select " + self.name_label.text() + "\n"
+            message4 = "- Enter/Choose " + self.name_label.text() + "\n"
+        if vendor == "" and self.topNum_radio.isChecked() == False:
+            message1 = "- Choose a Vendor \n"
         if self.file_name_edit.text() == "":
             message2 = "- Enter File Name " + "\n"
-        if start_year > end_year:
+        if start_year > end_year or (int(start_year) > datetime.datetime.now().year or int(end_year) > datetime.datetime.now().year) :
             currentYear = datetime.datetime.now().year
-            message3 = "- Start Year must be less than End Year and cannot be greater than " + str(
+            message3 = "- Start Year must be less than End Year and they cannot be greater than " + str(
                 currentYear) + "\n"
-        message = message1 + message2 + message3
+        message = message1 + message4 + message2 + message3
         if message != "":
             message = "To Create Chart check the following: \n" + message
             GeneralUtils.show_message(message)
@@ -241,6 +245,10 @@ class VisualController:
 
         if self.topNum_radio.isChecked() and message == "":
             self.top_num = int(self.top_num_edit.text())
+            if self.top_num == 0:
+                self.top_num = None
+            if self.vendor.currentText() == "":
+                vendor = None
             sql_text, data = ManageDB.top_number_chart_search_sql_text(report, start_year, end_year, metric, vendor,
                                                                        self.top_num)
             headers = tuple([field['name'] for field in ManageDB.get_top_number_chart_report_fields_list(report)])
@@ -285,7 +293,7 @@ class VisualController:
         """Invoked when calculation type: yearly is selected"""
         m = len(self.results)
         self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.results[0][8])
+        self.legendEntry.append(self.metric.currentText())
 
         # data is an array with the sorted usage figures
         self.data = []
@@ -396,6 +404,7 @@ class VisualController:
         data1 = []
         data2 = []
         data3 = []
+        data4 = [] # optional vendor column
 
         data = self.temp_results[0][0]
         data1.append(data)
@@ -422,7 +431,15 @@ class VisualController:
             #if rank != self.temp_results[i - 1][22]:
             data3.append(rank)
         self.data.append(data3)
-        print(data3)
+
+        if self.vendor.currentText() == "":
+            self.legendEntry.append(self.results[0][2])
+            for i in range(1, n):
+                rank = self.temp_results[i][2]
+                # if rank != self.temp_results[i - 1][22]:
+                data4.append(rank)
+            self.data.append(data4)
+
         self.chart_type()
 
     # get chart type checked
@@ -518,7 +535,7 @@ class VisualController:
 
         # Configure any subsequent series. Note use of alternative syntax to define ranges.
         # no more series will be added if top # and cost ratio are not selected
-        if self.top_num is None and self.costRatio_radio.isChecked() == False:
+        if self.top_num == -1 and self.costRatio_radio.isChecked() == False:
             m = 2
             for i in range(2, len(self.data)):
                 chart1.add_series({
@@ -553,7 +570,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
@@ -582,7 +599,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
@@ -611,7 +628,7 @@ class VisualController:
         self.add_Customize(chart1, chart_title, horizontal_axis_title, vertical_axis_title)
 
         # Insert the chart into the worksheet (with an offset).
-        worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
+        worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
