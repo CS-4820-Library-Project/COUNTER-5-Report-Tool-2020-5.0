@@ -204,9 +204,9 @@ class VisualController:
             message1 = "- Enter/Select " + self.name_label.text() + "\n"
         if self.file_name_edit.text() == "":
             message2 = "- Enter File Name " + "\n"
-        if start_year > end_year:
+        if start_year > end_year or (int(start_year) > datetime.datetime.now().year or int(end_year) > datetime.datetime.now().year) :
             currentYear = datetime.datetime.now().year
-            message3 = "- Start Year must be less than End Year and cannot be greater than " + str(
+            message3 = "- Start Year must be less than End Year and they cannot be greater than " + str(
                 currentYear) + "\n"
         message = message1 + message2 + message3
         if message != "":
