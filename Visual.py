@@ -390,11 +390,11 @@ class VisualController:
         self.temp_results = []
 
         self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.results[0][21])
-        self.legendEntry.append(self.results[0][22])
+        self.legendEntry.append(self.results[0][3])
+        self.legendEntry.append(self.results[0][4])
         for i in range(1, m):
             self.temp_results.append(self.results[i])
-        self.temp_results = sorted(self.temp_results, key=itemgetter(22))
+        self.temp_results = sorted(self.temp_results, key=itemgetter(4))
         print(len(self.temp_results))
         print(self.temp_results)
         n = len(self.temp_results)
@@ -415,19 +415,19 @@ class VisualController:
         self.data.append(data1)
         print(data1)
 
-        metri = self.temp_results[0][21]
+        metri = self.temp_results[0][3]
         data2.append(metri)
         for i in range(1, n):  # get reporting total
-            metri = self.temp_results[i][21]
+            metri = self.temp_results[i][3]
             #if metri != self.temp_results[i - 1][21]:
             data2.append(metri)
         self.data.append(data2)
         print(data2)
 
-        rank = self.temp_results[0][22]
+        rank = self.temp_results[0][4]
         data3.append(rank)
         for i in range(1, n):
-            rank = self.temp_results[i][22]
+            rank = self.temp_results[i][4]
             #if rank != self.temp_results[i - 1][22]:
             data3.append(rank)
         self.data.append(data3)
