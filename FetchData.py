@@ -1406,8 +1406,13 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # region Options
         self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
+        help_message = "The 'show' checkboxes will break down your data by displaying extra columns with the " \
+                       "selected attributes (usually results in more lines per item)\n" \
+                       "Filters will limit your data to just the selected options (implies also showing that " \
+                       "attribute).\n" \
+                       "You can show the attribute breakdown without selecting filtering to specific values."
         fetch_special_reports_ui.options_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Report filters and attributes used to customize the report")
+            lambda: GeneralUtils.show_message(help_message)
         )
         # endregion
 
