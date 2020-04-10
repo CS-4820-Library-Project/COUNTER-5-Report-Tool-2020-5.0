@@ -413,11 +413,12 @@ class VisualController:
 
         # data is an array with the sorted usage figures
         self.data = []
-        data1 = []
-        data2 = []
-        data3 = []
+        data1 = [] # name(database, title,...)
+        data2 = [] # reporting total
+        data3 = [] # rankings
         data4 = [] # optional vendor column
 
+        # get all name(database,title,...)
         data = self.temp_results[0][0]
         data1.append(data)
         for i in range(1, n):  # get database
@@ -426,6 +427,7 @@ class VisualController:
         self.data.append(data1)
         print(data1)
 
+        # get all reporting total
         metri = self.temp_results[0][3]
         data2.append(metri)
         for i in range(1, n):  # get reporting total
@@ -434,6 +436,7 @@ class VisualController:
         self.data.append(data2)
         print(data2)
 
+        # get all ranking
         rank = self.temp_results[0][4]
         data3.append(rank)
         for i in range(1, n):
@@ -441,11 +444,11 @@ class VisualController:
             data3.append(rank)
         self.data.append(data3)
 
+        # will add vendor column to chart if the user do not enter anything in vendor
         if self.vendor.currentText() == "":
             self.legendEntry.append(self.results[0][2])
             for i in range(0, n):
                 rank = self.temp_results[i][2]
-                # if rank != self.temp_results[i - 1][22]:
                 data4.append(rank)
             self.data.append(data4)
 
@@ -535,7 +538,7 @@ class VisualController:
                 n = n + 1
             worksheet.write_column(chr(n) + '2', self.data[len(self.data)-1])
 
-
+    # process currency
     def process_currency(self):
         if self.cost_parameter.currentText() == 'Local Cost with Tax' or self.cost_parameter.currentText() == 'Local Cost':
             local_currency = self.settings.default_currency
@@ -545,6 +548,7 @@ class VisualController:
             currency = self.get_currency_code(original_currency)
         return currency
 
+    # return currency code for excel
     def get_currency_code(self, local_currency):
         if local_currency == 'CAD':
             currency = '[$$-en-CA]#,##0.00'
