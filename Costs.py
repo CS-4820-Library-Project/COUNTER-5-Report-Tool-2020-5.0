@@ -131,6 +131,8 @@ class CostsController:
     def on_year_parameter_changed(self):
         """Invoked when the year parameter changes"""
         self.year_parameter = int(self.year_parameter_dateedit.text())
+        if self.name_parameter:
+            self.load_costs()
 
     def fill_names(self):
         """Fills the name field combobox"""
