@@ -185,7 +185,7 @@ class SettingsController(QObject):
     def on_rebuild_database_clicked(self):
         """Restores the database when the restore database button is clicked"""
         if not self.is_rebuilding_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
+            if GeneralUtils.ask_confirmation('Are you sure you want to rebuild the database?'):
                 self.is_rebuilding_database = True
                 self.update_database_dialog.update_database(ManageDB.get_all_report_files() +
                                                             ManageDB.get_all_cost_files(),
