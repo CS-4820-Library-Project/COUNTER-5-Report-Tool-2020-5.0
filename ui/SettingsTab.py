@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'SettingsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_settings_tab(object):
     def setupUi(self, settings_tab):
@@ -24,7 +22,7 @@ class Ui_settings_tab(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, -145, 818, 632))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, -1072, 849, 1490))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.scrollAreaWidgetContents)
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 2)
@@ -307,17 +305,28 @@ class Ui_settings_tab(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.settings_costs_default_currency_combobox)
         self.verticalLayout_3.addWidget(self.settings_costs_items_frame)
         self.verticalLayout.addWidget(self.settings_costs_frame)
-        self.settings_search_fram = QtWidgets.QFrame(self.frame_4)
+        self.save_button = QtWidgets.QPushButton(self.frame_4)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.save_button.sizePolicy().hasHeightForWidth())
+        self.save_button.setSizePolicy(sizePolicy)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/ui/resources/save_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.save_button.setIcon(icon3)
+        self.save_button.setObjectName("save_button")
+        self.verticalLayout.addWidget(self.save_button, 0, QtCore.Qt.AlignHCenter)
+        self.settings_search_frame = QtWidgets.QFrame(self.frame_4)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.settings_search_fram.sizePolicy().hasHeightForWidth())
-        self.settings_search_fram.setSizePolicy(sizePolicy)
-        self.settings_search_fram.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.settings_search_fram.setObjectName("settings_search_fram")
-        self.verticalLayout_20 = QtWidgets.QVBoxLayout(self.settings_search_fram)
+        sizePolicy.setHeightForWidth(self.settings_search_frame.sizePolicy().hasHeightForWidth())
+        self.settings_search_frame.setSizePolicy(sizePolicy)
+        self.settings_search_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.settings_search_frame.setObjectName("settings_search_frame")
+        self.verticalLayout_20 = QtWidgets.QVBoxLayout(self.settings_search_frame)
         self.verticalLayout_20.setObjectName("verticalLayout_20")
-        self.settings_search_label = QtWidgets.QLabel(self.settings_search_fram)
+        self.settings_search_label = QtWidgets.QLabel(self.settings_search_frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -331,10 +340,10 @@ class Ui_settings_tab(object):
         self.settings_search_label.setFont(font)
         self.settings_search_label.setObjectName("settings_search_label")
         self.verticalLayout_20.addWidget(self.settings_search_label, 0, QtCore.Qt.AlignHCenter)
-        self.settings_restore_database_button = QtWidgets.QPushButton(self.settings_search_fram)
-        self.settings_restore_database_button.setObjectName("settings_restore_database_button")
-        self.verticalLayout_20.addWidget(self.settings_restore_database_button)
-        self.verticalLayout.addWidget(self.settings_search_fram)
+        self.settings_rebuild_database_button = QtWidgets.QPushButton(self.settings_search_frame)
+        self.settings_rebuild_database_button.setObjectName("settings_rebuild_database_button")
+        self.verticalLayout_20.addWidget(self.settings_rebuild_database_button)
+        self.verticalLayout.addWidget(self.settings_search_frame)
         self.frame = QtWidgets.QFrame(self.frame_4)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -344,17 +353,6 @@ class Ui_settings_tab(object):
         self.frame.setObjectName("frame")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.save_button = QtWidgets.QPushButton(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.save_button.sizePolicy().hasHeightForWidth())
-        self.save_button.setSizePolicy(sizePolicy)
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/ui/resources/save_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.save_button.setIcon(icon3)
-        self.save_button.setObjectName("save_button")
-        self.horizontalLayout.addWidget(self.save_button)
         self.verticalLayout.addWidget(self.frame)
         self.horizontalLayout_3.addWidget(self.frame_4)
         spacerItem1 = QtWidgets.QSpacerItem(120, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
@@ -383,7 +381,18 @@ class Ui_settings_tab(object):
         self.label_73.setText(_translate("settings_tab", "User Agent"))
         self.settings_costs_label.setText(_translate("settings_tab", "Costs"))
         self.settings_costs_default_currency_label.setText(_translate("settings_tab", "Default Currency"))
-        self.settings_search_label.setText(_translate("settings_tab", "Search"))
-        self.settings_restore_database_button.setText(_translate("settings_tab", "Restore Database"))
         self.save_button.setText(_translate("settings_tab", "Save All Changes"))
+        self.settings_search_label.setText(_translate("settings_tab", "Search"))
+        self.settings_rebuild_database_button.setText(_translate("settings_tab", "Rebuild Database"))
+
 import Resources_rc
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    settings_tab = QtWidgets.QWidget()
+    ui = Ui_settings_tab()
+    ui.setupUi(settings_tab)
+    settings_tab.show()
+    sys.exit(app.exec_())
+

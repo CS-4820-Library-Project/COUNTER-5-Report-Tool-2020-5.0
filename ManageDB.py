@@ -1129,7 +1129,7 @@ class UpdateDatabaseProgressDialogController:
         :param recreate_tables: whether or not to drop the tables and recreated the tables before inserting"""
         self.update_database_progress_dialog = QDialog(self.parent_widget)
 
-        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
+        dialog_ui = UpdateDatabaseProgressDialog.Ui_update_database_dialog()
         dialog_ui.setupUi(self.update_database_progress_dialog)
 
         self.update_status_label = dialog_ui.status_label
