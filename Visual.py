@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QFileDialog, QDialog
 import GeneralUtils
 import ManageDB
 import ManageVendors
+from Settings import SettingsModel
 from ui import MessageDialog, VisualTab
 from Constants import *
 
@@ -24,7 +25,9 @@ class VisualController:
         :param visual_ui: The UI for visual_widget.
         """
 
-    def __init__(self, visual_ui: VisualTab.Ui_visual_tab):
+    def __init__(self, visual_ui: VisualTab.Ui_visual_tab, settings: SettingsModel):
+        self.settings = settings
+
         # set up and configure report type combobox
         self.report_parameter = visual_ui.search_report_parameter_combobox_2
         self.report_parameter.addItems(ALL_REPORTS)
@@ -109,6 +112,14 @@ class VisualController:
         self.top_num = None
         self.results = None
 
+    def update_settings(self, settings: SettingsModel):
+        """Called when the settings are saved
+
+        :param settings: the new settings"""
+        self.settings = settings
+        self.local_currency = self.settings.default_currency
+        #self.load_currency_list()
+
     def database_updated(self, code: int):
         """Called when the database is updated
 
@@ -183,6 +194,7 @@ class VisualController:
     def createChart(self):
         """Invoke when user click on create chart"""
 
+        print(self.settings.default_currency)
         # get report type
         report = self.report_parameter.currentText()
         # get start year
@@ -385,7 +397,7 @@ class VisualController:
     def process_top_X_data(self):
         """Invoked when calculation type: top # is selected"""
         m = len(self.results)
-        print(self.results)
+        #print(self.results)
         print(m)
         self.temp_results = []
 
@@ -401,42 +413,42 @@ class VisualController:
 
         # data is an array with the sorted usage figures
         self.data = []
-        data1 = []
-        data2 = []
-        data3 = []
+        data1 = [] # name(database, title,...)
+        data2 = [] # reporting total
+        data3 = [] # rankings
         data4 = [] # optional vendor column
 
+        # get all name(database,title,...)
         data = self.temp_results[0][0]
         data1.append(data)
         for i in range(1, n):  # get database
             data = self.temp_results[i][0]
-            #if data != self.temp_results[i - 1][0]:
             data1.append(data)
         self.data.append(data1)
         print(data1)
 
+        # get all reporting total
         metri = self.temp_results[0][3]
         data2.append(metri)
         for i in range(1, n):  # get reporting total
             metri = self.temp_results[i][3]
-            #if metri != self.temp_results[i - 1][21]:
             data2.append(metri)
         self.data.append(data2)
         print(data2)
 
+        # get all ranking
         rank = self.temp_results[0][4]
         data3.append(rank)
         for i in range(1, n):
             rank = self.temp_results[i][4]
-            #if rank != self.temp_results[i - 1][22]:
             data3.append(rank)
         self.data.append(data3)
 
+        # will add vendor column to chart if the user do not enter anything in vendor
         if self.vendor.currentText() == "":
             self.legendEntry.append(self.results[0][2])
-            for i in range(1, n):
+            for i in range(0, n):
                 rank = self.temp_results[i][2]
-                # if rank != self.temp_results[i - 1][22]:
                 data4.append(rank)
             self.data.append(data4)
 
@@ -513,10 +525,46 @@ class VisualController:
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', self.data[0])
         n = ord('A') + 1
-        for i in range(1, len(self.data)):
-            worksheet.write_column(chr(n) + '2', self.data[i])
-            n = n + 1
+        if self.costRatio_radio.isChecked() == False:
+            for i in range(1, len(self.data)):
+                worksheet.write_column(chr(n) + '2', self.data[i])
+                n = n + 1
+        if self.costRatio_radio.isChecked() == True:
+            # Add a number format for cells with money.
+            currency = self.process_currency()
+            money = workbook.add_format({'num_format': currency})
+            for i in range(1, len(self.data)-1):
+                worksheet.write_column(chr(n) + '2', self.data[i], money)
+                n = n + 1
+            worksheet.write_column(chr(n) + '2', self.data[len(self.data)-1])
 
+    # process currency
+    def process_currency(self):
+        if self.cost_parameter.currentText() == 'Local Cost with Tax' or self.cost_parameter.currentText() == 'Local Cost':
+            local_currency = self.settings.default_currency
+            currency = self.get_currency_code(local_currency)
+        if self.cost_parameter.currentText() == 'Original Cost':
+            original_currency = self.results[1][5]
+            currency = self.get_currency_code(original_currency)
+        return currency
+
+    # return currency code for excel
+    def get_currency_code(self, local_currency):
+        if local_currency == 'CAD':
+            currency = '[$$-en-CA]#,##0.00'
+        if local_currency == 'USD':
+            currency = '[$$-en-US]#,##0.00'
+        if local_currency == 'EUR':
+            currency = '[$€-x-euro2] #,##0.00'
+        if local_currency == 'JPY':
+            currency = '[$¥-ja-JP]#,##0.00'
+        if local_currency == 'GBP':
+            currency = '[$£-en-GB]#,##0.00'
+        if local_currency == 'CHF':
+            currency = '[$CHF] #,##0.00'
+        if local_currency == 'AUD':
+            currency = '[$$-en-AU] #,##0.00'
+        return currency
     # create chart and add series to it
     def configureSeries(self, workbook, chart_type):
         """Invoked to create xlsx file
