@@ -1,7 +1,7 @@
 import json
 from typing import Sequence
 from PyQt5.QtWidgets import QDialog
-from PyQt5.QtGui import QStandardItem, QColor
+from PyQt5.QtGui import QStandardItem, QFont
 
 import ManageDB
 import ManageVendors
@@ -141,19 +141,22 @@ class CostsController:
         """Fills the name field combobox"""
         self.name_parameter_combobox.clear()
         results = []
-        sql_text, data = ManageDB.get_names_and_costs_status_sql_text(self.report_parameter, self.vendor_parameter,
-                                                                      self.year_parameter)
+        # sql_text, data = ManageDB.get_names_and_costs_status_sql_text(self.report_parameter, self.vendor_parameter,
+        #                                                               self.year_parameter)
+        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
             if self.settings.show_debug_messages: print(results)
             connection.close()
-            for result in results:
-                item = QStandardItem(result[0])
-                if result[1]:
-                    item.setBackground(QColor('lightGray'))
-                self.name_parameter_combobox.model().appendRow(item)
-            # self.name_parameter_combobox.addItems([result[0] for result in results])
+            # for result in results:
+            #     item = QStandardItem(result[0])
+            #     if result[1]:
+            #         font = QFont()
+            #         font.setBold(True)
+            #         item.setFont(font)
+            #     self.name_parameter_combobox.model().appendRow(item)
+            self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
             print('Error, no connection')
 
