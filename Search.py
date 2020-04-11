@@ -204,7 +204,7 @@ class SearchController:
                     or_clause = self.add_or_clause(and_clause)
                     or_clause.search_field_parameter_combobox.setCurrentText(sub_clause[FIELD_KEY])
                     or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause[COMPARISON_KEY])
-                    or_clause.search_value_parameter_lineedit.setText(sub_clause[VALUE_KEY])
+                    or_clause.search_value_parameter_lineedit.setText(str(sub_clause[VALUE_KEY]))
 
     def search(self):
         """Queries the database based on the current search parameters and saves the results to the selected file"""
