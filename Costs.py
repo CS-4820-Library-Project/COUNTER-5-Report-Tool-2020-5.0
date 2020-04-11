@@ -1,6 +1,7 @@
 import json
 from typing import Sequence
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtGui import QStandardItem, QColor
 
 import ManageDB
 import ManageVendors
@@ -72,8 +73,9 @@ class CostsController:
         self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
         self.on_report_parameter_changed()
-        self.on_vendor_parameter_changed()
-        self.on_year_parameter_changed()
+        self.year_parameter = int(self.year_parameter_dateedit.text())
+        self.vendor_parameter = self.vendor_parameter_combobox.currentText()
+        self.fill_names()
 
         self.cost_in_original_currency_doublespinbox.valueChanged.connect(self.on_cost_in_original_currency_changed)
         self.original_currency_combobox.currentTextChanged.connect(self.on_original_currency_changed)
@@ -87,14 +89,14 @@ class CostsController:
         self.import_costs_button.clicked.connect(self.import_costs)
 
     def update_settings(self, settings: SettingsModel):
-        """Called when the settings are saved
+        """Invoked when the settings are saved
 
         :param settings: the new settings"""
         self.settings = settings
         self.load_currency_list()
 
     def database_updated(self, code: int):
-        """Called when the database is updated
+        """Invoked when the database is updated
 
         :param code: the exit code of the update"""
         self.fill_names()
@@ -131,20 +133,27 @@ class CostsController:
     def on_year_parameter_changed(self):
         """Invoked when the year parameter changes"""
         self.year_parameter = int(self.year_parameter_dateedit.text())
-        if self.name_parameter:
-            self.load_costs()
+        temp = self.name_parameter
+        self.fill_names()
+        self.name_parameter_combobox.setCurrentText(temp)
 
     def fill_names(self):
         """Fills the name field combobox"""
         self.name_parameter_combobox.clear()
         results = []
-        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+        sql_text, data = ManageDB.get_names_and_costs_status_sql_text(self.report_parameter, self.vendor_parameter,
+                                                                      self.year_parameter)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
             if self.settings.show_debug_messages: print(results)
             connection.close()
-            self.name_parameter_combobox.addItems([result[0] for result in results])
+            for result in results:
+                item = QStandardItem(result[0])
+                if result[1]:
+                    item.setBackground(QColor('lightGray'))
+                self.name_parameter_combobox.model().appendRow(item)
+            # self.name_parameter_combobox.addItems([result[0] for result in results])
         else:
             print('Error, no connection')
 
