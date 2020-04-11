@@ -1242,7 +1242,6 @@ class FetchReportsController(FetchReportsAbstract):
                 self.custom_dir_frame_message1.show()
                 self.custom_dir_frame_message2.hide()
 
-
     def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
         """Checks which message will show on the custom dir frame
 

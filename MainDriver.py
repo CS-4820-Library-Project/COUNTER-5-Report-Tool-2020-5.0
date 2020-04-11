@@ -43,6 +43,8 @@ if __name__ == "__main__":
     main_window_ui = MainWindow.Ui_mainWindow()
     main_window_ui.setupUi(main_window)
 
+    GeneralUtils.main_window = main_window
+
     # region Setup Tab Controllers
     settings_tab = QWidget(main_window)
     settings_ui = SettingsTab.Ui_settings_tab()

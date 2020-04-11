@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>ui/resources/main_icon.png</file>
     <file>ui/resources/help_icon.png</file>
     <file>ui/resources/undo_icon.png</file>
     <file>ui/resources/save_icon.png</file>
