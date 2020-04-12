@@ -808,31 +808,27 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     return sql_text, (vendor,)
 
 
-def get_names_and_costs_status_sql_text(report: str, vendor: str, year: int) -> Tuple[str, Sequence[Any]]:
-    """Makes the SQL statement to get all the unique name values for a report and vendor
+def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end_year: int) \
+        -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to get all the unique name values with costs data in a period for a report and vendor
 
     :param report: the kind of the report
     :param vendor: the vendor name of the data in the file
-    :param year: the year to check for costs data for
+    :param start_year: the starting year to check for costs data for
+    :param end_year: the ending year to check for costs data for
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
 
     data = []
-    sql_text = 'SELECT DISTINCT ' + report + '.' + name_field + ', '
-    sql_text += 'CASE WHEN(' + report[:2] + COST_TABLE_SUFFIX + '.' + name_field + ' IS NOT NULL) THEN(1) ELSE(0) END'
-    sql_text += ' AS ' + 'costs_status'
-    sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
-    join_clauses = []
-    for field in (name_field,) + COSTS_KEY_FIELDS:
-        if field != 'year':
-            join_clauses.append(report + '.' + field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + field)
-    join_clauses.append(report[:2] + COST_TABLE_SUFFIX + '.' + 'year' + ' = ?')
-    data.append(year)
-    sql_text += '\n\tON ' + ' AND '.join(join_clauses)
-    sql_text += '\nWHERE ' + report + '.' + name_field + ' <> \"\" AND ' + report + '.' + 'vendor' + ' LIKE ?'
+    sql_text = 'SELECT DISTINCT ' + name_field
+    sql_text += ' FROM ' + report[:2] + COST_TABLE_SUFFIX
+    sql_text += ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?'
     data.append(vendor)
-    sql_text += '\nORDER BY ' + report + '.' + name_field + ' COLLATE NOCASE ASC;'
+    sql_text += ' AND ' + 'year' + ' >= ?' + ' AND ' + 'year' + ' <= ?'
+    data.append(start_year)
+    data.append(end_year)
+    sql_text += ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
     return sql_text, tuple(data)
 
 
