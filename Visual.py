@@ -3,6 +3,7 @@
 import calendar
 import datetime
 import json
+import os
 from _operator import itemgetter
 
 import xlsxwriter
@@ -12,6 +13,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
 import GeneralUtils
+from GeneralUtils import *
 import ManageDB
 import ManageVendors
 from Settings import SettingsModel
@@ -103,9 +105,13 @@ class VisualController:
 
         # set up customize chart field
         self.chart_title_edit = visual_ui.chart_title_lineEdit
-        self.file_name_edit = visual_ui.file_name_lineEdit
         self.horizontal_axis_edit = visual_ui.horizontal_axis_lineEdit
         self.vertical_axis_edit = visual_ui.vertical_axis_lineEdit
+
+        # set up open file and open folder check box
+        self.open_file = visual_ui.open_file_checkBox
+        self.open_folder = visual_ui.open_folder_checkBox
+        self.file_name = None
 
         self.data = []
         self.temp_results = []
@@ -194,7 +200,6 @@ class VisualController:
     def createChart(self):
         """Invoke when user click on create chart"""
 
-        print(self.settings.default_currency)
         # get report type
         report = self.report_parameter.currentText()
         # get start year
@@ -219,13 +224,11 @@ class VisualController:
             message4 = "- Enter/Choose " + self.name_label.text() + "\n"
         if vendor == "" and self.topNum_radio.isChecked() == False:
             message1 = "- Choose a Vendor \n"
-        if self.file_name_edit.text() == "":
-            message2 = "- Enter File Name " + "\n"
         if start_year > end_year or (int(start_year) > datetime.datetime.now().year or int(end_year) > datetime.datetime.now().year) :
             currentYear = datetime.datetime.now().year
             message3 = "- Start Year must be less than End Year and they cannot be greater than " + str(
                 currentYear) + "\n"
-        message = message1 + message4 + message2 + message3
+        message = message1 + message4 + message3
         if message != "":
             message = "To Create Chart check the following: \n" + message
             GeneralUtils.show_message(message)
@@ -247,10 +250,13 @@ class VisualController:
                 print('Error, no connection')
             if len(self.results) > 1 and self.monthly_radio.isChecked():
                 self.process_default_data()
+                self.open_file_folder()
             if len(self.results) > 1 and self.yearly_radio.isChecked():
                 self.process_yearly_data()
+                self.open_file_folder()
             if len(self.results) > 1 and self.costRatio_radio.isChecked():
                 self.process_cost_ratio_data()
+                self.open_file_folder()
             if name != "" and start_year <= end_year and len(self.results) <= 1:
                 message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
                 GeneralUtils.show_message(message4)
@@ -274,9 +280,18 @@ class VisualController:
                 print('Error, no connection')
             if len(self.results) > 1:
                 self.process_top_X_data()
+                self.open_file_folder()
             elif start_year <= end_year:
                 message5 = self.name_label.text() + " of " + metric + " Not Found in " + report + " for the chosen year range!"
                 GeneralUtils.show_message(message5)
+
+    def open_file_folder(self):
+        if self.open_folder.isChecked():
+            open_file_or_dir(os.path.dirname(self.file_name))
+        if self.open_file.isChecked():
+            open_file_or_dir(self.file_name)
+        if not self.open_file.isChecked():
+            show_message('Results saved to ' + self.file_name)
 
     # process_data distributes the usage data for monthly in an array accordingly
     def process_default_data(self):
@@ -471,11 +486,10 @@ class VisualController:
         """Invoked to get information from user to customize chart.
 
         It is highly recommended that user write the details like year, report type, calculation type,.. in chart title"""
-        file_name = self.file_name_edit.text()
         chart_title = self.chart_title_edit.text()
         horizontal_axis_title = self.horizontal_axis_edit.text()
         vertical_axis_title = self.vertical_axis_edit.text()
-        return file_name, chart_title, horizontal_axis_title, vertical_axis_title
+        return chart_title, horizontal_axis_title, vertical_axis_title
 
     # add titles to chart and styles
     @staticmethod
@@ -495,16 +509,15 @@ class VisualController:
         chart1.set_style(11)
 
     # create file with ext and add sheet to file
-    @staticmethod
-    def createFile(directory, file_name, ext):
-        """Invoked to create xlsx file
+    def createFile(self):
+        """Invoked to create xlsx file"""
 
-        :param directory: the directory to save the file
-        :param file_name: the file name
-        :param ext: the extension depending on chart type"""
+        self.file_name = choose_save(EXCEL_FILTER)
+        if self.file_name != '':
+            if not self.file_name.lower().endswith('.xlsx'):
+                self.file_name += '.xlsx'
 
-        # create xlsx file
-        workbook = xlsxwriter.Workbook(directory + file_name + ext + '.xlsx')
+        workbook = xlsxwriter.Workbook(self.file_name)
         # add sheet to xlsx file
         worksheet = workbook.add_worksheet()
         return workbook, worksheet
@@ -597,16 +610,11 @@ class VisualController:
     def horizontal_bar_chart(self):
         """Invoked to create a horizontal bar chart"""
 
-        # get file name and titles from customizeChart
-        file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
-
-        # get directory to save file
-        directory = GeneralUtils.choose_directory()
-        if not directory:
-            return
+        # get titles from customizeChart
+        chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # create xlsx file and add sheet file
-        workbook, worksheet = self.createFile(directory, file_name, '_hbar')
+        workbook, worksheet = self.createFile()
 
         # add data to worksheet
         self.populateData(vertical_axis_title, worksheet, workbook)
@@ -626,16 +634,11 @@ class VisualController:
     def vertical_bar_chart(self):
         """Invoked to create a vertical bar chart"""
 
-        # get file name and titles from customizeChart
-        file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
-
-        # get directory to save file
-        directory = GeneralUtils.choose_directory()
-        if not directory:
-            return
+        # get titles from customizeChart
+        chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # create xlsx file and add sheet file
-        workbook, worksheet = self.createFile(directory, file_name, '_vbar')
+        workbook, worksheet = self.createFile()
 
         # add data to worksheet
         self.populateData(vertical_axis_title, worksheet, workbook)
@@ -655,16 +658,11 @@ class VisualController:
     def line_chart(self):
         """Invoked to create a line chart"""
 
-        # get file name and titles from customizeChart
-        file_name, chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
-
-        # get directory to save file
-        directory = GeneralUtils.choose_directory()
-        if not directory:
-            return
+        # get titles from customizeChart
+        chart_title, horizontal_axis_title, vertical_axis_title = self.customizeChart()
 
         # create xlsx file and add sheet file
-        workbook, worksheet = self.createFile(directory, file_name, '_line')
+        workbook, worksheet = self.createFile()
 
         # Add data to worksheet
         self.populateData(vertical_axis_title, worksheet, workbook)
