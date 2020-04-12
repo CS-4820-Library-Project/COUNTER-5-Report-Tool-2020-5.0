@@ -845,13 +845,12 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
     values = []
     sql_text = 'SELECT'
     fields = [field[NAME_KEY] for field in COST_FIELDS]
-    sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
-    sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = ?'
+    sql_text += ' ' + ', '.join(fields) + ' FROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += ' WHERE ' + 'vendor' + ' = ?'
     values.append(vendor)
-    sql_text += '\n\tAND ' + 'year' + ' = ?'
+    sql_text += ' AND ' + 'year' + ' = ?'
     values.append(year)
-    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    sql_text += ' AND ' + name_field + ' = ?;'
     values.append(name)
     return sql_text, tuple(values)
 
