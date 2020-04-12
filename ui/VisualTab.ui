@@ -48,7 +48,28 @@
          <enum>QFrame::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout_6">
-         <item row="0" column="1">
+         <item row="0" column="0">
+          <widget class="QLabel" name="search_report_parameter_label_2">
+           <property name="text">
+            <string>Report</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QLabel" name="search_end_year_parameter_label_2">
+           <property name="text">
+            <string>End Year</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2" rowspan="2">
+          <widget class="QDateEdit" name="search_start_year_parameter_dateedit_2">
+           <property name="displayFormat">
+            <string>yyyy</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
           <widget class="QLabel" name="search_start_year_parameter_label_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -58,20 +79,6 @@
            </property>
            <property name="text">
             <string>Start Year</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="search_report_parameter_label_2">
-           <property name="text">
-            <string>Report</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QLabel" name="search_end_year_parameter_label_2">
-           <property name="text">
-            <string>End Year</string>
            </property>
           </widget>
          </item>
@@ -85,14 +92,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1" rowspan="2">
-          <widget class="QDateEdit" name="search_start_year_parameter_dateedit_2">
-           <property name="displayFormat">
-            <string>yyyy</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2" rowspan="2">
+         <item row="1" column="4" rowspan="2">
           <widget class="QDateEdit" name="search_end_year_parameter_dateedit_2">
            <property name="currentSection">
             <enum>QDateTimeEdit::YearSection</enum>
@@ -101,6 +101,38 @@
             <string>yyyy</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="1">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="3">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -255,7 +287,7 @@
               <x>10</x>
               <y>10</y>
               <width>136</width>
-              <height>171</height>
+              <height>161</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -321,7 +353,7 @@
               <x>150</x>
               <y>10</y>
               <width>141</width>
-              <height>171</height>
+              <height>161</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -340,7 +372,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>20</y>
+               <y>10</y>
                <width>121</width>
                <height>21</height>
               </rect>
@@ -367,7 +399,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>50</y>
+               <y>40</y>
                <width>112</width>
                <height>20</height>
               </rect>
@@ -380,7 +412,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>80</y>
+               <y>70</y>
                <width>112</width>
                <height>20</height>
               </rect>
@@ -393,7 +425,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>110</y>
+               <y>100</y>
                <width>112</width>
                <height>20</height>
               </rect>
@@ -406,7 +438,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>140</y>
+               <y>130</y>
                <width>112</width>
                <height>20</height>
               </rect>
@@ -425,7 +457,7 @@
               <x>293</x>
               <y>10</y>
               <width>151</width>
-              <height>171</height>
+              <height>161</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -503,7 +535,7 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>100</y>
+               <y>90</y>
                <width>131</width>
                <height>61</height>
               </rect>
@@ -568,7 +600,7 @@
               <x>460</x>
               <y>10</y>
               <width>601</width>
-              <height>171</height>
+              <height>161</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -584,23 +616,16 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_14">
-             <item row="5" column="1" colspan="3">
+             <item row="4" column="1" colspan="2">
               <widget class="QLineEdit" name="vertical_axis_lineEdit"/>
              </item>
-             <item row="4" column="1" colspan="3">
+             <item row="3" column="1" colspan="2">
               <widget class="QLineEdit" name="horizontal_axis_lineEdit"/>
              </item>
-             <item row="3" column="1" colspan="3">
+             <item row="2" column="1" colspan="2">
               <widget class="QLineEdit" name="chart_title_lineEdit"/>
              </item>
              <item row="4" column="0">
-              <widget class="QLabel" name="label_43">
-               <property name="text">
-                <string>Horizontal Axis Title</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
               <widget class="QLabel" name="label_44">
                <property name="text">
                 <string>Vertical Axis Title</string>
@@ -608,23 +633,16 @@
               </widget>
              </item>
              <item row="3" column="0">
-              <widget class="QLabel" name="label_36">
+              <widget class="QLabel" name="label_43">
                <property name="text">
-                <string>Chart Title</string>
+                <string>Horizontal Axis Title</string>
                </property>
               </widget>
              </item>
              <item row="2" column="0">
-              <widget class="QLabel" name="label_16">
+              <widget class="QLabel" name="label_36">
                <property name="text">
-                <string>File Name (Required)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" colspan="3">
-              <widget class="QLineEdit" name="file_name_lineEdit">
-               <property name="enabled">
-                <bool>true</bool>
+                <string>Chart Title</string>
                </property>
               </widget>
              </item>
@@ -653,10 +671,51 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_12">
-      <item row="2" column="1" colspan="2">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="open_folder_checkBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Open Folder</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="3" colspan="2">
        <widget class="QPushButton" name="create_chart_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Create Chart</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="open_file_checkBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Open File</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
