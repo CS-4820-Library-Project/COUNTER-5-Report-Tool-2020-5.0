@@ -1,7 +1,7 @@
 import json
 from typing import Sequence
 from PyQt5.QtWidgets import QDialog
-from PyQt5.QtGui import QStandardItem, QFont
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 
 import ManageDB
 import ManageVendors
@@ -166,13 +166,15 @@ class CostsController:
             if self.settings.show_debug_messages: print(costs_results)
 
             connection.close()
+            model = QStandardItemModel()
             for name in self.names:
                 item = QStandardItem(name)
                 if name in self.costs_names:
                     font = QFont()
                     font.setBold(True)
                     item.setFont(font)
-                self.name_parameter_combobox.model().appendRow(item)
+                model.appendRow(item)
+            self.name_parameter_combobox.setModel(model)
         else:
             print('Error, no connection')
 
