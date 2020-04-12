@@ -155,10 +155,10 @@ class SettingsController(QObject):
 
         # region Search
         # set up restore database button
-        self.is_restoring_database = False
+        self.is_rebuilding_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
-        self.restore_database_button = settings_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
+        self.rebuild_database_button = settings_ui.settings_rebuild_database_button
+        self.rebuild_database_button.clicked.connect(self.on_rebuild_database_clicked)
         # endregion
 
         settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
@@ -182,17 +182,17 @@ class SettingsController(QObject):
         self.settings_changed_signal.emit(self.settings)
         GeneralUtils.show_message("Changes saved!")
 
-    def on_restore_database_clicked(self):
+    def on_rebuild_database_clicked(self):
         """Restores the database when the restore database button is clicked"""
-        if not self.is_restoring_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
-                self.is_restoring_database = True
+        if not self.is_rebuilding_database:  # check if already running
+            if GeneralUtils.ask_confirmation('Are you sure you want to rebuild the database?'):
+                self.is_rebuilding_database = True
                 self.update_database_dialog.update_database(ManageDB.get_all_report_files() +
                                                             ManageDB.get_all_cost_files(),
                                                             True)
-                self.is_restoring_database = False
+                self.is_rebuilding_database = False
         else:
-            if self.settings.show_debug_messages: print('Database is already being restored')
+            if self.settings.show_debug_messages: print('Database is already being rebuilt')
 
     def update_settings(self):
         """Updates the app's settings using the values entered on the UI"""

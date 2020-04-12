@@ -30,9 +30,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-145</y>
-        <width>818</width>
-        <height>632</height>
+        <y>-1072</y>
+        <width>849</width>
+        <height>1490</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -522,8 +522,25 @@
             </layout>
            </widget>
           </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QPushButton" name="save_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Save All Changes</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../Resources.qrc">
+              <normaloff>:/ui/resources/save_icon.png</normaloff>:/ui/resources/save_icon.png</iconset>
+            </property>
+           </widget>
+          </item>
           <item>
-           <widget class="QFrame" name="settings_search_fram">
+           <widget class="QFrame" name="settings_search_frame">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -556,9 +573,9 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="settings_restore_database_button">
+              <widget class="QPushButton" name="settings_rebuild_database_button">
                <property name="text">
-                <string>Restore Database</string>
+                <string>Rebuild Database</string>
                </property>
               </widget>
              </item>
@@ -573,25 +590,7 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QPushButton" name="save_button">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Save All Changes</string>
-               </property>
-               <property name="icon">
-                <iconset resource="../Resources.qrc">
-                 <normaloff>:/ui/resources/save_icon.png</normaloff>:/ui/resources/save_icon.png</iconset>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <layout class="QHBoxLayout" name="horizontalLayout"/>
            </widget>
           </item>
          </layout>

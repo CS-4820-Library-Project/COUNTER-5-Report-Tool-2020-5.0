@@ -808,6 +808,30 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     return sql_text, (vendor,)
 
 
+def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end_year: int) \
+        -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to get all the unique name values with costs data in a period for a report and vendor
+
+    :param report: the kind of the report
+    :param vendor: the vendor name of the data in the file
+    :param start_year: the starting year to check for costs data for
+    :param end_year: the ending year to check for costs data for
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
+    name_field = NAME_FIELD_SWITCHER[report[:2]]
+
+    data = []
+    sql_text = 'SELECT DISTINCT ' + name_field
+    sql_text += ' FROM ' + report[:2] + COST_TABLE_SUFFIX
+    sql_text += ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?'
+    data.append(vendor)
+    sql_text += ' AND ' + 'year' + ' >= ?' + ' AND ' + 'year' + ' <= ?'
+    data.append(start_year)
+    data.append(end_year)
+    sql_text += ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
+    return sql_text, tuple(data)
+
+
 def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to get costs from the database
 
@@ -821,13 +845,12 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
     values = []
     sql_text = 'SELECT'
     fields = [field[NAME_KEY] for field in COST_FIELDS]
-    sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
-    sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = ?'
+    sql_text += ' ' + ', '.join(fields) + ' FROM ' + report_type + COST_TABLE_SUFFIX
+    sql_text += ' WHERE ' + 'vendor' + ' = ?'
     values.append(vendor)
-    sql_text += '\n\tAND ' + 'year' + ' = ?'
+    sql_text += ' AND ' + 'year' + ' = ?'
     values.append(year)
-    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    sql_text += ' AND ' + name_field + ' = ?;'
     values.append(name)
     return sql_text, tuple(values)
 
@@ -1101,7 +1124,7 @@ class UpdateDatabaseProgressDialogController:
         :param recreate_tables: whether or not to drop the tables and recreated the tables before inserting"""
         self.update_database_progress_dialog = QDialog(self.parent_widget)
 
-        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
+        dialog_ui = UpdateDatabaseProgressDialog.Ui_update_database_dialog()
         dialog_ui.setupUi(self.update_database_progress_dialog)
 
         self.update_status_label = dialog_ui.status_label
