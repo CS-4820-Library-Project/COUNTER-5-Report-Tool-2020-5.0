@@ -141,7 +141,7 @@ class SettingsController(QObject):
                                               "known problem as it will affect all requests to all vendors. "
                                               "See Help for more information."))
         settings_ui.default_currency_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Used both in the Costs pulldown and also by Visual to label local """
+            lambda: GeneralUtils.show_message("Used both in the Costs pulldown and also by Visual to label local "
                                               "currencies in the spreadsheets generated with the Cost Ratio option."))
 
         # endregion
