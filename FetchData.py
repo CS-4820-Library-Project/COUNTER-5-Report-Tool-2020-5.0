@@ -1129,7 +1129,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.report_types_help_btn = fetch_reports_ui.report_types_help_button
         self.report_types_help_btn.clicked.connect(
-            lambda: GeneralUtils.show_message("Only reports supported by selected vendor will be retrieved!"))
+            lambda: GeneralUtils.show_message("Only reports supported by each respective vendor will be retrieved, "
+                                              "and unsupported reports will be listed in \"Expand\" results"))
         # endregion
 
         # region Date Edits
