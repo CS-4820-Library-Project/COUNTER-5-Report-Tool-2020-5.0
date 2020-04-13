@@ -8,7 +8,7 @@ from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 import GeneralUtils
 from Constants import *
@@ -241,7 +241,12 @@ class ImportReportController:
         self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
-        vertical_layout.setContentsMargins(5, 5, 5, 5)
+        vertical_layout.setContentsMargins(5, 5, 5, 40)
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.result_dialog)
+        self.buttonBox.setGeometry(QtCore.QRect(200, 15, 150, 150))
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.accepted.connect(self.result_dialog.accept)
 
         report_result_widget = QWidget(self.result_dialog)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
