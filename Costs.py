@@ -266,6 +266,7 @@ class CostsController:
         self.original_currency_combobox.setCurrentText(values['original_currency'])
         self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
+        self.cost_in_original_currency_doublespinbox.repaint()
 
     def clear_costs(self):
         """Empties the costs fields"""
