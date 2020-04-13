@@ -6,7 +6,7 @@ import ctypes
 import csv
 from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
-from PyQt5.QtWidgets import QWidget, QDialog
+from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 from PyQt5 import QtWidgets, QtCore
 
@@ -241,17 +241,15 @@ class ImportReportController:
         self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
-        vertical_layout.setContentsMargins(5, 5, 5, 65)
+        vertical_layout.setContentsMargins(5, 5, 5, 5)
 
         report_result_widget = QWidget(self.result_dialog)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
         report_result_ui.setupUi(report_result_widget)
 
-        self.buttonBox = QtWidgets.QDialogButtonBox(self.result_dialog)
-        self.buttonBox.setGeometry(
-            QtCore.QRect(200, 80, 150, 20))
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.accepted.connect(self.result_dialog.accept)
+        button_box = QtWidgets.QDialogButtonBox(QDialogButtonBox.Ok, self.result_dialog)
+        button_box.setCenterButtons(True)
+        button_box.accepted.connect(self.result_dialog.accept)
 
         vendor = process_result.vendor
         report_type = process_result.report_type
@@ -280,6 +278,7 @@ class ImportReportController:
             report_result_ui.message_label.setText(process_result.message)
 
         vertical_layout.addWidget(report_result_widget)
+        vertical_layout.addWidget(button_box)
         self.result_dialog.show()
 
 
