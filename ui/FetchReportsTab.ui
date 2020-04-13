@@ -487,10 +487,10 @@
                    </widget>
                   </item>
                   <item row="0" column="2">
-                   <widget class="QComboBox" name="comboBox"/>
+                   <widget class="QComboBox" name="begin_month_combo_box"/>
                   </item>
                   <item row="2" column="2">
-                   <widget class="QComboBox" name="comboBox_2"/>
+                   <widget class="QComboBox" name="end_month_combo_box"/>
                   </item>
                  </layout>
                 </widget>

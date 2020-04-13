@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'FetchSpecialReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
@@ -222,12 +224,12 @@ class Ui_fetch_special_reports_tab(object):
         self.end_date_edit_special_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
         self.end_date_edit_special_year.setObjectName("end_date_edit_special_year")
         self.gridLayout_2.addWidget(self.end_date_edit_special_year, 1, 1, 1, 1)
-        self.comboBox = QtWidgets.QComboBox(self.frame)
-        self.comboBox.setObjectName("comboBox")
-        self.gridLayout_2.addWidget(self.comboBox, 0, 2, 1, 1)
-        self.comboBox_2 = QtWidgets.QComboBox(self.frame)
-        self.comboBox_2.setObjectName("comboBox_2")
-        self.gridLayout_2.addWidget(self.comboBox_2, 1, 2, 1, 1)
+        self.begin_month_combo_box = QtWidgets.QComboBox(self.frame)
+        self.begin_month_combo_box.setObjectName("begin_month_combo_box")
+        self.gridLayout_2.addWidget(self.begin_month_combo_box, 0, 2, 1, 1)
+        self.end_month_combo_box = QtWidgets.QComboBox(self.frame)
+        self.end_month_combo_box.setObjectName("end_month_combo_box")
+        self.gridLayout_2.addWidget(self.end_month_combo_box, 1, 2, 1, 1)
         self.verticalLayout.addWidget(self.frame)
         self.custom_dir_frame = QtWidgets.QFrame(self.frame_16)
         self.custom_dir_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -318,5 +320,4 @@ class Ui_fetch_special_reports_tab(object):
         self.custom_dir_button.setText(_translate("fetch_special_reports_tab", "Change"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
         self.label.setText(_translate("fetch_special_reports_tab", "Note: Special reports are not added to the search database."))
-
 import Resources_rc

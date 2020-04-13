@@ -428,20 +428,10 @@ CSV_FILTER = ('CSV files (*.csv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
+
 # region Variable Constants for FetchData
-class DROPDOWN_MENU_MONTH(Enum):
-    JAN = QDate(2020,1,1)
-    FEB = QDate(2020,2,1)
-    MAR = QDate(2020,3,1)
-    APR = QDate(2020, 4, 1)
-    MAY = QDate(2020, 5, 1)
-    JUN = QDate(2020, 6, 1)
-    JUL = QDate(2020, 7, 1)
-    AUG = QDate(2020, 8, 1)
-    SEP = QDate(2020, 9, 1)
-    OCT = QDate(2020, 10, 1)
-    NOV = QDate(2020, 11, 1)
-    DEC = QDate(2020, 12, 1)
+MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December")
 
 MASTER_REPORTS = ("DR", "IR", "PR", "TR")
 

@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'FetchReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
@@ -234,12 +236,12 @@ class Ui_fetch_reports_tab(object):
         self.label_10 = QtWidgets.QLabel(self.frame_6)
         self.label_10.setObjectName("label_10")
         self.gridLayout.addWidget(self.label_10, 2, 0, 1, 1)
-        self.comboBox = QtWidgets.QComboBox(self.frame_6)
-        self.comboBox.setObjectName("comboBox")
-        self.gridLayout.addWidget(self.comboBox, 0, 2, 1, 1)
-        self.comboBox_2 = QtWidgets.QComboBox(self.frame_6)
-        self.comboBox_2.setObjectName("comboBox_2")
-        self.gridLayout.addWidget(self.comboBox_2, 2, 2, 1, 1)
+        self.begin_month_combo_box = QtWidgets.QComboBox(self.frame_6)
+        self.begin_month_combo_box.setObjectName("begin_month_combo_box")
+        self.gridLayout.addWidget(self.begin_month_combo_box, 0, 2, 1, 1)
+        self.end_month_combo_box = QtWidgets.QComboBox(self.frame_6)
+        self.end_month_combo_box.setObjectName("end_month_combo_box")
+        self.gridLayout.addWidget(self.end_month_combo_box, 2, 2, 1, 1)
         self.verticalLayout_2.addWidget(self.frame_6)
         self.custom_dir_frame = QtWidgets.QFrame(self.frame_14)
         self.custom_dir_frame.setMinimumSize(QtCore.QSize(0, 0))
@@ -345,5 +347,4 @@ class Ui_fetch_reports_tab(object):
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
         self.label_2.setText(_translate("fetch_reports_tab", "Note: Yearly reports cover all available data for one calender year. Only yearly reports are added to the search database."))
-
 import Resources_rc
