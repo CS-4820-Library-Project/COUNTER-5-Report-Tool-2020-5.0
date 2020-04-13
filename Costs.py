@@ -175,6 +175,7 @@ class CostsController:
                     item.setFont(font)
                 model.appendRow(item)
             self.name_parameter_combobox.setModel(model)
+            self.load_costs()
         else:
             print('Error, no connection')
 
