@@ -87,6 +87,10 @@ class ManageVendorsController(QObject):
         self.description_text_edit = manage_vendors_ui.descriptionEdit
         self.companies_text_edit = manage_vendors_ui.companiesEdit
 
+        manage_vendors_ui.non_sushi_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("Vendors that don't provide SUSHI service can be added to the list for "
+                                              "use with Import Reports"))
+
         self.name_validation_label = manage_vendors_ui.name_validation_label
         self.name_validation_label.hide()
         self.url_validation_label = manage_vendors_ui.url_validation_label
@@ -418,9 +422,13 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
-        non_Sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
+        non_sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
         companies_edit = vendor_dialog_ui.companiesEdit
+
+        vendor_dialog_ui.non_sushi_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("Vendors that don't provide SUSHI service can be added to the list for "
+                                              "use with Import Reports"))
 
         name_validation_label = vendor_dialog_ui.name_validation_label
         name_validation_label.hide()
@@ -434,7 +442,7 @@ class ManageVendorsController(QObject):
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
-                            api_key_edit.text(), platform_edit.text(), non_Sushi_check_box.checkState() == Qt.Checked,
+                            api_key_edit.text(), platform_edit.text(), non_sushi_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText(), companies_edit.toPlainText())
 
             is_valid, message = self.add_vendor(vendor)

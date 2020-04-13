@@ -148,15 +148,31 @@
             <property name="spacing">
              <number>20</number>
             </property>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="baseUrlEdit"/>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_3">
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Base URL</string>
+               <string>Customer ID</string>
               </property>
              </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QLineEdit" name="platformEdit"/>
+            </item>
+            <item row="10" column="1">
+             <widget class="QCheckBox" name="non_Sushi_check_box"/>
+            </item>
+            <item row="11" column="0" alignment="Qt::AlignTop">
+             <widget class="QLabel" name="label_28">
+              <property name="text">
+               <string>Description</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="customerIdEdit"/>
+            </item>
+            <item row="8" column="1">
+             <widget class="QLineEdit" name="apiKeyEdit"/>
             </item>
             <item row="1" column="1">
              <widget class="QLabel" name="name_validation_label">
@@ -165,8 +181,18 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
-             <widget class="QLineEdit" name="customerIdEdit"/>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="baseUrlEdit"/>
+            </item>
+            <item row="7" column="1">
+             <widget class="QLineEdit" name="requestorIdEdit"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Base URL</string>
+              </property>
+             </widget>
             </item>
             <item row="8" column="0">
              <widget class="QLabel" name="label_5">
@@ -175,6 +201,9 @@
               </property>
              </widget>
             </item>
+            <item row="12" column="1">
+             <widget class="QPlainTextEdit" name="companiesEdit"/>
+            </item>
             <item row="9" column="0">
              <widget class="QLabel" name="label_6">
               <property name="text">
@@ -182,55 +211,8 @@
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
-             <widget class="QLineEdit" name="platformEdit"/>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Customer ID</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Name</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Requestor ID</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QLineEdit" name="nameEdit"/>
-            </item>
-            <item row="8" column="1">
-             <widget class="QLineEdit" name="apiKeyEdit"/>
-            </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="requestorIdEdit"/>
-            </item>
-            <item row="12" column="0" alignment="Qt::AlignTop">
-             <widget class="QLabel" name="companiesText">
-              <property name="text">
-               <string>External Companies</string>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_39">
-              <property name="text">
-               <string>Non-Sushi Vendor</string>
-              </property>
-             </widget>
-            </item>
-            <item row="12" column="1">
-             <widget class="QPlainTextEdit" name="companiesEdit"/>
             </item>
             <item row="11" column="1">
              <widget class="QPlainTextEdit" name="descriptionEdit">
@@ -254,13 +236,17 @@
               </property>
              </widget>
             </item>
-            <item row="10" column="1">
-             <widget class="QCheckBox" name="non_Sushi_check_box"/>
-            </item>
-            <item row="11" column="0" alignment="Qt::AlignTop">
-             <widget class="QLabel" name="label_28">
+            <item row="10" column="0">
+             <widget class="QLabel" name="label_39">
               <property name="text">
-               <string>Description</string>
+               <string>Non-SUSHI Vendor</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Name</string>
               </property>
              </widget>
             </item>
@@ -268,6 +254,37 @@
              <widget class="QLabel" name="url_validation_label">
               <property name="text">
                <string>Validation label</string>
+              </property>
+             </widget>
+            </item>
+            <item row="12" column="0" alignment="Qt::AlignTop">
+             <widget class="QLabel" name="companiesText">
+              <property name="text">
+               <string>Third party provider</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Requestor ID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="2">
+             <widget class="QPushButton" name="non_sushi_help_button">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources.qrc">
+                <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
               </property>
              </widget>
             </item>
