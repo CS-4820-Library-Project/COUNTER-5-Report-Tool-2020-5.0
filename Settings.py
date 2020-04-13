@@ -117,13 +117,16 @@ class SettingsController(QObject):
 
         # Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where the calendar-year reports will be saved"))
         settings_ui.other_directory_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("This is where special and non-yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where the special and non-calendar-year date range reports will "
+                                              "be saved by default"))
         settings_ui.request_interval_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The amount of time to wait between a vendor's report requests"))
+            lambda: GeneralUtils.show_message("The number of seconds the program will wait between sending each report "
+                                              "request to a given vendor"))
         settings_ui.request_timeout_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The amount of time to wait before cancelling a request"))
+            lambda: GeneralUtils.show_message("The number of seconds the program will allow a vendor to respond to "
+                                              "each report request before canceling it"))
         settings_ui.concurrent_vendors_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time. "
                                               "If set too high, the UI might freeze while fetching reports but the "
@@ -133,8 +136,10 @@ class SettingsController(QObject):
                                               "If set too high, the UI might freeze while fetching reports but the "
                                               "fetch process will continue"))
         settings_ui.user_agent_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
-                                              "error HTTP error codes. Values should be separated by a space"))
+            lambda: GeneralUtils.show_message("How program identifies itself to the SUSHI servers. Some vendors will "
+                                              "reject some particular user agents. Only change this if there is a "
+                                              "known problem as it will affect all requests to all vendors. "
+                                              "See Help for more information."))
 
         # endregion
 
