@@ -572,54 +572,53 @@ class ReportRow:
 
     :param begin_date: The begin date of the request, used to populate the month columns in the report
     :param end_date: The end date of the request, used to populate the month columns in the report
-    :param empty_cell: The default value for an empty cell
     """
-    def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
-        self.database = empty_cell
-        self.title = empty_cell
-        self.item = empty_cell
-        self.publisher = empty_cell
-        self.publisher_id = empty_cell
-        self.platform = empty_cell
-        self.authors = empty_cell
-        self.publication_date = empty_cell
-        self.article_version = empty_cell
-        self.doi = empty_cell
-        self.proprietary_id = empty_cell
-        self.online_issn = empty_cell
-        self.print_issn = empty_cell
-        self.linking_issn = empty_cell
-        self.isbn = empty_cell
-        self.uri = empty_cell
-        self.parent_title = empty_cell
-        self.parent_authors = empty_cell
-        self.parent_publication_date = empty_cell
-        self.parent_article_version = empty_cell
-        self.parent_data_type = empty_cell
-        self.parent_doi = empty_cell
-        self.parent_proprietary_id = empty_cell
-        self.parent_online_issn = empty_cell
-        self.parent_print_issn = empty_cell
-        self.parent_linking_issn = empty_cell
-        self.parent_isbn = empty_cell
-        self.parent_uri = empty_cell
-        self.component_title = empty_cell
-        self.component_authors = empty_cell
-        self.component_publication_date = empty_cell
-        self.component_data_type = empty_cell
-        self.component_doi = empty_cell
-        self.component_proprietary_id = empty_cell
-        self.component_online_issn = empty_cell
-        self.component_print_issn = empty_cell
-        self.component_linking_issn = empty_cell
-        self.component_isbn = empty_cell
-        self.component_uri = empty_cell
-        self.data_type = empty_cell
-        self.section_type = empty_cell
-        self.yop = empty_cell
-        self.access_type = empty_cell
-        self.access_method = empty_cell
-        self.metric_type = empty_cell
+    def __init__(self, begin_date: QDate, end_date: QDate):
+        self.database = ""
+        self.title = ""
+        self.item = ""
+        self.publisher = ""
+        self.publisher_id = ""
+        self.platform = ""
+        self.authors = ""
+        self.publication_date = ""
+        self.article_version = ""
+        self.doi = ""
+        self.proprietary_id = ""
+        self.online_issn = ""
+        self.print_issn = ""
+        self.linking_issn = ""
+        self.isbn = ""
+        self.uri = ""
+        self.parent_title = ""
+        self.parent_authors = ""
+        self.parent_publication_date = ""
+        self.parent_article_version = ""
+        self.parent_data_type = ""
+        self.parent_doi = ""
+        self.parent_proprietary_id = ""
+        self.parent_online_issn = ""
+        self.parent_print_issn = ""
+        self.parent_linking_issn = ""
+        self.parent_isbn = ""
+        self.parent_uri = ""
+        self.component_title = ""
+        self.component_authors = ""
+        self.component_publication_date = ""
+        self.component_data_type = ""
+        self.component_doi = ""
+        self.component_proprietary_id = ""
+        self.component_online_issn = ""
+        self.component_print_issn = ""
+        self.component_linking_issn = ""
+        self.component_isbn = ""
+        self.component_uri = ""
+        self.data_type = ""
+        self.section_type = ""
+        self.yop = ""
+        self.access_type = ""
+        self.access_method = ""
+        self.metric_type = ""
         self.total_count = 0
 
         self.month_counts = {}
@@ -1983,7 +1982,6 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.show_debug = request_data.settings.show_debug_messages
         self.request_timeout = request_data.settings.request_timeout
-        self.empty_cell = request_data.settings.empty_cell
         self.user_agent = request_data.settings.user_agent
         self.save_dir = request_data.save_location
         self.special_options = request_data.special_options
@@ -2165,7 +2163,7 @@ class ReportWorker(QObject):
                 for instance in performance.instances:
                     metric_type = instance.metric_type
                     if metric_type not in metric_row_dict:
-                        metric_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
+                        metric_row = ReportRow(self.begin_date, self.end_date)
                         metric_row.metric_type = metric_type
 
                         metric_row_dict[metric_type] = metric_row
@@ -2352,15 +2350,15 @@ class ReportWorker(QObject):
                 item_component: ItemComponentModel
                 for item_component in report_item.item_components:
                     component_dict = {
-                        "component_title": self.empty_cell,
-                        "component_authors": self.empty_cell,
-                        "component_publication_date": self.empty_cell,
-                        "component_data_type": self.empty_cell,
-                        "component_doi": self.empty_cell,
-                        "component_proprietary_id": self.empty_cell,
-                        "component_isbn": self.empty_cell,
-                        "component_print_issn": self.empty_cell,
-                        "component_online_issn": self.empty_cell,
+                        "component_title": "",
+                        "component_authors": "",
+                        "component_publication_date": "",
+                        "component_data_type": "",
+                        "component_doi": "",
+                        "component_proprietary_id": "",
+                        "component_isbn": "",
+                        "component_print_issn": "",
+                        "component_online_issn": "",
                         "component_uri": ""
                     }
 

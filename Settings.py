@@ -19,8 +19,7 @@ class Setting(Enum):
     REQUEST_TIMEOUT = 3
     CONCURRENT_VENDORS = 4
     CONCURRENT_REPORTS = 5
-    EMPTY_CELL = 6
-    USER_AGENT = 7
+    USER_AGENT = 6
 
 
 class SettingsModel(JsonModel):
@@ -33,12 +32,11 @@ class SettingsModel(JsonModel):
     :param request_timeout: The time to wait before timing out a connection (seconds).
     :param concurrent_vendors: The max number of vendors to work on at a time.
     :param concurrent_reports: The max number of reports to work on at a time, per vendor.
-    :param empty_cell: The default empty cell value in generated tabular reports.
     :param user_agent: The user-agent that's included in the header when making requests.
     """
     def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
-                 request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
-                 user_agent: str, default_currency: str):
+                 request_timeout: int, concurrent_vendors: int, concurrent_reports: int, user_agent: str,
+                 default_currency: str):
         self.show_debug_messages = show_debug_messages
         self.yearly_directory = path.abspath(yearly_directory) + path.sep
         self.other_directory = path.abspath(other_directory) + path.sep
@@ -46,7 +44,6 @@ class SettingsModel(JsonModel):
         self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
-        self.empty_cell = empty_cell
         self.user_agent = user_agent
         self.default_currency = default_currency
 
@@ -66,15 +63,13 @@ class SettingsModel(JsonModel):
             if "concurrent_vendors" in json_dict else CONCURRENT_VENDORS
         concurrent_reports = int(json_dict["concurrent_reports"])\
             if "concurrent_reports" in json_dict else CONCURRENT_REPORTS
-        empty_cell = json_dict["empty_cell"]\
-            if "empty_cell" in json_dict else EMPTY_CELL
         user_agent = json_dict["user_agent"]\
             if "user_agent" in json_dict else USER_AGENT
         default_currency = json_dict["default_currency"]\
             if "default_currency" in json_dict else DEFAULT_CURRENCY
 
         return cls(show_debug_messages, yearly_directory, other_directory, request_interval, request_timeout,
-                   concurrent_vendors, concurrent_reports, empty_cell, user_agent, default_currency)
+                   concurrent_vendors, concurrent_reports, user_agent, default_currency)
 
 
 class SettingsController(QObject):
@@ -105,7 +100,6 @@ class SettingsController(QObject):
         self.request_timeout_spin_box = settings_ui.request_timeout_spin_box
         self.concurrent_vendors_spin_box = settings_ui.concurrent_vendors_spin_box
         self.concurrent_reports_spin_box = settings_ui.concurrent_reports_spin_box
-        self.empty_cell_edit = settings_ui.empty_cell_edit
         self.user_agent_edit = settings_ui.user_agent_edit
 
         self.yearly_dir_edit.setText(self.settings.yearly_directory)
@@ -114,7 +108,6 @@ class SettingsController(QObject):
         self.request_timeout_spin_box.setValue(self.settings.request_timeout)
         self.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
         self.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
-        self.empty_cell_edit.setText(self.settings.empty_cell)
         self.user_agent_edit.setText(self.settings.user_agent)
 
         settings_ui.yearly_directory_button.clicked.connect(
@@ -139,8 +132,6 @@ class SettingsController(QObject):
             lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time (per vendor). "
                                               "If set too high, the UI might freeze while fetching reports but the "
                                               "fetch process will continue"))
-        settings_ui.empty_cell_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Empty cells will be replaced by whatever is in here"))
         settings_ui.user_agent_help_button.clicked.connect(
             lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
                                               "error HTTP error codes. Values should be separated by a space"))
@@ -203,7 +194,6 @@ class SettingsController(QObject):
         self.settings.request_timeout = self.request_timeout_spin_box.value()
         self.settings.concurrent_vendors = self.concurrent_vendors_spin_box.value()
         self.settings.concurrent_reports = self.concurrent_reports_spin_box.value()
-        self.settings.empty_cell = self.empty_cell_edit.text()
         self.settings.user_agent = self.user_agent_edit.text()
         self.settings.default_currency = self.default_currency_combobox.currentText()
 

@@ -30,9 +30,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-1072</y>
-        <width>849</width>
-        <height>1490</height>
+        <y>0</y>
+        <width>815</width>
+        <height>592</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -189,36 +189,8 @@
                 <property name="horizontalSpacing">
                  <number>10</number>
                 </property>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_30">
-                  <property name="text">
-                   <string>Report Request Interval</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="other_directory_edit">
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_25">
-                  <property name="text">
-                   <string>Yearly Reports Directory</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_29">
-                  <property name="text">
-                   <string>Other Reports Directory</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="7" column="2">
-                 <widget class="QPushButton" name="concurrent_vendors_help_button">
+                <item row="1" column="3">
+                 <widget class="QPushButton" name="other_directory_help_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -245,40 +217,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2">
-                 <widget class="QPushButton" name="yearly_directory_button">
-                  <property name="text">
-                   <string>Choose</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="../Resources.qrc">
-                    <normaloff>:/ui/resources/folder_icon.png</normaloff>:/ui/resources/folder_icon.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="yearly_directory_edit">
-                  <property name="readOnly">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="0">
-                 <widget class="QLabel" name="label_32">
-                  <property name="text">
-                   <string>Concurrent Reports</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="1">
-                 <widget class="QSpinBox" name="concurrent_reports_spin_box">
-                  <property name="maximum">
-                   <number>999</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="2">
-                 <widget class="QPushButton" name="concurrent_reports_help_button">
+                <item row="6" column="2">
+                 <widget class="QPushButton" name="request_timeout_help_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -291,6 +231,47 @@
                   <property name="icon">
                    <iconset resource="../Resources.qrc">
                     <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="2">
+                 <widget class="QPushButton" name="concurrent_vendors_help_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../Resources.qrc">
+                    <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="label_37">
+                  <property name="text">
+                   <string>Request Timeout</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="10" column="1">
+                 <widget class="QLineEdit" name="user_agent_edit"/>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="other_directory_edit">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="label_32">
+                  <property name="text">
+                   <string>Concurrent Reports</string>
                   </property>
                  </widget>
                 </item>
@@ -311,10 +292,17 @@
                   </property>
                  </widget>
                 </item>
-                <item row="10" column="0">
-                 <widget class="QLabel" name="label_33">
+                <item row="5" column="1">
+                 <widget class="QSpinBox" name="request_interval_spin_box">
+                  <property name="maximum">
+                   <number>999</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_25">
                   <property name="text">
-                   <string>Empty Cell</string>
+                   <string>Yearly Reports Directory</string>
                   </property>
                  </widget>
                 </item>
@@ -345,49 +333,23 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="1">
-                 <widget class="QSpinBox" name="request_interval_spin_box">
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="yearly_directory_button">
+                  <property name="text">
+                   <string>Choose</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../Resources.qrc">
+                    <normaloff>:/ui/resources/folder_icon.png</normaloff>:/ui/resources/folder_icon.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="QSpinBox" name="concurrent_reports_spin_box">
                   <property name="maximum">
                    <number>999</number>
                   </property>
                  </widget>
-                </item>
-                <item row="10" column="2">
-                 <widget class="QPushButton" name="empty_cell_help_button">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="../Resources.qrc">
-                    <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="3">
-                 <widget class="QPushButton" name="other_directory_help_button">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="../Resources.qrc">
-                    <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
-                  </property>
-                 </widget>
-                </item>
-                <item row="10" column="1">
-                 <widget class="QLineEdit" name="empty_cell_edit"/>
                 </item>
                 <item row="7" column="0">
                  <widget class="QLabel" name="label_31">
@@ -396,15 +358,39 @@
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="0">
-                 <widget class="QLabel" name="label_37">
-                  <property name="text">
-                   <string>Request Timeout</string>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="yearly_directory_edit">
+                  <property name="readOnly">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="2">
-                 <widget class="QPushButton" name="request_timeout_help_button">
+                <item row="10" column="0">
+                 <widget class="QLabel" name="label_73">
+                  <property name="text">
+                   <string>User Agent</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="10" column="2">
+                 <widget class="QPushButton" name="user_agent_help_button">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="../Resources.qrc">
+                    <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="2">
+                 <widget class="QPushButton" name="concurrent_reports_help_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -427,30 +413,17 @@
                   </property>
                  </widget>
                 </item>
-                <item row="11" column="0">
-                 <widget class="QLabel" name="label_73">
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_29">
                   <property name="text">
-                   <string>User Agent</string>
+                   <string>Other Reports Directory</string>
                   </property>
                  </widget>
                 </item>
-                <item row="11" column="1">
-                 <widget class="QLineEdit" name="user_agent_edit"/>
-                </item>
-                <item row="11" column="2">
-                 <widget class="QPushButton" name="user_agent_help_button">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_30">
                   <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="../Resources.qrc">
-                    <normaloff>:/ui/resources/help_icon.png</normaloff>:/ui/resources/help_icon.png</iconset>
+                   <string>Report Request Interval</string>
                   </property>
                  </widget>
                 </item>
