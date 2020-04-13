@@ -241,16 +241,17 @@ class ImportReportController:
         self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
-        vertical_layout.setContentsMargins(5, 5, 5, 40)
-
-        self.buttonBox = QtWidgets.QDialogButtonBox(self.result_dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(200, 15, 150, 150))
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.accepted.connect(self.result_dialog.accept)
+        vertical_layout.setContentsMargins(5, 5, 5, 65)
 
         report_result_widget = QWidget(self.result_dialog)
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
         report_result_ui.setupUi(report_result_widget)
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(self.result_dialog)
+        self.buttonBox.setGeometry(
+            QtCore.QRect(200, 80, 150, 20))
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.accepted.connect(self.result_dialog.accept)
 
         vendor = process_result.vendor
         report_type = process_result.report_type
