@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1145</width>
-    <height>714</height>
+    <width>1014</width>
+    <height>703</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -44,7 +44,7 @@
         <property name="font">
          <font>
           <family>Segoe UI</family>
-          <pointsize>13</pointsize>
+          <pointsize>16</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -53,7 +53,7 @@
          <string>Fetch All Reports</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
@@ -131,6 +131,22 @@
        </widget>
       </item>
       <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Minimum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>45</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="Adv_Fetch_text">
         <property name="maximumSize">
          <size>
@@ -141,7 +157,7 @@
         <property name="font">
          <font>
           <family>Segoe UI</family>
-          <pointsize>13</pointsize>
+          <pointsize>16</pointsize>
           <weight>75</weight>
           <italic>false</italic>
           <bold>true</bold>
@@ -152,7 +168,7 @@
          <string>Advanced Fetch Reports</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
