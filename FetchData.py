@@ -1472,6 +1472,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_special_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.custom_dir_help_btn = fetch_special_reports_ui.custom_dir_help_button
+        self.custom_dir_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default."))
         # endregion
 
     def update_vendors_ui(self):
