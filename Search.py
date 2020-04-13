@@ -103,6 +103,7 @@ class SearchController:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
+            self.and_clause_parameters_frame.repaint()
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
