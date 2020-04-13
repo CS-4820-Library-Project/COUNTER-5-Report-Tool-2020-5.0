@@ -7,8 +7,8 @@ import csv
 from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
-from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5 import QtWidgets
 
 import GeneralUtils
 from Constants import *
