@@ -1,5 +1,4 @@
 from enum import Enum
-from PyQt5.QtCore import QDate
 
 # region Variable Constants for ManageDB
 
