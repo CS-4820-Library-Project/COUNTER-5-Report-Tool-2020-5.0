@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'SettingsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_settings_tab(object):
     def setupUi(self, settings_tab):
@@ -24,7 +22,7 @@ class Ui_settings_tab(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 815, 592))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 815, 596))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.scrollAreaWidgetContents)
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 2)
@@ -280,15 +278,30 @@ class Ui_settings_tab(object):
         self.settings_costs_items_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.settings_costs_items_frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.settings_costs_items_frame.setObjectName("settings_costs_items_frame")
-        self.formLayout = QtWidgets.QFormLayout(self.settings_costs_items_frame)
-        self.formLayout.setObjectName("formLayout")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.settings_costs_items_frame)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.settings_costs_default_currency_label = QtWidgets.QLabel(self.settings_costs_items_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.settings_costs_default_currency_label.sizePolicy().hasHeightForWidth())
+        self.settings_costs_default_currency_label.setSizePolicy(sizePolicy)
         self.settings_costs_default_currency_label.setObjectName("settings_costs_default_currency_label")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.settings_costs_default_currency_label)
+        self.horizontalLayout_4.addWidget(self.settings_costs_default_currency_label)
         self.settings_costs_default_currency_combobox = QtWidgets.QComboBox(self.settings_costs_items_frame)
         self.settings_costs_default_currency_combobox.setEditable(True)
         self.settings_costs_default_currency_combobox.setObjectName("settings_costs_default_currency_combobox")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.settings_costs_default_currency_combobox)
+        self.horizontalLayout_4.addWidget(self.settings_costs_default_currency_combobox)
+        self.default_currency_help_button = QtWidgets.QPushButton(self.settings_costs_items_frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.default_currency_help_button.sizePolicy().hasHeightForWidth())
+        self.default_currency_help_button.setSizePolicy(sizePolicy)
+        self.default_currency_help_button.setText("")
+        self.default_currency_help_button.setIcon(icon1)
+        self.default_currency_help_button.setObjectName("default_currency_help_button")
+        self.horizontalLayout_4.addWidget(self.default_currency_help_button)
         self.verticalLayout_3.addWidget(self.settings_costs_items_frame)
         self.verticalLayout.addWidget(self.settings_costs_frame)
         self.save_button = QtWidgets.QPushButton(self.frame_4)
@@ -369,4 +382,5 @@ class Ui_settings_tab(object):
         self.save_button.setText(_translate("settings_tab", "Save All Changes"))
         self.settings_search_label.setText(_translate("settings_tab", "Search"))
         self.settings_rebuild_database_button.setText(_translate("settings_tab", "Rebuild Database"))
+
 import Resources_rc
