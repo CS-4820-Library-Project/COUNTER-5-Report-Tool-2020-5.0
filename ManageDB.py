@@ -825,7 +825,18 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
 def get_sql_select_statement(select_fields: Sequence[str], from_tables: Sequence[str],
                              where_conditions: Sequence[str] = None, group_by_fields: Sequence[str] = None,
                              order_by_fields: Sequence[str] = None, distinct: bool = None, num_extra_tabs: int = 0,
-                             is_multiline: bool = True):
+                             is_multiline: bool = True) -> str:
+    """Makes a select SQL statement
+
+    :param select_fields: a list of fields to get; use a list containing only '*' to get all the fields from the tables
+    :param from_tables: a list of tables to get fields from; assumes inner join
+    :param where_conditions: a list of conditions for the WHERE keyword
+    :param group_by_fields: a list of fields for the GROUP BY keyword
+    :param order_by_fields: a list of fields for the ORDER BY keyword
+    :param distinct: whether to only get distinct rows from the database
+    :param num_extra_tabs: the number of tabs to put at the start of each line of the statement
+    :param is_multiline: whether or not to break the statement into multiple lines
+    :returns: the SQL statement to send the database"""
     tabs = '\t' * num_extra_tabs
     sql_text = 'SELECT'
     if distinct:
