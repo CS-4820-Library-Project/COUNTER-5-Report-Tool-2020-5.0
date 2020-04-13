@@ -79,14 +79,13 @@ class CostsController:
         self.year_parameter = int(self.year_parameter_dateedit.text())
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
         self.fill_names()
+        self.load_costs()
 
         self.cost_in_original_currency_doublespinbox.valueChanged.connect(self.on_cost_in_original_currency_changed)
         self.original_currency_combobox.currentTextChanged.connect(self.on_original_currency_changed)
         self.cost_in_local_currency_doublespinbox.valueChanged.connect(self.on_cost_in_local_currency_changed)
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
-
-        self.clear_costs()
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
