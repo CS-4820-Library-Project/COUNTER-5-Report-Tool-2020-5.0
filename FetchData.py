@@ -1141,17 +1141,24 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date_edit_year.setDate(self.adv_begin_date)
         self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
 
-        self.begin_date_edit_month = fetch_reports_ui.begin_date_edit_fetch_month
-        self.begin_date_edit_month.setDate(self.adv_begin_date)
-        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_begin"))
-
         self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
         self.end_date_edit_year.setDate(self.adv_end_date)
         self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
 
-        self.end_date_edit_month = fetch_reports_ui.end_date_edit_fetch_month
-        self.end_date_edit_month.setDate(self.adv_end_date)
-        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
+        self.begin_month_combo_box = fetch_reports_ui.begin_month_combo_box
+        for month in MONTH_NAMES:
+            self.begin_month_combo_box.addItem(month)
+        self.begin_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_begin"))
+        self.begin_month_combo_box.setCurrentIndex(self.adv_begin_date.month() - 1)
+
+        self.end_month_combo_box = fetch_reports_ui.end_month_combo_box
+        for month in MONTH_NAMES:
+            self.end_month_combo_box.addItem(month)
+        self.end_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_end"))
+        self.end_month_combo_box.setCurrentIndex(self.adv_end_date.month() - 1)
+
         # endregion
 
         # region Custom Directory
@@ -1216,17 +1223,17 @@ class FetchReportsController(FetchReportsAbstract):
                 self.custom_dir_frame_message1.show()
                 self.custom_dir_frame_message2.hide()
 
-    def on_date_month_changed(self, date: QDate, date_type: str):
+    def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed
 
-        :param date: The new date
+        :param month: The new month
         :param date_type: The date to be updated
         """
         if date_type == "adv_begin":
-            self.adv_begin_date = QDate(self.adv_begin_date.year(), date.month(), self.adv_begin_date.day())
+            self.adv_begin_date = QDate(self.adv_begin_date.year(), month, self.adv_begin_date.day())
 
         elif date_type == "adv_end":
-            self.adv_end_date = QDate(self.adv_end_date.year(), date.month(), self.adv_end_date.day())
+            self.adv_end_date = QDate(self.adv_end_date.year(), month, self.adv_end_date.day())
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
@@ -1435,17 +1442,24 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.begin_date_edit_year.setDate(self.begin_date)
         self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
 
-        self.begin_date_edit_month = fetch_special_reports_ui.begin_date_edit_special_month
-        self.begin_date_edit_month.setDate(self.begin_date)
-        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "begin_date"))
-
         self.end_date_edit_year = fetch_special_reports_ui.end_date_edit_special_year
         self.end_date_edit_year.setDate(self.end_date)
         self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "end_date"))
 
-        self.end_date_edit_month = fetch_special_reports_ui.end_date_edit_special_month
-        self.end_date_edit_month.setDate(self.end_date)
-        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
+        self.begin_month_combo_box = fetch_special_reports_ui.begin_month_combo_box
+        for month in MONTH_NAMES:
+            self.begin_month_combo_box.addItem(month)
+        self.begin_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "begin_date"))
+        self.begin_month_combo_box.setCurrentIndex(self.begin_date.month() - 1)
+
+        self.end_month_combo_box = fetch_special_reports_ui.end_month_combo_box
+        for month in MONTH_NAMES:
+            self.end_month_combo_box.addItem(month)
+        self.end_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "end_date"))
+        self.end_month_combo_box.setCurrentIndex(self.end_date.month() - 1)
+
         # endregion
 
         # region Custom Directory
@@ -1486,26 +1500,16 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             #                             self.begin_date.day())
             #     self.begin_date_edit.setDate(self.begin_date)
 
-    def on_date_month_changed(self, date: QDate, date_type: str):
+    def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed
 
-        :param date: The new date
+        :param month: The new month
         :param date_type: The date to be updated
         """
         if date_type == "begin_date":
-            self.begin_date = QDate(self.begin_date.year(),date.month(),self.begin_date.day())
-            # if self.begin_date.year() != self.end_date.year():
-            #     self.end_date.setDate(self.begin_date.year(),
-            #                           self.end_date.month(),
-            #                           self.end_date.day())
-            #     self.end_date_edit.setDate(self.end_date)
+            self.begin_date = QDate(self.begin_date.year(), month, self.begin_date.day())
         elif date_type == "end_date":
-            self.end_date = QDate(self.end_date.year(),date.month(),self.end_date.day())
-            # if self.end_date.year() != self.begin_date.year():
-            #     self.begin_date.setDate(self.end_date.year(),
-            #                             self.begin_date.month(),
-            #                             self.begin_date.day())
-            #     self.begin_date_edit.setDate(self.begin_date)
+            self.end_date = QDate(self.end_date.year(), month, self.end_date.day())
 
     def on_report_type_selected(self, major_report_type: MajorReportType):
         """Handles the signal emitted when a report type is selected
