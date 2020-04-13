@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'FetchSpecialReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
@@ -210,26 +208,26 @@ class Ui_fetch_special_reports_tab(object):
         self.gridLayout_2 = QtWidgets.QGridLayout(self.frame)
         self.gridLayout_2.setSpacing(20)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.end_date_edit_special_month = QtWidgets.QDateEdit(self.frame)
-        self.end_date_edit_special_month.setObjectName("end_date_edit_special_month")
-        self.gridLayout_2.addWidget(self.end_date_edit_special_month, 1, 2, 1, 1)
-        self.label_24 = QtWidgets.QLabel(self.frame)
-        self.label_24.setObjectName("label_24")
-        self.gridLayout_2.addWidget(self.label_24, 0, 0, 1, 1)
         self.label_25 = QtWidgets.QLabel(self.frame)
         self.label_25.setObjectName("label_25")
         self.gridLayout_2.addWidget(self.label_25, 1, 0, 1, 1)
-        self.end_date_edit_special_year = QtWidgets.QDateEdit(self.frame)
-        self.end_date_edit_special_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
-        self.end_date_edit_special_year.setObjectName("end_date_edit_special_year")
-        self.gridLayout_2.addWidget(self.end_date_edit_special_year, 1, 1, 1, 1)
-        self.begin_date_edit_special_month = QtWidgets.QDateEdit(self.frame)
-        self.begin_date_edit_special_month.setObjectName("begin_date_edit_special_month")
-        self.gridLayout_2.addWidget(self.begin_date_edit_special_month, 0, 2, 1, 1)
         self.begin_date_edit_special_year = QtWidgets.QDateEdit(self.frame)
         self.begin_date_edit_special_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
         self.begin_date_edit_special_year.setObjectName("begin_date_edit_special_year")
         self.gridLayout_2.addWidget(self.begin_date_edit_special_year, 0, 1, 1, 1)
+        self.label_24 = QtWidgets.QLabel(self.frame)
+        self.label_24.setObjectName("label_24")
+        self.gridLayout_2.addWidget(self.label_24, 0, 0, 1, 1)
+        self.end_date_edit_special_year = QtWidgets.QDateEdit(self.frame)
+        self.end_date_edit_special_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.end_date_edit_special_year.setObjectName("end_date_edit_special_year")
+        self.gridLayout_2.addWidget(self.end_date_edit_special_year, 1, 1, 1, 1)
+        self.comboBox = QtWidgets.QComboBox(self.frame)
+        self.comboBox.setObjectName("comboBox")
+        self.gridLayout_2.addWidget(self.comboBox, 0, 2, 1, 1)
+        self.comboBox_2 = QtWidgets.QComboBox(self.frame)
+        self.comboBox_2.setObjectName("comboBox_2")
+        self.gridLayout_2.addWidget(self.comboBox_2, 1, 2, 1, 1)
         self.verticalLayout.addWidget(self.frame)
         self.custom_dir_frame = QtWidgets.QFrame(self.frame_16)
         self.custom_dir_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -296,10 +294,8 @@ class Ui_fetch_special_reports_tab(object):
         fetch_special_reports_tab.setTabOrder(self.tr_radio_button, self.ir_radio_button)
         fetch_special_reports_tab.setTabOrder(self.ir_radio_button, self.options_frame)
         fetch_special_reports_tab.setTabOrder(self.options_frame, self.begin_date_edit_special_year)
-        fetch_special_reports_tab.setTabOrder(self.begin_date_edit_special_year, self.begin_date_edit_special_month)
-        fetch_special_reports_tab.setTabOrder(self.begin_date_edit_special_month, self.end_date_edit_special_year)
-        fetch_special_reports_tab.setTabOrder(self.end_date_edit_special_year, self.end_date_edit_special_month)
-        fetch_special_reports_tab.setTabOrder(self.end_date_edit_special_month, self.fetch_special_data_button)
+        fetch_special_reports_tab.setTabOrder(self.begin_date_edit_special_year, self.end_date_edit_special_year)
+        fetch_special_reports_tab.setTabOrder(self.end_date_edit_special_year, self.fetch_special_data_button)
 
     def retranslateUi(self, fetch_special_reports_tab):
         _translate = QtCore.QCoreApplication.translate
@@ -314,14 +310,13 @@ class Ui_fetch_special_reports_tab(object):
         self.ir_radio_button.setText(_translate("fetch_special_reports_tab", "IR"))
         self.label_14.setText(_translate("fetch_special_reports_tab", "Options"))
         self.label_15.setText(_translate("fetch_special_reports_tab", "Date Range"))
-        self.end_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MMM"))
-        self.label_24.setText(_translate("fetch_special_reports_tab", "Begin Date"))
         self.label_25.setText(_translate("fetch_special_reports_tab", "End Date"))
-        self.end_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
-        self.begin_date_edit_special_month.setDisplayFormat(_translate("fetch_special_reports_tab", "MMM"))
         self.begin_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
+        self.label_24.setText(_translate("fetch_special_reports_tab", "Begin Date"))
+        self.end_date_edit_special_year.setDisplayFormat(_translate("fetch_special_reports_tab", "yyyy"))
         self.label_41.setText(_translate("fetch_special_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_special_reports_tab", "Change"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
         self.label.setText(_translate("fetch_special_reports_tab", "Note: Special reports are not added to the search database."))
+
 import Resources_rc

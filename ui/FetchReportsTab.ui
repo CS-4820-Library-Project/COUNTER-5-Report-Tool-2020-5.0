@@ -435,8 +435,8 @@
                   <property name="spacing">
                    <number>20</number>
                   </property>
-                  <item row="2" column="2">
-                   <widget class="QDateEdit" name="end_date_edit_fetch_month">
+                  <item row="2" column="1">
+                   <widget class="QDateEdit" name="end_date_edit_fetch_year">
                     <property name="dateTime">
                      <datetime>
                       <hour>0</hour>
@@ -448,14 +448,7 @@
                      </datetime>
                     </property>
                     <property name="displayFormat">
-                     <string>MMM</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>Begin Date</string>
+                     <string>yyyy</string>
                     </property>
                    </widget>
                   </item>
@@ -479,20 +472,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
-                   <widget class="QDateEdit" name="end_date_edit_fetch_year">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2020</year>
-                      <month>1</month>
-                      <day>1</day>
-                     </datetime>
-                    </property>
-                    <property name="displayFormat">
-                     <string>yyyy</string>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_9">
+                    <property name="text">
+                     <string>Begin Date</string>
                     </property>
                    </widget>
                   </item>
@@ -504,21 +487,10 @@
                    </widget>
                   </item>
                   <item row="0" column="2">
-                   <widget class="QDateEdit" name="begin_date_edit_fetch_month">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2020</year>
-                      <month>1</month>
-                      <day>1</day>
-                     </datetime>
-                    </property>
-                    <property name="displayFormat">
-                     <string>MMM</string>
-                    </property>
-                   </widget>
+                   <widget class="QComboBox" name="comboBox"/>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QComboBox" name="comboBox_2"/>
                   </item>
                  </layout>
                 </widget>
@@ -662,9 +634,7 @@
   <tabstop>report_types_help_button</tabstop>
   <tabstop>report_types_list_view</tabstop>
   <tabstop>begin_date_edit_fetch_year</tabstop>
-  <tabstop>begin_date_edit_fetch_month</tabstop>
   <tabstop>end_date_edit_fetch_year</tabstop>
-  <tabstop>end_date_edit_fetch_month</tabstop>
   <tabstop>custom_dir_edit</tabstop>
   <tabstop>custom_dir_button</tabstop>
   <tabstop>fetch_advanced_button</tabstop>
