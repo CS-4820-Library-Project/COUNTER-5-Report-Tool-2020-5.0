@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'FetchReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
         fetch_reports_tab.setObjectName("fetch_reports_tab")
-        fetch_reports_tab.resize(1145, 714)
+        fetch_reports_tab.resize(1014, 703)
         fetch_reports_tab.setMinimumSize(QtCore.QSize(800, 0))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/fetch_reports_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -30,11 +30,11 @@ class Ui_fetch_reports_tab(object):
         self.label_35.setMinimumSize(QtCore.QSize(15, 15))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
-        font.setPointSize(13)
+        font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
         self.label_35.setFont(font)
-        self.label_35.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_35.setAlignment(QtCore.Qt.AlignCenter)
         self.label_35.setObjectName("label_35")
         self.verticalLayout_3.addWidget(self.label_35)
         self.frame_9 = QtWidgets.QFrame(self.frame_4)
@@ -71,17 +71,19 @@ class Ui_fetch_reports_tab(object):
         self.fetch_all_data_button.setObjectName("fetch_all_data_button")
         self.horizontalLayout_10.addWidget(self.fetch_all_data_button)
         self.verticalLayout_3.addWidget(self.frame_9)
+        spacerItem = QtWidgets.QSpacerItem(20, 45, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.verticalLayout_3.addItem(spacerItem)
         self.Adv_Fetch_text = QtWidgets.QLabel(self.frame_4)
         self.Adv_Fetch_text.setMaximumSize(QtCore.QSize(16777215, 20))
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
-        font.setPointSize(13)
+        font.setPointSize(16)
         font.setBold(True)
         font.setItalic(False)
         font.setUnderline(False)
         font.setWeight(75)
         self.Adv_Fetch_text.setFont(font)
-        self.Adv_Fetch_text.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.Adv_Fetch_text.setAlignment(QtCore.Qt.AlignCenter)
         self.Adv_Fetch_text.setObjectName("Adv_Fetch_text")
         self.verticalLayout_3.addWidget(self.Adv_Fetch_text)
         self.frame_5 = QtWidgets.QFrame(self.frame_4)
