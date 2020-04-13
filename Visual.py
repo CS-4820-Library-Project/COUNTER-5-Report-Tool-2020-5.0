@@ -206,8 +206,8 @@ class VisualController:
 
             costs_sql_text, costs_data = ManageDB.get_names_with_costs_sql_text(self.report_parameter.currentText(),
                                                                                 self.vendor_parameter,
-                                                                                self.start_year_parameter,
-                                                                                self.end_year_parameter)
+                                                                                int(self.start_year_parameter.text()),
+                                                                                int(self.end_year_parameter.text()))
             costs_results = ManageDB.run_select_sql(connection, costs_sql_text, costs_data)
             if costs_results:
                 self.costs_names = [result[0] for result in costs_results]
