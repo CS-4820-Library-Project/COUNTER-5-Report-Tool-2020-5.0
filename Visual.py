@@ -123,7 +123,7 @@ class VisualController:
         self.results = None
         self.names = []
         self.costs_names = []
-        self.fill_names()
+        ManageDB.test_monthly_chart_search(False)
 
     def update_settings(self, settings: SettingsModel):
         """Called when the settings are saved
@@ -265,11 +265,11 @@ class VisualController:
             message = "To Create Chart check the following: \n" + message
             GeneralUtils.show_message(message)
 
-        if (self.monthly_radio.isChecked() or self.yearly_radio.isChecked() or self.costRatio_radio.isChecked()) and message == "":
+        if self.monthly_radio.isChecked() and message == "":
             # sql query to get search results
-            sql_text, data = ManageDB.chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
+            sql_text, data = ManageDB.monthly_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
             print(sql_text)  # testing
-            headers = tuple([field['name'] for field in ManageDB.get_chart_report_fields_list(report)])
+            headers = tuple([field['name'] for field in ManageDB.get_monthly_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
@@ -283,9 +283,48 @@ class VisualController:
             if len(self.results) > 1 and self.monthly_radio.isChecked():
                 self.process_default_data()
                 self.open_file_folder()
+            if name != "" and start_year <= end_year and len(self.results) <= 1:
+                message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+                GeneralUtils.show_message(message4)
+
+        if self.yearly_radio.isChecked() and message == "":
+            # sql query to get search results
+            sql_text, data = ManageDB.yearly_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
+            print(sql_text)  # testing
+            headers = tuple([field['name'] for field in ManageDB.get_yearly_chart_report_fields_list(report)])
+            connection = ManageDB.create_connection(DATABASE_LOCATION)
+            if connection is not None:
+                self.results = ManageDB.run_select_sql(connection, sql_text, data)
+                print(self.results)
+
+                self.results.insert(0, headers)
+                print(self.results)
+                connection.close()
+            else:
+                print('Error, no connection')
             if len(self.results) > 1 and self.yearly_radio.isChecked():
                 self.process_yearly_data()
                 self.open_file_folder()
+            if name != "" and start_year <= end_year and len(self.results) <= 1:
+                message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+                GeneralUtils.show_message(message4)
+
+        if self.costRatio_radio.isChecked() and message == "":
+            # sql query to get search results
+            sql_text, data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
+            print(sql_text)  # testing
+            headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report)])
+            connection = ManageDB.create_connection(DATABASE_LOCATION)
+            if connection is not None:
+                self.results = ManageDB.run_select_sql(connection, sql_text, data)
+                print(self.results)
+
+                self.results.insert(0, headers)
+                print(self.results)
+                connection.close()
+            else:
+                print('Error, no connection')
+
             if len(self.results) > 1 and self.costRatio_radio.isChecked():
                 self.process_cost_ratio_data()
                 self.open_file_folder()
@@ -318,6 +357,7 @@ class VisualController:
                 GeneralUtils.show_message(message5)
 
     def open_file_folder(self):
+        """Invoke to open file or folder"""
         if self.open_folder.isChecked():
             open_file_or_dir(os.path.dirname(self.file_name))
         if self.open_file.isChecked():
@@ -338,13 +378,12 @@ class VisualController:
         for i in range(0, m):
             data1 = []
             n = len(self.results[i])
-            for j in range(9, n):  # from jan to dec only
+            for j in range(4, n):  # from jan to dec only
                 data1.append(self.results[i][j])
             self.data.append(data1)
         # testing to make sure its working good
         print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
         print(self.data[1])
-        # print(self.data[2])
         print(len(self.data))
         self.chart_type()
 
@@ -356,19 +395,18 @@ class VisualController:
 
         # data is an array with the sorted usage figures
         self.data = []
-        data1 = []
-        data2 = []
+        data1 = [] # year
+        data2 = [] # reporting_period_total
         for i in range(1, m):
             data1.append(self.results[i][3])
         self.data.append(data1)
         for i in range(1, m):
-            data2.append(self.results[i][8])
+            data2.append(self.results[i][4])
         self.data.append(data2)
 
         # testing to make sure its working good
         print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
         print(self.data[1])
-        # print(self.data[2])
         print(len(self.data))
         self.chart_type()
 
@@ -585,6 +623,7 @@ class VisualController:
 
     # process currency
     def process_currency(self):
+        """Invoke to determine between local or original currency for cost"""
         if self.cost_parameter.currentText() == 'Local Cost with Tax' or self.cost_parameter.currentText() == 'Local Cost':
             local_currency = self.settings.default_currency
             currency = self.get_currency_code(local_currency)
@@ -595,20 +634,21 @@ class VisualController:
 
     # return currency code for excel
     def get_currency_code(self, local_currency):
+        """Invoke to find currency being used"""
         if local_currency == 'CAD':
-            currency = '[$$-en-CA]#,##0.00'
+            currency = '[$CAD] #,###.#########################_)'
         if local_currency == 'USD':
-            currency = '[$$-en-US]#,##0.00'
+            currency = '[$USD] #,###.#########################_)'
         if local_currency == 'EUR':
-            currency = '[$€-x-euro2] #,##0.00'
+            currency = '[$EUR] #,###.#########################_)'
         if local_currency == 'JPY':
-            currency = '[$¥-ja-JP]#,##0.00'
+            currency = '[$JPY] #,###.#########################_)'
         if local_currency == 'GBP':
-            currency = '[$£-en-GB]#,##0.00'
+            currency = '[$GBP] #,###.#########################_)'
         if local_currency == 'CHF':
-            currency = '[$CHF] #,##0.00'
+            currency = '[$CHF] #,###.#########################_)'
         if local_currency == 'AUD':
-            currency = '[$$-en-AU] #,##0.00'
+            currency = '[$AUD] #,###.#########################_)'
         return currency
     # create chart and add series to it
     def configureSeries(self, workbook, chart_type):
@@ -660,6 +700,8 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
+
+        # Completion message
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
@@ -684,6 +726,8 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
+
+        # Completion message
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
 
@@ -708,5 +752,7 @@ class VisualController:
         # Insert the chart into the worksheet (with an offset).
         worksheet.insert_chart('F2', chart1, {'x_scale': 2, 'y_scale': 2})
         workbook.close()
+
+        # Completion message
         message_completion = "Done!"
         GeneralUtils.show_message(message_completion)
