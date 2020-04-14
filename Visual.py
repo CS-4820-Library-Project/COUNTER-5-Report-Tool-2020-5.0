@@ -40,7 +40,7 @@ class VisualController:
 
         # set up and configure cost ratio combobox
         self.cost_parameter = visual_ui.cost_ratio_option_combobox
-        COST_TYPE_ALL = ('Local Cost with Tax', 'Local Cost', 'Original Cost')
+        COST_TYPE_ALL = ('Cost in Local Currency with Tax', 'Cost in Local Currency', 'Cost in Original Currency')
         self.cost_parameter.addItems(COST_TYPE_ALL)
 
         # set up and configure cost ratio frame
@@ -428,9 +428,9 @@ class VisualController:
         self.data.append(data1)
 
         # retrieve cost and total and finding cost per metric and adding it to array
-        if self.cost_parameter.currentText() == 'Local Cost with Tax':
-            self.legendEntry.append('Local Cost with Tax Per Metric')
-            self.legendEntry.append('Local Cost with Tax')
+        if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax':
+            self.legendEntry.append('Cost in Local Currency with Tax Per Metric')
+            self.legendEntry.append('Cost in Local Currency with Tax')
             for i in range(1, m):
                 cost = self.results[i][7]
                 if self.results[i][7] is None:
@@ -439,9 +439,9 @@ class VisualController:
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
             self.data.append(data4)
-        if self.cost_parameter.currentText() == 'Local Cost':
-            self.legendEntry.append('Local Cost Per Metric')
-            self.legendEntry.append('Local Cost')
+        if self.cost_parameter.currentText() == 'Cost in Local Currency':
+            self.legendEntry.append('Cost in Local Currency Per Metric')
+            self.legendEntry.append('Cost in Local Currency')
             for i in range(1, m):
                 cost = self.results[i][6]
                 if self.results[i][6] is None:
@@ -450,9 +450,9 @@ class VisualController:
                 data2.append(cost / self.results[i][8])
             self.data.append(data2)
             self.data.append(data4)
-        if self.cost_parameter.currentText() == 'Original Cost':
-            self.legendEntry.append('Original Cost Per Metric')
-            self.legendEntry.append('Original Cost')
+        if self.cost_parameter.currentText() == 'Cost in Original Currency':
+            self.legendEntry.append('Cost in Original Currency Per Metric')
+            self.legendEntry.append('Cost in Original Currency')
             for i in range(1, m):
                 cost = self.results[i][4]
                 if self.results[i][4] is None:
@@ -623,10 +623,10 @@ class VisualController:
     # process currency
     def process_currency(self):
         """Invoke to determine between local or original currency for cost"""
-        if self.cost_parameter.currentText() == 'Local Cost with Tax' or self.cost_parameter.currentText() == 'Local Cost':
+        if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax' or self.cost_parameter.currentText() == 'Cost in Local Currency':
             local_currency = self.settings.default_currency
             currency = self.get_currency_code(local_currency)
-        if self.cost_parameter.currentText() == 'Original Cost':
+        if self.cost_parameter.currentText() == 'Cost in Original Currency':
             original_currency = self.results[1][5]
             currency = self.get_currency_code(original_currency)
         return currency
