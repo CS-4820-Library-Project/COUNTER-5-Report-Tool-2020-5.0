@@ -577,7 +577,7 @@ def search_sql_text(report: str, start_year: int, end_year: int,
                 current_text += ' ?'
                 data.append(sub_clause[VALUE_KEY])
             sub_clauses_text.append(current_text)
-        clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
+        clauses_texts.append(tuple(sub_clauses_text))
     sql_text = get_sql_select_statement(('*', ), (report + VIEW_SUFFIX,), tuple(clauses_texts)) + ';'
     return sql_text, tuple(data)
 
@@ -611,7 +611,7 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
     sql_text = get_sql_select_statement(tuple(fields), (report + VIEW_SUFFIX,), tuple(clauses_texts),
                                         group_by_fields=tuple(key_fields)) + ';'
@@ -647,7 +647,7 @@ def monthly_chart_search_sql_text(report: str, start_year: int, end_year: int, n
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
     sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                         group_by_fields=tuple(key_fields)) + ';'
@@ -683,7 +683,7 @@ def yearly_chart_search_sql_text(report: str, start_year: int, end_year: int, na
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
     sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                         group_by_fields=tuple(key_fields)) + ';'
@@ -721,15 +721,15 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
     if number:
         data.append(number)
-    sql_text = get_sql_select_statement(tuple([field[NAME_KEY] for field in chart_fields]),
+    sql_text = get_sql_select_statement(('*',),
                                         ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                                                         group_by_fields=tuple(key_fields),
                                                                         num_extra_tabs=1) + ')',),
-                                        (RANKING + ' <= ?',) if number else (), order_by_fields=(RANKING,)) + ';'
+                                        ((RANKING + ' <= ?',),) if number else (), order_by_fields=(RANKING,)) + ';'
     return sql_text, tuple(data)
 
 
@@ -762,7 +762,7 @@ def cost_chart_search_sql_text(report: str, start_year: int, end_year: int, name
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
     sql_text = get_sql_select_statement(tuple(fields), (report + VIEW_SUFFIX,), tuple(clauses_texts),
                                         group_by_fields=tuple(key_fields)) + ';'
@@ -777,7 +777,7 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
-    sql_text = get_sql_select_statement((name_field,), (report,), (name_field + ' <> \"\"', 'vendor' + ' = ?'),
+    sql_text = get_sql_select_statement((name_field,), (report,), ((name_field + ' <> \"\"',), ('vendor' + ' = ?',)),
                                         order_by_fields=(name_field + ' COLLATE NOCASE ASC',), distinct=True,
                                         is_multiline=False) + ';'
     data = (vendor,)
@@ -796,8 +796,8 @@ def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
     sql_text = get_sql_select_statement((name_field,), (report[:2] + COST_TABLE_SUFFIX,),
-                                        (name_field + ' <> \"\"', 'vendor' + ' = ?', 'year' + ' >= ?',
-                                         'year' + ' <= ?'), order_by_fields=(name_field + ' COLLATE NOCASE ASC',),
+                                        ((name_field + ' <> \"\"',), ('vendor' + ' = ?',), ('year' + ' >= ?',),
+                                         ('year' + ' <= ?',)), order_by_fields=(name_field + ' COLLATE NOCASE ASC',),
                                         distinct=True, is_multiline=False) + ';'
     data = (vendor, start_year, end_year)
     return sql_text, data
@@ -814,21 +814,21 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
         for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS], (report_type + COST_TABLE_SUFFIX,),
-                                        ('vendor' + ' = ?', 'year' + ' = ?', name_field + ' = ?'),
+                                        (('vendor' + ' = ?',), ('year' + ' = ?',), (name_field + ' = ?',)),
                                         is_multiline=False) + ';'
     values = (vendor, year, name)
     return sql_text, values
 
 
 def get_sql_select_statement(select_fields: Sequence[str], from_tables: Sequence[str],
-                             where_conditions: Sequence[str] = None, group_by_fields: Sequence[str] = None,
+                             where_conditions: Sequence[Sequence[str]] = None, group_by_fields: Sequence[str] = None,
                              order_by_fields: Sequence[str] = None, distinct: bool = None, num_extra_tabs: int = 0,
                              is_multiline: bool = True) -> str:
     """Makes a select SQL statement
 
     :param select_fields: a list of fields to get; use a list containing only '*' to get all the fields from the tables
     :param from_tables: a list of tables to get fields from; assumes inner join
-    :param where_conditions: a list of conditions for the WHERE keyword; assumes and
+    :param where_conditions: a list of lists of conditions for the WHERE keyword; assumes in POS form
     :param group_by_fields: a list of fields for the GROUP BY keyword
     :param order_by_fields: a list of fields for the ORDER BY keyword
     :param distinct: whether to only get distinct rows from the database
@@ -849,7 +849,13 @@ def get_sql_select_statement(select_fields: Sequence[str], from_tables: Sequence
         sql_text += '\n' + tabs if is_multiline else ' '
         sql_text += 'WHERE'
         sql_text += '\n\t' + tabs if is_multiline else ' '
-        sql_text += (' AND' + ('\n\t' + tabs if is_multiline else ' ')).join(where_conditions)
+        conditions_text = []
+        for condition in where_conditions:
+            if len(condition) > 1:
+                conditions_text.append('(' + ' OR '.join(condition) + ')')
+            else:
+                conditions_text.append(condition[0])
+        sql_text += (' AND' + ('\n\t' + tabs if is_multiline else ' ')).join(conditions_text)
     if group_by_fields:
         sql_text += '\n' + tabs if is_multiline else ' '
         sql_text += 'GROUP BY'
