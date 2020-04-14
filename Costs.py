@@ -158,13 +158,13 @@ class CostsController:
                                                                                 self.year_parameter,
                                                                                 self.year_parameter)
             costs_results = ManageDB.run_select_sql(connection, costs_sql_text, costs_data)
+            connection.close()
+
             if costs_results:
                 self.costs_names = [result[0] for result in costs_results]
             else:
                 self.costs_names = []
             if self.settings.show_debug_messages: print(costs_results)
-
-            connection.close()
             model = QStandardItemModel()
             for name in self.names:
                 item = QStandardItem(name)

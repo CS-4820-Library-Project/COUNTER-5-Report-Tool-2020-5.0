@@ -1,4 +1,3 @@
-import csv
 import os
 import sip
 import json
@@ -225,25 +224,16 @@ class SearchController:
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, sql_text, data)
+                connection.close()
                 results.insert(0, headers)
                 if self.settings.show_debug_messages: print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-                if file.mode == 'w':
-                    output = csv.writer(file, delimiter='\t', quotechar='\"')
-                    for row in results:
-                        output.writerow(row)
-
-                    if self.open_results_folder_checkbox.isChecked():
-                        open_file_or_dir(os.path.dirname(file_name))
-                    if self.open_results_file_checkbox.isChecked():
-                        open_file_or_dir(file_name)
-                    if not self.open_results_file_checkbox.isChecked():
-                        show_message('Results saved to ' + file_name)
-
-                else:
-                    print('Error: could not open file ' + file_name)
-
-                connection.close()
+                ManageDB.save_data_as_tsv(file_name, results)
+                if self.open_results_folder_checkbox.isChecked():
+                    open_file_or_dir(os.path.dirname(file_name))
+                if self.open_results_file_checkbox.isChecked():
+                    open_file_or_dir(file_name)
+                if not self.open_results_file_checkbox.isChecked():
+                    show_message('Results saved to ' + file_name)
             else:
                 print('Error, no connection')
         else:
