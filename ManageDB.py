@@ -3,7 +3,7 @@ import os
 import csv
 from typing import Tuple, Dict, Sequence, Any, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel
 
 from Constants import *
 from GeneralUtils import *
@@ -350,8 +350,8 @@ def update_vendor_in_all_tables(old_name: str, new_name: str):
     if connection is not None:
         for sql_text in sql_texts:
             run_sql(connection, sql_text['sql_text'], sql_text['data'], emit_signal=False)
-        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
+        managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -530,9 +530,9 @@ def insert_single_file(file_path: str, vendor: str, year: int, emit_signal: bool
     if connection is not None:
         run_sql(connection, delete, delete_data, emit_signal=False)
         run_sql(connection, replace, replace_data, emit_signal=False)
+        connection.close()
         if emit_signal:
             managedb_signal_handler.emit_database_changed_signal()
-        connection.close()
     else:
         print('Error, no connection')
 
@@ -726,8 +726,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     if number:
         data.append(number)
     sql_text = get_sql_select_statement(tuple([field[NAME_KEY] for field in chart_fields]),
-                                        ('(' + get_sql_select_statement(tuple(fields), (report,),
-                                                                        tuple(clauses_texts),
+                                        ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                                                         group_by_fields=tuple(key_fields),
                                                                         num_extra_tabs=1) + ')',),
                                         (RANKING + ' <= ?',) if number else (), order_by_fields=(RANKING,)) + ';'
@@ -778,8 +777,7 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
-    sql_text = get_sql_select_statement((name_field,), (report,),
-                                        (name_field + ' <> \"\"', 'vendor' + ' = ?'),
+    sql_text = get_sql_select_statement((name_field,), (report,), (name_field + ' <> \"\"', 'vendor' + ' = ?'),
                                         order_by_fields=(name_field + ' COLLATE NOCASE ASC',), distinct=True,
                                         is_multiline=False) + ';'
     data = (vendor,)
@@ -830,7 +828,7 @@ def get_sql_select_statement(select_fields: Sequence[str], from_tables: Sequence
 
     :param select_fields: a list of fields to get; use a list containing only '*' to get all the fields from the tables
     :param from_tables: a list of tables to get fields from; assumes inner join
-    :param where_conditions: a list of conditions for the WHERE keyword
+    :param where_conditions: a list of conditions for the WHERE keyword; assumes and
     :param group_by_fields: a list of fields for the GROUP BY keyword
     :param order_by_fields: a list of fields for the ORDER BY keyword
     :param distinct: whether to only get distinct rows from the database
@@ -945,8 +943,8 @@ def setup_database(drop_tables: bool, emit_signal: bool = True):
                         emit_signal=False)
             if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + key)
             run_sql(connection, sql_texts[key], emit_signal=False)
-        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
+        managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -978,135 +976,117 @@ def backup_costs_data(report_type: str):
         sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
         sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
         results = run_select_sql(connection, sql_text)
+        connection.close()
         results.insert(0, headers)
         if ManageDBSettingsHandler.settings.show_debug_messages:
             print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
-        file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-        connection.close()
+        file_name = COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv'
+        save_data_as_tsv(file_name, results)
     else:
         print('Error, no connection')
 
 
-def test_top_number_chart_search():
-    """temporary method to show how to use top_number_chart_search_sql_text"""
+def save_data_as_tsv(file_name: str, data: Sequence[Any]):
+    """Saves data in a TSV file
+
+    :param file_name: the name and location to save the results at
+    :param data: the data to save in the file"""
+    file = open(file_name, 'w', newline="", encoding='utf-8-sig')
+    if file.mode == 'w':
+        output = csv.writer(file, delimiter='\t', quotechar='\"')
+        for row in data:
+            output.writerow(row)
+        file.close()
+    else:
+        print('Error: could not open file ' + file_name)
+
+
+def test_top_number_chart_search(save_as_tsv: bool):
+    """temporary method to show how to use top_number_chart_search_sql_text
+
+    :param save_as_tsv: save the results in a TSV file"""
     headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('TR_J1')])
     sql_text, data = top_number_chart_search_sql_text('TR_J1', 2019, 2020, 'Unique_Item_Requests',
-                                                      vendor='Proquest', number=0)
-    print(sql_text)
-    print(data)
+                                                      vendor='Proquest', number=15)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         results = run_select_sql(connection, sql_text, data)
+        connection.close()
         results.insert(0, headers)
-        # print(results)
         for row in results:
             print(row)
-        file_name = r'./test_chart.tsv'
-        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-            open_file_or_dir(file_name)
+        if save_as_tsv: save_data_as_tsv('test_chart.tsv', results)
 
 
-def test_monthly_chart_search():
-    """temporary method to show how to use monthly_chart_search_sql_text"""
+def test_monthly_chart_search(save_as_tsv: bool):
+    """temporary method to show how to use monthly_chart_search_sql_text
+
+    :param save_as_tsv: save the results in a TSV file"""
     headers = tuple([field[NAME_KEY] for field in get_monthly_chart_report_fields_list('TR_J1')])
     sql_text, data = monthly_chart_search_sql_text('TR_J1', 2019, 2020,
                                                    'Canadian Journal of Dietetic Practice and Research',
                                                    'Unique_Item_Requests', 'Proquest')
-    print(sql_text)
-    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         results = run_select_sql(connection, sql_text, data)
+        connection.close()
         results.insert(0, headers)
-        # print(results)
         for row in results:
             print(row)
-        file_name = r'./test_chart.tsv'
-        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-            open_file_or_dir(file_name)
+        if save_as_tsv: save_data_as_tsv('test_chart.tsv', results)
 
 
-def test_yearly_chart_search():
-    """temporary method to show how to use yearly_chart_search_sql_text"""
+def test_yearly_chart_search(save_as_tsv: bool):
+    """temporary method to show how to use yearly_chart_search_sql_text
+
+    :param save_as_tsv: save the results in a TSV file"""
     headers = tuple([field[NAME_KEY] for field in get_yearly_chart_report_fields_list('TR_J1')])
     sql_text, data = yearly_chart_search_sql_text('TR_J1', 2019, 2020,
                                                   'Canadian Journal of Dietetic Practice and Research',
                                                   'Unique_Item_Requests', 'Proquest')
-    print(sql_text)
-    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         results = run_select_sql(connection, sql_text, data)
+        connection.close()
         results.insert(0, headers)
-        # print(results)
         for row in results:
             print(row)
-        file_name = r'./test_chart.tsv'
-        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-            open_file_or_dir(file_name)
+        if save_as_tsv: save_data_as_tsv('test_chart.tsv', results)
 
 
-def test_cost_chart_search():
-    """temporary method to show how to use cost_chart_search_sql_text"""
+def test_cost_chart_search(save_as_tsv: bool):
+    """temporary method to show how to use cost_chart_search_sql_text
+
+    :param save_as_tsv: save the results in a TSV file"""
     headers = tuple([field[NAME_KEY] for field in get_cost_chart_report_fields_list('TR_J1')])
     sql_text, data = cost_chart_search_sql_text('TR_J1', 2019, 2020,
                                                 'Canadian Journal of Dietetic Practice and Research',
                                                 'Unique_Item_Requests', 'Proquest')
-    print(sql_text)
-    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         results = run_select_sql(connection, sql_text, data)
+        connection.close()
         results.insert(0, headers)
-        # print(results)
         for row in results:
             print(row)
-        file_name = r'./test_chart.tsv'
-        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-            open_file_or_dir(file_name)
+        if save_as_tsv: save_data_as_tsv('test_chart.tsv', results)
 
 
-def test_chart_search():
-    """temporary method to show how to use top_number_chart_search_sql_text"""
+def test_chart_search(save_as_tsv: bool):
+    """temporary method to show how to use top_number_chart_search_sql_text
+
+    :param save_as_tsv: save the results in a TSV file"""
     headers = tuple([field[NAME_KEY] for field in get_chart_report_fields_list('TR_J1')])
     sql_text, data = chart_search_sql_text('TR_J1', 2019, 2020, 'Canadian Journal of Dietetic Practice and Research',
                                            'Unique_Item_Requests', 'Proquest')
-    print(sql_text)
-    print(data)
     connection = create_connection(DATABASE_LOCATION)
     if connection is not None:
         results = run_select_sql(connection, sql_text, data)
+        connection.close()
         results.insert(0, headers)
-        # print(results)
         for row in results:
             print(row)
-        file_name = r'./test_chart.tsv'
-        file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-            open_file_or_dir(file_name)
+        if save_as_tsv: save_data_as_tsv('test_chart.tsv', results)
 
 
 class UpdateDatabaseProgressDialogController:
