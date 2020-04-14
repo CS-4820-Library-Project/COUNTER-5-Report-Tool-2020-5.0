@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'FetchSpecialReportsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_fetch_special_reports_tab(object):
     def setupUi(self, fetch_special_reports_tab):
@@ -187,7 +185,15 @@ class Ui_fetch_special_reports_tab(object):
         self.frame_16.setObjectName("frame_16")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.frame_16)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label_15 = QtWidgets.QLabel(self.frame_16)
+        self.frame_4 = QtWidgets.QFrame(self.frame_16)
+        self.frame_4.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame_4.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.frame_4.setObjectName("frame_4")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_4)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setSpacing(0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_15 = QtWidgets.QLabel(self.frame_4)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -198,7 +204,18 @@ class Ui_fetch_special_reports_tab(object):
         font.setWeight(75)
         self.label_15.setFont(font)
         self.label_15.setObjectName("label_15")
-        self.verticalLayout.addWidget(self.label_15)
+        self.horizontalLayout_3.addWidget(self.label_15)
+        self.date_range_help_button = QtWidgets.QPushButton(self.frame_4)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.date_range_help_button.sizePolicy().hasHeightForWidth())
+        self.date_range_help_button.setSizePolicy(sizePolicy)
+        self.date_range_help_button.setText("")
+        self.date_range_help_button.setIcon(icon1)
+        self.date_range_help_button.setObjectName("date_range_help_button")
+        self.horizontalLayout_3.addWidget(self.date_range_help_button)
+        self.verticalLayout.addWidget(self.frame_4)
         self.frame = QtWidgets.QFrame(self.frame_16)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -236,10 +253,29 @@ class Ui_fetch_special_reports_tab(object):
         self.custom_dir_frame.setObjectName("custom_dir_frame")
         self.verticalLayout_26 = QtWidgets.QVBoxLayout(self.custom_dir_frame)
         self.verticalLayout_26.setObjectName("verticalLayout_26")
-        self.label_41 = QtWidgets.QLabel(self.custom_dir_frame)
+        self.frame_5 = QtWidgets.QFrame(self.custom_dir_frame)
+        self.frame_5.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.frame_5.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.frame_5.setObjectName("frame_5")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.frame_5)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4.setSpacing(0)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label_41 = QtWidgets.QLabel(self.frame_5)
         self.label_41.setAlignment(QtCore.Qt.AlignCenter)
         self.label_41.setObjectName("label_41")
-        self.verticalLayout_26.addWidget(self.label_41)
+        self.horizontalLayout_4.addWidget(self.label_41)
+        self.custom_dir_help_button = QtWidgets.QPushButton(self.frame_5)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.custom_dir_help_button.sizePolicy().hasHeightForWidth())
+        self.custom_dir_help_button.setSizePolicy(sizePolicy)
+        self.custom_dir_help_button.setText("")
+        self.custom_dir_help_button.setIcon(icon1)
+        self.custom_dir_help_button.setObjectName("custom_dir_help_button")
+        self.horizontalLayout_4.addWidget(self.custom_dir_help_button)
+        self.verticalLayout_26.addWidget(self.frame_5)
         self.frame_39 = QtWidgets.QFrame(self.custom_dir_frame)
         self.frame_39.setObjectName("frame_39")
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.frame_39)
@@ -320,4 +356,5 @@ class Ui_fetch_special_reports_tab(object):
         self.custom_dir_button.setText(_translate("fetch_special_reports_tab", "Change"))
         self.fetch_special_data_button.setText(_translate("fetch_special_reports_tab", "Fetch Special Report"))
         self.label.setText(_translate("fetch_special_reports_tab", "Note: Special reports are not added to the search database."))
+
 import Resources_rc

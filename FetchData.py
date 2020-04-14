@@ -1457,6 +1457,10 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
+        self.date_range_help_btn = fetch_special_reports_ui.date_range_help_button
+        self.date_range_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("Many vendors do not support a date range longer than 12 consecutive months."))
+
         self.begin_date_edit_year = fetch_special_reports_ui.begin_date_edit_special_year
         self.begin_date_edit_year.setDate(self.begin_date)
         self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
@@ -1487,6 +1491,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_special_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.custom_dir_help_btn = fetch_special_reports_ui.custom_dir_help_button
+        self.custom_dir_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default."))
         # endregion
 
     def update_vendors_ui(self):
