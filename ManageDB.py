@@ -729,7 +729,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
                                         ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                                                         group_by_fields=tuple(key_fields),
                                                                         num_extra_tabs=1) + ')',),
-                                        (RANKING + ' <= ?',) if number else (), order_by_fields=(RANKING,)) + ';'
+                                        ((RANKING + ' <= ?',),) if number else (), order_by_fields=(RANKING,)) + ';'
     return sql_text, tuple(data)
 
 
