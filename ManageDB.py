@@ -725,7 +725,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         data.append(clause[VALUE_KEY])
     if number:
         data.append(number)
-    sql_text = get_sql_select_statement(tuple([field[NAME_KEY] for field in chart_fields]),
+    sql_text = get_sql_select_statement(('*',),
                                         ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                                                         group_by_fields=tuple(key_fields),
                                                                         num_extra_tabs=1) + ')',),
