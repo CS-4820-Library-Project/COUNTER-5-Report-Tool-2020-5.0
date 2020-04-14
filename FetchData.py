@@ -1129,7 +1129,8 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.report_types_help_btn = fetch_reports_ui.report_types_help_button
         self.report_types_help_btn.clicked.connect(
-            lambda: GeneralUtils.show_message("Only reports supported by selected vendor will be retrieved!"))
+            lambda: GeneralUtils.show_message("Only reports supported by each respective vendor will be retrieved, "
+                                              "and unsupported reports will be listed in \"Expand\" results"))
         # endregion
 
         # region Date Edits
@@ -1164,14 +1165,32 @@ class FetchReportsController(FetchReportsAbstract):
         # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
+        self.custom_dir_message_frame = fetch_reports_ui.frame
+        self.custom_dir_message_frame.hide()
+        self.custom_dir_message_frame2 = fetch_reports_ui.frame_2
+        self.custom_dir_message_frame2.hide()
         self.custom_dir_frame_message1 = fetch_reports_ui.label_38
-        self.custom_dir_frame_message1.hide()
         self.custom_dir_frame_message2 = fetch_reports_ui.label
-        self.custom_dir_frame_message2.hide()
         self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.date_range_help_btn = fetch_reports_ui.date_range_help_button
+        self.date_range_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("Reports run for date ranges that represent a normal Jan-Dec calendar" 
+                                              " year, or Jan-last month for calendar years in progress, will be added" 
+                                              " to (or updated in) the search database. All other date ranges will be " 
+                                              "saved in the specified folder but not added to the search database."))
+        self.date_range_help_btn2 = fetch_reports_ui.date_range_help_button2
+        self.date_range_help_btn2.clicked.connect(
+            lambda: GeneralUtils.show_message("Reports run for date ranges that represent a normal Jan-Dec calendar"
+                                              " year, or Jan-last month for calendar years in progress, will be added"
+                                              " to (or updated in) the search database. All other date ranges will be "
+                                              "saved in the specified folder but not added to the search database."))
+        self.date_range_help_btn3 = fetch_reports_ui.date_range_help_button3
+        self.date_range_help_btn3.clicked.connect(
+            lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default"))
+
         # endregion
 
     def update_vendors_ui(self):
@@ -1212,16 +1231,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
-            self.custom_dir_frame_message1.hide()
-            self.custom_dir_frame_message2.hide()
+            self.custom_dir_message_frame.hide()
+            self.custom_dir_message_frame2.hide()
         else:
             self.custom_dir_frame.show()
             if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
-                self.custom_dir_frame_message2.show()
-                self.custom_dir_frame_message1.hide()
+                self.custom_dir_message_frame2.show()
+                self.custom_dir_message_frame.hide()
             else:
-                self.custom_dir_frame_message1.show()
-                self.custom_dir_frame_message2.hide()
+                self.custom_dir_message_frame.show()
+                self.custom_dir_message_frame2.hide()
 
     def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed
@@ -1237,16 +1256,16 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
-            self.custom_dir_frame_message1.hide()
-            self.custom_dir_frame_message2.hide()
+            self.custom_dir_message_frame.hide()
+            self.custom_dir_message_frame2.hide()
         else:
             self.custom_dir_frame.show()
             if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
-                self.custom_dir_frame_message2.show()
-                self.custom_dir_frame_message1.hide()
+                self.custom_dir_message_frame2.show()
+                self.custom_dir_message_frame.hide()
             else:
-                self.custom_dir_frame_message1.show()
-                self.custom_dir_frame_message2.hide()
+                self.custom_dir_message_frame.show()
+                self.custom_dir_message_frame2.hide()
 
     def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
         """Checks which message will show on the custom dir frame
