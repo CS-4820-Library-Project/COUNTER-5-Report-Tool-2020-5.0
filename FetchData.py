@@ -1133,35 +1133,6 @@ class FetchReportsController(FetchReportsAbstract):
                                               "and unsupported reports will be listed in \"Expand\" results"))
         # endregion
 
-        # region Date Edits
-        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
-        self.all_date_edit.setDate(self.fetch_all_begin_date)
-        self.all_date_edit.dateChanged.connect(self.on_fetch_all_date_changed)
-
-        self.begin_date_edit_year = fetch_reports_ui.begin_date_edit_fetch_year
-        self.begin_date_edit_year.setDate(self.adv_begin_date)
-        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
-
-        self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
-        self.end_date_edit_year.setDate(self.adv_end_date)
-        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
-
-        self.begin_month_combo_box = fetch_reports_ui.begin_month_combo_box
-        for month in MONTH_NAMES:
-            self.begin_month_combo_box.addItem(month)
-        self.begin_month_combo_box.currentIndexChanged.connect(
-            lambda index: self.on_date_month_changed(index + 1, "adv_begin"))
-        self.begin_month_combo_box.setCurrentIndex(self.adv_begin_date.month() - 1)
-
-        self.end_month_combo_box = fetch_reports_ui.end_month_combo_box
-        for month in MONTH_NAMES:
-            self.end_month_combo_box.addItem(month)
-        self.end_month_combo_box.currentIndexChanged.connect(
-            lambda index: self.on_date_month_changed(index + 1, "adv_end"))
-        self.end_month_combo_box.setCurrentIndex(self.adv_end_date.month() - 1)
-
-        # endregion
-
         # region Custom Directory
         self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
         self.custom_dir_frame.hide()
@@ -1190,6 +1161,35 @@ class FetchReportsController(FetchReportsAbstract):
         self.date_range_help_btn3 = fetch_reports_ui.date_range_help_button3
         self.date_range_help_btn3.clicked.connect(
             lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default"))
+
+        # endregion
+
+        # region Date Edits
+        self.all_date_edit = fetch_reports_ui.All_reports_edit_fetch
+        self.all_date_edit.setDate(self.fetch_all_begin_date)
+        self.all_date_edit.dateChanged.connect(self.on_fetch_all_date_changed)
+
+        self.begin_date_edit_year = fetch_reports_ui.begin_date_edit_fetch_year
+        self.begin_date_edit_year.setDate(self.adv_begin_date)
+        self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
+
+        self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
+        self.end_date_edit_year.setDate(self.adv_end_date)
+        self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
+
+        self.begin_month_combo_box = fetch_reports_ui.begin_month_combo_box
+        for month in MONTH_NAMES:
+            self.begin_month_combo_box.addItem(month)
+        self.begin_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_begin"))
+        self.begin_month_combo_box.setCurrentIndex(self.adv_begin_date.month() - 1)
+
+        self.end_month_combo_box = fetch_reports_ui.end_month_combo_box
+        for month in MONTH_NAMES:
+            self.end_month_combo_box.addItem(month)
+        self.end_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_end"))
+        self.end_month_combo_box.setCurrentIndex(self.adv_end_date.month() - 1)
 
         # endregion
 
