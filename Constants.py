@@ -427,7 +427,11 @@ CSV_FILTER = ('CSV files (*.csv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
+
 # region Variable Constants for FetchData
+MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December")
+
 MASTER_REPORTS = ("DR", "IR", "PR", "TR")
 
 
