@@ -123,7 +123,6 @@ class VisualController:
         self.results = None
         self.names = []
         self.costs_names = []
-        ManageDB.test_monthly_chart_search(False)
 
     def update_settings(self, settings: SettingsModel):
         """Called when the settings are saved
