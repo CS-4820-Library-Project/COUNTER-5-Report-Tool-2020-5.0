@@ -2,8 +2,10 @@ import webbrowser
 import shlex
 import subprocess
 import platform
+import csv
+from typing import Sequence, Any
 from os import path, makedirs, system
-from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog, QMainWindow
+from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
 from PyQt5.QtCore import QDate
 
 main_window: QWidget = None
@@ -45,7 +47,7 @@ def show_message(message: str):
     message_box.exec_()
 
 
-def ask_confirmation(message: str = 'Are you sure you want to continue?'):
+def ask_confirmation(message: str = 'Are you sure you want to continue?') -> bool:
     reply = QMessageBox.question(main_window, "Confirm", message, QMessageBox.Yes, QMessageBox.No)
     return reply == QMessageBox.Yes
 
@@ -121,3 +123,18 @@ def get_other_file_dir(base_path: str, vendor_name: str) -> str:
 
 def get_other_file_name(vendor_name: str, report_type: str, begin_date: QDate, end_date: QDate) -> str:
     return f"{vendor_name}_{report_type}_{begin_date.toString('yyyy-MMM')}_{end_date.toString('yyyy-MMM')}.tsv"
+
+
+def save_data_as_tsv(file_name: str, data: Sequence[Any]):
+    """Saves data in a TSV file
+
+    :param file_name: the name and location to save the results at
+    :param data: the data to save in the file"""
+    file = open(file_name, 'w', newline="", encoding='utf-8-sig')
+    if file.mode == 'w':
+        output = csv.writer(file, delimiter='\t', quotechar='\"')
+        for row in data:
+            output.writerow(row)
+        file.close()
+    else:
+        print('Error: could not open file ' + file_name)

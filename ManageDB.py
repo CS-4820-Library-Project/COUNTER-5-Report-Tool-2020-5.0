@@ -1,7 +1,6 @@
 import sqlite3
 import os
-import csv
-from typing import Tuple, Dict, Sequence, Any, Union
+from typing import Tuple, Dict, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel
 
@@ -934,21 +933,6 @@ def backup_costs_data(report_type: str):
         save_data_as_tsv(file_name, results)
     else:
         print('Error, no connection')
-
-
-def save_data_as_tsv(file_name: str, data: Sequence[Any]):
-    """Saves data in a TSV file
-
-    :param file_name: the name and location to save the results at
-    :param data: the data to save in the file"""
-    file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-    if file.mode == 'w':
-        output = csv.writer(file, delimiter='\t', quotechar='\"')
-        for row in data:
-            output.writerow(row)
-        file.close()
-    else:
-        print('Error: could not open file ' + file_name)
 
 
 def test_monthly_chart_search(file_name: str = None):
