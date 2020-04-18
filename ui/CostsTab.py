@@ -153,6 +153,6 @@ class Ui_costs_tab(object):
         self.costs_cost_in_local_currency_with_tax_label.setText(_translate("costs_tab", "Cost in Local Currency with Tax"))
         self.costs_save_button.setText(_translate("costs_tab", "Save Costs"))
         self.costs_clear_button.setText(_translate("costs_tab", "Clear"))
-        self.costs_load_button.setText(_translate("costs_tab", "Edit"))
+        self.costs_load_button.setText(_translate("costs_tab", "Refresh Costs"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs File"))
 import Resources_rc
