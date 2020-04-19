@@ -247,7 +247,7 @@
          <item row="0" column="4">
           <widget class="QPushButton" name="costs_load_button">
            <property name="text">
-            <string>Edit</string>
+            <string>Refresh Costs</string>
            </property>
           </widget>
          </item>
