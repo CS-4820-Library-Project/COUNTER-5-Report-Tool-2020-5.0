@@ -265,7 +265,11 @@ class ManageVendorsController(QObject):
 
         # Apply Changes
         if original_name != new_name:
-            self.update_name_of_file_and_folder(original_name,new_name)
+            self.update_name_of_file_and_folder(original_name, new_name)
+            ManageDB.update_vendor_in_all_tables(original_name, new_name)
+            for report_type in REPORT_TYPE_SWITCHER.keys():
+                ManageDB.backup_costs_data(report_type)
+
         selected_vendor.name = self.name_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
         selected_vendor.customer_id = self.customer_id_line_edit.text()
@@ -281,11 +285,6 @@ class ManageVendorsController(QObject):
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
 
-        if original_name != new_name:
-            ManageDB.update_vendor_in_all_tables(original_name, new_name)
-            for report_type in REPORT_TYPE_SWITCHER.keys():
-                ManageDB.backup_costs_data(report_type)
-
         GeneralUtils.show_message("Changes Saved!")
 
     def update_name_of_file_and_folder(self,original_name, new_name):
@@ -297,7 +296,7 @@ class ManageVendorsController(QObject):
         custom_year_path = self.settings.yearly_directory
         custom_other_path = self.settings.other_directory
 
-        if(os.path.exists(DO_NOT_MODIFY_json_path)):
+        if os.path.exists(DO_NOT_MODIFY_json_path):
             folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
