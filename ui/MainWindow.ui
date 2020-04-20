@@ -23,7 +23,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Libly</string>
+   <string>COUNTER 5 Report Tool</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../Resources.qrc">

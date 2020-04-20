@@ -3063,3 +3063,5 @@ class ReportWorker(QObject):
     def notify_worker_finished(self):
         """Notifies any listeners that this worker has finished"""
         self.worker_finished_signal.emit(self.worker_id)
+
+# El Psy Kongroo

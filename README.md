@@ -1,4 +1,4 @@
-# Libly
+# COUNTER 5 Report Tool
 
 This project uses the SUSHI API to request usage reports from library vendors. The JSON data received is used to generate TSV reports that follow the COUNTER 5 standards.
 The project is written with Python 3.7. The PyQt GUI framework is used to create a user friendly (hopefully) GUI.
