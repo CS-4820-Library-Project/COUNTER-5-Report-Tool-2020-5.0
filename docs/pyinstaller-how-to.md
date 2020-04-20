@@ -1,4 +1,4 @@
-# How to create Libly executable
+# How to create COUNTER 5 Report Tool's executable
 
 * Install python
 * Install pip

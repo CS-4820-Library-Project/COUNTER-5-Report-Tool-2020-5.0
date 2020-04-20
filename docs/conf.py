@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Libly'
+project = 'COUNTER 5 Report Tool'
 copyright = '2020, Adam McGuigan, Chandler Acorn, Samuel Esan, Urvesh Boodhoon, Ziheng Huang'
 author = 'Adam McGuigan, Chandler Acorn, Samuel Esan, Urvesh Boodhoon, Ziheng Huang'
 
