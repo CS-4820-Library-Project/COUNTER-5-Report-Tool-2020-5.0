@@ -102,13 +102,14 @@ class SearchController:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
+            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').frame.AND_label.hide()
             self.and_clause_parameters_frame.repaint()
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
+
         # add to the layout
-        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,
-                                                               and_clause)
+        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,                                                     and_clause)
 
         return and_clause_ui
 
