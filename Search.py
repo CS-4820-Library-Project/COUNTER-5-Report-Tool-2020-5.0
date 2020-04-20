@@ -3,7 +3,7 @@ import sip
 import json
 from typing import Tuple, Dict
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel
 
 import ManageDB
 from Settings import SettingsModel
@@ -63,6 +63,8 @@ class SearchController:
             """Resets the search clauses, then adds an and clause containing an or clause"""
             self.refresh_clauses()
             add_and_and_or_clause()
+            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').findChild(QLabel, "AND_label").hide()
+
 
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
@@ -102,7 +104,7 @@ class SearchController:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
-            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').frame.AND_label.hide()
+            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').findChild(QLabel, "AND_label").hide()
             self.and_clause_parameters_frame.repaint()
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
