@@ -54,6 +54,7 @@ class SearchController:
             """Invoked to add an and clause containing an or clause to the search"""
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
+            self.hide_or_label_in_first_or_clause(and_clause)
 
         self.add_and_button = search_ui.search_add_and_button
         self.add_and_button.clicked.connect(add_and_and_or_clause)
@@ -63,8 +64,7 @@ class SearchController:
             """Resets the search clauses, then adds an and clause containing an or clause"""
             self.refresh_clauses()
             add_and_and_or_clause()
-            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').findChild(QLabel, "AND_label").hide()
-
+            self.hide_and_label_in_first_and_clause()
 
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
@@ -104,16 +104,21 @@ class SearchController:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
-            self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame').findChild(QLabel, "AND_label").hide()
+            self.hide_and_label_in_first_and_clause()
             self.and_clause_parameters_frame.repaint()
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
-
         # add to the layout
-        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,                                                     and_clause)
+        self.and_clause_parameters_frame.layout().insertWidget(self.and_clause_parameters_frame.layout().count() - 1,
+                                                               and_clause)
 
         return and_clause_ui
+
+    def hide_and_label_in_first_and_clause(self):
+        and_clause = self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame')
+        if and_clause:
+            label = and_clause.findChild(QLabel, "search_and_label").hide()
 
     def add_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame) \
             -> SearchOrFrame.Ui_search_or_clause_parameter_frame:
@@ -168,6 +173,8 @@ class SearchController:
             """Removes this or clause"""
             and_clause.search_or_clause_parameters_frame.layout().removeWidget(or_clause)
             sip.delete(or_clause)
+            self.hide_or_label_in_first_or_clause(and_clause)
+            and_clause.search_or_clause_parameters_frame.repaint()
 
         or_clause_ui.search_remove_or_clause_button.clicked.connect(remove_this_or)
 
@@ -175,6 +182,11 @@ class SearchController:
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
         return or_clause_ui
+
+    def hide_or_label_in_first_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame):
+        or_clause = and_clause.search_or_clause_parameters_frame.findChild(QFrame, 'search_or_clause_parameter_frame')
+        if or_clause:
+            label = or_clause.findChild(QLabel, "search_or_label").hide()
 
     def export_parameters(self):
         """Exports the current search parameters to the selected file"""

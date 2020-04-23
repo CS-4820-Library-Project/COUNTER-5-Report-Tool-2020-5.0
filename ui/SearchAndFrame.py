@@ -2,18 +2,16 @@
 
 # Form implementation generated from reading ui file 'SearchAndFrame.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_search_and_clause_parameter_frame(object):
     def setupUi(self, search_and_clause_parameter_frame):
         search_and_clause_parameter_frame.setObjectName("search_and_clause_parameter_frame")
-        search_and_clause_parameter_frame.resize(296, 175)
+        search_and_clause_parameter_frame.resize(296, 212)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -51,16 +49,16 @@ class Ui_search_and_clause_parameter_frame(object):
         self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.search_or_clause_parameters_frame)
         self.verticalLayout_22.setObjectName("verticalLayout_22")
         self.gridLayout.addWidget(self.search_or_clause_parameters_frame, 1, 0, 2, 1)
-        self.AND_label = QtWidgets.QLabel(search_and_clause_parameter_frame)
-        self.AND_label.setMaximumSize(QtCore.QSize(16777215, 22))
+        self.search_and_label = QtWidgets.QLabel(search_and_clause_parameter_frame)
+        self.search_and_label.setMaximumSize(QtCore.QSize(16777215, 22))
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
         font.setWeight(75)
-        self.AND_label.setFont(font)
-        self.AND_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.AND_label.setObjectName("AND_label")
-        self.gridLayout.addWidget(self.AND_label, 0, 0, 1, 2)
+        self.search_and_label.setFont(font)
+        self.search_and_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.search_and_label.setObjectName("search_and_label")
+        self.gridLayout.addWidget(self.search_and_label, 0, 0, 1, 2)
 
         self.retranslateUi(search_and_clause_parameter_frame)
         QtCore.QMetaObject.connectSlotsByName(search_and_clause_parameter_frame)
@@ -70,4 +68,15 @@ class Ui_search_and_clause_parameter_frame(object):
         search_and_clause_parameter_frame.setWindowTitle(_translate("search_and_clause_parameter_frame", "Frame"))
         self.search_remove_and_clause_button.setText(_translate("search_and_clause_parameter_frame", "Remove \"And\""))
         self.search_add_or_clause_button.setText(_translate("search_and_clause_parameter_frame", "Add \"Or\""))
-        self.AND_label.setText(_translate("search_and_clause_parameter_frame", "AND"))
+        self.search_and_label.setText(_translate("search_and_clause_parameter_frame", "AND"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    search_and_clause_parameter_frame = QtWidgets.QFrame()
+    ui = Ui_search_and_clause_parameter_frame()
+    ui.setupUi(search_and_clause_parameter_frame)
+    search_and_clause_parameter_frame.show()
+    sys.exit(app.exec_())
+

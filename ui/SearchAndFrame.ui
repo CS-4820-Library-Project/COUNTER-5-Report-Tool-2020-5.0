@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>296</width>
-    <height>175</height>
+    <height>212</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -70,7 +70,7 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="AND_label">
+    <widget class="QLabel" name="search_and_label">
      <property name="maximumSize">
       <size>
        <width>16777215</width>
