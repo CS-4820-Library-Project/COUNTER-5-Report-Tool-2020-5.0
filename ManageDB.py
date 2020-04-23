@@ -71,7 +71,7 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
         fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
                        SOURCE_KEY: report[:2] + COST_TABLE_SUFFIX})
     fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION,
-                   SOURCE_KEY: 'joined'})
+                   SOURCE_KEY: 'joined'})  # year total column
     for key in sorted(MONTHS):  # month columns
         fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: MONTH_CALCULATION.format(key),
                        SOURCE_KEY: 'joined'})
@@ -107,7 +107,8 @@ def get_yearly_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: YEAR_TOTAL_CALCULATION})  # year total column
     return tuple(fields)
 
 
@@ -125,7 +126,8 @@ def get_cost_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
     for field in COST_FIELDS:  # cost table fields
         fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')'})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')'})  # year total column
     return tuple(fields)
 
 
@@ -140,9 +142,10 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] not in FIELDS_NOT_IN_TOP_NUMBER_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
-    fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION})
-    fields.append(
-        {NAME_KEY: RANKING, TYPE_KEY: 'INTEGER', CALCULATION_KEY: RANKING_CALCULATION})
+    fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: YEAR_TOTAL_CALCULATION})  # total over the entire period column
+    fields.append({NAME_KEY: RANKING, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: RANKING_CALCULATION})  # rank of the total over the entire period column
     return tuple(fields)
 
 
@@ -170,13 +173,13 @@ def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], 
     :param field_name: the name of the field
     :returns: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
-    for field in report_fields:
+    for field in report_fields:  # fields specific to this report
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
-    for field in ALL_REPORT_FIELDS:
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
-    for field in COST_FIELDS:
+    for field in COST_FIELDS:  # cost table fields
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
     return None
@@ -401,7 +404,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         header = {}
-        for row in range(HEADER_ROWS):  # reads header row data
+        for row in range(HEADER_ROWS):  # reads header data
             cells = next(reader)
             key = cells[0].lower()
             if len(cells) > 1:
@@ -412,7 +415,8 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
-        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        column_headers = list(map((lambda column_header: column_header.lower()),
+                                  column_headers))  # reads column headers
         if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
@@ -452,7 +456,8 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         column_headers = next(reader)
-        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        column_headers = list(map((lambda column_header: column_header.lower()),
+                                  column_headers))  # reads column headers
         if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
@@ -471,7 +476,7 @@ def get_all_report_files() -> Sequence[Dict[str, Any]]:
 
     :returns: list of report files"""
     files = []
-    for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in FILE_LOCATION
+    for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in the specified folder
         if upper_directory.is_dir():
             for lower_directory in os.scandir(upper_directory):
                 if lower_directory.is_dir():
@@ -489,7 +494,7 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
 
     :returns: list of cost files"""
     files = []
-    for file in os.scandir(COSTS_SAVE_FOLDER):
+    for file in os.scandir(COSTS_SAVE_FOLDER):  # iterate over all files in the specified folder
         if file.name[-4:] in DELIMITERS:
             files.append({'file': file.path, 'report': file.name[:2]})
     return tuple(files)
@@ -510,7 +515,7 @@ def insert_single_file(file_path: str, vendor: str, year: int, emit_signal: bool
         run_sql(connection, delete, delete_data, emit_signal=False)
         run_sql(connection, replace, replace_data, emit_signal=False)
         connection.close()
-        if emit_signal:
+        if emit_signal:  # only emit the signal after the delete and replace operations both finish
             managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
@@ -557,7 +562,7 @@ def search_sql_text(report: str, start_year: int, end_year: int,
                 data.append(sub_clause[VALUE_KEY])
             sub_clauses_text.append(current_text)
         clauses_texts.append(tuple(sub_clauses_text))
-    sql_text = get_sql_select_statement(('*', ), (report + VIEW_SUFFIX,), tuple(clauses_texts)) + ';'
+    sql_text = get_sql_select_statement(('*',), (report + VIEW_SUFFIX,), tuple(clauses_texts)) + ';'
     return sql_text, tuple(data)
 
 
@@ -704,6 +709,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         data.append(clause[VALUE_KEY])
     if number:
         data.append(number)
+    # runs a query as the source of the next query
     sql_text = get_sql_select_statement(('*',),
                                         ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
                                                                         group_by_fields=tuple(key_fields),
@@ -827,7 +833,7 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None, 
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None,
             emit_signal: bool = True):
     """Runs the SQL statement to modify the database
 
@@ -843,7 +849,7 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
             cursor.executemany(sql_text, data)
         else:
             cursor.execute(sql_text)
-        connection.commit()
+        connection.commit()  # commits the changes to the database
         if emit_signal:
             managedb_signal_handler.emit_database_changed_signal()
     except sqlite3.Error as error:
@@ -866,7 +872,7 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
             cursor.execute(sql_text, data)
         else:
             cursor.execute(sql_text)
-        return cursor.fetchall()
+        return cursor.fetchall()  # gets the results
     except sqlite3.Error as error:
         print(error)
 
@@ -893,7 +899,8 @@ def setup_database(drop_tables: bool, emit_signal: bool = True):
             if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + key)
             run_sql(connection, sql_texts[key], emit_signal=False)
         connection.close()
-        managedb_signal_handler.emit_database_changed_signal()
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -922,8 +929,10 @@ def backup_costs_data(report_type: str):
         headers = []
         for field in get_cost_fields_list(report_type):
             headers.append(field[NAME_KEY])
-        sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
-        sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
+        sql_text = get_sql_select_statement(('*',), (report_type + COST_TABLE_SUFFIX,),
+                                            order_by_fields=COSTS_KEY_FIELDS + (
+                                            NAME_FIELD_SWITCHER[report_type] + ' COLLATE NOCASE ASC',),
+                                            is_multiline=False)
         results = run_select_sql(connection, sql_text)
         connection.close()
         results.insert(0, headers)
@@ -933,85 +942,6 @@ def backup_costs_data(report_type: str):
         save_data_as_tsv(file_name, results)
     else:
         print('Error, no connection')
-
-
-def test_monthly_chart_search(file_name: str = None):
-    """temporary method to show how to use monthly_chart_search_sql_text
-
-    :param file_name: the name and location to save the results at"""
-    headers = tuple([field[NAME_KEY] for field in get_monthly_chart_report_fields_list('TR_J1')])
-    sql_text, data = monthly_chart_search_sql_text('TR_J1', 2019, 2020,
-                                                   'Canadian Journal of Dietetic Practice and Research',
-                                                   'Unique_Item_Requests', 'Proquest')
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        connection.close()
-        results.insert(0, headers)
-        for row in results:
-            print(row)
-        if file_name:
-            save_data_as_tsv(file_name, results)
-            open_file_or_dir(file_name)
-
-
-def test_yearly_chart_search(file_name: str = None):
-    """temporary method to show how to use yearly_chart_search_sql_text
-
-    :param file_name: the name and location to save the results at"""
-    headers = tuple([field[NAME_KEY] for field in get_yearly_chart_report_fields_list('TR_J1')])
-    sql_text, data = yearly_chart_search_sql_text('TR_J1', 2019, 2020,
-                                                  'Canadian Journal of Dietetic Practice and Research',
-                                                  'Unique_Item_Requests', 'Proquest')
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        connection.close()
-        results.insert(0, headers)
-        for row in results:
-            print(row)
-        if file_name:
-            save_data_as_tsv(file_name, results)
-            open_file_or_dir(file_name)
-
-
-def test_cost_chart_search(file_name: str = None):
-    """temporary method to show how to use cost_chart_search_sql_text
-
-    :param file_name: the name and location to save the results at"""
-    headers = tuple([field[NAME_KEY] for field in get_cost_chart_report_fields_list('TR_J1')])
-    sql_text, data = cost_chart_search_sql_text('TR_J1', 2019, 2020,
-                                                'Canadian Journal of Dietetic Practice and Research',
-                                                'Unique_Item_Requests', 'Proquest')
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        connection.close()
-        results.insert(0, headers)
-        for row in results:
-            print(row)
-        if file_name:
-            save_data_as_tsv(file_name, results)
-            open_file_or_dir(file_name)
-
-
-def test_top_number_chart_search(file_name: str = None):
-    """temporary method to show how to use top_number_chart_search_sql_text
-
-    :param file_name: the name and location to save the results at"""
-    headers = tuple([field[NAME_KEY] for field in get_top_number_chart_report_fields_list('TR_J1')])
-    sql_text, data = top_number_chart_search_sql_text('TR_J1', 2019, 2020, 'Unique_Item_Requests',
-                                                      vendor='Proquest', number=15)
-    connection = create_connection(DATABASE_LOCATION)
-    if connection is not None:
-        results = run_select_sql(connection, sql_text, data)
-        connection.close()
-        results.insert(0, headers)
-        for row in results:
-            print(row)
-        if file_name:
-            save_data_as_tsv(file_name, results)
-            open_file_or_dir(file_name)
 
 
 class UpdateDatabaseProgressDialogController:
