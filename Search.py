@@ -117,9 +117,10 @@ class SearchController:
         return and_clause_ui
 
     def hide_and_label_in_first_and_clause(self):
+        """Hides the and label for the first and clause in the search"""
         and_clause = self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame')
         if and_clause:
-            label = and_clause.findChild(QLabel, "search_and_label").hide()
+            and_clause.findChild(QLabel, "search_and_label").hide()
 
     def add_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame) \
             -> SearchOrFrame.Ui_search_or_clause_parameter_frame:
@@ -185,9 +186,12 @@ class SearchController:
         return or_clause_ui
 
     def hide_or_label_in_first_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame):
+        """Hides the or label for the first or clause in an and clause
+
+        :param and_clause: the and clause"""
         or_clause = and_clause.search_or_clause_parameters_frame.findChild(QFrame, 'search_or_clause_parameter_frame')
         if or_clause:
-            label = or_clause.findChild(QLabel, "search_or_label").hide()
+            or_clause.findChild(QLabel, "search_or_label").hide()
 
     def export_parameters(self):
         """Exports the current search parameters to the selected file"""
