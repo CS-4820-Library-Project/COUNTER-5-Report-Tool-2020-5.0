@@ -55,6 +55,7 @@ class SearchController:
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
             self.hide_or_label_in_first_or_clause(and_clause)
+            self.hide_and_label_in_first_and_clause()
 
         self.add_and_button = search_ui.search_add_and_button
         self.add_and_button.clicked.connect(add_and_and_or_clause)
@@ -64,7 +65,6 @@ class SearchController:
             """Resets the search clauses, then adds an and clause containing an or clause"""
             self.refresh_clauses()
             add_and_and_or_clause()
-            self.hide_and_label_in_first_and_clause()
 
         self.report_parameter.currentTextChanged.connect(refresh_and_add_clauses)
 
@@ -96,6 +96,7 @@ class SearchController:
         def add_or_to_this_and():
             """Adds an or clause to this and clause"""
             self.add_or_clause(and_clause_ui)
+            self.hide_or_label_in_first_or_clause(and_clause_ui)
 
         and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
 
