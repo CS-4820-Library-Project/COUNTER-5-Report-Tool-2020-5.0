@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1014</width>
-    <height>703</height>
+    <height>746</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -441,7 +441,7 @@
                   <property name="spacing">
                    <number>20</number>
                   </property>
-                  <item row="2" column="1">
+                  <item row="3" column="1">
                    <widget class="QDateEdit" name="end_date_edit_fetch_year">
                     <property name="dateTime">
                      <datetime>
@@ -458,22 +458,8 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="2">
-                   <widget class="QDateEdit" name="end_date_edit_fetch_month">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2020</year>
-                      <month>1</month>
-                      <day>1</day>
-                     </datetime>
-                    </property>
-                    <property name="displayFormat">
-                     <string>MMM</string>
-                    </property>
-                   </widget>
+                  <item row="0" column="2">
+                   <widget class="QComboBox" name="begin_month_combo_box"/>
                   </item>
                   <item row="0" column="0">
                    <widget class="QLabel" name="label_9">
@@ -482,11 +468,29 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="2">
-                   <widget class="QComboBox" name="begin_month_combo_box"/>
-                  </item>
-                  <item row="2" column="2">
+                  <item row="3" column="2">
                    <widget class="QComboBox" name="end_month_combo_box"/>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDateEdit" name="begin_date_edit_fetch_year">
+                    <property name="displayFormat">
+                     <string>yyyy</string>
+                    </property>
+                    <property name="date">
+                     <date>
+                      <year>2020</year>
+                      <month>1</month>
+                      <day>1</day>
+                     </date>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_10">
+                    <property name="text">
+                     <string>End Date</string>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>
@@ -785,7 +789,6 @@
   <tabstop>deselect_report_types_button_fetch</tabstop>
   <tabstop>report_types_help_button</tabstop>
   <tabstop>report_types_list_view</tabstop>
-  <tabstop>begin_date_edit_fetch_year</tabstop>
   <tabstop>end_date_edit_fetch_year</tabstop>
   <tabstop>custom_dir_edit</tabstop>
   <tabstop>custom_dir_button</tabstop>
