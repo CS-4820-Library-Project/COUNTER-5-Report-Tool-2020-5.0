@@ -1,5 +1,8 @@
 from enum import Enum
 
+# Variable Constants for MainDriver.py
+HELP_SITE = "https://git.library.upei.ca/mbelvadi/COUNTER-5-Report-Tool/wiki"
+
 # region Variable Constants for ManageDB
 
 # region field and table definitions

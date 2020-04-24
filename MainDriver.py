@@ -13,9 +13,7 @@ from Settings import SettingsController, SettingsModel
 from Visual import VisualController
 import GeneralUtils
 import ManageDB
-
-HELP_SITE = "https://git.library.upei.ca/mbelvadi/COUNTER-5-Report-Tool/wiki"
-
+from Constants import *
 
 # region debug_stuff
 
