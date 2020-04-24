@@ -18,6 +18,9 @@ https://github.com/CS-4820-Library-Project/Libly/releases
 ## Developer Documentation
 https://counter-5-report-tool.readthedocs.io/en/latest/
 
+## How to use pyinstaller for executables
+https://github.com/CS-4820-Library-Project/Libly/blob/master/docs/pyinstaller-how-to.md
+
 ## Setup Instructions (Windows)
 - Install Python 3.8.2 [https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe]
 ### Add Python to environment variables [https://datatofish.com/add-python-to-windows-path/]
