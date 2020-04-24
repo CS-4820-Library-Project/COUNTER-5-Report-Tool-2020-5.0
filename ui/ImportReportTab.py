@@ -2,24 +2,27 @@
 
 # Form implementation generated from reading ui file 'ImportReportTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_import_report_tab(object):
     def setupUi(self, import_report_tab):
         import_report_tab.setObjectName("import_report_tab")
-        import_report_tab.resize(630, 252)
+        import_report_tab.resize(1008, 530)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/ui/resources/tab_icons/import_report_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         import_report_tab.setWindowIcon(icon)
-        self.horizontalLayout = QtWidgets.QHBoxLayout(import_report_tab)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.frame_21 = QtWidgets.QFrame(import_report_tab)
+        self.verticalLayout = QtWidgets.QVBoxLayout(import_report_tab)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.frame = QtWidgets.QFrame(import_report_tab)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setObjectName("frame")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.frame_21 = QtWidgets.QFrame(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -47,8 +50,8 @@ class Ui_import_report_tab(object):
         self.vendors_list_view_import.setAlternatingRowColors(True)
         self.vendors_list_view_import.setObjectName("vendors_list_view_import")
         self.verticalLayout_12.addWidget(self.vendors_list_view_import)
-        self.horizontalLayout.addWidget(self.frame_21)
-        self.frame_20 = QtWidgets.QFrame(import_report_tab)
+        self.horizontalLayout_2.addWidget(self.frame_21)
+        self.frame_20 = QtWidgets.QFrame(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -76,8 +79,8 @@ class Ui_import_report_tab(object):
         self.report_types_list_view_import.setAlternatingRowColors(True)
         self.report_types_list_view_import.setObjectName("report_types_list_view_import")
         self.verticalLayout_11.addWidget(self.report_types_list_view_import)
-        self.horizontalLayout.addWidget(self.frame_20)
-        self.frame_22 = QtWidgets.QFrame(import_report_tab)
+        self.horizontalLayout_2.addWidget(self.frame_20)
+        self.frame_22 = QtWidgets.QFrame(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -146,10 +149,6 @@ class Ui_import_report_tab(object):
         self.frame_38.setObjectName("frame_38")
         self.horizontalLayout_15 = QtWidgets.QHBoxLayout(self.frame_38)
         self.horizontalLayout_15.setObjectName("horizontalLayout_15")
-        self.selected_file_edit = QtWidgets.QLineEdit(self.frame_38)
-        self.selected_file_edit.setReadOnly(True)
-        self.selected_file_edit.setObjectName("selected_file_edit")
-        self.horizontalLayout_15.addWidget(self.selected_file_edit)
         self.select_file_button = QtWidgets.QPushButton(self.frame_38)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -158,6 +157,10 @@ class Ui_import_report_tab(object):
         self.select_file_button.setSizePolicy(sizePolicy)
         self.select_file_button.setObjectName("select_file_button")
         self.horizontalLayout_15.addWidget(self.select_file_button)
+        self.selected_file_edit = QtWidgets.QLineEdit(self.frame_38)
+        self.selected_file_edit.setReadOnly(True)
+        self.selected_file_edit.setObjectName("selected_file_edit")
+        self.horizontalLayout_15.addWidget(self.selected_file_edit)
         self.verticalLayout_25.addWidget(self.frame_38)
         self.verticalLayout_13.addWidget(self.frame_18)
         self.frame_24 = QtWidgets.QFrame(self.frame_22)
@@ -175,15 +178,19 @@ class Ui_import_report_tab(object):
         self.import_report_button.setObjectName("import_report_button")
         self.gridLayout_7.addWidget(self.import_report_button, 0, 0, 1, 1)
         self.verticalLayout_13.addWidget(self.frame_24)
-        self.horizontalLayout.addWidget(self.frame_22)
+        self.horizontalLayout_2.addWidget(self.frame_22)
+        self.verticalLayout.addWidget(self.frame)
+        self.label = QtWidgets.QLabel(import_report_tab)
+        self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
 
         self.retranslateUi(import_report_tab)
         QtCore.QMetaObject.connectSlotsByName(import_report_tab)
         import_report_tab.setTabOrder(self.vendors_list_view_import, self.report_types_list_view_import)
         import_report_tab.setTabOrder(self.report_types_list_view_import, self.report_year_date_edit)
         import_report_tab.setTabOrder(self.report_year_date_edit, self.selected_file_edit)
-        import_report_tab.setTabOrder(self.selected_file_edit, self.select_file_button)
-        import_report_tab.setTabOrder(self.select_file_button, self.import_report_button)
+        import_report_tab.setTabOrder(self.selected_file_edit, self.import_report_button)
 
     def retranslateUi(self, import_report_tab):
         _translate = QtCore.QCoreApplication.translate
@@ -196,4 +203,6 @@ class Ui_import_report_tab(object):
         self.label_36.setText(_translate("import_report_tab", "Target Report File"))
         self.select_file_button.setText(_translate("import_report_tab", "Select File"))
         self.import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
+        self.label.setText(_translate("import_report_tab", "Note: Only yearly reports (all available data for one calender year) should be imported. Imported reports are added to the search database."))
+
 import Resources_rc

@@ -19,8 +19,7 @@ class Setting(Enum):
     REQUEST_TIMEOUT = 3
     CONCURRENT_VENDORS = 4
     CONCURRENT_REPORTS = 5
-    EMPTY_CELL = 6
-    USER_AGENT = 7
+    USER_AGENT = 6
 
 
 class SettingsModel(JsonModel):
@@ -33,12 +32,11 @@ class SettingsModel(JsonModel):
     :param request_timeout: The time to wait before timing out a connection (seconds).
     :param concurrent_vendors: The max number of vendors to work on at a time.
     :param concurrent_reports: The max number of reports to work on at a time, per vendor.
-    :param empty_cell: The default empty cell value in generated tabular reports.
     :param user_agent: The user-agent that's included in the header when making requests.
     """
     def __init__(self, show_debug_messages: bool, yearly_directory: str, other_directory: str, request_interval: int,
-                 request_timeout: int, concurrent_vendors: int, concurrent_reports: int, empty_cell: str,
-                 user_agent: str, default_currency: str):
+                 request_timeout: int, concurrent_vendors: int, concurrent_reports: int, user_agent: str,
+                 default_currency: str):
         self.show_debug_messages = show_debug_messages
         self.yearly_directory = path.abspath(yearly_directory) + path.sep
         self.other_directory = path.abspath(other_directory) + path.sep
@@ -46,7 +44,6 @@ class SettingsModel(JsonModel):
         self.request_timeout = request_timeout
         self.concurrent_vendors = concurrent_vendors
         self.concurrent_reports = concurrent_reports
-        self.empty_cell = empty_cell
         self.user_agent = user_agent
         self.default_currency = default_currency
 
@@ -66,15 +63,13 @@ class SettingsModel(JsonModel):
             if "concurrent_vendors" in json_dict else CONCURRENT_VENDORS
         concurrent_reports = int(json_dict["concurrent_reports"])\
             if "concurrent_reports" in json_dict else CONCURRENT_REPORTS
-        empty_cell = json_dict["empty_cell"]\
-            if "empty_cell" in json_dict else EMPTY_CELL
         user_agent = json_dict["user_agent"]\
             if "user_agent" in json_dict else USER_AGENT
         default_currency = json_dict["default_currency"]\
             if "default_currency" in json_dict else DEFAULT_CURRENCY
 
         return cls(show_debug_messages, yearly_directory, other_directory, request_interval, request_timeout,
-                   concurrent_vendors, concurrent_reports, empty_cell, user_agent, default_currency)
+                   concurrent_vendors, concurrent_reports, user_agent, default_currency)
 
 
 class SettingsController(QObject):
@@ -105,7 +100,6 @@ class SettingsController(QObject):
         self.request_timeout_spin_box = settings_ui.request_timeout_spin_box
         self.concurrent_vendors_spin_box = settings_ui.concurrent_vendors_spin_box
         self.concurrent_reports_spin_box = settings_ui.concurrent_reports_spin_box
-        self.empty_cell_edit = settings_ui.empty_cell_edit
         self.user_agent_edit = settings_ui.user_agent_edit
 
         self.yearly_dir_edit.setText(self.settings.yearly_directory)
@@ -114,7 +108,6 @@ class SettingsController(QObject):
         self.request_timeout_spin_box.setValue(self.settings.request_timeout)
         self.concurrent_vendors_spin_box.setValue(self.settings.concurrent_vendors)
         self.concurrent_reports_spin_box.setValue(self.settings.concurrent_reports)
-        self.empty_cell_edit.setText(self.settings.empty_cell)
         self.user_agent_edit.setText(self.settings.user_agent)
 
         settings_ui.yearly_directory_button.clicked.connect(
@@ -124,22 +117,34 @@ class SettingsController(QObject):
 
         # Reports Help Messages
         settings_ui.yearly_directory_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("This is where yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where the calendar-year reports will be saved"))
         settings_ui.other_directory_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("This is where special and non-yearly files will be saved by default"))
+            lambda: GeneralUtils.show_message("This is where the special and non-calendar-year date range reports will "
+                                              "be saved by default"))
         settings_ui.request_interval_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The amount of time to wait between a vendor's report requests"))
+            lambda: GeneralUtils.show_message("The number of seconds the program will wait between sending each report "
+                                              "request to a given vendor"))
         settings_ui.request_timeout_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The amount of time to wait before cancelling a request"))
+            lambda: GeneralUtils.show_message("The number of seconds the program will allow a vendor to respond to "
+                                              "each report request before canceling it"))
         settings_ui.concurrent_vendors_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time"))
+            lambda: GeneralUtils.show_message("The maximum number of vendors to work on at the same time. "
+                                              "If set too high, the UI might freeze while fetching reports but the "
+                                              "fetch process will continue"))
         settings_ui.concurrent_reports_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time, per vendor"))
-        settings_ui.empty_cell_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Empty cells will be replaced by whatever is in here"))
+            lambda: GeneralUtils.show_message("The maximum number of reports to work on at the same time (per vendor). "
+                                              "If set too high, the UI might freeze while fetching reports but the "
+                                              "fetch process will continue"))
         settings_ui.user_agent_help_button.clicked.connect(
-            lambda: GeneralUtils.show_message("Some vendors only support specific user-agents otherwise, they return "
-                                              "error HTTP error codes. Values should be separated by a space"))
+            lambda: GeneralUtils.show_message("How program identifies itself to the SUSHI servers. Some vendors will "
+                                              "reject some particular user agents. Only change this if there is a "
+                                              "known problem as it will affect all requests to all vendors. "
+                                              "See Help for more information."))
+        settings_ui.default_currency_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("The currency shown first in the Costs pulldown and also by Visual to "
+                                              "label the local currency in the spreadsheets generated with the Cost "
+                                              "Ratio option. Note: This doesn't have to be one of the pre-loaded "
+                                              "currencies."))
 
         # endregion
 
@@ -151,10 +156,10 @@ class SettingsController(QObject):
 
         # region Search
         # set up restore database button
-        self.is_restoring_database = False
+        self.is_rebuilding_database = False
         self.update_database_dialog = ManageDB.UpdateDatabaseProgressDialogController(self.settings_widget)
-        self.restore_database_button = settings_ui.settings_restore_database_button
-        self.restore_database_button.clicked.connect(self.on_restore_database_clicked)
+        self.rebuild_database_button = settings_ui.settings_rebuild_database_button
+        self.rebuild_database_button.clicked.connect(self.on_rebuild_database_clicked)
         # endregion
 
         settings_ui.save_button.clicked.connect(self.on_save_button_clicked)
@@ -178,17 +183,17 @@ class SettingsController(QObject):
         self.settings_changed_signal.emit(self.settings)
         GeneralUtils.show_message("Changes saved!")
 
-    def on_restore_database_clicked(self):
+    def on_rebuild_database_clicked(self):
         """Restores the database when the restore database button is clicked"""
-        if not self.is_restoring_database:  # check if already running
-            if GeneralUtils.ask_confirmation('Are you sure you want to restore the database?'):
-                self.is_restoring_database = True
+        if not self.is_rebuilding_database:  # check if already running
+            if GeneralUtils.ask_confirmation('Are you sure you want to rebuild the database?'):
+                self.is_rebuilding_database = True
                 self.update_database_dialog.update_database(ManageDB.get_all_report_files() +
                                                             ManageDB.get_all_cost_files(),
                                                             True)
-                self.is_restoring_database = False
+                self.is_rebuilding_database = False
         else:
-            print('Error, already running')
+            if self.settings.show_debug_messages: print('Database is already being rebuilt')
 
     def update_settings(self):
         """Updates the app's settings using the values entered on the UI"""
@@ -199,7 +204,6 @@ class SettingsController(QObject):
         self.settings.request_timeout = self.request_timeout_spin_box.value()
         self.settings.concurrent_vendors = self.concurrent_vendors_spin_box.value()
         self.settings.concurrent_reports = self.concurrent_reports_spin_box.value()
-        self.settings.empty_cell = self.empty_cell_edit.text()
         self.settings.user_agent = self.user_agent_edit.text()
         self.settings.default_currency = self.default_currency_combobox.currentText()
 

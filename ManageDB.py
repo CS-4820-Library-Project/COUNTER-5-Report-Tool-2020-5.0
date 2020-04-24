@@ -1,11 +1,11 @@
 import sqlite3
 import os
-import csv
-from typing import Tuple, Dict, Sequence, Any, Union
+from typing import Tuple, Dict, Union
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
-from PyQt5.QtWidgets import QDialog, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel
 
 from Constants import *
+from GeneralUtils import *
 from Settings import SettingsModel
 from ui import UpdateDatabaseProgressDialog
 
@@ -26,11 +26,15 @@ managedb_signal_handler = ManageDBSignalHandler()
 
 
 class ManageDBSettingsHandler:
+    """Class for holding the settings for ManageDB"""
     settings = None
 
 
-def update_settings(new_settings: SettingsModel):
-    ManageDBSettingsHandler.settings = new_settings
+def update_settings(settings: SettingsModel):
+    """Called when the settings are saved
+
+    :param settings: the new settings"""
+    ManageDBSettingsHandler.settings = settings
 
 
 def get_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
@@ -57,25 +61,58 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     fields = []
     for field in report_fields:  # fields specific to this report
         if report in field[REPORTS_KEY]:
-            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
                            SOURCE_KEY: report})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] not in FIELDS_NOT_IN_VIEWS:
-            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
                            SOURCE_KEY: report})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
                        SOURCE_KEY: report[:2] + COST_TABLE_SUFFIX})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + 'metric' + ')',
-                   SOURCE_KEY: 'joined'})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION,
+                   SOURCE_KEY: 'joined'})  # year total column
     for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER',
-                       CALCULATION_KEY: 'COALESCE(SUM(CASE ' + 'month' + ' WHEN ' + str(
-                           key) + ' THEN ' + 'metric' + ' END), 0)', SOURCE_KEY: 'joined'})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: MONTH_CALCULATION.format(key),
+                       SOURCE_KEY: 'joined'})
     return tuple(fields)
 
 
-def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
+def get_monthly_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
+    """Gets the fields in the report chart
+
+    :param report: the kind of the report
+    :returns: list of fields in this report's monthly chart"""
+    fields = []
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
+    fields.append(
+        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
+    for key in sorted(MONTHS):  # month columns
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: MONTH_CALCULATION.format(key)})
+    return tuple(fields)
+
+
+def get_yearly_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
+    """Gets the fields in the report chart
+
+    :param report: the kind of the report
+    :returns: list of fields in this report's monthly chart"""
+    fields = []
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
+    fields.append(
+        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
+        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: YEAR_TOTAL_CALCULATION})  # year total column
+    return tuple(fields)
+
+
+def get_cost_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     """Gets the fields in the report chart
 
     :param report: the kind of the report
@@ -83,15 +120,14 @@ def get_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
     fields.append(
-        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY], OPTIONS_KEY: name_field[OPTIONS_KEY]})
+        {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
-            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
     for field in COST_FIELDS:  # cost table fields
-        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
-    for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: ()})
+        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
+    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')'})  # year total column
     return tuple(fields)
 
 
@@ -102,23 +138,14 @@ def get_top_number_chart_report_fields_list(report: str) -> Sequence[Dict[str, A
     :returns: list of fields in this report's top # chart"""
     fields = []
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])  # name field only
-    fields.append({NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY], OPTIONS_KEY: name_field[OPTIONS_KEY],
-                   SOURCE_KEY: 'data'})
+    fields.append({NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
-            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
-                           SOURCE_KEY: 'data'})
-    for field in COST_FIELDS:  # cost table fields
-        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY],
-                       SOURCE_KEY: 'data'})
-    fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
-    for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', OPTIONS_KEY: (), SOURCE_KEY: 'data'})
-    fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')',
-                   SOURCE_KEY: 'totals'})
-    fields.append(
-        {NAME_KEY: RANKING, TYPE_KEY: 'INTEGER', CALCULATION_KEY: 'RANK() OVER(ORDER BY ' + 'SUM(' + YEAR_TOTAL + ')'
-                                                                  + ' DESC)', SOURCE_KEY: 'totals'})
+        if field[NAME_KEY] not in FIELDS_NOT_IN_TOP_NUMBER_CHARTS:
+            fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
+    fields.append({NAME_KEY: 'total_of_' + YEAR_TOTAL, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: YEAR_TOTAL_CALCULATION})  # total over the entire period column
+    fields.append({NAME_KEY: RANKING, TYPE_KEY: 'INTEGER',
+                   CALCULATION_KEY: RANKING_CALCULATION})  # rank of the total over the entire period column
     return tuple(fields)
 
 
@@ -146,13 +173,13 @@ def get_field_attributes(report: str, field_name: str) -> Union[Dict[str, Any], 
     :param field_name: the name of the field
     :returns: attributes of the field"""
     report_fields = REPORT_TYPE_SWITCHER[report[:2]]['report_fields']
-    for field in report_fields:
+    for field in report_fields:  # fields specific to this report
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
-    for field in ALL_REPORT_FIELDS:
+    for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
-    for field in COST_FIELDS:
+    for field in COST_FIELDS:  # cost table fields
         if field[NAME_KEY] == field_name:
             return {NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY], OPTIONS_KEY: field[OPTIONS_KEY]}
     return None
@@ -305,8 +332,8 @@ def update_vendor_in_all_tables(old_name: str, new_name: str):
     if connection is not None:
         for sql_text in sql_texts:
             run_sql(connection, sql_text['sql_text'], sql_text['data'], emit_signal=False)
-        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
+        managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -377,7 +404,7 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         header = {}
-        for row in range(HEADER_ROWS):  # reads header row data
+        for row in range(HEADER_ROWS):  # reads header data
             cells = next(reader)
             key = cells[0].lower()
             if len(cells) > 1:
@@ -388,7 +415,8 @@ def read_report_file(file_name: str, vendor: str, year: int) -> Union[Tuple[str,
         for row in range(BLANK_ROWS):
             next(reader)
         column_headers = next(reader)
-        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        column_headers = list(map((lambda column_header: column_header.lower()),
+                                  column_headers))  # reads column headers
         if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
@@ -428,7 +456,8 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
     reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
     if file.mode == 'r':
         column_headers = next(reader)
-        column_headers = list(map((lambda column_header: column_header.lower()), column_headers))
+        column_headers = list(map((lambda column_header: column_header.lower()),
+                                  column_headers))  # reads column headers
         if ManageDBSettingsHandler.settings.show_debug_messages: print(column_headers)
         values = []
         for cells in list(reader):
@@ -436,6 +465,7 @@ def read_costs_file(file_name: str) -> Union[Sequence[Dict[str, Any]], None]:
             for i in range(len(cells)):  # read columns
                 value[column_headers[i]] = cells[i]
             values.append(value)
+        file.close()
         return tuple(values)
     else:
         print('Error: could not open file ' + file_name)
@@ -446,7 +476,7 @@ def get_all_report_files() -> Sequence[Dict[str, Any]]:
 
     :returns: list of report files"""
     files = []
-    for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in FILE_LOCATION
+    for upper_directory in os.scandir(PROTECTED_DATABASE_FILE_DIR):  # iterate over all files in the specified folder
         if upper_directory.is_dir():
             for lower_directory in os.scandir(upper_directory):
                 if lower_directory.is_dir():
@@ -464,7 +494,7 @@ def get_all_cost_files() -> Sequence[Dict[str, Any]]:
 
     :returns: list of cost files"""
     files = []
-    for file in os.scandir(COSTS_SAVE_FOLDER):
+    for file in os.scandir(COSTS_SAVE_FOLDER):  # iterate over all files in the specified folder
         if file.name[-4:] in DELIMITERS:
             files.append({'file': file.path, 'report': file.name[:2]})
     return tuple(files)
@@ -484,9 +514,9 @@ def insert_single_file(file_path: str, vendor: str, year: int, emit_signal: bool
     if connection is not None:
         run_sql(connection, delete, delete_data, emit_signal=False)
         run_sql(connection, replace, replace_data, emit_signal=False)
-        if emit_signal:
-            managedb_signal_handler.emit_database_changed_signal()
         connection.close()
+        if emit_signal:  # only emit the signal after the delete and replace operations both finish
+            managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -518,8 +548,6 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     :param search_parameters: list of search parameters in POS form
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
-    sql_text = 'SELECT * FROM ' + report + VIEW_SUFFIX
-    sql_text += '\nWHERE'
     clauses = [[{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year}],
                [{FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year}]]
     clauses.extend(search_parameters)
@@ -533,15 +561,14 @@ def search_sql_text(report: str, start_year: int, end_year: int,
                 current_text += ' ?'
                 data.append(sub_clause[VALUE_KEY])
             sub_clauses_text.append(current_text)
-        clauses_texts.append('(' + ' OR '.join(sub_clauses_text) + ')')
-    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
-    sql_text += ';'
+        clauses_texts.append(tuple(sub_clauses_text))
+    sql_text = get_sql_select_statement(('*',), (report + VIEW_SUFFIX,), tuple(clauses_texts)) + ';'
     return sql_text, tuple(data)
 
 
-def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str, vendor: str) \
-        -> Tuple[str, Sequence[Any]]:
-    """Makes the SQL statement to search the database for chart data
+def monthly_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
+                                  vendor: str) -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to search the database for monthly chart data
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
@@ -551,14 +578,15 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     :param vendor: the vendor name you want to search for
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
-    sql_text = 'SELECT'
-    chart_fields = get_chart_report_fields_list(report)
+    chart_fields = get_monthly_chart_report_fields_list(report)
     fields = []
+    key_fields = []
     for field in chart_fields:
-        fields.append(field[NAME_KEY])
-    sql_text += '\n\t' + ', '.join(fields)
-    sql_text += '\nFROM ' + report + VIEW_SUFFIX
-    sql_text += '\nWHERE'
+        if CALCULATION_KEY not in field.keys():
+            key_fields.append(field[NAME_KEY])
+            fields.append(field[NAME_KEY])
+        else:
+            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
     clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
                {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
                {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
@@ -567,16 +595,88 @@ def chart_search_sql_text(report: str, start_year: int, end_year: int, name: str
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
-    sql_text += '\n\t' + '\n\tAND '.join(clauses_texts)
-    sql_text += ';'
+    sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
+                                        group_by_fields=tuple(key_fields)) + ';'
+    return sql_text, tuple(data)
+
+
+def yearly_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
+                                 vendor: str) -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to search the database for yearly chart data
+
+    :param report: the kind of the report
+    :param start_year: the starting year of the search
+    :param end_year: the ending year of the search
+    :param name: the name field (database/item/platform/title) value
+    :param metric_type: the metric type value
+    :param vendor: the vendor name you want to search for
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
+    chart_fields = get_yearly_chart_report_fields_list(report)
+    fields = []
+    key_fields = []
+    for field in chart_fields:
+        if CALCULATION_KEY not in field.keys():
+            key_fields.append(field[NAME_KEY])
+            fields.append(field[NAME_KEY])
+        else:
+            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+    clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+               {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
+               {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
+               {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},
+               {FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor}]
+    clauses_texts = []
+    data = []
+    for clause in clauses:
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
+        data.append(clause[VALUE_KEY])
+    sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
+                                        group_by_fields=tuple(key_fields)) + ';'
+    return sql_text, tuple(data)
+
+
+def cost_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str, vendor: str) \
+        -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to search the database for cost chart data
+
+    :param report: the kind of the report
+    :param start_year: the starting year of the search
+    :param end_year: the ending year of the search
+    :param name: the name field (database/item/platform/title) value
+    :param metric_type: the metric type value
+    :param vendor: the vendor name you want to search for
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
+    chart_fields = get_cost_chart_report_fields_list(report)
+    fields = []
+    key_fields = []
+    for field in chart_fields:
+        if CALCULATION_KEY not in field.keys():
+            key_fields.append(field[NAME_KEY])
+            fields.append(field[NAME_KEY])
+        else:
+            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+    clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+               {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
+               {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
+               {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},
+               {FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor}]
+    clauses_texts = []
+    data = []
+    for clause in clauses:
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
+        data.append(clause[VALUE_KEY])
+    sql_text = get_sql_select_statement(tuple(fields), (report + VIEW_SUFFIX,), tuple(clauses_texts),
+                                        group_by_fields=tuple(key_fields)) + ';'
     return sql_text, tuple(data)
 
 
 def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int, metric_type: str,
                                      vendor: str = None, number: int = None) -> Tuple[str, Sequence[Any]]:
-    """Makes the SQL statement to search the database for chart data
+    """Makes the SQL statement to search the database for ranking chart data
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
@@ -588,29 +688,15 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
         for it"""
     name_field = get_field_attributes(report[:2], NAME_FIELD_SWITCHER[report[:2]])
     chart_fields = get_top_number_chart_report_fields_list(report)
-    sql_text = 'SELECT ' + '\n\t' + ',\n\t'.join(['data.' + field[NAME_KEY] for field in chart_fields
-                                                  if field[SOURCE_KEY] == 'data'])
-    sql_text += ',\n\t' + ',\n\t'.join(['totals.' + field[NAME_KEY] for field in chart_fields
-                                        if field[SOURCE_KEY] == 'totals'])
-    data_fields = []
-    totals_fields = [name_field[NAME_KEY]] + list(CHART_KEY_FIELDS)
+    fields = []
     key_fields = []
     for field in chart_fields:
         if field[NAME_KEY] in CHART_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
             key_fields.append(field[NAME_KEY])
-        if field[SOURCE_KEY] == 'data':
-            if CALCULATION_KEY not in field.keys():
-                data_fields.append(field[NAME_KEY])
-            else:
-                data_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
-        if field[SOURCE_KEY] == 'totals':
-            if CALCULATION_KEY not in field.keys():
-                totals_fields.append(field[NAME_KEY])
-            else:
-                totals_fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
-    sql_text += '\nFROM \n\t(SELECT ' + ', '.join(data_fields)
-    sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
-    sql_text += '\n\tWHERE'
+        if CALCULATION_KEY not in field.keys():
+            fields.append(field[NAME_KEY])
+        else:
+            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
     clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
                {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
                {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type}]
@@ -619,25 +705,16 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     clauses_texts = []
     data = []
     for clause in clauses:
-        clauses_texts.append(clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?')
+        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
         data.append(clause[VALUE_KEY])
-    sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
-    sql_text += ') AS ' + 'data' + ' JOIN '
-    sql_text += '\n\t(SELECT ' + ', '.join(totals_fields)
-    sql_text += '\n\tFROM ' + report + VIEW_SUFFIX
-    sql_text += '\n\tWHERE'
-    sql_text += '\n\t\t' + '\n\t\tAND '.join(clauses_texts)
-    sql_text += '\n\tGROUP BY ' + ', '.join(key_fields)
-    data += data
-    sql_text += ') AS ' + 'totals'
-    join_clauses = []
-    for key_field in key_fields:
-        join_clauses.append('data.' + key_field + ' = ' + 'totals.' + key_field)
-    sql_text += ' ON ' + ' AND '.join(join_clauses)
-    if number is not None:
-        sql_text += '\nWHERE ' + RANKING + ' <= ' + '?'
+    if number:
         data.append(number)
-    sql_text += ';'
+    # runs a query as the source of the next query
+    sql_text = get_sql_select_statement(('*',),
+                                        ('(' + get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
+                                                                        group_by_fields=tuple(key_fields),
+                                                                        num_extra_tabs=1) + ')',),
+                                        ((RANKING + ' <= ?',),) if number else (), order_by_fields=(RANKING,)) + ';'
     return sql_text, tuple(data)
 
 
@@ -649,11 +726,30 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
+    sql_text = get_sql_select_statement((name_field,), (report,), ((name_field + ' <> \"\"',), ('vendor' + ' = ?',)),
+                                        order_by_fields=(name_field + ' COLLATE NOCASE ASC',), distinct=True,
+                                        is_multiline=False) + ';'
+    data = (vendor,)
+    return sql_text, data
 
-    sql_text = 'SELECT DISTINCT ' + name_field + ' FROM ' + report \
-               + ' WHERE ' + name_field + ' <> \"\" AND ' + 'vendor' + ' LIKE ?' \
-               + ' ORDER BY ' + name_field + ' COLLATE NOCASE ASC;'
-    return sql_text, (vendor,)
+
+def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end_year: int) \
+        -> Tuple[str, Sequence[Any]]:
+    """Makes the SQL statement to get all the unique name values with costs data in a period for a report and vendor
+
+    :param report: the kind of the report
+    :param vendor: the vendor name of the data in the file
+    :param start_year: the starting year to check for costs data for
+    :param end_year: the ending year to check for costs data for
+    :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
+        for it"""
+    name_field = NAME_FIELD_SWITCHER[report[:2]]
+    sql_text = get_sql_select_statement((name_field,), (report[:2] + COST_TABLE_SUFFIX,),
+                                        ((name_field + ' <> \"\"',), ('vendor' + ' = ?',), ('year' + ' >= ?',),
+                                         ('year' + ' <= ?',)), order_by_fields=(name_field + ' COLLATE NOCASE ASC',),
+                                        distinct=True, is_multiline=False) + ';'
+    data = (vendor, start_year, end_year)
+    return sql_text, data
 
 
 def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Any]]:
@@ -666,18 +762,60 @@ def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> T
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
-    values = []
+    sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS], (report_type + COST_TABLE_SUFFIX,),
+                                        (('vendor' + ' = ?',), ('year' + ' = ?',), (name_field + ' = ?',)),
+                                        is_multiline=False) + ';'
+    values = (vendor, year, name)
+    return sql_text, values
+
+
+def get_sql_select_statement(select_fields: Sequence[str], from_tables: Sequence[str],
+                             where_conditions: Sequence[Sequence[str]] = None, group_by_fields: Sequence[str] = None,
+                             order_by_fields: Sequence[str] = None, distinct: bool = None, num_extra_tabs: int = 0,
+                             is_multiline: bool = True) -> str:
+    """Makes a select SQL statement
+
+    :param select_fields: a list of fields to get; use a list containing only '*' to get all the fields from the tables
+    :param from_tables: a list of tables to get fields from; assumes inner join
+    :param where_conditions: a list of lists of conditions for the WHERE keyword; assumes in POS form
+    :param group_by_fields: a list of fields for the GROUP BY keyword
+    :param order_by_fields: a list of fields for the ORDER BY keyword
+    :param distinct: whether to only get distinct rows from the database
+    :param num_extra_tabs: the number of tabs to put at the start of each line of the statement
+    :param is_multiline: whether or not to break the statement into multiple lines
+    :returns: the SQL statement to send the database"""
+    tabs = '\t' * num_extra_tabs
     sql_text = 'SELECT'
-    fields = [field[NAME_KEY] for field in COST_FIELDS]
-    sql_text += '\n\t' + ',\n\t'.join(fields) + '\nFROM ' + report_type + COST_TABLE_SUFFIX
-    sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = ?'
-    values.append(vendor)
-    sql_text += '\n\tAND ' + 'year' + ' = ?'
-    values.append(year)
-    sql_text += '\n\tAND ' + name_field + ' = ?;'
-    values.append(name)
-    return sql_text, tuple(values)
+    if distinct:
+        sql_text += ' DISTINCT'
+    sql_text += '\n\t' + tabs if is_multiline else ' '
+    sql_text += (',' + ('\n\t' + tabs if is_multiline else ' ')).join(select_fields)
+    sql_text += '\n' + tabs if is_multiline else ' '
+    sql_text += 'FROM'
+    sql_text += '\n\t' + tabs if is_multiline else ' '
+    sql_text += (',' + ('\n\t' + tabs if is_multiline else ' ')).join(from_tables)
+    if where_conditions:
+        sql_text += '\n' + tabs if is_multiline else ' '
+        sql_text += 'WHERE'
+        sql_text += '\n\t' + tabs if is_multiline else ' '
+        conditions_text = []
+        for condition in where_conditions:
+            if len(condition) > 1:
+                conditions_text.append('(' + ' OR '.join(condition) + ')')
+            else:
+                conditions_text.append(condition[0])
+        sql_text += (' AND' + ('\n\t' + tabs if is_multiline else ' ')).join(conditions_text)
+    if group_by_fields:
+        sql_text += '\n' + tabs if is_multiline else ' '
+        sql_text += 'GROUP BY'
+        sql_text += '\n\t' + tabs if is_multiline else ' '
+        sql_text += (',' + ('\n\t' + tabs if is_multiline else ' ')).join(group_by_fields)
+    if order_by_fields:
+        sql_text += '\n' + tabs if is_multiline else ' '
+        sql_text += 'ORDER BY'
+        sql_text += '\n\t' + tabs if is_multiline else ' '
+        sql_text += (',' + ('\n\t' + tabs if is_multiline else ' ')).join(order_by_fields)
+    return sql_text
 
 
 def create_connection(db_file: str) -> sqlite3.Connection:
@@ -695,7 +833,7 @@ def create_connection(db_file: str) -> sqlite3.Connection:
     return connection
 
 
-def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None, 
+def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequence[Any]] = None,
             emit_signal: bool = True):
     """Runs the SQL statement to modify the database
 
@@ -711,7 +849,7 @@ def run_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence[Sequen
             cursor.executemany(sql_text, data)
         else:
             cursor.execute(sql_text)
-        connection.commit()
+        connection.commit()  # commits the changes to the database
         if emit_signal:
             managedb_signal_handler.emit_database_changed_signal()
     except sqlite3.Error as error:
@@ -734,7 +872,7 @@ def run_select_sql(connection: sqlite3.Connection, sql_text: str, data: Sequence
             cursor.execute(sql_text, data)
         else:
             cursor.execute(sql_text)
-        return cursor.fetchall()
+        return cursor.fetchall()  # gets the results
     except sqlite3.Error as error:
         print(error)
 
@@ -754,14 +892,15 @@ def setup_database(drop_tables: bool, emit_signal: bool = True):
     if connection is not None:
         for key in sql_texts:
             if drop_tables:
-                print('DROP ' + key)
+                if ManageDBSettingsHandler.settings.show_debug_messages: print('DROP ' + key)
                 run_sql(connection,
                         'DROP ' + ('VIEW' if key.endswith(VIEW_SUFFIX) else 'TABLE') + ' IF EXISTS ' + key + ';',
                         emit_signal=False)
-            print('CREATE ' + key)
+            if ManageDBSettingsHandler.settings.show_debug_messages: print('CREATE ' + key)
             run_sql(connection, sql_texts[key], emit_signal=False)
-        managedb_signal_handler.emit_database_changed_signal()
         connection.close()
+        if emit_signal:
+            managedb_signal_handler.emit_database_changed_signal()
     else:
         print('Error, no connection')
 
@@ -790,18 +929,17 @@ def backup_costs_data(report_type: str):
         headers = []
         for field in get_cost_fields_list(report_type):
             headers.append(field[NAME_KEY])
-        sql_text = 'SELECT ' + ', '.join(headers) + ' FROM ' + report_type + COST_TABLE_SUFFIX
-        sql_text += ' ORDER BY ' + ', '.join(COSTS_KEY_FIELDS) + ', ' + NAME_FIELD_SWITCHER[report_type] + ';'
+        sql_text = get_sql_select_statement(('*',), (report_type + COST_TABLE_SUFFIX,),
+                                            order_by_fields=COSTS_KEY_FIELDS + (
+                                            NAME_FIELD_SWITCHER[report_type] + ' COLLATE NOCASE ASC',),
+                                            is_multiline=False)
         results = run_select_sql(connection, sql_text)
+        connection.close()
         results.insert(0, headers)
         if ManageDBSettingsHandler.settings.show_debug_messages:
             print('CREATE ' + COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX)
-        file = open(COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv', 'w', newline="", encoding='utf-8-sig')
-        if file.mode == 'w':
-            output = csv.writer(file, delimiter='\t', quotechar='\"')
-            for row in results:
-                output.writerow(row)
-        connection.close()
+        file_name = COSTS_SAVE_FOLDER + report_type + COST_TABLE_SUFFIX + '.tsv'
+        save_data_as_tsv(file_name, results)
     else:
         print('Error, no connection')
 
@@ -831,7 +969,7 @@ class UpdateDatabaseProgressDialogController:
         :param recreate_tables: whether or not to drop the tables and recreated the tables before inserting"""
         self.update_database_progress_dialog = QDialog(self.parent_widget)
 
-        dialog_ui = UpdateDatabaseProgressDialog.Ui_restore_database_dialog()
+        dialog_ui = UpdateDatabaseProgressDialog.Ui_update_database_dialog()
         dialog_ui.setupUi(self.update_database_progress_dialog)
 
         self.update_status_label = dialog_ui.status_label

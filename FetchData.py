@@ -572,54 +572,53 @@ class ReportRow:
 
     :param begin_date: The begin date of the request, used to populate the month columns in the report
     :param end_date: The end date of the request, used to populate the month columns in the report
-    :param empty_cell: The default value for an empty cell
     """
-    def __init__(self, begin_date: QDate, end_date: QDate, empty_cell: str):
-        self.database = empty_cell
-        self.title = empty_cell
-        self.item = empty_cell
-        self.publisher = empty_cell
-        self.publisher_id = empty_cell
-        self.platform = empty_cell
-        self.authors = empty_cell
-        self.publication_date = empty_cell
-        self.article_version = empty_cell
-        self.doi = empty_cell
-        self.proprietary_id = empty_cell
-        self.online_issn = empty_cell
-        self.print_issn = empty_cell
-        self.linking_issn = empty_cell
-        self.isbn = empty_cell
-        self.uri = empty_cell
-        self.parent_title = empty_cell
-        self.parent_authors = empty_cell
-        self.parent_publication_date = empty_cell
-        self.parent_article_version = empty_cell
-        self.parent_data_type = empty_cell
-        self.parent_doi = empty_cell
-        self.parent_proprietary_id = empty_cell
-        self.parent_online_issn = empty_cell
-        self.parent_print_issn = empty_cell
-        self.parent_linking_issn = empty_cell
-        self.parent_isbn = empty_cell
-        self.parent_uri = empty_cell
-        self.component_title = empty_cell
-        self.component_authors = empty_cell
-        self.component_publication_date = empty_cell
-        self.component_data_type = empty_cell
-        self.component_doi = empty_cell
-        self.component_proprietary_id = empty_cell
-        self.component_online_issn = empty_cell
-        self.component_print_issn = empty_cell
-        self.component_linking_issn = empty_cell
-        self.component_isbn = empty_cell
-        self.component_uri = empty_cell
-        self.data_type = empty_cell
-        self.section_type = empty_cell
-        self.yop = empty_cell
-        self.access_type = empty_cell
-        self.access_method = empty_cell
-        self.metric_type = empty_cell
+    def __init__(self, begin_date: QDate, end_date: QDate):
+        self.database = ""
+        self.title = ""
+        self.item = ""
+        self.publisher = ""
+        self.publisher_id = ""
+        self.platform = ""
+        self.authors = ""
+        self.publication_date = ""
+        self.article_version = ""
+        self.doi = ""
+        self.proprietary_id = ""
+        self.online_issn = ""
+        self.print_issn = ""
+        self.linking_issn = ""
+        self.isbn = ""
+        self.uri = ""
+        self.parent_title = ""
+        self.parent_authors = ""
+        self.parent_publication_date = ""
+        self.parent_article_version = ""
+        self.parent_data_type = ""
+        self.parent_doi = ""
+        self.parent_proprietary_id = ""
+        self.parent_online_issn = ""
+        self.parent_print_issn = ""
+        self.parent_linking_issn = ""
+        self.parent_isbn = ""
+        self.parent_uri = ""
+        self.component_title = ""
+        self.component_authors = ""
+        self.component_publication_date = ""
+        self.component_data_type = ""
+        self.component_doi = ""
+        self.component_proprietary_id = ""
+        self.component_online_issn = ""
+        self.component_print_issn = ""
+        self.component_linking_issn = ""
+        self.component_isbn = ""
+        self.component_uri = ""
+        self.data_type = ""
+        self.section_type = ""
+        self.yop = ""
+        self.access_type = ""
+        self.access_method = ""
+        self.metric_type = ""
         self.total_count = 0
 
         self.month_counts = {}
@@ -770,6 +769,8 @@ class FetchReportsAbstract:
         self.vendor_workers[worker_id] = vendor_worker, vendor_thread
         vendor_worker.moveToThread(vendor_thread)
         vendor_thread.started.connect(vendor_worker.work)
+        vendor_thread.finished.connect(vendor_thread.deleteLater)
+
         vendor_thread.start()
 
         if self.settings.show_debug_messages: print(f"{worker_id}: Added a process, total processes: {self.total_processes}")
@@ -886,6 +887,7 @@ class FetchReportsAbstract:
                                                   'vendor': process_result.vendor.name,
                                                   'year': process_result.year})
 
+        worker.deleteLater()
         thread.quit()
         thread.wait()
         self.vendor_workers.pop(worker_id, None)
@@ -1037,7 +1039,7 @@ class FetchReportsAbstract:
     def start_updating_database(self) -> bool:
         """Starts a thread to update the database. Returns True if successfully started"""
         if self.is_updating_database:
-            print("Error, already running")
+            if self.settings.show_debug_messages: print("Database is already updating")
             return False
 
         self.is_updating_database = True
@@ -1127,7 +1129,39 @@ class FetchReportsController(FetchReportsAbstract):
 
         self.report_types_help_btn = fetch_reports_ui.report_types_help_button
         self.report_types_help_btn.clicked.connect(
-            lambda: GeneralUtils.show_message("Only reports supported by selected vendor will be retrieved!"))
+            lambda: GeneralUtils.show_message("Only reports supported by each respective vendor will be retrieved, "
+                                              "and unsupported reports will be listed in \"Expand\" results"))
+        # endregion
+
+        # region Custom Directory
+        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
+        self.custom_dir_frame.hide()
+        self.custom_dir_message_frame = fetch_reports_ui.frame
+        self.custom_dir_message_frame.hide()
+        self.custom_dir_message_frame2 = fetch_reports_ui.frame_2
+        self.custom_dir_message_frame2.hide()
+        self.custom_dir_frame_message1 = fetch_reports_ui.label_38
+        self.custom_dir_frame_message2 = fetch_reports_ui.label
+        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
+        self.custom_dir_edit.setText(self.settings.other_directory)
+        self.custom_dir_button = fetch_reports_ui.custom_dir_button
+        self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.date_range_help_btn = fetch_reports_ui.date_range_help_button
+        self.date_range_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("Reports run for date ranges that represent a normal Jan-Dec calendar" 
+                                              " year, or Jan-last month for calendar years in progress, will be added" 
+                                              " to (or updated in) the search database. All other date ranges will be " 
+                                              "saved in the specified folder but not added to the search database."))
+        self.date_range_help_btn2 = fetch_reports_ui.date_range_help_button2
+        self.date_range_help_btn2.clicked.connect(
+            lambda: GeneralUtils.show_message("Reports run for date ranges that represent a normal Jan-Dec calendar"
+                                              " year, or Jan-last month for calendar years in progress, will be added"
+                                              " to (or updated in) the search database. All other date ranges will be "
+                                              "saved in the specified folder but not added to the search database."))
+        self.date_range_help_btn3 = fetch_reports_ui.date_range_help_button3
+        self.date_range_help_btn3.clicked.connect(
+            lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default"))
+
         # endregion
 
         # region Date Edits
@@ -1139,30 +1173,24 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date_edit_year.setDate(self.adv_begin_date)
         self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_begin"))
 
-        self.begin_date_edit_month = fetch_reports_ui.begin_date_edit_fetch_month
-        self.begin_date_edit_month.setDate(self.adv_begin_date)
-        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_begin"))
-
         self.end_date_edit_year = fetch_reports_ui.end_date_edit_fetch_year
         self.end_date_edit_year.setDate(self.adv_end_date)
         self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "adv_end"))
 
-        self.end_date_edit_month = fetch_reports_ui.end_date_edit_fetch_month
-        self.end_date_edit_month.setDate(self.adv_end_date)
-        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "adv_end"))
-        # endregion
+        self.begin_month_combo_box = fetch_reports_ui.begin_month_combo_box
+        for month in MONTH_NAMES:
+            self.begin_month_combo_box.addItem(month)
+        self.begin_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_begin"))
+        self.begin_month_combo_box.setCurrentIndex(self.adv_begin_date.month() - 1)
 
-        # region Custom Directory
-        self.custom_dir_frame = fetch_reports_ui.custom_dir_frame
-        self.custom_dir_frame.hide()
-        self.custom_dir_frame_message1 = fetch_reports_ui.label_38
-        self.custom_dir_frame_message1.hide()
-        self.custom_dir_frame_message2 = fetch_reports_ui.label
-        self.custom_dir_frame_message2.hide()
-        self.custom_dir_edit = fetch_reports_ui.custom_dir_edit
-        self.custom_dir_edit.setText(self.settings.other_directory)
-        self.custom_dir_button = fetch_reports_ui.custom_dir_button
-        self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.end_month_combo_box = fetch_reports_ui.end_month_combo_box
+        for month in MONTH_NAMES:
+            self.end_month_combo_box.addItem(month)
+        self.end_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "adv_end"))
+        self.end_month_combo_box.setCurrentIndex(self.adv_end_date.month() - 1)
+
         # endregion
 
     def update_vendors_ui(self):
@@ -1203,42 +1231,41 @@ class FetchReportsController(FetchReportsAbstract):
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
-            self.custom_dir_frame_message1.hide()
-            self.custom_dir_frame_message2.hide()
+            self.custom_dir_message_frame.hide()
+            self.custom_dir_message_frame2.hide()
         else:
             self.custom_dir_frame.show()
             if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
-                self.custom_dir_frame_message2.show()
-                self.custom_dir_frame_message1.hide()
+                self.custom_dir_message_frame2.show()
+                self.custom_dir_message_frame.hide()
             else:
-                self.custom_dir_frame_message1.show()
-                self.custom_dir_frame_message2.hide()
+                self.custom_dir_message_frame.show()
+                self.custom_dir_message_frame2.hide()
 
-    def on_date_month_changed(self, date: QDate, date_type: str):
+    def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed
 
-        :param date: The new date
+        :param month: The new month
         :param date_type: The date to be updated
         """
         if date_type == "adv_begin":
-            self.adv_begin_date = QDate(self.adv_begin_date.year(), date.month(), self.adv_begin_date.day())
+            self.adv_begin_date = QDate(self.adv_begin_date.year(), month, self.adv_begin_date.day())
 
         elif date_type == "adv_end":
-            self.adv_end_date = QDate(self.adv_end_date.year(), date.month(), self.adv_end_date.day())
+            self.adv_end_date = QDate(self.adv_end_date.year(), month, self.adv_end_date.day())
 
         if self.is_yearly_range(self.adv_begin_date, self.adv_end_date):
             self.custom_dir_frame.hide()
-            self.custom_dir_frame_message1.hide()
-            self.custom_dir_frame_message2.hide()
+            self.custom_dir_message_frame.hide()
+            self.custom_dir_message_frame2.hide()
         else:
             self.custom_dir_frame.show()
             if self.custom_dir_frame_message_show(self.adv_begin_date, self.adv_end_date):
-                self.custom_dir_frame_message2.show()
-                self.custom_dir_frame_message1.hide()
+                self.custom_dir_message_frame2.show()
+                self.custom_dir_message_frame.hide()
             else:
-                self.custom_dir_frame_message1.show()
-                self.custom_dir_frame_message2.hide()
-
+                self.custom_dir_message_frame.show()
+                self.custom_dir_message_frame2.hide()
 
     def custom_dir_frame_message_show(self, begin_date: QDate, end_date: QDate) -> bool:
         """Checks which message will show on the custom dir frame
@@ -1403,6 +1430,14 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # region Options
         self.options_frame = fetch_special_reports_ui.options_frame
         self.options_layout = self.options_frame.layout()
+        help_message = "The 'show' checkboxes will break down your data by displaying extra columns with the " \
+                       "selected attributes (usually results in more lines per item)\n" \
+                       "Filters will limit your data to just the selected options (implies also showing that " \
+                       "attribute).\n" \
+                       "You can show the attribute breakdown without selecting filtering to specific values."
+        fetch_special_reports_ui.options_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message(help_message)
+        )
         # endregion
 
         # region Report Types
@@ -1422,21 +1457,32 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         # endregion
 
         # region Date Edits
+        self.date_range_help_btn = fetch_special_reports_ui.date_range_help_button
+        self.date_range_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("Many vendors do not support a date range longer than 12 consecutive months."))
+
         self.begin_date_edit_year = fetch_special_reports_ui.begin_date_edit_special_year
         self.begin_date_edit_year.setDate(self.begin_date)
         self.begin_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "begin_date"))
-
-        self.begin_date_edit_month = fetch_special_reports_ui.begin_date_edit_special_month
-        self.begin_date_edit_month.setDate(self.begin_date)
-        self.begin_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "begin_date"))
 
         self.end_date_edit_year = fetch_special_reports_ui.end_date_edit_special_year
         self.end_date_edit_year.setDate(self.end_date)
         self.end_date_edit_year.dateChanged.connect(lambda date: self.on_date_year_changed(date, "end_date"))
 
-        self.end_date_edit_month = fetch_special_reports_ui.end_date_edit_special_month
-        self.end_date_edit_month.setDate(self.end_date)
-        self.end_date_edit_month.dateChanged.connect(lambda date: self.on_date_month_changed(date, "end_date"))
+        self.begin_month_combo_box = fetch_special_reports_ui.begin_month_combo_box
+        for month in MONTH_NAMES:
+            self.begin_month_combo_box.addItem(month)
+        self.begin_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "begin_date"))
+        self.begin_month_combo_box.setCurrentIndex(self.begin_date.month() - 1)
+
+        self.end_month_combo_box = fetch_special_reports_ui.end_month_combo_box
+        for month in MONTH_NAMES:
+            self.end_month_combo_box.addItem(month)
+        self.end_month_combo_box.currentIndexChanged.connect(
+            lambda index: self.on_date_month_changed(index + 1, "end_date"))
+        self.end_month_combo_box.setCurrentIndex(self.end_date.month() - 1)
+
         # endregion
 
         # region Custom Directory
@@ -1445,6 +1491,9 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         self.custom_dir_edit.setText(self.settings.other_directory)
         self.custom_dir_button = fetch_special_reports_ui.custom_dir_button
         self.custom_dir_button.clicked.connect(self.on_custom_dir_clicked)
+        self.custom_dir_help_btn = fetch_special_reports_ui.custom_dir_help_button
+        self.custom_dir_help_btn.clicked.connect(
+            lambda: GeneralUtils.show_message("See Other Reports Directory setting in Settings for default."))
         # endregion
 
     def update_vendors_ui(self):
@@ -1477,26 +1526,16 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             #                             self.begin_date.day())
             #     self.begin_date_edit.setDate(self.begin_date)
 
-    def on_date_month_changed(self, date: QDate, date_type: str):
+    def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed
 
-        :param date: The new date
+        :param month: The new month
         :param date_type: The date to be updated
         """
         if date_type == "begin_date":
-            self.begin_date = QDate(self.begin_date.year(),date.month(),self.begin_date.day())
-            # if self.begin_date.year() != self.end_date.year():
-            #     self.end_date.setDate(self.begin_date.year(),
-            #                           self.end_date.month(),
-            #                           self.end_date.day())
-            #     self.end_date_edit.setDate(self.end_date)
+            self.begin_date = QDate(self.begin_date.year(), month, self.begin_date.day())
         elif date_type == "end_date":
-            self.end_date = QDate(self.end_date.year(),date.month(),self.end_date.day())
-            # if self.end_date.year() != self.begin_date.year():
-            #     self.begin_date.setDate(self.end_date.year(),
-            #                             self.begin_date.month(),
-            #                             self.begin_date.day())
-            #     self.begin_date_edit.setDate(self.begin_date)
+            self.end_date = QDate(self.end_date.year(), month, self.end_date.day())
 
     def on_report_type_selected(self, major_report_type: MajorReportType):
         """Handles the signal emitted when a report type is selected
@@ -1891,6 +1930,8 @@ class VendorWorker(QObject):
         self.report_workers[worker_id] = report_worker, report_thread
         report_worker.moveToThread(report_thread)
         report_thread.started.connect(report_worker.work)
+        report_thread.finished.connect(report_thread.deleteLater)
+
         report_thread.start()
 
     def check_for_exception(self, json_response) -> list:
@@ -1936,6 +1977,7 @@ class VendorWorker(QObject):
         worker, thread = self.report_workers[worker_id]
 
         self.report_process_results.append(worker.process_result)
+        worker.deleteLater()
         thread.quit()
         thread.wait()
         self.report_workers.pop(worker_id, None)
@@ -1970,7 +2012,6 @@ class ReportWorker(QObject):
         self.end_date = request_data.end_date
         self.show_debug = request_data.settings.show_debug_messages
         self.request_timeout = request_data.settings.request_timeout
-        self.empty_cell = request_data.settings.empty_cell
         self.user_agent = request_data.settings.user_agent
         self.save_dir = request_data.save_location
         self.special_options = request_data.special_options
@@ -2152,7 +2193,7 @@ class ReportWorker(QObject):
                 for instance in performance.instances:
                     metric_type = instance.metric_type
                     if metric_type not in metric_row_dict:
-                        metric_row = ReportRow(self.begin_date, self.end_date, self.empty_cell)
+                        metric_row = ReportRow(self.begin_date, self.end_date)
                         metric_row.metric_type = metric_type
 
                         metric_row_dict[metric_type] = metric_row
@@ -2339,15 +2380,15 @@ class ReportWorker(QObject):
                 item_component: ItemComponentModel
                 for item_component in report_item.item_components:
                     component_dict = {
-                        "component_title": self.empty_cell,
-                        "component_authors": self.empty_cell,
-                        "component_publication_date": self.empty_cell,
-                        "component_data_type": self.empty_cell,
-                        "component_doi": self.empty_cell,
-                        "component_proprietary_id": self.empty_cell,
-                        "component_isbn": self.empty_cell,
-                        "component_print_issn": self.empty_cell,
-                        "component_online_issn": self.empty_cell,
+                        "component_title": "",
+                        "component_authors": "",
+                        "component_publication_date": "",
+                        "component_data_type": "",
+                        "component_doi": "",
+                        "component_proprietary_id": "",
+                        "component_isbn": "",
+                        "component_print_issn": "",
+                        "component_online_issn": "",
                         "component_uri": ""
                     }
 
@@ -3022,3 +3063,5 @@ class ReportWorker(QObject):
     def notify_worker_finished(self):
         """Notifies any listeners that this worker has finished"""
         self.worker_finished_signal.emit(self.worker_id)
+
+# El Psy Kongroo

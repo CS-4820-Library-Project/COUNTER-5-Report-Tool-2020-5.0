@@ -6,8 +6,8 @@ import ctypes
 import csv
 from os import path, makedirs
 from PyQt5.QtCore import QModelIndex, QDate, Qt
-from PyQt5.QtWidgets import QWidget, QDialog
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
+from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import QtWidgets
 
 import GeneralUtils
@@ -191,7 +191,6 @@ class ImportReportController:
                     if cells:
                         if cells[0].strip():
                             raise Exception('File has invalid header (not enough blank rows)')
-                print(report_type)
                 if header['report_id'] != report_type:
                     raise Exception('File has invalid header (wrong Report_Id)')
                 if not header['created']:
@@ -248,6 +247,10 @@ class ImportReportController:
         report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
         report_result_ui.setupUi(report_result_widget)
 
+        button_box = QtWidgets.QDialogButtonBox(QDialogButtonBox.Ok, self.result_dialog)
+        button_box.setCenterButtons(True)
+        button_box.accepted.connect(self.result_dialog.accept)
+
         vendor = process_result.vendor
         report_type = process_result.report_type
 
@@ -275,6 +278,7 @@ class ImportReportController:
             report_result_ui.message_label.setText(process_result.message)
 
         vertical_layout.addWidget(report_result_widget)
+        vertical_layout.addWidget(button_box)
         self.result_dialog.show()
 
 

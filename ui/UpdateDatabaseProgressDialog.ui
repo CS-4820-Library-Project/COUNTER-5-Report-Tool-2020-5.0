@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>restore_database_dialog</class>
- <widget class="QDialog" name="restore_database_dialog">
+ <class>update_database_dialog</class>
+ <widget class="QDialog" name="update_database_dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>433</width>
-    <height>348</height>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Restore Database</string>
+   <string>Update Database</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -45,7 +45,7 @@
         <x>0</x>
         <y>0</y>
         <width>387</width>
-        <height>126</height>
+        <height>174</height>
        </rect>
       </property>
      </widget>
@@ -68,7 +68,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>restore_database_dialog</receiver>
+   <receiver>update_database_dialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -84,7 +84,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>restore_database_dialog</receiver>
+   <receiver>update_database_dialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

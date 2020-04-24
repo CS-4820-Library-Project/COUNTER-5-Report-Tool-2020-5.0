@@ -1,14 +1,13 @@
-import csv
 import os
 import sip
 import json
-from typing import Tuple, Dict, Sequence, Any
+from typing import Tuple, Dict
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel
 
 import ManageDB
 from Settings import SettingsModel
-from ui import SearchTab, SearchAndClauseFrame, SearchOrClauseFrame
+from ui import SearchTab, SearchAndFrame, SearchOrFrame
 from Constants import *
 from GeneralUtils import *
 
@@ -39,10 +38,8 @@ class SearchController:
         self.search_button = search_ui.search_button
         self.search_button.clicked.connect(self.search)
 
-        self.open_results_file_radioButton = search_ui.open_file_radioButton
-        self.open_results_folder_radioButton = search_ui.open_folder_radioButton
-        self.open_results_both_radioButton = search_ui.open_both_radioButton
-        self.dont_open_results_radioButton = search_ui.dont_open_radioButton
+        self.open_results_file_checkbox = search_ui.search_open_file_checkbox
+        self.open_results_folder_checkbox = search_ui.search_open_folder_checkbox
 
         # set up export button
         self.export_button = search_ui.search_export_button
@@ -57,6 +54,8 @@ class SearchController:
             """Invoked to add an and clause containing an or clause to the search"""
             and_clause = self.add_and_clause()
             self.add_or_clause(and_clause)
+            self.hide_or_label_in_first_or_clause(and_clause)
+            self.hide_and_label_in_first_and_clause()
 
         self.add_and_button = search_ui.search_add_and_button
         self.add_and_button.clicked.connect(add_and_and_or_clause)
@@ -87,16 +86,17 @@ class SearchController:
                                                                       QSizePolicy.Expanding))
         self.and_clause_parameters_scrollarea.setWidget(self.and_clause_parameters_frame)
 
-    def add_and_clause(self) -> SearchAndClauseFrame.Ui_search_and_clause_parameter_frame:
+    def add_and_clause(self) -> SearchAndFrame.Ui_search_and_clause_parameter_frame:
         """Adds an and clause to the search"""
         and_clause = QFrame()
-        and_clause_ui = SearchAndClauseFrame.Ui_search_and_clause_parameter_frame()
+        and_clause_ui = SearchAndFrame.Ui_search_and_clause_parameter_frame()
         and_clause_ui.setupUi(and_clause)
 
         # set up add or clause button
         def add_or_to_this_and():
             """Adds an or clause to this and clause"""
             self.add_or_clause(and_clause_ui)
+            self.hide_or_label_in_first_or_clause(and_clause_ui)
 
         and_clause_ui.search_add_or_clause_button.clicked.connect(add_or_to_this_and)
 
@@ -105,6 +105,8 @@ class SearchController:
             """Removes this and clause"""
             self.and_clause_parameters_frame.layout().removeWidget(and_clause)
             sip.delete(and_clause)
+            self.hide_and_label_in_first_and_clause()
+            self.and_clause_parameters_frame.repaint()
 
         and_clause_ui.search_remove_and_clause_button.clicked.connect(remove_this_and)
 
@@ -114,13 +116,19 @@ class SearchController:
 
         return and_clause_ui
 
-    def add_or_clause(self, and_clause: SearchAndClauseFrame.Ui_search_and_clause_parameter_frame) \
-            -> SearchOrClauseFrame.Ui_search_or_clause_parameter_frame:
+    def hide_and_label_in_first_and_clause(self):
+        """Hides the and label for the first and clause in the search"""
+        and_clause = self.and_clause_parameters_frame.findChild(QFrame, 'search_and_clause_parameter_frame')
+        if and_clause:
+            and_clause.findChild(QLabel, "search_and_label").hide()
+
+    def add_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame) \
+            -> SearchOrFrame.Ui_search_or_clause_parameter_frame:
         """Adds an or clause to the search
 
         :param and_clause: the and clause the or clause is added to"""
         or_clause = QFrame()
-        or_clause_ui = SearchOrClauseFrame.Ui_search_or_clause_parameter_frame()
+        or_clause_ui = SearchOrFrame.Ui_search_or_clause_parameter_frame()
         or_clause_ui.setupUi(or_clause)
 
         # fill field combobox
@@ -167,6 +175,8 @@ class SearchController:
             """Removes this or clause"""
             and_clause.search_or_clause_parameters_frame.layout().removeWidget(or_clause)
             sip.delete(or_clause)
+            self.hide_or_label_in_first_or_clause(and_clause)
+            and_clause.search_or_clause_parameters_frame.repaint()
 
         or_clause_ui.search_remove_or_clause_button.clicked.connect(remove_this_or)
 
@@ -174,6 +184,14 @@ class SearchController:
         and_clause.search_or_clause_parameters_frame.layout().addWidget(or_clause)
 
         return or_clause_ui
+
+    def hide_or_label_in_first_or_clause(self, and_clause: SearchAndFrame.Ui_search_and_clause_parameter_frame):
+        """Hides the or label for the first or clause in an and clause
+
+        :param and_clause: the and clause"""
+        or_clause = and_clause.search_or_clause_parameters_frame.findChild(QFrame, 'search_or_clause_parameter_frame')
+        if or_clause:
+            or_clause.findChild(QLabel, "search_or_label").hide()
 
     def export_parameters(self):
         """Exports the current search parameters to the selected file"""
@@ -206,7 +224,7 @@ class SearchController:
                     or_clause = self.add_or_clause(and_clause)
                     or_clause.search_field_parameter_combobox.setCurrentText(sub_clause[FIELD_KEY])
                     or_clause.search_comparison_parameter_combobox.setCurrentText(sub_clause[COMPARISON_KEY])
-                    or_clause.search_value_parameter_lineedit.setText(sub_clause[VALUE_KEY])
+                    or_clause.search_value_parameter_lineedit.setText(str(sub_clause[VALUE_KEY]))
 
     def search(self):
         """Queries the database based on the current search parameters and saves the results to the selected file"""
@@ -226,28 +244,16 @@ class SearchController:
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 results = ManageDB.run_select_sql(connection, sql_text, data)
+                connection.close()
                 results.insert(0, headers)
                 if self.settings.show_debug_messages: print(results)
-                file = open(file_name, 'w', newline="", encoding='utf-8-sig')
-                if file.mode == 'w':
-                    output = csv.writer(file, delimiter='\t', quotechar='\"')
-                    for row in results:
-                        output.writerow(row)
-
-                    if self.open_results_file_radioButton.isChecked() or self.open_results_both_radioButton.isChecked():
-                        open_file_or_dir(file_name)
-
-                    if self.open_results_folder_radioButton.isChecked() \
-                            or self.open_results_both_radioButton.isChecked():
-                        open_file_or_dir(os.path.dirname(file_name))
-
-                    if self.dont_open_results_radioButton.isChecked():
-                        show_message('Results saved to ' + file_name)
-
-                else:
-                    print('Error: could not open file ' + file_name)
-
-                connection.close()
+                save_data_as_tsv(file_name, results)
+                if self.open_results_folder_checkbox.isChecked():
+                    open_file_or_dir(os.path.dirname(file_name))
+                if self.open_results_file_checkbox.isChecked():
+                    open_file_or_dir(file_name)
+                if not self.open_results_file_checkbox.isChecked():
+                    show_message('Results saved to ' + file_name)
             else:
                 print('Error, no connection')
         else:

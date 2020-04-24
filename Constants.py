@@ -384,10 +384,13 @@ NAME_FIELD_SWITCHER = {'DR': 'database', 'IR': 'item', 'PR': 'platform', 'TR': '
 
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
+MONTH_CALCULATION = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN {} THEN ' + 'metric' + ' END), 0)'
 
 YEAR_TOTAL = 'reporting_period_total'
+YEAR_TOTAL_CALCULATION = 'SUM(' + 'metric' + ')'
 
 RANKING = 'ranking'
+RANKING_CALCULATION = 'RANK() OVER(ORDER BY ' + 'SUM(' + 'metric' + ')' + ' DESC)'
 
 VIEW_SUFFIX = '_view'
 COST_TABLE_SUFFIX = '_costs'
@@ -396,6 +399,7 @@ FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
 FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
+FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_NOT_IN_CHARTS + ('year',)
 
 COSTS_KEY_FIELDS = ('vendor', 'year')
 CHART_KEY_FIELDS = ('vendor', 'metric_type')
@@ -423,7 +427,11 @@ CSV_FILTER = ('CSV files (*.csv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
+
 # region Variable Constants for FetchData
+MONTH_NAMES = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December")
+
 MASTER_REPORTS = ("DR", "IR", "PR", "TR")
 
 
@@ -572,7 +580,7 @@ class CompletionStatus(Enum):
 # endregion
 
 
-# region Variable Constants for FetchData
+# region Variable Constants for Settings
 SETTINGS_FILE_DIR = "./all_data/settings/"
 SETTINGS_FILE_NAME = "settings.dat"
 
@@ -582,9 +590,17 @@ YEARLY_DIR = "./all_data/yearly_files/"
 OTHER_DIR = "./all_data/other_files/"
 REQUEST_INTERVAL = 3  # Seconds
 REQUEST_TIMEOUT = 120  # Seconds
-CONCURRENT_VENDORS = 5
-CONCURRENT_REPORTS = 5
-EMPTY_CELL = ""
+CONCURRENT_VENDORS = 2
+CONCURRENT_REPORTS = 2
 USER_AGENT = "Mozilla/5.0 Firefox/73.0 Chrome/80.0.3987.132 Safari/605.1.15"
 DEFAULT_CURRENCY = 'USD'
+# endregion
+
+
+# region Variable Constants for ManageVendors
+VENDORS_FILE_DIR = "./all_data/vendor_manager/"
+VENDORS_FILE_NAME = "vendors.dat"
+VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
+
+EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 # endregion

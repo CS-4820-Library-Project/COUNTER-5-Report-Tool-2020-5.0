@@ -2,9 +2,13 @@ import webbrowser
 import shlex
 import subprocess
 import platform
+import csv
+from typing import Sequence, Any
 from os import path, makedirs, system
 from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
 from PyQt5.QtCore import QDate
+
+main_window: QWidget = None
 
 
 class JsonModel:
@@ -29,22 +33,22 @@ def read_json_file(file_path: str) -> str:
         file = open(file_path, 'r', encoding='utf-8-sig')
         json_string = file.read()
         file.close()
-    except IOError as e:
-        print(e)
+    except IOError:
+        pass
     finally:
         return json_string
 
 
-def show_message(message: str, parent: QWidget = None):
-    message_box = QMessageBox(parent)
+def show_message(message: str):
+    message_box = QMessageBox(main_window)
     message_box.setMinimumSize(800, 800)
-    message_box.setWindowTitle("Message")
+    message_box.setWindowTitle("Info")
     message_box.setText(message)
     message_box.exec_()
 
 
-def ask_confirmation(message: str = 'Are you sure you want to continue?', parent: QWidget = None):
-    reply = QMessageBox.question(parent, "Confirm", message, QMessageBox.Yes, QMessageBox.No)
+def ask_confirmation(message: str = 'Are you sure you want to continue?') -> bool:
+    reply = QMessageBox.question(main_window, "Confirm", message, QMessageBox.Yes, QMessageBox.No)
     return reply == QMessageBox.Yes
 
 
@@ -62,7 +66,7 @@ def open_file_or_dir(target_path: str):
 
 def choose_file(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog()
+    dialog = QFileDialog(main_window, directory=".")
     dialog.setFileMode(QFileDialog.ExistingFile)
     dialog.setNameFilters(name_filters)
     if dialog.exec_():
@@ -73,7 +77,7 @@ def choose_file(name_filters) -> str:
 
 def choose_directory() -> str:
     dir_path = ""
-    dialog = QFileDialog()
+    dialog = QFileDialog(main_window, directory=".")
     dialog.setFileMode(QFileDialog.Directory)
     if dialog.exec_():
         dir_path = dialog.selectedFiles()[0] + "/"
@@ -83,7 +87,7 @@ def choose_directory() -> str:
 
 def choose_save(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog()
+    dialog = QFileDialog(main_window, directory=".")
     dialog.setFileMode(QFileDialog.AnyFile)
     dialog.setAcceptMode(QFileDialog.AcceptSave)
     dialog.setNameFilters(name_filters)
@@ -119,3 +123,18 @@ def get_other_file_dir(base_path: str, vendor_name: str) -> str:
 
 def get_other_file_name(vendor_name: str, report_type: str, begin_date: QDate, end_date: QDate) -> str:
     return f"{vendor_name}_{report_type}_{begin_date.toString('yyyy-MMM')}_{end_date.toString('yyyy-MMM')}.tsv"
+
+
+def save_data_as_tsv(file_name: str, data: Sequence[Any]):
+    """Saves data in a TSV file
+
+    :param file_name: the name and location to save the results at
+    :param data: the data to save in the file"""
+    file = open(file_name, 'w', newline="", encoding='utf-8-sig')
+    if file.mode == 'w':
+        output = csv.writer(file, delimiter='\t', quotechar='\"')
+        for row in data:
+            output.writerow(row)
+        file.close()
+    else:
+        print('Error: could not open file ' + file_name)

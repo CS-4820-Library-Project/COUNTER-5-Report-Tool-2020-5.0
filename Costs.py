@@ -1,6 +1,6 @@
 import json
-from typing import Sequence
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 
 import ManageDB
 import ManageVendors
@@ -71,9 +71,13 @@ class CostsController:
         self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
         self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
+        self.names = []
+        self.costs_names = []
+
         self.on_report_parameter_changed()
-        self.on_vendor_parameter_changed()
-        self.on_year_parameter_changed()
+        self.year_parameter = int(self.year_parameter_dateedit.text())
+        self.vendor_parameter = self.vendor_parameter_combobox.currentText()
+        self.fill_names()
 
         self.cost_in_original_currency_doublespinbox.valueChanged.connect(self.on_cost_in_original_currency_changed)
         self.original_currency_combobox.currentTextChanged.connect(self.on_original_currency_changed)
@@ -81,20 +85,18 @@ class CostsController:
         self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
             self.on_cost_in_local_currency_with_tax_changed)
 
-        self.clear_costs()
-
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
 
     def update_settings(self, settings: SettingsModel):
-        """Called when the settings are saved
+        """Invoked when the settings are saved
 
         :param settings: the new settings"""
         self.settings = settings
         self.load_currency_list()
 
     def database_updated(self, code: int):
-        """Called when the database is updated
+        """Invoked when the database is updated
 
         :param code: the exit code of the update"""
         self.fill_names()
@@ -130,18 +132,45 @@ class CostsController:
     def on_year_parameter_changed(self):
         """Invoked when the year parameter changes"""
         self.year_parameter = int(self.year_parameter_dateedit.text())
+        self.load_costs()
+        self.fill_names(True)
 
-    def fill_names(self):
+    def fill_names(self, only_get_costs_names: bool = False):
         """Fills the name field combobox"""
         self.name_parameter_combobox.clear()
-        results = []
-        sql_text, data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text, data)
-            if self.settings.show_debug_messages: print(results)
+            if not only_get_costs_names:
+                names_sql_text, names_data = ManageDB.get_names_sql_text(self.report_parameter, self.vendor_parameter)
+                names_results = ManageDB.run_select_sql(connection, names_sql_text, names_data)
+                if names_results:
+                    self.names = [result[0] for result in names_results]
+                else:
+                    self.names = []
+                if self.settings.show_debug_messages: print(names_results)
+
+            costs_sql_text, costs_data = ManageDB.get_names_with_costs_sql_text(self.report_parameter,
+                                                                                self.vendor_parameter,
+                                                                                self.year_parameter,
+                                                                                self.year_parameter)
+            costs_results = ManageDB.run_select_sql(connection, costs_sql_text, costs_data)
             connection.close()
-            self.name_parameter_combobox.addItems([result[0] for result in results])
+
+            if costs_results:
+                self.costs_names = [result[0] for result in costs_results]
+            else:
+                self.costs_names = []
+            if self.settings.show_debug_messages: print(costs_results)
+            model = QStandardItemModel()
+            for name in self.names:
+                item = QStandardItem(name)
+                if name in self.costs_names:
+                    font = QFont()
+                    font.setBold(True)
+                    item.setFont(font)
+                model.appendRow(item)
+            self.name_parameter_combobox.setModel(model)
         else:
             print('Error, no connection')
 
@@ -151,6 +180,7 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
+            self.load_costs()
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
@@ -233,6 +263,7 @@ class CostsController:
         self.original_currency_combobox.setCurrentText(values['original_currency'])
         self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
+        self.cost_in_original_currency_doublespinbox.repaint()
 
     def clear_costs(self):
         """Empties the costs fields"""

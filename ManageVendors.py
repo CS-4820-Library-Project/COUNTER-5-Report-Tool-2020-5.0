@@ -14,12 +14,6 @@ from GeneralUtils import JsonModel
 from Constants import *
 from Settings import SettingsModel
 
-VENDORS_FILE_DIR = "./all_data/vendor_manager/"
-VENDORS_FILE_NAME = "vendors.dat"
-VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
-
-EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
-
 
 class Vendor(JsonModel):
     """This holds a vendor's information
@@ -74,7 +68,8 @@ class ManageVendorsController(QObject):
     """
     vendors_changed_signal = pyqtSignal(list)
 
-    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab, settings: SettingsModel ):
+    def __init__(self, manage_vendors_widget: QWidget, manage_vendors_ui: ManageVendorsTab.Ui_manage_vendors_tab,
+                 settings: SettingsModel):
         super().__init__()
         self.manage_vendors_widget = manage_vendors_widget
         self.selected_index = -1
@@ -91,6 +86,10 @@ class ManageVendorsController(QObject):
         self.non_Sushi_check_box = manage_vendors_ui.non_Sushi_check_box
         self.description_text_edit = manage_vendors_ui.descriptionEdit
         self.companies_text_edit = manage_vendors_ui.companiesEdit
+
+        manage_vendors_ui.non_sushi_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("Vendors that don't provide SUSHI service can be added to the list for "
+                                              "use with Import Reports"))
 
         self.name_validation_label = manage_vendors_ui.name_validation_label
         self.name_validation_label.hide()
@@ -244,7 +243,7 @@ class ManageVendorsController(QObject):
     def modify_vendor(self):
         """Updates a vendor's information in the system if the vendor is valid"""
         if self.selected_index < 0:
-            print("No vendor selected")
+            if self.settings.show_debug_messages: print("No vendor selected")
             return
 
         selected_vendor = self.vendors[self.selected_index]
@@ -266,7 +265,11 @@ class ManageVendorsController(QObject):
 
         # Apply Changes
         if original_name != new_name:
-            self.update_name_of_file_and_folder(original_name,new_name)
+            self.update_name_of_file_and_folder(original_name, new_name)
+            ManageDB.update_vendor_in_all_tables(original_name, new_name)
+            for report_type in REPORT_TYPE_SWITCHER.keys():
+                ManageDB.backup_costs_data(report_type)
+
         selected_vendor.name = self.name_line_edit.text()
         selected_vendor.base_url = self.base_url_line_edit.text()
         selected_vendor.customer_id = self.customer_id_line_edit.text()
@@ -282,11 +285,6 @@ class ManageVendorsController(QObject):
         self.vendors_changed_signal.emit(self.vendors)
         self.save_all_vendors_to_disk()
 
-        if original_name != new_name:
-            ManageDB.update_vendor_in_all_tables(original_name, new_name)
-            for report_type in REPORT_TYPE_SWITCHER.keys():
-                ManageDB.backup_costs_data(report_type)
-
         GeneralUtils.show_message("Changes Saved!")
 
     def update_name_of_file_and_folder(self,original_name, new_name):
@@ -298,7 +296,7 @@ class ManageVendorsController(QObject):
         custom_year_path = self.settings.yearly_directory
         custom_other_path = self.settings.other_directory
 
-        if(os.path.exists(DO_NOT_MODIFY_json_path)):
+        if os.path.exists(DO_NOT_MODIFY_json_path):
             folderList = os.listdir(DO_NOT_MODIFY_json_path)
             for folder in folderList:
                 if folder[0] == "2" and folder[1] == "0":
@@ -423,9 +421,13 @@ class ManageVendorsController(QObject):
         requestor_id_edit = vendor_dialog_ui.requestorIdEdit
         api_key_edit = vendor_dialog_ui.apiKeyEdit
         platform_edit = vendor_dialog_ui.platformEdit
-        non_Sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
+        non_sushi_check_box = vendor_dialog_ui.non_Sushi_check_box
         description_edit = vendor_dialog_ui.descriptionEdit
         companies_edit = vendor_dialog_ui.companiesEdit
+
+        vendor_dialog_ui.non_sushi_help_button.clicked.connect(
+            lambda: GeneralUtils.show_message("Vendors that don't provide SUSHI service can be added to the list for "
+                                              "use with Import Reports"))
 
         name_validation_label = vendor_dialog_ui.name_validation_label
         name_validation_label.hide()
@@ -439,7 +441,7 @@ class ManageVendorsController(QObject):
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
-                            api_key_edit.text(), platform_edit.text(), non_Sushi_check_box.checkState() == Qt.Checked,
+                            api_key_edit.text(), platform_edit.text(), non_sushi_check_box.checkState() == Qt.Checked,
                             description_edit.toPlainText(), companies_edit.toPlainText())
 
             is_valid, message = self.add_vendor(vendor)
@@ -597,7 +599,7 @@ class ManageVendorsController(QObject):
 
                 is_valid, message = self.add_vendor(vendor)
                 if not is_valid:
-                    print(message)
+                    if self.settings.show_debug_messages: print(message)
 
             tsv_file.close()
 
@@ -611,7 +613,7 @@ class ManageVendorsController(QObject):
 
             GeneralUtils.show_message(f"Import successful!")
         except Exception as e:
-            print(f"File import failed: {e}")
+            if self.settings.show_debug_messages: print(f"File import failed: {e}")
             GeneralUtils.show_message(f"File import failed: {e}")
 
     def export_vendors_tsv(self, dir_path):
@@ -641,6 +643,6 @@ class ManageVendorsController(QObject):
             GeneralUtils.show_message(f"Exported to {file_path}")
 
         except Exception as e:
-            print(f"File export failed: {e}")
+            if self.settings.show_debug_messages: print(f"File export failed: {e}")
             GeneralUtils.show_message(f"File export failed: {e}")
 
