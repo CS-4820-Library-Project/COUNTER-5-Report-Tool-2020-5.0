@@ -13,9 +13,7 @@ from Settings import SettingsController, SettingsModel
 from Visual import VisualController
 import GeneralUtils
 import ManageDB
-
-HELP_SITE = "https://github.com/CS-4820-Library-Project/Libly/wiki"
-
+from Constants import *
 
 # region debug_stuff
 
