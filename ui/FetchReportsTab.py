@@ -6,12 +6,14 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_fetch_reports_tab(object):
     def setupUi(self, fetch_reports_tab):
         fetch_reports_tab.setObjectName("fetch_reports_tab")
-        fetch_reports_tab.resize(1014, 703)
+        fetch_reports_tab.resize(1014, 746)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -227,24 +229,20 @@ class Ui_fetch_reports_tab(object):
         self.end_date_edit_fetch_year = QtWidgets.QDateEdit(self.frame_6)
         self.end_date_edit_fetch_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
         self.end_date_edit_fetch_year.setObjectName("end_date_edit_fetch_year")
-        self.gridLayout.addWidget(self.end_date_edit_fetch_year, 2, 1, 1, 1)
-        self.begin_date_edit_fetch_year = QtWidgets.QDateEdit(self.frame_6)
-        self.begin_date_edit_fetch_year.setDateTime(QtCore.QDateTime(QtCore.QDate(2020, 1, 1), QtCore.QTime(0, 0, 0)))
-        self.begin_date_edit_fetch_year.setCurrentSection(QtWidgets.QDateTimeEdit.YearSection)
-        self.begin_date_edit_fetch_year.setObjectName("begin_date_edit_fetch_year")
-        self.gridLayout.addWidget(self.begin_date_edit_fetch_year, 0, 1, 1, 1)
-        self.label_9 = QtWidgets.QLabel(self.frame_6)
-        self.label_9.setObjectName("label_9")
-        self.gridLayout.addWidget(self.label_9, 0, 0, 1, 1)
-        self.label_10 = QtWidgets.QLabel(self.frame_6)
-        self.label_10.setObjectName("label_10")
-        self.gridLayout.addWidget(self.label_10, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.end_date_edit_fetch_year, 3, 1, 1, 1)
         self.begin_month_combo_box = QtWidgets.QComboBox(self.frame_6)
         self.begin_month_combo_box.setObjectName("begin_month_combo_box")
         self.gridLayout.addWidget(self.begin_month_combo_box, 0, 2, 1, 1)
+        self.label_9 = QtWidgets.QLabel(self.frame_6)
+        self.label_9.setObjectName("label_9")
+        self.gridLayout.addWidget(self.label_9, 0, 0, 1, 1)
         self.end_month_combo_box = QtWidgets.QComboBox(self.frame_6)
         self.end_month_combo_box.setObjectName("end_month_combo_box")
-        self.gridLayout.addWidget(self.end_month_combo_box, 2, 2, 1, 1)
+        self.gridLayout.addWidget(self.end_month_combo_box, 3, 2, 1, 1)
+        self.begin_date_edit_fetch_year = QtWidgets.QDateEdit(self.frame_6)
+        self.begin_date_edit_fetch_year.setDate(QtCore.QDate(2020, 1, 1))
+        self.begin_date_edit_fetch_year.setObjectName("begin_date_edit_fetch_year")
+        self.gridLayout.addWidget(self.begin_date_edit_fetch_year, 0, 1, 1, 1)
         self.verticalLayout_2.addWidget(self.frame_6)
         self.custom_dir_frame = QtWidgets.QFrame(self.frame_14)
         self.custom_dir_frame.setMinimumSize(QtCore.QSize(0, 0))
@@ -388,8 +386,7 @@ class Ui_fetch_reports_tab(object):
         fetch_reports_tab.setTabOrder(self.select_report_types_button_fetch, self.deselect_report_types_button_fetch)
         fetch_reports_tab.setTabOrder(self.deselect_report_types_button_fetch, self.report_types_help_button)
         fetch_reports_tab.setTabOrder(self.report_types_help_button, self.report_types_list_view)
-        fetch_reports_tab.setTabOrder(self.report_types_list_view, self.begin_date_edit_fetch_year)
-        fetch_reports_tab.setTabOrder(self.begin_date_edit_fetch_year, self.end_date_edit_fetch_year)
+        fetch_reports_tab.setTabOrder(self.report_types_list_view, self.end_date_edit_fetch_year)
         fetch_reports_tab.setTabOrder(self.end_date_edit_fetch_year, self.custom_dir_edit)
         fetch_reports_tab.setTabOrder(self.custom_dir_edit, self.custom_dir_button)
         fetch_reports_tab.setTabOrder(self.custom_dir_button, self.fetch_advanced_button)
@@ -410,14 +407,12 @@ class Ui_fetch_reports_tab(object):
         self.deselect_report_types_button_fetch.setText(_translate("fetch_reports_tab", "Deselect All"))
         self.label_8.setText(_translate("fetch_reports_tab", "Date Range"))
         self.end_date_edit_fetch_year.setDisplayFormat(_translate("fetch_reports_tab", "yyyy"))
-        self.begin_date_edit_fetch_year.setDisplayFormat(_translate("fetch_reports_tab", "yyyy"))
         self.label_9.setText(_translate("fetch_reports_tab", "Begin Date"))
-        self.label_10.setText(_translate("fetch_reports_tab", "End Date"))
+        self.begin_date_edit_fetch_year.setDisplayFormat(_translate("fetch_reports_tab", "yyyy"))
         self.label_38.setText(_translate("fetch_reports_tab", "Date range is not a calendar year"))
         self.label.setText(_translate("fetch_reports_tab", "The date range contains months with no available data"))
         self.label_41.setText(_translate("fetch_reports_tab", "Report(s) will be saved to:"))
         self.custom_dir_button.setText(_translate("fetch_reports_tab", "Change"))
         self.fetch_advanced_button.setText(_translate("fetch_reports_tab", "Fetch Selected Reports"))
         self.label_2.setText(_translate("fetch_reports_tab", "Note: Yearly reports cover all available data for one calender year. Only yearly reports are added to the search database."))
-
 import Resources_rc
