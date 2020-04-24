@@ -11,8 +11,7 @@ Before starting the process below, make sure to delete your alldata folder as an
 ### Creating the executable in terminal
 1. Open terminal/Command Prompt
 2. cd to your projectDirectory
-3. Run: *pip install -r requirements.txt*
-Optional 
+3. Run: *pip install -r requirements.txt* 
 4. Run: *pip show validators*
 This will show the validators package location.
 5. Run: pyi-makespec --paths=DirectoryWithValidatorsPackage maindriver.py
