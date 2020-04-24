@@ -12,11 +12,11 @@ The project is written with Python 3.7. The PyQt GUI framework is used to create
 - Search the sqlite database of fetched and imported reports
 - Generate charts using the data in the database
 
+## Download Project 
+https://github.com/CS-4820-Library-Project/Libly/releases
+
 ## Developer Documentation
 https://counter-5-report-tool.readthedocs.io/en/latest/
-
-## Latest Executables
-https://github.com/CS-4820-Library-Project/Libly/releases/tag/v0.9-beta
 
 ## Setup Instructions (Windows)
 - Install Python 3.8.2 [https://www.python.org/ftp/python/3.8.2/python-3.8.2-amd64.exe]
