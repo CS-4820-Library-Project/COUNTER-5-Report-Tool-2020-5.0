@@ -13,7 +13,7 @@ The project is written with Python 3.7. The PyQt GUI framework is used to create
 - Generate charts using the data in the database
 
 ## Developer Documentation
-https://libly.readthedocs.io/en/latest/
+https://counter-5-report-tool.readthedocs.io/en/latest/
 
 ## Latest Executables
 https://github.com/CS-4820-Library-Project/Libly/releases/tag/v0.9-beta
