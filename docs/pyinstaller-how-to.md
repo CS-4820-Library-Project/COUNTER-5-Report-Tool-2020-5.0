@@ -17,9 +17,9 @@ This will show the validators package location.
 5. Run: pyi-makespec --paths=DirectoryWithValidatorsPackage maindriver.py
 
 6. Run pyinstaller
-* Windows: Run: pyinstaller --onefile maindriver.py
-* macOS: Run: pyinstaller --onefile --windowed MainDriver.py
-* UNIX: Run:  pyinstaller --onefile MainDriver.py
+* Windows: Run: pyinstaller --onefile MainDriver.py -n "Counter 5 Report Tool" -i main_icon.ico
+* macOS: Run: pyinstaller --onefile --windowed -n "Counter 5 Report Tool" -i main_icon.ico
+* UNIX: Run:  pyinstaller --onefile MainDriver.py -n "Counter 5 Report Tool" -i main_icon.ico
 
 Check in the project directory, under the folder named dist. There should now be an .exe or .app file. Double click the file to open.
 
