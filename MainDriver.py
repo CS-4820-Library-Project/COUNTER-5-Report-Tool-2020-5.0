@@ -14,7 +14,7 @@ from Visual import VisualController
 import GeneralUtils
 import ManageDB
 
-HELP_SITE = "https://github.com/CS-4820-Library-Project/Libly/wiki"
+HELP_SITE = "https://git.library.upei.ca/mbelvadi/COUNTER-5-Report-Tool/wiki"
 
 
 # region debug_stuff
