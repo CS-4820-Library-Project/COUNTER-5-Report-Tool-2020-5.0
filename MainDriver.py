@@ -37,7 +37,7 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyleSheet("QWidget {font-size: 11pt;}")
+    app.setStyleSheet("QWidget {font-family: Segoe UI; font-size: 12pt;}")
 
     main_window = QMainWindow()
     main_window_ui = MainWindow.Ui_mainWindow()
