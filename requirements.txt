@@ -9,3 +9,5 @@ six==1.14.0
 urllib3==1.25.9
 validators==0.14.3
 XlsxWriter==1.2.8
+sphinx==2.4.4
+sphinx_autodoc_typehints
