@@ -194,14 +194,14 @@
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_15">
                <item>
-                <widget class="QLineEdit" name="selected_file_edit">
+                <widget class="QLineEdit" name="c5_selected_file_edit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="select_file_button">
+                <widget class="QPushButton" name="c5_select_file_button">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -413,14 +413,14 @@
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_16">
                   <item>
-                   <widget class="QLineEdit" name="selected_file_edit_2">
+                   <widget class="QLineEdit" name="c4_selected_file_edit">
                     <property name="readOnly">
                      <bool>true</bool>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="select_file_button_2">
+                   <widget class="QPushButton" name="c4_select_file_button">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -517,7 +517,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>selected_file_edit</tabstop>
+  <tabstop>c5_selected_file_edit</tabstop>
   <tabstop>import_report_button</tabstop>
  </tabstops>
  <resources>

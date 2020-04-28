@@ -136,11 +136,11 @@ def test_on_import_clicked(controller_v):
     controller_v.on_import_clicked()
 
     # Invalid file selected
-    controller_v.selected_file_path = "./data/invalid_file"
+    controller_v.c5_selected_file_path = "./data/invalid_file"
     controller_v.on_import_clicked()
 
     # Valid file selected
-    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
+    controller_v.c5_selected_file_path = "./data/test_file_for_import.tsv"
     controller_v.on_import_clicked()
     assert path.isfile(file_path)
 
@@ -159,11 +159,11 @@ def test_import_file(controller_v):
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Invalid file selected
-    controller_v.selected_file_path = "./data/invalid_file"
+    controller_v.c5_selected_file_path = "./data/invalid_file"
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Valid file selected
-    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
+    controller_v.c5_selected_file_path = "./data/test_file_for_import.tsv"
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
     assert path.isfile(file_path)
 

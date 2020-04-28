@@ -14,7 +14,7 @@ import GeneralUtils
 from Constants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
-from FetchData import ALL_REPORTS, CompletionStatus
+from FetchData import ALL_REPORTS, CompletionStatus, ReportRow
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
 
@@ -68,7 +68,8 @@ class ImportReportController:
         self.selected_vendor_index = -1
         self.selected_c5_report_type_index = -1
         self.selected_c4_report_type_index = -1
-        self.selected_file_path: str = ""
+        self.c5_selected_file_path: str = ""
+        self.c4_selected_file_paths: list = []
         self.settings = settings
         self.result_dialog = None
         # endregion
@@ -87,11 +88,18 @@ class ImportReportController:
         self.c5_report_type_model = QStandardItemModel(self.c5_report_type_combo_box)
         self.c5_report_type_combo_box.setModel(self.c5_report_type_model)
         self.c5_report_type_combo_box.currentIndexChanged.connect(self.on_c5_report_type_selected)
+
         for report_type in ALL_REPORTS:
             item = QStandardItem(report_type)
             item.setEditable(False)
             self.c5_report_type_model.appendRow(item)
+
         self.selected_c5_report_type_index = self.c5_report_type_combo_box.currentIndex()
+
+        self.c5_select_file_btn = import_report_ui.c5_select_file_button
+        self.c5_select_file_btn.clicked.connect(self.on_c5_select_file_clicked)
+
+        self.c5_selected_file_edit = import_report_ui.c5_selected_file_edit
         # endregion
 
         # region Counter 4
@@ -99,26 +107,27 @@ class ImportReportController:
         self.c4_report_type_model = QStandardItemModel(self.c4_report_type_combo_box)
         self.c4_report_type_combo_box.setModel(self.c4_report_type_model)
         self.c4_report_type_combo_box.currentIndexChanged.connect(self.on_c4_report_type_selected)
+        self.c4_report_type_equiv_label = import_report_ui.c4_report_type_equiv_label
+
         for report_type in COUNTER_4_REPORT_TYPES.keys():
             item = QStandardItem(report_type)
             item.setEditable(False)
             self.c4_report_type_model.appendRow(item)
-        self.selected_c4_report_type_index = self.c4_report_type_combo_box.currentIndex()
 
-        self.c4_report_type_equiv_label = import_report_ui.c4_report_type_equiv_label
+        self.selected_c4_report_type_index = self.c4_report_type_combo_box.currentIndex()
         self.c4_report_type_equiv_label.setText(get_counter5_equivalent(self.c4_report_type_combo_box.currentText()))
+
+        self.c4_select_file_btn = import_report_ui.c4_select_file_button
+        self.c4_select_file_btn.clicked.connect(self.on_c4_select_file_clicked)
+
+        self.c4_selected_file_edit = import_report_ui.c4_selected_file_edit
 
         # endregion
 
-        # region Others
+        # region Date
         self.year_date_edit = import_report_ui.report_year_date_edit
         self.year_date_edit.setDate(self.date)
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
-
-        self.select_file_btn = import_report_ui.select_file_button
-        self.select_file_btn.clicked.connect(self.on_select_file_clicked)
-
-        self.selected_file_edit = import_report_ui.selected_file_edit
 
         self.import_report_button = import_report_ui.import_report_button
         self.import_report_button.clicked.connect(self.on_import_clicked)
@@ -165,12 +174,21 @@ class ImportReportController:
         """Handles the signal emitted when the target date is changed"""
         self.date = date
 
-    def on_select_file_clicked(self):
+    def on_c5_select_file_clicked(self):
         """Handles the signal emitted when the select file button is clicked"""
         file_path = GeneralUtils.choose_file(TSV_FILTER + CSV_FILTER)
         if file_path:
-            self.selected_file_path = file_path
-            self.selected_file_edit.setText(file_path)
+            self.c5_selected_file_path = file_path
+            file_name = file_path.split("/")[-1]
+            self.c5_selected_file_edit.setText(file_name)
+
+    def on_c4_select_file_clicked(self):
+        """Handles the signal emitted when the select file button is clicked"""
+        file_paths = GeneralUtils.choose_files(TSV_FILTER + CSV_FILTER)
+        if file_paths:
+            self.c4_selected_file_paths = file_paths
+            file_names = [file_path.split("/")[-1] for file_path in file_paths]
+            self.c4_selected_file_edit.setText(", ".join(file_names))
 
     def on_import_clicked(self):
         """Handles the signal emitted when the import button is clicked"""
@@ -180,7 +198,7 @@ class ImportReportController:
         elif self.selected_c5_report_type_index == -1:
             GeneralUtils.show_message("Select a report type")
             return
-        elif self.selected_file_path == "":
+        elif self.c5_selected_file_path == "":
             GeneralUtils.show_message("Select a file")
             return
 
@@ -210,8 +228,8 @@ class ImportReportController:
                 makedirs(dest_file_dir)
 
             # Validate report header
-            delimiter = DELIMITERS[self.selected_file_path[-4:].lower()]
-            file = open(self.selected_file_path, 'r', encoding='utf-8-sig')
+            delimiter = DELIMITERS[self.c5_selected_file_path[-4:].lower()]
+            file = open(self.c5_selected_file_path, 'r', encoding='utf-8-sig')
             reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
             if file.mode == 'r':
                 header = {}
@@ -238,7 +256,7 @@ class ImportReportController:
                 raise Exception('Could not open file')
 
             # Copy selected_file_path to dest_file_path
-            self.copy_file(self.selected_file_path, dest_file_path)
+            self.copy_file(self.c5_selected_file_path, dest_file_path)
 
             process_result.file_dir = dest_file_dir
             process_result.file_name = dest_file_name
@@ -253,7 +271,7 @@ class ImportReportController:
                     ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DATABASE_FILE_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protected_file_dir}{dest_file_name}"
-            self.copy_file(self.selected_file_path, protected_file_path)
+            self.copy_file(self.c5_selected_file_path, protected_file_path)
 
             # Add file to database
             database_worker = UpdateDatabaseWorker([{'file': protected_file_path,
@@ -319,5 +337,12 @@ class ImportReportController:
         vertical_layout.addWidget(report_result_widget)
         vertical_layout.addWidget(button_box)
         self.result_dialog.show()
+
+
+class Counter4ToCounter5:
+    def __init__(self, c4_report_type: str, file_paths: list):
+        self.report_type = c4_report_type
+        self.file_paths = file_paths
+
 
 
