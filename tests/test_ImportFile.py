@@ -105,9 +105,9 @@ def test_on_report_type_selected(controller_v):
 
     index_to_select = 3
     model_index = QStandardItemModel.createIndex(QStandardItemModel(), index_to_select, 0)
-    controller_v.on_report_type_selected(model_index)
+    controller_v.on_c5_report_type_selected(model_index)
 
-    assert controller_v.selected_report_type_index == index_to_select
+    assert controller_v.selected_c5_report_type_index == index_to_select
 
 
 def test_on_date_changed(controller_v):
@@ -124,10 +124,10 @@ def test_on_import_clicked(controller_v):
 
     # No report type selected
     controller_v.on_import_clicked()
-    controller_v.selected_report_type_index = 1
+    controller_v.selected_c5_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_c5_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
@@ -147,10 +147,10 @@ def test_on_import_clicked(controller_v):
 
 def test_import_file(controller_v):
     controller_v.selected_vendor_index = 1
-    controller_v.selected_report_type_index = 1
+    controller_v.selected_c5_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_c5_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name

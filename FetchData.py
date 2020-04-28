@@ -1513,18 +1513,8 @@ class FetchSpecialReportsController(FetchReportsAbstract):
         """
         if date_type == "begin_date":
             self.begin_date = QDate(date.year(),self.begin_date.month(),self.begin_date.day())
-            # if self.begin_date.year() != self.end_date.year():
-            #     self.end_date.setDate(self.begin_date.year(),
-            #                           self.end_date.month(),
-            #                           self.end_date.day())
-            #     self.end_date_edit.setDate(self.end_date)
         elif date_type == "end_date":
             self.end_date = QDate(date.year(),self.end_date.month(),self.end_date.day())
-            # if self.end_date.year() != self.begin_date.year():
-            #     self.begin_date.setDate(self.end_date.year(),
-            #                             self.begin_date.month(),
-            #                             self.begin_date.day())
-            #     self.begin_date_edit.setDate(self.begin_date)
 
     def on_date_month_changed(self, month: int, date_type: str):
         """Handles the signal emitted when a date's month is changed

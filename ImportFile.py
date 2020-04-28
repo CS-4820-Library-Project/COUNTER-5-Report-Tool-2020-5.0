@@ -51,29 +51,44 @@ class ImportReportController:
         self.vendors = vendors
         self.date = QDate.currentDate()
         self.selected_vendor_index = -1
-        self.selected_report_type_index = -1
+        self.selected_c5_report_type_index = -1
+        self.selected_c4_report_type_index = -1
         self.selected_file_path: str = ""
         self.settings = settings
         self.result_dialog = None
         # endregion
 
         # region Vendors
-        self.vendor_list_view = import_report_ui.vendors_list_view_import
-        self.vendor_list_model = QStandardItemModel(self.vendor_list_view)
-        self.vendor_list_view.setModel(self.vendor_list_model)
-        self.vendor_list_view.clicked.connect(self.on_vendor_selected)
+        self.vendor_combo_box = import_report_ui.vendor_combo_box
+        self.vendor_list_model = QStandardItemModel(self.vendor_combo_box)
+        self.vendor_combo_box.setModel(self.vendor_list_model)
+        self.vendor_combo_box.currentIndexChanged.connect(self.on_vendor_selected)
         self.update_vendors_ui()
+        self.selected_vendor_index = self.vendor_combo_box.currentIndex()
         # endregion
 
-        # region Report Types
-        self.report_type_list_view = import_report_ui.report_types_list_view_import
-        self.report_type_list_model = QStandardItemModel(self.report_type_list_view)
-        self.report_type_list_view.setModel(self.report_type_list_model)
-        self.report_type_list_view.clicked.connect(self.on_report_type_selected)
+        # region Counter 5
+        self.c5_report_type_combo_box = import_report_ui.c5_report_type_combo_box
+        self.c5_report_type_model = QStandardItemModel(self.c5_report_type_combo_box)
+        self.c5_report_type_combo_box.setModel(self.c5_report_type_model)
+        self.c5_report_type_combo_box.currentIndexChanged.connect(self.on_c5_report_type_selected)
         for report_type in ALL_REPORTS:
             item = QStandardItem(report_type)
             item.setEditable(False)
-            self.report_type_list_model.appendRow(item)
+            self.c5_report_type_model.appendRow(item)
+        self.selected_c5_report_type_index = self.c5_report_type_combo_box.currentIndex()
+        # endregion
+
+        # region Counter 4
+        self.c4_report_type_combo_box = import_report_ui.c4_report_type_combo_box
+        self.c4_report_type_model = QStandardItemModel(self.c4_report_type_combo_box)
+        self.c4_report_type_combo_box.setModel(self.c4_report_type_model)
+        self.c4_report_type_combo_box.currentIndexChanged.connect(self.on_c4_report_type_selected)
+        for report_type in ALL_REPORTS:
+            item = QStandardItem(report_type)
+            item.setEditable(False)
+            self.c4_report_type_model.appendRow(item)
+        self.selected_c4_report_type_index = self.c4_report_type_combo_box.currentIndex()
         # endregion
 
         # region Others
@@ -95,9 +110,9 @@ class ImportReportController:
 
         :param vendors: An updated list of the system's vendors
         """
-        self.selected_vendor_index = -1
         self.update_vendors(vendors)
         self.update_vendors_ui()
+        self.selected_vendor_index = self.vendor_combo_box.currentIndex()
 
     def update_vendors(self, vendors: list):
         """ Updates the local copy of vendors that support report import
@@ -114,13 +129,17 @@ class ImportReportController:
             item.setEditable(False)
             self.vendor_list_model.appendRow(item)
 
-    def on_vendor_selected(self, model_index: QModelIndex):
+    def on_vendor_selected(self, index: int):
         """Handles the signal emitted when a vendor is selected"""
-        self.selected_vendor_index = model_index.row()
+        self.selected_vendor_index = index
 
-    def on_report_type_selected(self, model_index: QModelIndex):
+    def on_c5_report_type_selected(self, index: int):
         """Handles the signal emitted when a report type is selected"""
-        self.selected_report_type_index = model_index.row()
+        self.selected_c5_report_type_index = index
+
+    def on_c4_report_type_selected(self, index: int):
+        """Handles the signal emitted when a report type is selected"""
+        self.selected_c4_report_type_index = index
 
     def on_date_changed(self, date: QDate):
         """Handles the signal emitted when the target date is changed"""
@@ -138,7 +157,7 @@ class ImportReportController:
         if self.selected_vendor_index == -1:
             GeneralUtils.show_message("Select a vendor")
             return
-        elif self.selected_report_type_index == -1:
+        elif self.selected_c5_report_type_index == -1:
             GeneralUtils.show_message("Select a report type")
             return
         elif self.selected_file_path == "":
@@ -146,7 +165,7 @@ class ImportReportController:
             return
 
         vendor = self.vendors[self.selected_vendor_index]
-        report_type = ALL_REPORTS[self.selected_report_type_index]
+        report_type = ALL_REPORTS[self.selected_c5_report_type_index]
 
         process_result = self.import_report(vendor, report_type)
         self.show_result(process_result)
