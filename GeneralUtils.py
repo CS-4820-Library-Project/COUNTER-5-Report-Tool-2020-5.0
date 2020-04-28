@@ -75,6 +75,17 @@ def choose_file(name_filters) -> str:
     return file_path
 
 
+def choose_files(name_filters) -> list:
+    file_paths = []
+    dialog = QFileDialog(main_window, directory=".")
+    dialog.setFileMode(QFileDialog.ExistingFile)
+    dialog.setNameFilters(name_filters)
+    if dialog.exec_():
+        file_paths = dialog.selectedFiles
+
+    return file_paths
+
+
 def choose_directory() -> str:
     dir_path = ""
     dialog = QFileDialog(main_window, directory=".")
