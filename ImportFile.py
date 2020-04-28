@@ -18,6 +18,8 @@ from FetchData import ALL_REPORTS, CompletionStatus
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
 
+COUNTER_4_REPORT_TYPES = ("BR1", "BR2", "BR3", "DB1", "DB2", "JR1", "JR2", "JR5", "PR1")
+
 
 class ProcessResult:
     """This holds the results of an import process
@@ -53,6 +55,7 @@ class ImportReportController:
         self.selected_vendor_index = -1
         self.selected_c5_report_type_index = -1
         self.selected_c4_report_type_index = -1
+        self.selected_c4_report_type_equiv_index = -1
         self.selected_file_path: str = ""
         self.settings = settings
         self.result_dialog = None
@@ -84,11 +87,21 @@ class ImportReportController:
         self.c4_report_type_model = QStandardItemModel(self.c4_report_type_combo_box)
         self.c4_report_type_combo_box.setModel(self.c4_report_type_model)
         self.c4_report_type_combo_box.currentIndexChanged.connect(self.on_c4_report_type_selected)
-        for report_type in ALL_REPORTS:
+        for report_type in COUNTER_4_REPORT_TYPES:
             item = QStandardItem(report_type)
             item.setEditable(False)
             self.c4_report_type_model.appendRow(item)
         self.selected_c4_report_type_index = self.c4_report_type_combo_box.currentIndex()
+
+        self.c4_report_type_equiv_combo_box = import_report_ui.c4_report_type_equiv_combo_box
+        self.c4_report_type_equiv_model = QStandardItemModel(self.c4_report_type_equiv_combo_box)
+        self.c4_report_type_equiv_combo_box.setModel(self.c4_report_type_equiv_model)
+        self.c4_report_type_equiv_combo_box.currentIndexChanged.connect(self.on_c4_report_type_equiv_selected)
+        for report_type in ALL_REPORTS:
+            item = QStandardItem(report_type)
+            item.setEditable(False)
+            self.c4_report_type_equiv_model.appendRow(item)
+        self.selected_c4_report_type_equiv_index = self.c4_report_type_equiv_combo_box.currentIndex()
         # endregion
 
         # region Others
@@ -140,6 +153,10 @@ class ImportReportController:
     def on_c4_report_type_selected(self, index: int):
         """Handles the signal emitted when a report type is selected"""
         self.selected_c4_report_type_index = index
+
+    def on_c4_report_type_equiv_selected(self, index: int):
+        """Handles the signal emitted when a report type is selected"""
+        self.selected_c4_report_type_equiv_index = index
 
     def on_date_changed(self, date: QDate):
         """Handles the signal emitted when the target date is changed"""
