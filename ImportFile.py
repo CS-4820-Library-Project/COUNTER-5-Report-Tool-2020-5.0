@@ -30,6 +30,22 @@ COUNTER_4_REPORT_TYPES = {
 }
 
 
+class Counter4ReportHeader:
+    def __init__(self, report_type: str, customer: str, institution_id: str, reporting_period: str, date_run: str):
+        self.report_type = report_type
+        self.customer = customer
+        self.institution_id = institution_id
+        self.reporting_period = reporting_period
+        self.date_run = date_run
+
+
+class Counter4ReportModel:
+    def __init__(self, report_header: Counter4ReportHeader, header_list: list, row_dicts: list):
+        self.report_header = report_header
+        self.header_list = header_list
+        self.row_dicts = row_dicts
+
+
 class ProcessResult:
     """This holds the results of an import process
 
@@ -184,11 +200,14 @@ class ImportReportController:
 
     def on_c4_select_file_clicked(self):
         """Handles the signal emitted when the select file button is clicked"""
-        file_paths = GeneralUtils.choose_files(TSV_FILTER + CSV_FILTER)
+        file_paths = GeneralUtils.choose_files(TSV_AND_CSV_FILTER)
         if file_paths:
             self.c4_selected_file_paths = file_paths
             file_names = [file_path.split("/")[-1] for file_path in file_paths]
             self.c4_selected_file_edit.setText(", ".join(file_names))
+
+            cc = Counter4ToCounter5(self.c4_report_type_combo_box.currentText(), file_paths)
+            cc.work()
 
     def on_import_clicked(self):
         """Handles the signal emitted when the import button is clicked"""
@@ -341,8 +360,78 @@ class ImportReportController:
 
 class Counter4ToCounter5:
     def __init__(self, c4_report_type: str, file_paths: list):
-        self.report_type = c4_report_type
+        self.c4_report_type = c4_report_type
+        self.target_report_type = get_counter5_equivalent(c4_report_type)
         self.file_paths = file_paths
+
+        self.final_row_dicts = {}
+
+    def work(self):
+        # open each file
+        # read each file in to the model
+        for file_path in self.file_paths:
+            report_model = self.c4_file_to_c4_model(file_path)
+            print()
+
+    def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
+        # print(file_path[-4:])
+        file = open(file_path, 'r', encoding="utf-8")
+
+        extension = file_path[-4:]
+        delimiter = ""
+        if extension == ".csv":
+            delimiter = ","
+        elif extension == ".tsv":
+            delimiter = "\t"
+
+        # Process process report header into model
+        csv_reader = csv.reader(file, delimiter=delimiter)
+
+        report_type = ""
+        customer = ""
+        institution_id = ""
+        reporting_period = ""
+        date_run = ""
+
+        curr_line = 1
+        last_header_line = 7
+
+        for row in csv_reader:
+            # print(row[0])
+
+            if curr_line == 1:
+                report_type = row[0]
+            elif curr_line == 2:
+                customer = row[0]
+            elif curr_line == 3:
+                institution_id = row[0]
+            elif curr_line == 5:
+                reporting_period = row[0]
+            elif curr_line == 7:
+                date_run = row[0]
+
+            curr_line += 1
+
+            if curr_line > last_header_line:
+                break
+
+        report_header = Counter4ReportHeader(report_type, customer, institution_id, reporting_period, date_run)
+
+        # Process process report into model
+        csv_dict_reader = csv.DictReader(file, delimiter=delimiter)
+        header_dict = csv_dict_reader.fieldnames
+        row_dicts = []
+
+        for row in csv_dict_reader:
+            # print(row)
+            row_dicts.append(row)
+
+        report_model = Counter4ReportModel(report_header, header_dict, row_dicts)
+
+        file.close()
+
+        return report_model
+
 
 
 

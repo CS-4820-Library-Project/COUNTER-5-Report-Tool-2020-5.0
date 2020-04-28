@@ -427,6 +427,7 @@ CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
 JSON_FILTER = ('JSON files (*.dat)',)
 TSV_FILTER = ('TSV files (*.tsv)',)
 CSV_FILTER = ('CSV files (*.csv)',)
+TSV_AND_CSV_FILTER = ('Report files (*.csv *.tsv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 

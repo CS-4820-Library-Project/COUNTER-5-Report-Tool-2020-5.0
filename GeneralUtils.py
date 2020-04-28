@@ -79,7 +79,8 @@ def choose_files(name_filters) -> list:
     file_paths = []
     dialog = QFileDialog(main_window, directory=".")
     dialog.setFileMode(QFileDialog.ExistingFiles)
-    dialog.setNameFilters(name_filters)
+    print([x for x in name_filters])
+    dialog.setNameFilters([x for x in name_filters])
     if dialog.exec_():
         file_paths = dialog.selectedFiles()
 
