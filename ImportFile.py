@@ -23,10 +23,14 @@ COUNTER_4_REPORT_TYPES = {
     "BR1": "TR_B1",
     "BR2": "TR_B1",
     "BR3": "TR_B2",
+    "DB1": "DR_D1",
+    "DB2": "DR_D2",
     "JR1": "TR_J1",
     "JR2": "TR_J2",
+    "PR1": "PR",
     "BR1, BR2": "TR_B1",
-    "BR1, BR2, BR3, JR1, JR2": "TR"
+    "BR1, BR2, BR3, JR1, JR2": "TR",
+    "DB1, DB2": "DR"
 }
 
 
@@ -62,8 +66,52 @@ class ProcessResult:
         self.file_path = ""
 
 
-def get_counter5_equivalent(counter4_report_type: str) -> str:
+class MajorC4ReportType(Enum):
+    BOOK = "BR"
+    DATABASE = "DB"
+    JOURNAL = "JR"
+    PLATFORM = "PR"
+
+
+def get_major_c4_report_type(report_type: str) -> MajorC4ReportType:
+    """Returns a major report type that a report type falls under"""
+    if report_type == "BR1" or report_type == "BR2" or report_type == "BR3":
+        return MajorC4ReportType.BOOK
+
+    elif report_type == "DB1" or report_type == "DB2":
+        return MajorC4ReportType.DATABASE
+
+    elif report_type == "JR1" or report_type == "JR2":
+        return MajorC4ReportType.JOURNAL
+
+    elif report_type == "PR1":
+        return MajorC4ReportType.PLATFORM
+
+
+def get_c5_equivalent(counter4_report_type: str) -> str:
     return COUNTER_4_REPORT_TYPES[counter4_report_type]
+
+
+def get_short_c4_report_type(long_c4_report_type: str) -> str:
+    short_report_type = ""
+    if long_c4_report_type == "Book Report 1 (R4)":
+        short_report_type = "BR1"
+    elif long_c4_report_type == "Book Report 2 (R4)":
+        short_report_type = "BR2"
+    elif long_c4_report_type == "Book Report 3 (R4)":
+        short_report_type = "BR3"
+    elif long_c4_report_type == "Database Report 1 (R4)":
+        short_report_type = "DB1"
+    elif long_c4_report_type == "Database Report 2 (R4)":
+        short_report_type = "DB2"
+    elif long_c4_report_type == "Journal Report 1 (R4)":
+        short_report_type = "JR1"
+    elif long_c4_report_type == "Journal Report 2 (R4)":
+        short_report_type = "JR2"
+    elif long_c4_report_type == "Platform Report 1 (R4)":
+        short_report_type = "PR1"
+
+    return short_report_type
 
 
 class ImportReportController:
@@ -131,7 +179,7 @@ class ImportReportController:
             self.c4_report_type_model.appendRow(item)
 
         self.selected_c4_report_type_index = self.c4_report_type_combo_box.currentIndex()
-        self.c4_report_type_equiv_label.setText(get_counter5_equivalent(self.c4_report_type_combo_box.currentText()))
+        self.c4_report_type_equiv_label.setText(get_c5_equivalent(self.c4_report_type_combo_box.currentText()))
 
         self.c4_select_file_btn = import_report_ui.c4_select_file_button
         self.c4_select_file_btn.clicked.connect(self.on_c4_select_file_clicked)
@@ -184,7 +232,7 @@ class ImportReportController:
     def on_c4_report_type_selected(self, index: int):
         """Handles the signal emitted when a report type is selected"""
         self.selected_c4_report_type_index = index
-        self.c4_report_type_equiv_label.setText(get_counter5_equivalent(self.c4_report_type_combo_box.currentText()))
+        self.c4_report_type_equiv_label.setText(get_c5_equivalent(self.c4_report_type_combo_box.currentText()))
 
     def on_date_changed(self, date: QDate):
         """Handles the signal emitted when the target date is changed"""
@@ -206,7 +254,9 @@ class ImportReportController:
             file_names = [file_path.split("/")[-1] for file_path in file_paths]
             self.c4_selected_file_edit.setText(", ".join(file_names))
 
-            cc = Counter4ToCounter5(self.c4_report_type_combo_box.currentText(), file_paths)
+            cc = Counter4To5Converter(self.c4_report_type_combo_box.currentText(),
+                                      file_paths,
+                                      self.year_date_edit.date().year())
             cc.work()
 
     def on_import_clicked(self):
@@ -358,20 +408,25 @@ class ImportReportController:
         self.result_dialog.show()
 
 
-class Counter4ToCounter5:
-    def __init__(self, c4_report_type: str, file_paths: list):
+class Counter4To5Converter:
+    def __init__(self, c4_report_type: str, file_paths: list, report_year: int):
         self.c4_report_type = c4_report_type
-        self.target_report_type = get_counter5_equivalent(c4_report_type)
         self.file_paths = file_paths
+        self.report_year = report_year
+        self.target_report_type = get_c5_equivalent(c4_report_type)
+        self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_report_type)
 
-        self.final_row_dicts = {}
+        self.final_rows_dict = {}
 
     def work(self):
         # open each file
         # read each file in to the model
         for file_path in self.file_paths:
             report_model = self.c4_file_to_c4_model(file_path)
-            print()
+            self.c4_model_to_final_rows(report_model)
+
+            print(self.final_rows_dict)
+        print()
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         # print(file_path[-4:])
@@ -420,17 +475,79 @@ class Counter4ToCounter5:
         # Process process report into model
         csv_dict_reader = csv.DictReader(file, delimiter=delimiter)
         header_dict = csv_dict_reader.fieldnames
+        # print(header_dict)
         row_dicts = []
 
         for row in csv_dict_reader:
             # print(row)
             row_dicts.append(row)
+            # print(row_dicts[-1][""])
 
         report_model = Counter4ReportModel(report_header, header_dict, row_dicts)
 
         file.close()
 
         return report_model
+
+    def c4_model_to_final_rows(self, report_model: Counter4ReportModel):
+        short_c4_report_type = get_short_c4_report_type(report_model.report_header.report_type)
+
+        for row_dict in report_model.row_dicts:
+            report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
+
+
+
+            # print(report_row.__dict__)
+
+            if report_row.title not in self.final_rows_dict:
+                self.final_rows_dict[report_row.title] = [report_row]
+            else:
+                self.final_rows_dict[report_row.title].append(report_row)
+
+            # self.final_rows_dict[report_row.title]
+
+    def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
+        report_row = ReportRow(QDate(self.report_year, 1, 1), QDate(self.report_year, 12, 1))
+        if self.target_c5_major_report_type == MajorReportType.TITLE:
+            if "" in row_dict:
+                report_row.title = row_dict[""]
+            if "Publisher" in row_dict:
+                report_row.publisher = row_dict["Publisher"]
+            if "Platform" in row_dict:
+                report_row.platform = row_dict["Publisher"]
+            if "Book DOI" in row_dict:
+                report_row.doi = row_dict["Book DOI"]
+            if "Proprietary Identifier" in row_dict:
+                report_row.proprietary_id = row_dict["Proprietary Identifier"]
+            if "ISBN" in row_dict:
+                report_row.isbn = row_dict["ISBN"]
+            if "ISSN" in row_dict:
+                report_row.print_issn = row_dict["ISSN"]
+
+
+            if c4_report_type == "BR1":
+                report_row.metric_type = "Unique_Title_Requests"
+            elif c4_report_type == "BR2":
+                report_row.metric_type = "Total_Item_Requests"
+            elif c4_report_type == "BR3":
+                if "Access Denied Category" in row_dict:
+                    adc = row_dict["Access Denied Category"]
+                    if adc == "Access denied: concurrent/simultaneous user licence limit exceded":
+                        report_row.metric_type = "Limit_Exceeded"
+                    elif adc == "Access denied: content item not licenced":
+                        report_row.metric_type = "No_License"
+
+
+            if "Reporting Period Total" in row_dict:
+                report_row.total_count = int(row_dict["Reporting Period Total"])
+
+
+
+
+            return report_row
+
+
+
 
 
 

@@ -191,7 +191,7 @@ class ReportModel(JsonModel):
 
         report_header = ReportHeaderModel.from_json(json_dict["Report_Header"])
         report_type = report_header.report_id
-        major_report_type = get_major_report_type(report_type)
+        major_report_type = GeneralUtils.get_major_report_type(report_type)
         report_header.major_report_type = major_report_type
 
         report_items = []
@@ -507,23 +507,6 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
             models.append(model_type.from_json(json_dict[model_key]))
 
     return models
-
-
-def get_major_report_type(report_type: str) -> MajorReportType:
-    """Returns a major report type that a report type falls under"""
-    if report_type == "PR" or report_type == "PR_P1":
-        return MajorReportType.PLATFORM
-
-    elif report_type == "DR" or report_type == "DR_D1" or report_type == "DR_D2":
-        return MajorReportType.DATABASE
-
-    elif report_type == "TR" or report_type == "TR_B1" or report_type == "TR_B2" \
-            or report_type == "TR_B3" or report_type == "TR_J1" or report_type == "TR_J2" \
-            or report_type == "TR_J3" or report_type == "TR_J4":
-        return MajorReportType.TITLE
-
-    elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
-        return MajorReportType.ITEM
 
 
 def get_month_years(begin_date: QDate, end_date: QDate) -> list:
@@ -2058,7 +2041,7 @@ class ReportWorker(QObject):
                             attributes_to_show += f"|{option_name}"
                             attr_count += 1
         elif self.is_yearly and self.is_master:
-            major_report_type = get_major_report_type(self.report_type)
+            major_report_type = GeneralUtils.get_major_report_type(self.report_type)
             if major_report_type == MajorReportType.PLATFORM:
                 attributes_to_show = "|".join(PLATFORM_REPORTS_ATTRIBUTES)
             elif major_report_type == MajorReportType.DATABASE:
