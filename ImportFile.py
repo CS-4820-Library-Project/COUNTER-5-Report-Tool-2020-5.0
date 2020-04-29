@@ -14,7 +14,7 @@ import GeneralUtils
 from Constants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
-from FetchData import ALL_REPORTS, CompletionStatus, ReportRow
+from FetchData import CompletionStatus, ReportRow, ReportHeaderModel, ReportWorker
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
 
@@ -112,6 +112,9 @@ def get_short_c4_report_type(long_c4_report_type: str) -> str:
         short_report_type = "PR1"
 
     return short_report_type
+
+
+
 
 
 class ImportReportController:
@@ -254,9 +257,11 @@ class ImportReportController:
             file_names = [file_path.split("/")[-1] for file_path in file_paths]
             self.c4_selected_file_edit.setText(", ".join(file_names))
 
-            cc = Counter4To5Converter(self.c4_report_type_combo_box.currentText(),
+            cc = Counter4To5Converter(self.vendors[self.selected_vendor_index],
+                                      self.c4_report_type_combo_box.currentText(),
                                       file_paths,
-                                      self.year_date_edit.date().year())
+                                      self.settings.yearly_directory,
+                                      self.year_date_edit.date())
             cc.work()
 
     def on_import_clicked(self):
@@ -409,24 +414,44 @@ class ImportReportController:
 
 
 class Counter4To5Converter:
-    def __init__(self, c4_report_type: str, file_paths: list, report_year: int):
+    def __init__(self, vendor: Vendor, c4_report_type: str, file_paths: list, save_dir: str, date: QDate):
+        self.vendor = vendor
         self.c4_report_type = c4_report_type
         self.file_paths = file_paths
-        self.report_year = report_year
-        self.target_report_type = get_c5_equivalent(c4_report_type)
-        self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_report_type)
+        self.save_dir = save_dir
+        self.begin_date = QDate(date.year(), 1, 1)
+        self.end_date = QDate(date.year(), 12, 1)
+        self.target_c5_report_type = get_c5_equivalent(c4_report_type)
+        self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_c5_report_type)
 
         self.final_rows_dict = {}
 
     def work(self):
-        # open each file
-        # read each file in to the model
+        # Convert files to report models and report rows
+        c4_report_header: Counter4ReportHeader = None
         for file_path in self.file_paths:
+            # Read each file in to a model
             report_model = self.c4_file_to_c4_model(file_path)
+            c4_report_header = report_model.report_header
+            # Convert all row_dicts to report rows, add them to self.final_rows_dict {row_name: [ReportRows]}
             self.c4_model_to_final_rows(report_model)
 
             print(self.final_rows_dict)
-        print()
+
+        if not c4_report_header:
+            print("No COUNTER 4 Report Header found")
+            return
+        c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
+                                                     c4_report_header.customer,
+                                                     [c4_report_header.institution_id])
+
+        final_report_rows = []
+        for rows in self.final_rows_dict.values():
+            final_report_rows += rows
+
+        self.create_c5_file(c5_report_header, final_report_rows)
+
+
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         # print(file_path[-4:])
@@ -507,7 +532,7 @@ class Counter4To5Converter:
             # self.final_rows_dict[report_row.title]
 
     def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
-        report_row = ReportRow(QDate(self.report_year, 1, 1), QDate(self.report_year, 12, 1))
+        report_row = ReportRow(self.begin_date, self.end_date)
         if self.target_c5_major_report_type == MajorReportType.TITLE:
             if "" in row_dict:
                 report_row.title = row_dict[""]
@@ -532,10 +557,16 @@ class Counter4To5Converter:
             elif c4_report_type == "BR3":
                 if "Access Denied Category" in row_dict:
                     adc = row_dict["Access Denied Category"]
-                    if adc == "Access denied: concurrent/simultaneous user licence limit exceded":
+                    if "limit exceded" in adc or "limit exceeded" in adc:
                         report_row.metric_type = "Limit_Exceeded"
-                    elif adc == "Access denied: content item not licenced":
+                    elif "not licenced" in adc or "not licensed" in adc:
                         report_row.metric_type = "No_License"
+                    #
+                    #
+                    # if adc == "Access denied: concurrent/simultaneous user licence limit exceded":
+                    #     report_row.metric_type = "Limit_Exceeded"
+                    # elif adc == "Access denied: content item not licenced":
+                    #     report_row.metric_type = "No_License"
 
 
             if "Reporting Period Total" in row_dict:
@@ -545,6 +576,75 @@ class Counter4To5Converter:
 
 
             return report_row
+
+    def get_c5_report_header(self, target_c5_report_type, customer: str, institution_ids: list) -> ReportHeaderModel:
+        return ReportHeaderModel(target_c5_report_type,
+                                 self.get_long_c5_report_type(target_c5_report_type),
+                                 "5",
+                                 customer,
+                                 institution_ids,
+                                 self.get_c5_header_report_filters(target_c5_report_type),
+                                 self.get_c5_header_report_attributes(target_c5_report_type),
+                                 [],
+                                 self.get_c5_header_created(),
+                                 self.get_c5_header_created_by())
+
+    def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list):
+
+        file_dir = GeneralUtils.get_yearly_file_dir(self.save_dir, self.vendor.name, self.begin_date)
+        file_name = GeneralUtils.get_yearly_file_name(self.vendor.name, self.target_c5_report_type, self.begin_date)
+        file_path = f"{file_dir}{file_name}"
+
+        if not path.isdir(file_dir):
+            makedirs(file_dir)
+
+        file = open(file_path, 'w', encoding="utf-8", newline='')
+
+        ReportWorker.add_report_header_to_file(c5_report_header, file, True)
+        ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
+                                             file, False)
+
+        file.close()
+
+
+
+    @staticmethod
+    def get_long_c5_report_type(short_c5_report_type: str) -> str:
+        long_c5_report_type = ""
+        if short_c5_report_type == "DR":
+            long_c5_report_type = "Database Master Report"
+        elif short_c5_report_type == "DR_D1":
+            long_c5_report_type = "Database Search and Item Usage"
+        elif short_c5_report_type == "DR_D2":
+            long_c5_report_type = "Database Access Denied"
+        elif short_c5_report_type == "TR":
+            long_c5_report_type = "Title Master Report"
+        elif short_c5_report_type == "TR_B1":
+            long_c5_report_type = "Book Requests (Excluding OA_Gold)"
+        elif short_c5_report_type == "TR_B2":
+            long_c5_report_type = "Book Access Denied"
+        elif short_c5_report_type == "TR_J1":
+            long_c5_report_type = "Journal Requests (Excluding OA_Gold)"
+        elif short_c5_report_type == "TR_J2":
+            long_c5_report_type = "Journal Access Denied"
+
+        return long_c5_report_type
+
+    @staticmethod
+    def get_c5_header_report_filters(target_c5_report_type: str) -> list:
+        return []
+
+    @staticmethod
+    def get_c5_header_report_attributes(target_c5_report_type: str) -> list:
+        return []
+
+    @staticmethod
+    def get_c5_header_created() -> str:
+        return ""
+
+    @staticmethod
+    def get_c5_header_created_by() -> str:
+        return "Converted from [vendor] COP4 [COP4 report code] by COUNTER 5 Report Tool"
 
 
 
