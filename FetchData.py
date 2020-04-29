@@ -2445,7 +2445,7 @@ class ReportWorker(QObject):
         elif major_report_type == MajorReportType.DATABASE:
             return sorted(report_rows, key=lambda row: row.database.lower())
         elif major_report_type == MajorReportType.TITLE:
-            return sorted(report_rows, key=lambda row: row.title.lower())
+            return sorted(report_rows, key=lambda row: (row.title.lower(), row.yop))
         elif major_report_type == MajorReportType.ITEM:
             return sorted(report_rows, key=lambda row: row.item.lower())
 
