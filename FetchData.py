@@ -2480,7 +2480,8 @@ class ReportWorker(QObject):
         else:
             self.add_report_header_to_file(report_header, file, True)
 
-        if not self.add_report_rows_to_file(report_type, report_rows, file, False):
+        if not self.add_report_rows_to_file(report_type, report_rows, self.begin_date, self.end_date, file, False,
+                                            self.is_special, self.special_options):
             self.process_result.completion_status = CompletionStatus.WARNING
 
         file.close()
@@ -2501,12 +2502,13 @@ class ReportWorker(QObject):
             protected_file_path = f"{protected_file_dir}{file_name}"
             protected_file = open(protected_file_path, 'w', encoding="utf-8", newline='')
             self.add_report_header_to_file(report_header, protected_file, True)
-            self.add_report_rows_to_file(report_type, report_rows, protected_file, True)
+            self.add_report_rows_to_file(report_type, report_rows, self.begin_date, self.end_date, protected_file, True)
 
             protected_file.close()
             self.process_result.protected_file_path = protected_file_path
 
-    def add_report_header_to_file(self, report_header: ReportHeaderModel, file, include_attributes: bool):
+    @staticmethod
+    def add_report_header_to_file(report_header: ReportHeaderModel, file, include_attributes: bool):
         """Adds the report header to a TSV file
 
         :param report_header: The report header model
@@ -2553,7 +2555,10 @@ class ReportWorker(QObject):
         tsv_writer.writerow(["Created_By", report_header.created_by])
         tsv_writer.writerow([])
 
-    def add_report_rows_to_file(self, report_type: str, report_rows: list, file, include_all_attributes: bool) -> bool:
+    @staticmethod
+    def add_report_rows_to_file(report_type: str, report_rows: list, begin_date: QDate, end_date: QDate, file,
+                                include_all_attributes: bool, is_special: bool = False,
+                                special_options: SpecialReportOptions = None) -> bool:
         """Adds the report's rows to a TSV file
 
         :param report_type: The report type
@@ -2566,8 +2571,8 @@ class ReportWorker(QObject):
 
         if report_type == "PR":
             column_names += ["Platform"]
-            if self.is_special:
-                special_options_dict = self.special_options.__dict__
+            if is_special:
+                special_options_dict = special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
             elif include_all_attributes:
@@ -2577,8 +2582,8 @@ class ReportWorker(QObject):
             row: ReportRow
             for row in report_rows:
                 row_dict = {"Platform": row.platform}
-                if self.is_special:
-                    special_options_dict = self.special_options.__dict__
+                if is_special:
+                    special_options_dict = special_options.__dict__
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
@@ -2608,8 +2613,8 @@ class ReportWorker(QObject):
 
         elif report_type == "DR":
             column_names += ["Database", "Publisher", "Publisher_ID", "Platform", "Proprietary_ID"]
-            if self.is_special:
-                special_options_dict = self.special_options.__dict__
+            if is_special:
+                special_options_dict = special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["access_method"][0]: column_names.append("Access_Method")
             elif include_all_attributes:
@@ -2624,8 +2629,8 @@ class ReportWorker(QObject):
                             "Platform": row.platform,
                             "Proprietary_ID": row.proprietary_id}
 
-                if self.is_special:
-                    special_options_dict = self.special_options.__dict__
+                if is_special:
+                    special_options_dict = special_options.__dict__
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["access_method"][0]: row_dict["Access_Method"] = row.access_method
 
@@ -2660,8 +2665,8 @@ class ReportWorker(QObject):
         elif report_type == "TR":
             column_names += ["Title", "Publisher", "Publisher_ID", "Platform", "DOI", "Proprietary_ID", "ISBN",
                              "Print_ISSN", "Online_ISSN", "URI"]
-            if self.is_special:
-                special_options_dict = self.special_options.__dict__
+            if is_special:
+                special_options_dict = special_options.__dict__
                 if special_options_dict["data_type"][0]: column_names.append("Data_Type")
                 if special_options_dict["section_type"][0]: column_names.append("Section_Type")
                 if special_options_dict["yop"][0]: column_names.append("YOP")
@@ -2687,8 +2692,8 @@ class ReportWorker(QObject):
                             "Online_ISSN": row.online_issn,
                             "URI": row.uri}
 
-                if self.is_special:
-                    special_options_dict = self.special_options.__dict__
+                if is_special:
+                    special_options_dict = special_options.__dict__
                     if special_options_dict["data_type"][0]: row_dict["Data_Type"] = row.data_type
                     if special_options_dict["section_type"][0]: row_dict["Section_Type"] = row.section_type
                     if special_options_dict["yop"][0]: row_dict["YOP"] = row.yop
@@ -2824,8 +2829,8 @@ class ReportWorker(QObject):
 
         elif report_type == "IR":
             column_names += ["Item", "Publisher", "Publisher_ID", "Platform"]
-            if self.is_special:
-                special_options_dict = self.special_options.__dict__
+            if is_special:
+                special_options_dict = special_options.__dict__
                 if special_options_dict["authors"][0]: column_names.append("Authors")
                 if special_options_dict["publication_date"][0]: column_names.append("Publication_Date")
                 if special_options_dict["article_version"][0]: column_names.append("Article_version")
@@ -2834,8 +2839,8 @@ class ReportWorker(QObject):
                 column_names.append("Publication_Date")
                 column_names.append("Article_version")
             column_names += ["DOI", "Proprietary_ID", "ISBN", "Print_ISSN", "Online_ISSN", "URI"]
-            if self.is_special:
-                special_options_dict = self.special_options.__dict__
+            if is_special:
+                special_options_dict = special_options.__dict__
                 if special_options_dict["include_parent_details"][0]:
                     column_names += ["Parent_Title", "Parent_Authors", "Parent_Publication_Date",
                                      "Parent_Article_Version", "Parent_Data_Type", "Parent_DOI",
@@ -2874,8 +2879,8 @@ class ReportWorker(QObject):
                             "Online_ISSN": row.online_issn,
                             "URI": row.uri}
 
-                if self.is_special:
-                    special_options_dict = self.special_options.__dict__
+                if is_special:
+                    special_options_dict = special_options.__dict__
                     if special_options_dict["authors"][0]: row_dict["Authors"] = row.authors
                     if special_options_dict["publication_date"][0]: row_dict["Publication_Date"] = row.publication_date
                     if special_options_dict["article_version"][0]: row_dict["Article_version"] = row.article_version
@@ -3001,12 +3006,12 @@ class ReportWorker(QObject):
 
         column_names += ["Metric_Type", "Reporting_Period_Total"]
 
-        if self.is_special:
-            special_options_dict = self.special_options.__dict__
+        if is_special:
+            special_options_dict = special_options.__dict__
             if not special_options_dict["exclude_monthly_details"][0]:
-                column_names += get_month_years(self.begin_date, self.end_date)
+                column_names += get_month_years(begin_date, end_date)
         else:
-            column_names += get_month_years(self.begin_date, self.end_date)
+            column_names += get_month_years(begin_date, end_date)
 
         tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
         tsv_dict_writer.writeheader()
