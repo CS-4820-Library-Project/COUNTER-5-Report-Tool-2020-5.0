@@ -14,7 +14,7 @@ import GeneralUtils
 from Constants import *
 from ui import ImportReportTab, ReportResultWidget
 from ManageVendors import Vendor
-from FetchData import CompletionStatus, ReportRow, ReportHeaderModel, ReportWorker
+from FetchData import CompletionStatus, ReportRow, ReportHeaderModel, TypeValueModel, NameValueModel, ReportWorker
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
 
@@ -112,9 +112,6 @@ def get_short_c4_report_type(long_c4_report_type: str) -> str:
         short_report_type = "PR1"
 
     return short_report_type
-
-
-
 
 
 class ImportReportController:
@@ -430,28 +427,28 @@ class Counter4To5Converter:
         # Convert files to report models and report rows
         c4_report_header: Counter4ReportHeader = None
         for file_path in self.file_paths:
-            # Read each file in to a model
             report_model = self.c4_file_to_c4_model(file_path)
             c4_report_header = report_model.report_header
-            # Convert all row_dicts to report rows, add them to self.final_rows_dict {row_name: [ReportRows]}
             self.c4_model_to_final_rows(report_model)
 
-            print(self.final_rows_dict)
-
+        # Create a COUNTER 5 header
         if not c4_report_header:
             print("No COUNTER 4 Report Header found")
             return
         c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
                                                      c4_report_header.customer,
-                                                     [c4_report_header.institution_id])
+                                                     c4_report_header.institution_id)
 
+        # Finalize and sort all rows
         final_report_rows = []
         for rows in self.final_rows_dict.values():
             final_report_rows += rows
 
+        final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
+
+        # Create the final COUNTER 5 file
         self.create_c5_file(c5_report_header, final_report_rows)
-
-
+        print("Fin!")
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         # print(file_path[-4:])
@@ -516,57 +513,54 @@ class Counter4To5Converter:
 
     def c4_model_to_final_rows(self, report_model: Counter4ReportModel):
         short_c4_report_type = get_short_c4_report_type(report_model.report_header.report_type)
+        print()
 
         for row_dict in report_model.row_dicts:
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
-
-
-
-            # print(report_row.__dict__)
 
             if report_row.title not in self.final_rows_dict:
                 self.final_rows_dict[report_row.title] = [report_row]
             else:
                 self.final_rows_dict[report_row.title].append(report_row)
 
-            # self.final_rows_dict[report_row.title]
-
     def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
         if self.target_c5_major_report_type == MajorReportType.TITLE:
             if "" in row_dict:
                 report_row.title = row_dict[""]
+            if "Journal" in row_dict:
+                report_row.title = row_dict["Journal"]
             if "Publisher" in row_dict:
                 report_row.publisher = row_dict["Publisher"]
             if "Platform" in row_dict:
                 report_row.platform = row_dict["Publisher"]
             if "Book DOI" in row_dict:
                 report_row.doi = row_dict["Book DOI"]
+            if "Journal DOI" in row_dict:
+                report_row.doi = row_dict["Journal DOI"]
             if "Proprietary Identifier" in row_dict:
                 report_row.proprietary_id = row_dict["Proprietary Identifier"]
             if "ISBN" in row_dict:
                 report_row.isbn = row_dict["ISBN"]
             if "ISSN" in row_dict:
                 report_row.print_issn = row_dict["ISSN"]
+            if "Print ISSN" in row_dict:
+                report_row.print_issn = row_dict["Print ISSN"]
+            if "Online ISSN" in row_dict:
+                report_row.print_issn = row_dict["Online ISSN"]
 
-
+            # Metric type
             if c4_report_type == "BR1":
                 report_row.metric_type = "Unique_Title_Requests"
-            elif c4_report_type == "BR2":
+            elif c4_report_type == "BR2" or c4_report_type == "JR1":
                 report_row.metric_type = "Total_Item_Requests"
-            elif c4_report_type == "BR3":
+            elif c4_report_type == "BR3" or c4_report_type == "JR2":
                 if "Access Denied Category" in row_dict:
                     adc = row_dict["Access Denied Category"]
                     if "limit exceded" in adc or "limit exceeded" in adc:
                         report_row.metric_type = "Limit_Exceeded"
                     elif "not licenced" in adc or "not licensed" in adc:
                         report_row.metric_type = "No_License"
-                    #
-                    #
-                    # if adc == "Access denied: concurrent/simultaneous user licence limit exceded":
-                    #     report_row.metric_type = "Limit_Exceeded"
-                    # elif adc == "Access denied: content item not licenced":
-                    #     report_row.metric_type = "No_License"
 
 
             if "Reporting Period Total" in row_dict:
@@ -577,14 +571,14 @@ class Counter4To5Converter:
 
             return report_row
 
-    def get_c5_report_header(self, target_c5_report_type, customer: str, institution_ids: list) -> ReportHeaderModel:
+    def get_c5_report_header(self, target_c5_report_type, customer: str, institution_id: str) -> ReportHeaderModel:
         return ReportHeaderModel(target_c5_report_type,
                                  self.get_long_c5_report_type(target_c5_report_type),
                                  "5",
                                  customer,
-                                 institution_ids,
-                                 self.get_c5_header_report_filters(target_c5_report_type),
-                                 self.get_c5_header_report_attributes(target_c5_report_type),
+                                 [TypeValueModel("Institution_ID", institution_id)],
+                                 [],
+                                 [],
                                  [],
                                  self.get_c5_header_created(),
                                  self.get_c5_header_created_by())
@@ -605,8 +599,6 @@ class Counter4To5Converter:
                                              file, False)
 
         file.close()
-
-
 
     @staticmethod
     def get_long_c5_report_type(short_c5_report_type: str) -> str:

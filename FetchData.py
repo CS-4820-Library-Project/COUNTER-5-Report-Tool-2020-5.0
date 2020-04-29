@@ -2433,7 +2433,8 @@ class ReportWorker(QObject):
         report_rows = self.sort_rows(report_rows, major_report_type)
         self.save_tsv_files(report_model.report_header, report_rows)
 
-    def sort_rows(self, report_rows: list, major_report_type: MajorReportType) -> list:
+    @staticmethod
+    def sort_rows(report_rows: list, major_report_type: MajorReportType) -> list:
         """Sorts the rows of the report
 
         :param report_rows: The report's rows
@@ -2444,7 +2445,7 @@ class ReportWorker(QObject):
         elif major_report_type == MajorReportType.DATABASE:
             return sorted(report_rows, key=lambda row: row.database.lower())
         elif major_report_type == MajorReportType.TITLE:
-            return sorted(report_rows, key=lambda row: (row.title.lower(), row.yop))
+            return sorted(report_rows, key=lambda row: row.title.lower())
         elif major_report_type == MajorReportType.ITEM:
             return sorted(report_rows, key=lambda row: row.item.lower())
 
