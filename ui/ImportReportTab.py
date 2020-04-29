@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'ImportReportTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_import_report_tab(object):
     def setupUi(self, import_report_tab):
@@ -133,15 +135,15 @@ class Ui_import_report_tab(object):
         self.frame_25.setObjectName("frame_25")
         self.gridLayout_8 = QtWidgets.QGridLayout(self.frame_25)
         self.gridLayout_8.setObjectName("gridLayout_8")
-        self.import_report_button_2 = QtWidgets.QPushButton(self.frame_25)
+        self.c5_import_report_button = QtWidgets.QPushButton(self.frame_25)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.import_report_button_2.sizePolicy().hasHeightForWidth())
-        self.import_report_button_2.setSizePolicy(sizePolicy)
-        self.import_report_button_2.setMaximumSize(QtCore.QSize(180, 16777215))
-        self.import_report_button_2.setObjectName("import_report_button_2")
-        self.gridLayout_8.addWidget(self.import_report_button_2, 0, 0, 1, 1)
+        sizePolicy.setHeightForWidth(self.c5_import_report_button.sizePolicy().hasHeightForWidth())
+        self.c5_import_report_button.setSizePolicy(sizePolicy)
+        self.c5_import_report_button.setMaximumSize(QtCore.QSize(180, 16777215))
+        self.c5_import_report_button.setObjectName("c5_import_report_button")
+        self.gridLayout_8.addWidget(self.c5_import_report_button, 0, 0, 1, 1)
         self.verticalLayout_24.addWidget(self.frame_25)
         spacerItem1 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         self.verticalLayout_24.addItem(spacerItem1)
@@ -254,15 +256,15 @@ class Ui_import_report_tab(object):
         self.frame_24.setObjectName("frame_24")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.frame_24)
         self.gridLayout_7.setObjectName("gridLayout_7")
-        self.import_report_button = QtWidgets.QPushButton(self.frame_24)
+        self.c4_import_report_button = QtWidgets.QPushButton(self.frame_24)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.import_report_button.sizePolicy().hasHeightForWidth())
-        self.import_report_button.setSizePolicy(sizePolicy)
-        self.import_report_button.setMaximumSize(QtCore.QSize(180, 16777215))
-        self.import_report_button.setObjectName("import_report_button")
-        self.gridLayout_7.addWidget(self.import_report_button, 0, 0, 1, 1)
+        sizePolicy.setHeightForWidth(self.c4_import_report_button.sizePolicy().hasHeightForWidth())
+        self.c4_import_report_button.setSizePolicy(sizePolicy)
+        self.c4_import_report_button.setMaximumSize(QtCore.QSize(180, 16777215))
+        self.c4_import_report_button.setObjectName("c4_import_report_button")
+        self.gridLayout_7.addWidget(self.c4_import_report_button, 0, 0, 1, 1)
         self.verticalLayout_3.addWidget(self.frame_24)
         spacerItem2 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem2)
@@ -277,7 +279,7 @@ class Ui_import_report_tab(object):
 
         self.retranslateUi(import_report_tab)
         QtCore.QMetaObject.connectSlotsByName(import_report_tab)
-        import_report_tab.setTabOrder(self.c5_selected_file_edit, self.import_report_button)
+        import_report_tab.setTabOrder(self.c5_selected_file_edit, self.c4_import_report_button)
 
     def retranslateUi(self, import_report_tab):
         _translate = QtCore.QCoreApplication.translate
@@ -289,14 +291,13 @@ class Ui_import_report_tab(object):
         self.label_17.setText(_translate("import_report_tab", "Select Report Type"))
         self.label_36.setText(_translate("import_report_tab", "Target Report File"))
         self.c5_select_file_button.setText(_translate("import_report_tab", "Select File"))
-        self.import_report_button_2.setText(_translate("import_report_tab", "Import Selected Report"))
+        self.c5_import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
         self.label_3.setText(_translate("import_report_tab", "COUNTER 4 (Converts to COUNTER 5)"))
         self.label_20.setText(_translate("import_report_tab", "Counter 4 Report Type"))
         self.label_21.setText(_translate("import_report_tab", "Counter 5 Equivalent"))
         self.c4_report_type_equiv_label.setText(_translate("import_report_tab", "TextLabel"))
         self.label_37.setText(_translate("import_report_tab", "Target Report File(s)"))
         self.c4_select_file_button.setText(_translate("import_report_tab", "Select File(s)"))
-        self.import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
+        self.c4_import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
         self.label.setText(_translate("import_report_tab", "Note: Only yearly reports (all available data for one calender year) should be imported. Imported reports are added to the search database."))
-
 import Resources_rc

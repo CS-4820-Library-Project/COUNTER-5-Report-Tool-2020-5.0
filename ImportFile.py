@@ -193,7 +193,7 @@ class ImportReportController:
         self.year_date_edit.setDate(self.date)
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
 
-        self.import_report_button = import_report_ui.import_report_button
+        self.import_report_button = import_report_ui.c5_import_report_button
         self.import_report_button.clicked.connect(self.on_import_clicked)
         # endregion
 

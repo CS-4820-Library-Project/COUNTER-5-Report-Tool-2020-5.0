@@ -232,7 +232,7 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
             <item row="0" column="0">
-             <widget class="QPushButton" name="import_report_button_2">
+             <widget class="QPushButton" name="c5_import_report_button">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -451,7 +451,7 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="0" column="0">
-             <widget class="QPushButton" name="import_report_button">
+             <widget class="QPushButton" name="c4_import_report_button">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -518,7 +518,7 @@
  </widget>
  <tabstops>
   <tabstop>c5_selected_file_edit</tabstop>
-  <tabstop>import_report_button</tabstop>
+  <tabstop>c4_import_report_button</tabstop>
  </tabstops>
  <resources>
   <include location="../Resources.qrc"/>
