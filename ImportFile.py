@@ -717,22 +717,35 @@ class Counter4To5Converter:
     @staticmethod
     def get_c5_header_report_filters(target_c5_report_type: str) -> list:
         filters = []
-        if target_c5_report_type == "DR_D1" or target_c5_report_type == "DR_D2" or target_c5_report_type == "PR_P1":
-            filters = [NameValueModel("Access_Method", "Regular")]
+        if target_c5_report_type == "DR_D1":
+            filters = [NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Searches_Automated|Searches_Federated|Searches_Regular|"
+                                                     "Total_Item_Investigations|Total_Item_Requests")]
+        elif target_c5_report_type == "DR_D2":
+            filters = [NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Limit_Exceeded|No_License")]
+        elif target_c5_report_type == "PR_P1":
+            filters = [NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Searches_Platform|Total_Item_Requests|Unique_Item_Requests|"
+                                                     "Unique_Title_Requests")]
         elif target_c5_report_type == "TR_B1":
             filters = [NameValueModel("Data_Type", "Book"),
                        NameValueModel("Access_Type", "Controlled"),
-                       NameValueModel("Access_Method", "Regular")]
+                       NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Total_Item_Requests|Unique_Title_Requests")]
         elif target_c5_report_type == "TR_B2":
             filters = [NameValueModel("Data_Type", "Book"),
-                       NameValueModel("Access_Method", "Regular")]
+                       NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Limit_Exceeded|No_License")]
         elif target_c5_report_type == "TR_J1":
             filters = [NameValueModel("Data_Type", "Journal"),
                        NameValueModel("Access_Type", "Controlled"),
-                       NameValueModel("Access_Method", "Regular")]
+                       NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Total_Item_Requests|Unique_Item_Requests")]
         elif target_c5_report_type == "TR_J2":
             filters = [NameValueModel("Data_Type", "Journal"),
-                       NameValueModel("Access_Method", "Regular")]
+                       NameValueModel("Access_Method", "Regular"),
+                       NameValueModel("Metric_Type", "Limit_Exceeded|No_License")]
 
         return filters
 
