@@ -447,20 +447,26 @@ class Counter4To5Converter:
 
     def work(self):
         # Convert files to report models and report rows
-        c4_report_header: Counter4ReportHeader = None
+        c4_report_types_processed = []
+        c4_customer = ""
+        c4_institution_id = ""
         for file_path in self.file_paths:
             report_model = self.c4_file_to_c4_model(file_path)
             c4_report_header = report_model.report_header
+            c4_customer = c4_report_header.customer
+            c4_institution_id = c4_report_header.institution_id
+            c4_report_types_processed.append(get_short_c4_report_type(c4_report_header.report_type))
             self.c4_model_to_rows(report_model)
 
         # Create a COUNTER 5 header
-        if not c4_report_header:
-            print("No COUNTER 4 Report Header found")
+        if not c4_report_types_processed:
+            print("No COUNTER 4 Report Processed")
             return
+        c4_report_types_processed = sorted(c4_report_types_processed)
         c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
-                                                     c4_report_header.report_type,
-                                                     c4_report_header.customer,
-                                                     c4_report_header.institution_id)
+                                                     ", ".join(c4_report_types_processed),
+                                                     c4_customer,
+                                                     c4_institution_id)
 
         # Finalize and sort all rows
         final_report_rows = [row for row in self.final_rows_dict.values()]
@@ -671,7 +677,7 @@ class Counter4To5Converter:
                                  [],
                                  [],
                                  self.get_c5_header_created(),
-                                 self.get_c5_header_created_by(get_short_c4_report_type(c4_report_type)))
+                                 self.get_c5_header_created_by(c4_report_type))
 
     def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list):
 
