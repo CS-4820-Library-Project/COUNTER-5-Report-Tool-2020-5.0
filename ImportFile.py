@@ -27,7 +27,7 @@ COUNTER_4_REPORT_TYPES = {
     "DB2": "DR_D2",
     "JR1": "TR_J1",
     "JR2": "TR_J2",
-    "PR1": "PR",
+    "PR1": "PR_P1",
     "BR1, BR2": "TR_B1",
     "BR1, BR2, BR3, JR1, JR2": "TR",
     "DB1, DB2": "DR"
@@ -545,11 +545,17 @@ class Counter4To5Converter:
                 else:
                     self.final_rows_dict[report_row.database].append(report_row)
 
-            elif self.target_c5_major_report_type == MajorReportType.DATABASE:
+            elif self.target_c5_major_report_type == MajorReportType.TITLE:
                 if report_row.title not in self.final_rows_dict:
                     self.final_rows_dict[report_row.title] = [report_row]
                 else:
                     self.final_rows_dict[report_row.title].append(report_row)
+
+            elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
+                if report_row.platform not in self.final_rows_dict:
+                    self.final_rows_dict[report_row.platform] = [report_row]
+                else:
+                    self.final_rows_dict[report_row.platform].append(report_row)
 
     def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
@@ -621,11 +627,28 @@ class Counter4To5Converter:
                     elif "not licenced" in adc or "not licensed" in adc:
                         report_row.metric_type = "No_License"
 
+        elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
+            if "Platform" in row_dict:
+                report_row.platform = row_dict["Platform"]
+            if "Publisher" in row_dict:
+                report_row.publisher = row_dict["Publisher"]
+
+            # Metric type
+            if c4_report_type == "PR1":
+                if "User Activity" in row_dict:
+                    ua = row_dict["User Activity"]
+                    if ua == "Regular Searches":
+                        report_row.metric_type = "Searches_Regular"
+                    elif ua == "Searches-federated and automated":
+                        report_row.metric_type = "Searches_Automated"
+                    elif ua == "Result Clicks" or ua == "Record Views":
+                        report_row.metric_type = "Total_Item_Investigations"
+
         return report_row
 
     def get_c5_report_header(self, target_c5_report_type, customer: str, institution_id: str) -> ReportHeaderModel:
-        return ReportHeaderModel(target_c5_report_type,
-                                 self.get_long_c5_report_type(target_c5_report_type),
+        return ReportHeaderModel(self.get_long_c5_report_type(target_c5_report_type),
+                                 target_c5_report_type,
                                  "5",
                                  customer,
                                  [TypeValueModel("Institution_ID", institution_id)],
@@ -671,6 +694,8 @@ class Counter4To5Converter:
             long_c5_report_type = "Journal Requests (Excluding OA_Gold)"
         elif short_c5_report_type == "TR_J2":
             long_c5_report_type = "Journal Access Denied"
+        elif short_c5_report_type == "PR_P1":
+            long_c5_report_type = "Platform Usage"
 
         return long_c5_report_type
 
