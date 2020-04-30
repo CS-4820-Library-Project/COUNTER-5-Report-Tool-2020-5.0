@@ -450,7 +450,7 @@ class Counter4To5Converter:
         for file_path in self.file_paths:
             report_model = self.c4_file_to_c4_model(file_path)
             c4_report_header = report_model.report_header
-            self.c4_model_to_final_rows(report_model)
+            self.c4_model_to_rows(report_model)
 
         # Create a COUNTER 5 header
         if not c4_report_header:
@@ -461,10 +461,7 @@ class Counter4To5Converter:
                                                      c4_report_header.institution_id)
 
         # Finalize and sort all rows
-        final_report_rows = []
-        for rows in self.final_rows_dict.values():
-            final_report_rows += rows
-
+        final_report_rows = [row for row in self.final_rows_dict.values()]
         final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
 
         # Create the final COUNTER 5 file
@@ -532,7 +529,7 @@ class Counter4To5Converter:
 
         return report_model
 
-    def c4_model_to_final_rows(self, report_model: Counter4ReportModel):
+    def c4_model_to_rows(self, report_model: Counter4ReportModel):
         short_c4_report_type = get_short_c4_report_type(report_model.report_header.report_type)
         print()
 
@@ -540,22 +537,31 @@ class Counter4To5Converter:
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
 
             if self.target_c5_major_report_type == MajorReportType.DATABASE:
-                if report_row.database not in self.final_rows_dict:
-                    self.final_rows_dict[report_row.database] = [report_row]
+                if (report_row.database, report_row.metric_type) not in self.final_rows_dict:
+                    self.final_rows_dict[report_row.database, report_row.metric_type] = report_row
                 else:
-                    self.final_rows_dict[report_row.database].append(report_row)
+                    existing_row: ReportRow = self.final_rows_dict[report_row.database, report_row.metric_type]
+                    existing_metric_type_total = existing_row.total_count
+                    new_metric_type_total = report_row.total_count
+
+                    if existing_row.metric_type == "Total_Item_Investigations":
+                        if new_metric_type_total > existing_metric_type_total:
+                            self.final_rows_dict[report_row.database, report_row.metric_type] = report_row
 
             elif self.target_c5_major_report_type == MajorReportType.TITLE:
-                if report_row.title not in self.final_rows_dict:
-                    self.final_rows_dict[report_row.title] = [report_row]
+                if (report_row.title, report_row.metric_type) not in self.final_rows_dict:
+                    self.final_rows_dict[report_row.title, report_row.metric_type] = report_row
                 else:
-                    self.final_rows_dict[report_row.title].append(report_row)
+                    existing_row: ReportRow = self.final_rows_dict[report_row.title, report_row.metric_type]
+                    existing_metric_type_total = existing_row.total_count
+                    new_metric_type_total = report_row.total_count
+
+                    if existing_row.metric_type == "Total_Item_Investigations":
+                        if new_metric_type_total > existing_metric_type_total:
+                            self.final_rows_dict[report_row.title, report_row.metric_type] = report_row
 
             elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
-                if report_row.platform not in self.final_rows_dict:
-                    self.final_rows_dict[report_row.platform] = [report_row]
-                else:
-                    self.final_rows_dict[report_row.platform].append(report_row)
+                self.final_rows_dict[report_row.platform, report_row.metric_type] = report_row
 
     def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
