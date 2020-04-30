@@ -67,7 +67,7 @@ def open_file_or_dir(target_path: str):
 
 def choose_file(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.ExistingFile)
     dialog.setNameFilters(name_filters)
     if dialog.exec_():
@@ -78,7 +78,7 @@ def choose_file(name_filters) -> str:
 
 def choose_files(name_filters) -> list:
     file_paths = []
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.ExistingFiles)
     print([x for x in name_filters])
     dialog.setNameFilters([x for x in name_filters])
@@ -90,7 +90,7 @@ def choose_files(name_filters) -> list:
 
 def choose_directory() -> str:
     dir_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.Directory)
     if dialog.exec_():
         dir_path = dialog.selectedFiles()[0] + "/"
@@ -100,7 +100,7 @@ def choose_directory() -> str:
 
 def choose_save(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.AnyFile)
     dialog.setAcceptMode(QFileDialog.AcceptSave)
     dialog.setNameFilters(name_filters)
