@@ -492,6 +492,9 @@ class Counter4To5Converter:
         for row_dict in report_model.row_dicts:
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
 
+            if report_row.total_count == 0:  # Exclude rows with reporting total of 0
+                continue
+
             if self.target_c5_major_report_type == MajorReportType.DATABASE:
                 if (report_row.database, report_row.metric_type) not in self.final_rows_dict:
                     self.final_rows_dict[report_row.database, report_row.metric_type] = report_row
@@ -615,7 +618,8 @@ class Counter4To5Converter:
 
         return report_row
 
-    def get_c5_report_header(self, target_c5_report_type, c4_report_types: str, customer: str, institution_id: str) -> ReportHeaderModel:
+    def get_c5_report_header(self, target_c5_report_type, c4_report_types: str, customer: str,
+                             institution_id: str) -> ReportHeaderModel:
         return ReportHeaderModel(self.get_long_c5_report_type(target_c5_report_type),
                                  target_c5_report_type,
                                  "5",
