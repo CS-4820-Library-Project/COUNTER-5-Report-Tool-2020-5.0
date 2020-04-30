@@ -22,16 +22,16 @@ from ManageDB import UpdateDatabaseWorker
 # COUNTER_4_REPORT_TYPES = ("BR1", "BR2", "BR3", "DB1", "DB2", "JR1", "JR2", "JR5", "PR1")
 COUNTER_4_REPORT_TYPES = {
     "BR1": "TR_B1",
+    "BR1, BR2": "TR_B1",
+    "BR1, BR2, BR3, JR1, JR2": "TR",
     "BR2": "TR_B1",
     "BR3": "TR_B2",
     "DB1": "DR_D1",
+    "DB1, DB2": "DR",
     "DB2": "DR_D2",
     "JR1": "TR_J1",
     "JR2": "TR_J2",
-    "PR1": "PR_P1",
-    "BR1, BR2": "TR_B1",
-    "BR1, BR2, BR3, JR1, JR2": "TR",
-    "DB1, DB2": "DR"
+    "PR1": "PR_P1"
 }
 
 
@@ -458,6 +458,7 @@ class Counter4To5Converter:
             print("No COUNTER 4 Report Header found")
             return
         c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
+                                                     c4_report_header.report_type,
                                                      c4_report_header.customer,
                                                      c4_report_header.institution_id)
 
@@ -564,7 +565,7 @@ class Counter4To5Converter:
             elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
                 self.final_rows_dict[report_row.platform, report_row.metric_type] = report_row
 
-    def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
+    def convert_c4_row_to_c5(self, c4_report_type: str, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
 
         if self.target_c5_major_report_type == MajorReportType.DATABASE:
@@ -660,17 +661,17 @@ class Counter4To5Converter:
 
         return report_row
 
-    def get_c5_report_header(self, target_c5_report_type, customer: str, institution_id: str) -> ReportHeaderModel:
+    def get_c5_report_header(self, target_c5_report_type, c4_report_type: str, customer: str, institution_id: str) -> ReportHeaderModel:
         return ReportHeaderModel(self.get_long_c5_report_type(target_c5_report_type),
                                  target_c5_report_type,
                                  "5",
                                  customer,
                                  [TypeValueModel("Institution_ID", institution_id)],
-                                 [],
+                                 self.get_c5_header_report_filters(target_c5_report_type),
                                  [],
                                  [],
                                  self.get_c5_header_created(),
-                                 self.get_c5_header_created_by())
+                                 self.get_c5_header_created_by(get_short_c4_report_type(c4_report_type)))
 
     def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list):
 
@@ -715,19 +716,32 @@ class Counter4To5Converter:
 
     @staticmethod
     def get_c5_header_report_filters(target_c5_report_type: str) -> list:
-        return []
+        filters = []
+        if target_c5_report_type == "DR_D1" or target_c5_report_type == "DR_D2" or target_c5_report_type == "PR_P1":
+            filters = [NameValueModel("Access_Method", "Regular")]
+        elif target_c5_report_type == "TR_B1":
+            filters = [NameValueModel("Data_Type", "Book"),
+                       NameValueModel("Access_Type", "Controlled"),
+                       NameValueModel("Access_Method", "Regular")]
+        elif target_c5_report_type == "TR_B2":
+            filters = [NameValueModel("Data_Type", "Book"),
+                       NameValueModel("Access_Method", "Regular")]
+        elif target_c5_report_type == "TR_J1":
+            filters = [NameValueModel("Data_Type", "Journal"),
+                       NameValueModel("Access_Type", "Controlled"),
+                       NameValueModel("Access_Method", "Regular")]
+        elif target_c5_report_type == "TR_J2":
+            filters = [NameValueModel("Data_Type", "Journal"),
+                       NameValueModel("Access_Method", "Regular")]
 
-    @staticmethod
-    def get_c5_header_report_attributes(target_c5_report_type: str) -> list:
-        return []
+        return filters
 
     @staticmethod
     def get_c5_header_created() -> str:
         return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    @staticmethod
-    def get_c5_header_created_by() -> str:
-        return "Converted from [vendor] COP4 [COP4 report code] by COUNTER 5 Report Tool"
+    def get_c5_header_created_by(self, short_c4_report_type: str) -> str:
+        return f"Converted from {self.vendor.name} COP4 {short_c4_report_type} by COUNTER 5 Report Tool"
 
 
 
