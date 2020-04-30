@@ -439,7 +439,7 @@ class Counter4To5Converter:
         self.file_paths = file_paths
         self.save_dir = save_dir
         self.begin_date = QDate(date.year(), 1, 1)
-        self.end_date = QDate(date.year(), 12, 1)
+        self.end_date = QDate(date.year(), 12, 31)
         self.target_c5_report_type = get_c5_equivalent(c4_report_type)
         self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_c5_report_type)
 
@@ -714,8 +714,7 @@ class Counter4To5Converter:
 
         return long_c5_report_type
 
-    @staticmethod
-    def get_c5_header_report_filters(target_c5_report_type: str) -> list:
+    def get_c5_header_report_filters(self, target_c5_report_type: str) -> list:
         filters = []
         if target_c5_report_type == "DR_D1":
             filters = [NameValueModel("Access_Method", "Regular"),
@@ -747,6 +746,9 @@ class Counter4To5Converter:
                        NameValueModel("Access_Method", "Regular"),
                        NameValueModel("Metric_Type", "Limit_Exceeded|No_License")]
 
+        filters += [NameValueModel("Begin_Date", self.begin_date.toString("yyyy-MM-dd")),
+                    NameValueModel("End_Date", self.end_date.toString("yyyy-MM-dd"))]
+
         return filters
 
     @staticmethod
@@ -754,7 +756,7 @@ class Counter4To5Converter:
         return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def get_c5_header_created_by(self, short_c4_report_type: str) -> str:
-        return f"Converted from {self.vendor.name} COP4 {short_c4_report_type} by COUNTER 5 Report Tool"
+        return f"COUNTER 5 Report Tool, converted from {self.vendor.name} COP4 {short_c4_report_type}"
 
 
 
