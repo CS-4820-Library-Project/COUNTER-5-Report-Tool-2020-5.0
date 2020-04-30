@@ -560,10 +560,6 @@ class Counter4To5Converter:
     def convert_c4_row_to_c5(self, c4_report_type, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
 
-        # All report types have this column
-        if "Reporting Period Total" in row_dict:
-            report_row.total_count = int(row_dict["Reporting Period Total"])
-
         if self.target_c5_major_report_type == MajorReportType.DATABASE:
             if "Database" in row_dict:
                 report_row.database = row_dict["Database"]
@@ -643,6 +639,17 @@ class Counter4To5Converter:
                         report_row.metric_type = "Searches_Automated"
                     elif ua == "Result Clicks" or ua == "Record Views":
                         report_row.metric_type = "Total_Item_Investigations"
+
+        if "Reporting Period Total" in row_dict:
+            report_row.total_count = int(row_dict["Reporting Period Total"])
+
+        # Month Columns
+        year = int(self.begin_date.toString("yyyy"))
+        for i in range(0, 12):
+            month = QDate(year, i + 1, 1).toString("MMM")
+            month_year = f"{month}-{year}"
+            if month_year in row_dict:
+                report_row.month_counts[month_year] = row_dict[month_year]
 
         return report_row
 

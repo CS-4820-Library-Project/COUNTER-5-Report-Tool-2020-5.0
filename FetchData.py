@@ -606,19 +606,6 @@ class ReportRow:
 
         self.month_counts = {}
 
-        # This only works with 12 months
-        # for i in range(12):
-        #     curr_date: QDate
-        #     if QDate(begin_date.year(), i + 1, 1) < begin_date:
-        #         curr_date = QDate(end_date.year(), i + 1, 1)
-        #     else:
-        #         curr_date = QDate(begin_date.year(), i + 1, 1)
-        #
-        #     self.month_counts[curr_date.toString("MMM-yyyy")] = 0
-        #
-        # self.total_count = 0
-
-        # This works with more than 12 months
         for month_year_str in get_month_years(begin_date, end_date):
             self.month_counts[month_year_str] = 0
 
