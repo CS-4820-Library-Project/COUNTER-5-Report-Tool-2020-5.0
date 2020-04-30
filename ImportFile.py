@@ -19,7 +19,6 @@ from FetchData import CompletionStatus, ReportRow, ReportHeaderModel, TypeValueM
 from Settings import SettingsModel
 from ManageDB import UpdateDatabaseWorker
 
-# COUNTER_4_REPORT_TYPES = ("BR1", "BR2", "BR3", "DB1", "DB2", "JR1", "JR2", "JR5", "PR1")
 COUNTER_4_REPORT_TYPES = {
     "BR1": "TR_B1",
     "BR1, BR2": "TR_B1",
@@ -67,52 +66,8 @@ class ProcessResult:
         self.file_path = ""
 
 
-class MajorC4ReportType(Enum):
-    BOOK = "BR"
-    DATABASE = "DB"
-    JOURNAL = "JR"
-    PLATFORM = "PR"
-
-
-def get_major_c4_report_type(report_type: str) -> MajorC4ReportType:
-    """Returns a major report type that a report type falls under"""
-    if report_type == "BR1" or report_type == "BR2" or report_type == "BR3":
-        return MajorC4ReportType.BOOK
-
-    elif report_type == "DB1" or report_type == "DB2":
-        return MajorC4ReportType.DATABASE
-
-    elif report_type == "JR1" or report_type == "JR2":
-        return MajorC4ReportType.JOURNAL
-
-    elif report_type == "PR1":
-        return MajorC4ReportType.PLATFORM
-
-
 def get_c5_equivalent(counter4_report_type: str) -> str:
     return COUNTER_4_REPORT_TYPES[counter4_report_type]
-
-
-def get_short_c4_report_type(long_c4_report_type: str) -> str:
-    short_report_type = ""
-    if long_c4_report_type == "Book Report 1 (R4)":
-        short_report_type = "BR1"
-    elif long_c4_report_type == "Book Report 2 (R4)":
-        short_report_type = "BR2"
-    elif long_c4_report_type == "Book Report 3 (R4)":
-        short_report_type = "BR3"
-    elif long_c4_report_type == "Database Report 1 (R4)":
-        short_report_type = "DB1"
-    elif long_c4_report_type == "Database Report 2 (R4)":
-        short_report_type = "DB2"
-    elif long_c4_report_type == "Journal Report 1 (R4)":
-        short_report_type = "JR1"
-    elif long_c4_report_type == "Journal Report 2 (R4)":
-        short_report_type = "JR2"
-    elif long_c4_report_type == "Platform Report 1 (R4)":
-        short_report_type = "PR1"
-
-    return short_report_type
 
 
 class ImportReportController:
@@ -281,22 +236,16 @@ class ImportReportController:
         if self.selected_vendor_index == -1:
             GeneralUtils.show_message("Select a vendor")
             return
-        # elif self.selected_c4_report_type_index == -1:
-        #     GeneralUtils.show_message("Select a report type")
-        #     return
         elif not self.c4_selected_file_paths:
             GeneralUtils.show_message("Select a file")
             return
-
-        # vendor = self.vendors[self.selected_vendor_index]
-        # report_type = ALL_REPORTS[self.selected_c5_report_type_index]
 
         cc = Counter4To5Converter(self.vendors[self.selected_vendor_index],
                                   self.c4_report_type_combo_box.currentText(),
                                   self.c4_selected_file_paths,
                                   self.settings.yearly_directory,
                                   self.year_date_edit.date())
-        cc.work()
+        cc.do_conversion()
 
         # process_result = self.import_report(vendor, report_type)
         # self.show_result(process_result)
@@ -311,7 +260,6 @@ class ImportReportController:
         process_result = ProcessResult(vendor, report_type)
 
         try:
-
             dest_file_dir = GeneralUtils.get_yearly_file_dir(self.settings.yearly_directory, vendor.name, self.date)
             dest_file_name = GeneralUtils.get_yearly_file_name(vendor.name, report_type, self.date)
             dest_file_path = f"{dest_file_dir}{dest_file_name}"
@@ -445,7 +393,7 @@ class Counter4To5Converter:
 
         self.final_rows_dict = {}
 
-    def work(self):
+    def do_conversion(self):
         # Convert files to report models and report rows
         c4_report_types_processed = []
         c4_customer = ""
@@ -455,7 +403,7 @@ class Counter4To5Converter:
             c4_report_header = report_model.report_header
             c4_customer = c4_report_header.customer
             c4_institution_id = c4_report_header.institution_id
-            c4_report_types_processed.append(get_short_c4_report_type(c4_report_header.report_type))
+            c4_report_types_processed.append(self.get_short_c4_report_type(c4_report_header.report_type))
             self.c4_model_to_rows(report_model)
 
         # Create a COUNTER 5 header
@@ -538,7 +486,7 @@ class Counter4To5Converter:
         return report_model
 
     def c4_model_to_rows(self, report_model: Counter4ReportModel):
-        short_c4_report_type = get_short_c4_report_type(report_model.report_header.report_type)
+        short_c4_report_type = self.get_short_c4_report_type(report_model.report_header.report_type)
         print()
 
         for row_dict in report_model.row_dicts:
@@ -667,7 +615,7 @@ class Counter4To5Converter:
 
         return report_row
 
-    def get_c5_report_header(self, target_c5_report_type, c4_report_type: str, customer: str, institution_id: str) -> ReportHeaderModel:
+    def get_c5_report_header(self, target_c5_report_type, c4_report_types: str, customer: str, institution_id: str) -> ReportHeaderModel:
         return ReportHeaderModel(self.get_long_c5_report_type(target_c5_report_type),
                                  target_c5_report_type,
                                  "5",
@@ -677,7 +625,7 @@ class Counter4To5Converter:
                                  [],
                                  [],
                                  self.get_c5_header_created(),
-                                 self.get_c5_header_created_by(c4_report_type))
+                                 self.get_c5_header_created_by(c4_report_types))
 
     def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list):
 
@@ -695,6 +643,28 @@ class Counter4To5Converter:
                                              file, False)
 
         file.close()
+
+    @staticmethod
+    def get_short_c4_report_type(long_c4_report_type: str) -> str:
+        short_report_type = ""
+        if long_c4_report_type == "Book Report 1 (R4)":
+            short_report_type = "BR1"
+        elif long_c4_report_type == "Book Report 2 (R4)":
+            short_report_type = "BR2"
+        elif long_c4_report_type == "Book Report 3 (R4)":
+            short_report_type = "BR3"
+        elif long_c4_report_type == "Database Report 1 (R4)":
+            short_report_type = "DB1"
+        elif long_c4_report_type == "Database Report 2 (R4)":
+            short_report_type = "DB2"
+        elif long_c4_report_type == "Journal Report 1 (R4)":
+            short_report_type = "JR1"
+        elif long_c4_report_type == "Journal Report 2 (R4)":
+            short_report_type = "JR2"
+        elif long_c4_report_type == "Platform Report 1 (R4)":
+            short_report_type = "PR1"
+
+        return short_report_type
 
     @staticmethod
     def get_long_c5_report_type(short_c5_report_type: str) -> str:
