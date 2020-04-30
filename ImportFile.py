@@ -604,7 +604,7 @@ class Counter4To5Converter:
             if "ISBN" in row_dict:
                 report_row.isbn = row_dict["ISBN"]
             if "ISSN" in row_dict:
-                report_row.print_issn = row_dict["ISSN"]
+                report_row.online_issn = row_dict["ISSN"]
             if "Print ISSN" in row_dict:
                 report_row.print_issn = row_dict["Print ISSN"]
             if "Online ISSN" in row_dict:
