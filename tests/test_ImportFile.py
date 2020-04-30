@@ -119,11 +119,11 @@ def test_on_date_changed(controller_v):
 
 def test_on_import_clicked(controller_v):
     # No vendor selected
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
     controller_v.selected_vendor_index = 1
 
     # No report type selected
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
     controller_v.selected_c5_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
@@ -133,15 +133,15 @@ def test_on_import_clicked(controller_v):
     file_path = file_dir + file_name
 
     # No file selected
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
 
     # Invalid file selected
     controller_v.c5_selected_file_path = "./data/invalid_file"
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
 
     # Valid file selected
     controller_v.c5_selected_file_path = "./data/test_file_for_import.tsv"
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
     assert path.isfile(file_path)
 
 

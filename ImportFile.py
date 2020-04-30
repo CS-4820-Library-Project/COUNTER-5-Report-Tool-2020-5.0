@@ -5,7 +5,7 @@ import platform
 import ctypes
 import csv
 from os import path, makedirs
-from PyQt5.QtCore import QModelIndex, QDate, Qt
+from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import QtWidgets
@@ -164,6 +164,9 @@ class ImportReportController:
         self.c5_select_file_btn.clicked.connect(self.on_c5_select_file_clicked)
 
         self.c5_selected_file_edit = import_report_ui.c5_selected_file_edit
+
+        self.c5_import_report_button = import_report_ui.c5_import_report_button
+        self.c5_import_report_button.clicked.connect(self.on_c5_import_clicked)
         # endregion
 
         # region Counter 4
@@ -186,15 +189,15 @@ class ImportReportController:
 
         self.c4_selected_file_edit = import_report_ui.c4_selected_file_edit
 
+        self.c4_import_report_button = import_report_ui.c4_import_report_button
+        self.c4_import_report_button.clicked.connect(self.on_c4_import_clicked)
+
         # endregion
 
         # region Date
         self.year_date_edit = import_report_ui.report_year_date_edit
         self.year_date_edit.setDate(self.date)
         self.year_date_edit.dateChanged.connect(self.on_date_changed)
-
-        self.import_report_button = import_report_ui.c5_import_report_button
-        self.import_report_button.clicked.connect(self.on_import_clicked)
         # endregion
 
     def on_vendors_changed(self, vendors: list):
@@ -254,14 +257,7 @@ class ImportReportController:
             file_names = [file_path.split("/")[-1] for file_path in file_paths]
             self.c4_selected_file_edit.setText(", ".join(file_names))
 
-            cc = Counter4To5Converter(self.vendors[self.selected_vendor_index],
-                                      self.c4_report_type_combo_box.currentText(),
-                                      file_paths,
-                                      self.settings.yearly_directory,
-                                      self.year_date_edit.date())
-            cc.work()
-
-    def on_import_clicked(self):
+    def on_c5_import_clicked(self):
         """Handles the signal emitted when the import button is clicked"""
         if self.selected_vendor_index == -1:
             GeneralUtils.show_message("Select a vendor")
@@ -278,6 +274,31 @@ class ImportReportController:
 
         process_result = self.import_report(vendor, report_type)
         self.show_result(process_result)
+
+    def on_c4_import_clicked(self):
+        """Handles the signal emitted when the import button is clicked"""
+        if self.selected_vendor_index == -1:
+            GeneralUtils.show_message("Select a vendor")
+            return
+        # elif self.selected_c4_report_type_index == -1:
+        #     GeneralUtils.show_message("Select a report type")
+        #     return
+        elif not self.c4_selected_file_paths:
+            GeneralUtils.show_message("Select a file")
+            return
+
+        # vendor = self.vendors[self.selected_vendor_index]
+        # report_type = ALL_REPORTS[self.selected_c5_report_type_index]
+
+        cc = Counter4To5Converter(self.vendors[self.selected_vendor_index],
+                                  self.c4_report_type_combo_box.currentText(),
+                                  self.c4_selected_file_paths,
+                                  self.settings.yearly_directory,
+                                  self.year_date_edit.date())
+        cc.work()
+
+        # process_result = self.import_report(vendor, report_type)
+        # self.show_result(process_result)
 
     def import_report(self, vendor: Vendor, report_type: str) -> ProcessResult:
         """ Imports the selected file using the selected parameters
