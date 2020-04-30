@@ -4,6 +4,7 @@ import shutil
 import platform
 import ctypes
 import csv
+from datetime import datetime, timezone
 from os import path, makedirs
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
@@ -722,7 +723,7 @@ class Counter4To5Converter:
 
     @staticmethod
     def get_c5_header_created() -> str:
-        return ""
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @staticmethod
     def get_c5_header_created_by() -> str:
