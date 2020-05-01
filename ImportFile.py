@@ -481,6 +481,7 @@ class Counter4To5Converter:
                 date_run = row[0]
                 is_valid_date = QDate().fromString(date_run, "yyyy-MM-dd").isValid()
                 if not is_valid_date:
+                    file.close()
                     raise Exception("Invalid date on line 7")
 
             curr_line += 1
@@ -489,6 +490,7 @@ class Counter4To5Converter:
                 break
 
         if curr_line <= last_header_line:
+            file.close()
             raise Exception("Not enough lines in report header")
 
         report_header = Counter4ReportHeader(report_type, customer, institution_id, reporting_period, date_run)
