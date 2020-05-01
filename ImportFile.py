@@ -250,10 +250,14 @@ class ImportReportController:
                                              self.c4_selected_file_paths,
                                              dir_path + path.sep,
                                              self.year_date_edit.date())
-
-            c5_file_path, error_message = converter.do_conversion()
-            if error_message:
-                print(error_message)
+            try:
+                c5_file_path = converter.do_conversion()
+            except Exception as e:
+                print("Error converting file. " + str(e))
+                process_result = ProcessResult(vendor, report_type)
+                process_result.completion_status = CompletionStatus.FAILED
+                process_result.message = "Error converting file. " + str(e)
+                self.show_result(process_result)
                 return
 
             process_result = self.import_report(vendor, report_type, c5_file_path)
@@ -402,7 +406,7 @@ class Counter4To5Converter:
 
         self.final_rows_dict = {}
 
-    def do_conversion(self) -> (str, str):
+    def do_conversion(self) -> str:
         # Convert files to report models and report rows
         c4_report_types_processed = []
         c4_customer = ""
@@ -430,9 +434,9 @@ class Counter4To5Converter:
         final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
 
         # Create the final COUNTER 5 file
-        file_path, error_message = self.create_c5_file(c5_report_header, final_report_rows)
+        file_path = self.create_c5_file(c5_report_header, final_report_rows)
 
-        return file_path, error_message
+        return file_path
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         # print(file_path[-4:])
@@ -459,26 +463,37 @@ class Counter4To5Converter:
 
         for row in csv_reader:
             # print(row[0])
-
             if curr_line == 1:
                 report_type = row[0]
             elif curr_line == 2:
                 customer = row[0]
             elif curr_line == 3:
                 institution_id = row[0]
+            elif curr_line == 4 and row[0].lower() != "period covered by report:":
+                file.close()
+                raise Exception("'Period covered by Report:' missing from header line 4")
             elif curr_line == 5:
                 reporting_period = row[0]
+            elif curr_line == 6 and row[0].lower() != "date run:":
+                file.close()
+                raise Exception("'Date run:' missing from header line 6")
             elif curr_line == 7:
                 date_run = row[0]
+                is_valid_date = QDate().fromString(date_run, "yyyy-MM-dd").isValid()
+                if not is_valid_date:
+                    raise Exception("Invalid date on line 7")
 
             curr_line += 1
 
             if curr_line > last_header_line:
                 break
 
+        if curr_line <= last_header_line:
+            raise Exception("Not enough lines in report header")
+
         report_header = Counter4ReportHeader(report_type, customer, institution_id, reporting_period, date_run)
 
-        # Process process report into model
+        # Process process report rows into model
         csv_dict_reader = csv.DictReader(file, delimiter=delimiter)
         header_dict = csv_dict_reader.fieldnames
         # print(header_dict)
@@ -640,25 +655,21 @@ class Counter4To5Converter:
                                  self.get_c5_header_created(),
                                  self.get_c5_header_created_by(c4_report_types))
 
-    def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list) -> (str, str):
+    def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list) -> str:
         file_path = self.save_dir + "temp_converted_c5_file.tsv"
-        error_message = ""
 
-        try:
-            if not path.isdir(self.save_dir):
-                makedirs(self.save_dir)
+        if not path.isdir(self.save_dir):
+            makedirs(self.save_dir)
 
-            file = open(file_path, 'w', encoding="utf-8", newline='')
+        file = open(file_path, 'w', encoding="utf-8", newline='')
 
-            ReportWorker.add_report_header_to_file(c5_report_header, file, True)
-            ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
-                                                 file, False)
+        ReportWorker.add_report_header_to_file(c5_report_header, file, True)
+        ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
+                                             file, False)
 
-            file.close()
-        except IOError as e:
-            error_message = e
+        file.close()
 
-        return file_path, error_message
+        return file_path
 
     @staticmethod
     def get_short_c4_report_type(long_c4_report_type: str) -> str:
