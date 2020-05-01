@@ -4,6 +4,7 @@ import shutil
 import platform
 import ctypes
 import csv
+from tempfile import TemporaryDirectory
 from datetime import datetime, timezone
 from os import path, makedirs
 from PyQt5.QtCore import QDate, Qt
@@ -228,7 +229,7 @@ class ImportReportController:
         vendor = self.vendors[self.selected_vendor_index]
         report_type = ALL_REPORTS[self.selected_c5_report_type_index]
 
-        process_result = self.import_report(vendor, report_type)
+        process_result = self.import_report(vendor, report_type, self.c5_selected_file_path)
         self.show_result(process_result)
 
     def on_c4_import_clicked(self):
@@ -240,17 +241,25 @@ class ImportReportController:
             GeneralUtils.show_message("Select a file")
             return
 
-        cc = Counter4To5Converter(self.vendors[self.selected_vendor_index],
-                                  self.c4_report_type_combo_box.currentText(),
-                                  self.c4_selected_file_paths,
-                                  self.settings.yearly_directory,
-                                  self.year_date_edit.date())
-        cc.do_conversion()
+        vendor = self.vendors[self.selected_vendor_index]
+        report_type = get_c5_equivalent(self.c4_report_type_combo_box.currentText())
 
-        # process_result = self.import_report(vendor, report_type)
-        # self.show_result(process_result)
+        with TemporaryDirectory("") as dir_path:
+            converter = Counter4To5Converter(self.vendors[self.selected_vendor_index],
+                                             self.c4_report_type_combo_box.currentText(),
+                                             self.c4_selected_file_paths,
+                                             dir_path + path.sep,
+                                             self.year_date_edit.date())
 
-    def import_report(self, vendor: Vendor, report_type: str) -> ProcessResult:
+            c5_file_path, error_message = converter.do_conversion()
+            if error_message:
+                print(error_message)
+                return
+
+            process_result = self.import_report(vendor, report_type, c5_file_path)
+            self.show_result(process_result)
+
+    def import_report(self, vendor: Vendor, report_type: str, origin_file_path: str) -> ProcessResult:
         """ Imports the selected file using the selected parameters
 
         :param vendor: The target vendor
@@ -269,8 +278,8 @@ class ImportReportController:
                 makedirs(dest_file_dir)
 
             # Validate report header
-            delimiter = DELIMITERS[self.c5_selected_file_path[-4:].lower()]
-            file = open(self.c5_selected_file_path, 'r', encoding='utf-8-sig')
+            delimiter = DELIMITERS[origin_file_path[-4:].lower()]
+            file = open(origin_file_path, 'r', encoding='utf-8-sig')
             reader = csv.reader(file, delimiter=delimiter, quotechar='\"')
             if file.mode == 'r':
                 header = {}
@@ -297,7 +306,7 @@ class ImportReportController:
                 raise Exception('Could not open file')
 
             # Copy selected_file_path to dest_file_path
-            self.copy_file(self.c5_selected_file_path, dest_file_path)
+            self.copy_file(origin_file_path, dest_file_path)
 
             process_result.file_dir = dest_file_dir
             process_result.file_name = dest_file_name
@@ -312,7 +321,7 @@ class ImportReportController:
                     ctypes.windll.kernel32.SetFileAttributesW(PROTECTED_DATABASE_FILE_DIR, 2)  # Hide folder
 
             protected_file_path = f"{protected_file_dir}{dest_file_name}"
-            self.copy_file(self.c5_selected_file_path, protected_file_path)
+            self.copy_file(origin_file_path, protected_file_path)
 
             # Add file to database
             database_worker = UpdateDatabaseWorker([{'file': protected_file_path,
@@ -393,7 +402,7 @@ class Counter4To5Converter:
 
         self.final_rows_dict = {}
 
-    def do_conversion(self):
+    def do_conversion(self) -> (str, str):
         # Convert files to report models and report rows
         c4_report_types_processed = []
         c4_customer = ""
@@ -421,8 +430,9 @@ class Counter4To5Converter:
         final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
 
         # Create the final COUNTER 5 file
-        self.create_c5_file(c5_report_header, final_report_rows)
-        print("Fin!")
+        file_path, error_message = self.create_c5_file(c5_report_header, final_report_rows)
+
+        return file_path, error_message
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         # print(file_path[-4:])
@@ -487,7 +497,6 @@ class Counter4To5Converter:
 
     def c4_model_to_rows(self, report_model: Counter4ReportModel):
         short_c4_report_type = self.get_short_c4_report_type(report_model.report_header.report_type)
-        print()
 
         for row_dict in report_model.row_dicts:
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
@@ -631,22 +640,25 @@ class Counter4To5Converter:
                                  self.get_c5_header_created(),
                                  self.get_c5_header_created_by(c4_report_types))
 
-    def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list):
+    def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list) -> (str, str):
+        file_path = self.save_dir + "temp_converted_c5_file.tsv"
+        error_message = ""
 
-        file_dir = GeneralUtils.get_yearly_file_dir(self.save_dir, self.vendor.name, self.begin_date)
-        file_name = GeneralUtils.get_yearly_file_name(self.vendor.name, self.target_c5_report_type, self.begin_date)
-        file_path = f"{file_dir}{file_name}"
+        try:
+            if not path.isdir(self.save_dir):
+                makedirs(self.save_dir)
 
-        if not path.isdir(file_dir):
-            makedirs(file_dir)
+            file = open(file_path, 'w', encoding="utf-8", newline='')
 
-        file = open(file_path, 'w', encoding="utf-8", newline='')
+            ReportWorker.add_report_header_to_file(c5_report_header, file, True)
+            ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
+                                                 file, False)
 
-        ReportWorker.add_report_header_to_file(c5_report_header, file, True)
-        ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
-                                             file, False)
+            file.close()
+        except IOError as e:
+            error_message = e
 
-        file.close()
+        return file_path, error_message
 
     @staticmethod
     def get_short_c4_report_type(long_c4_report_type: str) -> str:
