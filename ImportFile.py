@@ -527,6 +527,9 @@ class Counter4To5Converter:
                 continue
 
             if self.target_c5_major_report_type == MajorReportType.DATABASE:
+                if report_row.database.lower().startswith("total for all"):  # Exclude total rows
+                    continue
+
                 if (report_row.database, report_row.metric_type) not in self.final_rows_dict:
                     self.final_rows_dict[report_row.database, report_row.metric_type] = report_row
                 else:
@@ -539,6 +542,9 @@ class Counter4To5Converter:
                             self.final_rows_dict[report_row.database, report_row.metric_type] = report_row
 
             elif self.target_c5_major_report_type == MajorReportType.TITLE:
+                if report_row.title.lower().startswith("total for all"):  # Exclude total rows
+                    continue
+
                 if (report_row.title, report_row.metric_type) not in self.final_rows_dict:
                     self.final_rows_dict[report_row.title, report_row.metric_type] = report_row
                 else:
