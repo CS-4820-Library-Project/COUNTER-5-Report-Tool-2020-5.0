@@ -244,6 +244,12 @@ class ImportReportController:
         vendor = self.vendors[self.selected_vendor_index]
         report_type = get_c5_equivalent(self.c4_report_type_combo_box.currentText())
 
+        # Check if target C5 file already exists
+        if self.check_if_c5_report_exists(vendor.name, report_type):
+            if not GeneralUtils.ask_confirmation("A COUNTER 5 equivalent of this report already exists in the "
+                                                 "database, do you want to overwrite it?"):
+                return
+
         with TemporaryDirectory("") as dir_path:
             converter = Counter4To5Converter(self.vendors[self.selected_vendor_index],
                                              self.c4_report_type_combo_box.currentText(),
@@ -339,6 +345,13 @@ class ImportReportController:
             process_result.completion_status = CompletionStatus.FAILED
 
         return process_result
+
+    def check_if_c5_report_exists(self, vendor_name, report_type) -> bool:
+        protected_file_dir = f"{PROTECTED_DATABASE_FILE_DIR}{self.date.toString('yyyy')}/{vendor_name}/"
+        protected_file_name = GeneralUtils.get_yearly_file_name(vendor_name, report_type, self.date)
+        protected_file_path = f"{protected_file_dir}{protected_file_name}"
+
+        return path.isfile(protected_file_path)
 
     def copy_file(self, origin_path: str, dest_path: str):
         """Copies a file from origin_path to dest_path"""
