@@ -394,14 +394,14 @@ class ImportReportController:
 
 
 class Counter4To5Converter:
-    def __init__(self, vendor: Vendor, c4_report_type: str, file_paths: list, save_dir: str, date: QDate):
+    def __init__(self, vendor: Vendor, c4_report_types: str, file_paths: list, save_dir: str, date: QDate):
         self.vendor = vendor
-        self.c4_report_type = c4_report_type
+        self.c4_report_types = c4_report_types
         self.file_paths = file_paths
         self.save_dir = save_dir
         self.begin_date = QDate(date.year(), 1, 1)
         self.end_date = QDate(date.year(), 12, 31)
-        self.target_c5_report_type = get_c5_equivalent(c4_report_type)
+        self.target_c5_report_type = get_c5_equivalent(c4_report_types)
         self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_c5_report_type)
 
         self.final_rows_dict = {}
@@ -414,15 +414,20 @@ class Counter4To5Converter:
         for file_path in self.file_paths:
             report_model = self.c4_file_to_c4_model(file_path)
             c4_report_header = report_model.report_header
+            short_c4_report_type = self.get_short_c4_report_type(c4_report_header.report_type)
+            if short_c4_report_type not in self.c4_report_types:
+                continue
+
+            c4_report_types_processed.append(short_c4_report_type)
             c4_customer = c4_report_header.customer
             c4_institution_id = c4_report_header.institution_id
-            c4_report_types_processed.append(self.get_short_c4_report_type(c4_report_header.report_type))
+            c4_report_types_processed.append(short_c4_report_type)
             self.c4_model_to_rows(report_model)
 
         # Create a COUNTER 5 header
         if not c4_report_types_processed:
-            print("No COUNTER 4 Report Processed")
-            return
+            print("No valid COUNTER 4 report selected for this operation")
+            raise Exception("No valid COUNTER 4 report selected for this operation")
         c4_report_types_processed = sorted(c4_report_types_processed)
         c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
                                                      ", ".join(c4_report_types_processed),
