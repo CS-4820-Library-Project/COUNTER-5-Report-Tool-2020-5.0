@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from datetime import datetime, timezone
 from os import path, makedirs
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox
+from PyQt5.QtWidgets import QWidget, QDialog, QDialogButtonBox, QLabel
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5 import QtWidgets
 
@@ -144,7 +144,8 @@ class ImportReportController:
         self.c4_select_file_btn = import_report_ui.c4_select_file_button
         self.c4_select_file_btn.clicked.connect(self.on_c4_select_file_clicked)
 
-        self.c4_selected_file_edit = import_report_ui.c4_selected_file_edit
+        self.c4_selected_files_frame = import_report_ui.c4_selected_files_frame
+        self.c4_selected_files_frame_layout = self.c4_selected_files_frame.layout()
 
         self.c4_import_report_button = import_report_ui.c4_import_report_button
         self.c4_import_report_button.clicked.connect(self.on_c4_import_clicked)
@@ -212,7 +213,19 @@ class ImportReportController:
         if file_paths:
             self.c4_selected_file_paths = file_paths
             file_names = [file_path.split("/")[-1] for file_path in file_paths]
-            self.c4_selected_file_edit.setText(", ".join(file_names))
+
+            # Remove existing options from ui
+            for i in reversed(range(self.c4_selected_files_frame_layout.count())):
+                widget = self.c4_selected_files_frame_layout.itemAt(i).widget()
+                # remove it from the layout list
+                self.c4_selected_files_frame_layout.removeWidget(widget)
+                # remove it from the gui
+                widget.deleteLater()
+
+            # Add new file names
+            for file_name in file_names:
+                label = QLabel(file_name)
+                self.c4_selected_files_frame_layout.addWidget(label)
 
     def on_c5_import_clicked(self):
         """Handles the signal emitted when the import button is clicked"""
