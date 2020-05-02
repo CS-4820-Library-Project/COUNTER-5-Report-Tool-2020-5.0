@@ -57,6 +57,7 @@ class ProcessResult:
     :param vendor: The target vendor
     :param report_type: The target report type
     """
+
     def __init__(self, vendor: Vendor, report_type: str):
         self.vendor = vendor
         self.report_type = report_type
@@ -79,6 +80,7 @@ class ImportReportController:
     :param import_report_widget: The import report widget.
     :param import_report_ui: The UI for the import_report_widget.
     """
+
     def __init__(self, vendors: list, settings: SettingsModel, import_report_widget: QWidget,
                  import_report_ui: ImportReportTab.Ui_import_report_tab):
 
@@ -510,7 +512,9 @@ class Counter4To5Converter:
                 raise Exception("'Date run:' missing from header line 6")
             elif curr_line == 7:
                 date_run = row[0]
-                is_valid_date = QDate().fromString(date_run, "yyyy-MM-dd").isValid()
+                is_valid_date = QDate().fromString(date_run, "yyyy-MM-dd").isValid() or \
+                                QDate().fromString(date_run, "MM-dd-yy").isValid() or \
+                                QDate().fromString(date_run, "M-d-yy").isValid()
                 if not is_valid_date:
                     file.close()
                     raise Exception("Invalid date on line 7")
@@ -799,10 +803,3 @@ class Counter4To5Converter:
 
     def get_c5_header_created_by(self, short_c4_report_type: str) -> str:
         return f"COUNTER 5 Report Tool, converted from {self.vendor.name} COP4 {short_c4_report_type}"
-
-
-
-
-
-
-
