@@ -274,7 +274,6 @@ class ImportReportController:
             try:
                 c5_file_path = converter.do_conversion()
             except Exception as e:
-                print("Error converting file. " + str(e))
                 process_result = ProcessResult(vendor, report_type)
                 process_result.completion_status = CompletionStatus.FAILED
                 process_result.message = "Error converting file. " + str(e)
@@ -454,7 +453,6 @@ class Counter4To5Converter:
 
         # Create a COUNTER 5 header
         if not c4_report_types_processed:
-            print("No valid COUNTER 4 report selected for this operation")
             raise Exception("No valid COUNTER 4 report selected for this operation")
         c4_report_types_processed = sorted(c4_report_types_processed)
         c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
@@ -472,7 +470,6 @@ class Counter4To5Converter:
         return file_path
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
-        # print(file_path[-4:])
         file = open(file_path, 'r', encoding="utf-8")
 
         extension = file_path[-4:]
@@ -495,7 +492,6 @@ class Counter4To5Converter:
         last_header_line = 7
 
         for row in csv_reader:
-            # print(row[0])
             if curr_line == 1:
                 report_type = row[0]
             elif curr_line == 2:
@@ -533,13 +529,10 @@ class Counter4To5Converter:
         # Process process report rows into model
         csv_dict_reader = csv.DictReader(file, delimiter=delimiter)
         header_dict = csv_dict_reader.fieldnames
-        # print(header_dict)
         row_dicts = []
 
         for row in csv_dict_reader:
-            # print(row)
             row_dicts.append(row)
-            # print(row_dicts[-1][""])
 
         report_model = Counter4ReportModel(report_header, header_dict, row_dicts)
 
