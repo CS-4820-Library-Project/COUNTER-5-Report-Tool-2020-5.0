@@ -2551,8 +2551,12 @@ class ReportWorker(QObject):
 
         :param report_type: The report type
         :param report_rows: The report's rows
+        :param begin_date: The first date in the report
+        :param end_date: The last date in the report
         :param file: The TSV file to write to
         :param include_all_attributes: Option to include all possible attributes for this report type to the report
+        :param is_special: If this is a special report
+        :param special_options: The special options if this is a special report
         """
         column_names = []
         row_dicts = []
