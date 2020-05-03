@@ -288,6 +288,7 @@ class ImportReportController:
 
         :param vendor: The target vendor
         :param report_type: The target report type
+        :param origin_file_path: The path of the file to be imported
         :raises Exception: If anything goes wrong while importing the report
         """
         process_result = ProcessResult(vendor, report_type)
