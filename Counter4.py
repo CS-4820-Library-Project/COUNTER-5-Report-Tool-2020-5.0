@@ -224,6 +224,8 @@ class Counter4To5Converter:
         elif self.target_c5_major_report_type == MajorReportType.TITLE:
             if "" in row_dict:
                 report_row.title = row_dict[""]
+            if "Title" in row_dict:
+                report_row.title = row_dict["Title"]
             if "Journal" in row_dict:
                 report_row.title = row_dict["Journal"]
             if "Publisher" in row_dict:
