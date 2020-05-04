@@ -39,7 +39,7 @@ class ProcessResult:
 
 
 def get_c5_equivalent(counter4_report_type: str) -> str:
-    return COUNTER_4_REPORT_TYPES[counter4_report_type]
+    return COUNTER_4_REPORT_EQUIVALENTS[counter4_report_type]
 
 
 class ImportReportController:
@@ -105,7 +105,7 @@ class ImportReportController:
         self.c4_report_type_combo_box.currentIndexChanged.connect(self.on_c4_report_type_selected)
         self.c4_report_type_equiv_label = import_report_ui.c4_report_type_equiv_label
 
-        for report_type in COUNTER_4_REPORT_TYPES.keys():
+        for report_type in COUNTER_4_REPORT_EQUIVALENTS.keys():
             item = QStandardItem(report_type)
             item.setEditable(False)
             self.c4_report_type_model.appendRow(item)
