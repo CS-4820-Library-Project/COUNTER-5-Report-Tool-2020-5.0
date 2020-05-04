@@ -610,7 +610,7 @@ EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 # endregion
 
 
-# region Variable Constants for ManageVendors
+# region Variable Constants for ImportFile
 COUNTER_4_REPORT_EQUIVALENTS = {
     "BR1": "TR_B1",
     "BR1, BR2": "TR_B1",

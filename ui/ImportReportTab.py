@@ -327,7 +327,7 @@ class Ui_import_report_tab(object):
         self.c5_import_report_button.setText(_translate("import_report_tab", "Import Selected Report"))
         self.label_3.setText(_translate("import_report_tab", "COUNTER 4 (Converts to COUNTER 5)"))
         self.label_20.setText(_translate("import_report_tab", "Counter 4 Report Type"))
-        self.label_21.setText(_translate("import_report_tab", "Counter 5 Equivalent"))
+        self.label_21.setText(_translate("import_report_tab", "Counter 5 Equivalent(s)"))
         self.c4_report_type_equiv_label.setText(_translate("import_report_tab", "TextLabel"))
         self.label_37.setText(_translate("import_report_tab", "Source Report File(s)"))
         self.c4_select_file_button.setText(_translate("import_report_tab", "Select File(s)"))

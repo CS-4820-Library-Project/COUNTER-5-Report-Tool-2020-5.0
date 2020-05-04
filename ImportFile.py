@@ -215,7 +215,7 @@ class ImportReportController:
         report_type = ALL_REPORTS[self.selected_c5_report_type_index]
 
         process_result = self.import_report(vendor, report_type, self.c5_selected_file_path)
-        self.show_result(process_result)
+        self.show_results([process_result])
 
     def on_c4_import_clicked(self):
         """Handles the signal emitted when the import button is clicked"""
@@ -227,12 +227,18 @@ class ImportReportController:
             return
 
         vendor = self.vendors[self.selected_vendor_index]
-        report_type = get_c5_equivalent(self.c4_report_type_combo_box.currentText())
+        report_types = get_c5_equivalent(self.c4_report_type_combo_box.currentText())
 
         # Check if target C5 file already exists
-        if self.check_if_c5_report_exists(vendor.name, report_type):
-            if not GeneralUtils.ask_confirmation("A COUNTER 5 equivalent of this report already exists in the "
-                                                 "database, do you want to overwrite it?"):
+        existing_report_types = []
+        for report_type in report_types.split(", "):
+            if self.check_if_c5_report_exists(vendor.name, report_type):
+                existing_report_types.append(report_type)
+
+        # Confirm overwrite
+        if existing_report_types:
+            if not GeneralUtils.ask_confirmation(f"COUNTER 5 [{', '.join(existing_report_types)}] already exist in the "
+                                                 "database for this vendor, do you want to overwrite them?"):
                 return
 
         with TemporaryDirectory("") as dir_path:
@@ -242,16 +248,22 @@ class ImportReportController:
                                              dir_path + path.sep,
                                              self.year_date_edit.date())
             try:
-                c5_file_path = converter.do_conversion()
+                c5_file_paths = converter.do_conversion()
             except Exception as e:
-                process_result = ProcessResult(vendor, report_type)
+                process_result = ProcessResult(vendor, report_types)
                 process_result.completion_status = CompletionStatus.FAILED
                 process_result.message = "Error converting file. " + str(e)
-                self.show_result(process_result)
+                self.show_results([process_result])
                 return
 
-            process_result = self.import_report(vendor, report_type, c5_file_path)
-            self.show_result(process_result)
+            process_results = []
+            for report_type in c5_file_paths:
+                file_path = c5_file_paths[report_type]
+                process_result = self.import_report(vendor, report_type, file_path)
+                process_results.append(process_result)
+                print(process_result.file_path)
+
+            self.show_results(process_results)
 
     def import_report(self, vendor: Vendor, report_type: str, origin_file_path: str) -> ProcessResult:
         """ Imports the selected file using the selected parameters
@@ -342,50 +354,52 @@ class ImportReportController:
         """Copies a file from origin_path to dest_path"""
         shutil.copy2(origin_path, dest_path)
 
-    def show_result(self, process_result: ProcessResult):
+    def show_results(self, process_results: list):
         """Shows the result of the import process to the user
 
-        :param process_result: The result of the import process
+        :param process_results: The results of the import process
         """
         self.result_dialog = QDialog(self.import_report_widget, flags=Qt.WindowCloseButtonHint)
         self.result_dialog.setWindowTitle("Import Result")
         vertical_layout = QtWidgets.QVBoxLayout(self.result_dialog)
         vertical_layout.setContentsMargins(5, 5, 5, 5)
 
-        report_result_widget = QWidget(self.result_dialog)
-        report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
-        report_result_ui.setupUi(report_result_widget)
+        for process_result in process_results:
+            report_result_widget = QWidget(self.result_dialog)
+            report_result_ui = ReportResultWidget.Ui_ReportResultWidget()
+            report_result_ui.setupUi(report_result_widget)
+
+            vendor = process_result.vendor
+            report_type = process_result.report_type
+
+            report_result_ui.report_type_label.setText(f"{vendor.name} - {report_type}")
+            report_result_ui.success_label.setText(process_result.completion_status.value)
+
+            if process_result.completion_status == CompletionStatus.SUCCESSFUL:
+                report_result_ui.message_label.hide()
+                report_result_ui.retry_frame.hide()
+
+                report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
+                report_result_ui.file_label.mousePressEvent = \
+                    lambda event, file_path = process_result.file_path: GeneralUtils.open_file_or_dir(file_path)
+
+                report_result_ui.folder_button.clicked.connect(
+                    lambda file_dir=process_result.file_dir: GeneralUtils.open_file_or_dir(file_dir))
+
+                report_result_ui.success_label.setText("Successful!")
+                report_result_ui.retry_frame.hide()
+
+            elif process_result.completion_status == CompletionStatus.FAILED:
+                report_result_ui.file_frame.hide()
+                report_result_ui.retry_frame.hide()
+
+                report_result_ui.message_label.setText(process_result.message)
+
+            vertical_layout.addWidget(report_result_widget)
 
         button_box = QtWidgets.QDialogButtonBox(QDialogButtonBox.Ok, self.result_dialog)
         button_box.setCenterButtons(True)
         button_box.accepted.connect(self.result_dialog.accept)
-
-        vendor = process_result.vendor
-        report_type = process_result.report_type
-
-        report_result_ui.report_type_label.setText(f"{vendor.name} - {report_type}")
-        report_result_ui.success_label.setText(process_result.completion_status.value)
-
-        if process_result.completion_status == CompletionStatus.SUCCESSFUL:
-            report_result_ui.message_label.hide()
-            report_result_ui.retry_frame.hide()
-
-            report_result_ui.file_label.setText(f"Saved as: {process_result.file_name}")
-            report_result_ui.file_label.mousePressEvent = \
-                lambda event: GeneralUtils.open_file_or_dir(process_result.file_path)
-
-            report_result_ui.folder_button.clicked.connect(
-                lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
-
-            report_result_ui.success_label.setText("Successful!")
-            report_result_ui.retry_frame.hide()
-
-        elif process_result.completion_status == CompletionStatus.FAILED:
-            report_result_ui.file_frame.hide()
-            report_result_ui.retry_frame.hide()
-
-            report_result_ui.message_label.setText(process_result.message)
-
-        vertical_layout.addWidget(report_result_widget)
         vertical_layout.addWidget(button_box)
+
         self.result_dialog.show()

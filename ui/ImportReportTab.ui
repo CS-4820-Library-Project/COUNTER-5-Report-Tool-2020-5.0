@@ -364,7 +364,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Counter 5 Equivalent</string>
+                  <string>Counter 5 Equivalent(s)</string>
                  </property>
                 </widget>
                </item>

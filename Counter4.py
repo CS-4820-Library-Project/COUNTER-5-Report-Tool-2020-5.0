@@ -34,14 +34,13 @@ class Counter4To5Converter:
         self.save_dir = save_dir
         self.begin_date = QDate(date.year(), 1, 1)
         self.end_date = QDate(date.year(), 12, 31)
-        self.target_c5_report_type = self.get_c5_equivalent(c4_report_types)
-        self.target_c5_major_report_type = GeneralUtils.get_major_report_type(self.target_c5_report_type)
+        self.target_c5_report_types = self.get_c5_equivalent(c4_report_types)
 
         self.final_rows_dict = {}
-        self.report_rows_dict = {}  # {report_type: report_rows_dict}
 
-    def do_conversion(self) -> str:
-        # Convert files to report models and report rows
+    def do_conversion(self) -> dict:
+        file_paths = {}
+        report_rows_dict = {}  # {report_type: report_rows_dict}
         c4_report_types_processed = []
         c4_customer = ""
         c4_institution_id = ""
@@ -57,27 +56,57 @@ class Counter4To5Converter:
             c4_institution_id = c4_report_header.institution_id
             c4_report_types_processed.append(short_c4_report_type)
             report_rows = self.c4_model_to_rows(report_model)
-            self.report_rows_dict[short_c4_report_type] = report_rows
+            report_rows_dict[short_c4_report_type] = report_rows
 
-        # Finalize rows for each report type
-
-        # Finalize and sort all rows
-        final_report_rows = [row for row in self.final_rows_dict.values()]
-        final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
-
-        # Create a COUNTER 5 header
         if not c4_report_types_processed:
             raise Exception("No valid COUNTER 4 report selected for this operation")
-        c4_report_types_processed = sorted(c4_report_types_processed)
-        c5_report_header = self.get_c5_report_header(self.target_c5_report_type,
-                                                     ", ".join(c4_report_types_processed),
-                                                     c4_customer,
-                                                     c4_institution_id)
 
-        # Create the final COUNTER 5 file
-        file_path = self.create_c5_file(c5_report_header, final_report_rows)
+        # Create a final COUNTER 5 file for each target c5 report type
+        for c5_report_type in self.target_c5_report_types.split(", "):
+            required_c4_report_types = self.get_c4_equivalent(c5_report_type).split(", ")
+            c4_report_types_used = []
+            c5_report_type_rows = []
 
-        return file_path
+            # Fill up c5_report_type_rows with rows from required_c4_report_types
+            for c4_report_type in required_c4_report_types:
+                if c4_report_type in report_rows_dict:
+                    c5_report_type_rows += report_rows_dict[c4_report_type]
+                    c4_report_types_used.append(c4_report_type)
+
+            # Sort the rows
+            c5_major_report_type = GeneralUtils.get_major_report_type(c5_report_type)
+            c5_report_type_rows = ReportWorker.sort_rows(c5_report_type_rows, c5_major_report_type)
+
+            # Create header for this report
+            c5_report_header = self.get_c5_report_header(c5_report_type,
+                                                         ", ".join(c4_report_types_used),
+                                                         c4_customer,
+                                                         c4_institution_id)
+
+            # Create the c5 file
+            file_path = self.create_c5_file(c5_report_header, c5_report_type_rows)
+            file_paths[c5_report_type] = file_path
+
+
+
+
+
+        # Create a COUNTER 5 header
+        # c4_report_types_processed = sorted(c4_report_types_processed)
+        # c5_report_header = self.get_c5_report_header(self.target_c5_report_types,
+        #                                              ", ".join(c4_report_types_processed),
+        #                                              c4_customer,
+        #                                              c4_institution_id)
+
+
+        # Finalize and sort all rows
+        # final_report_rows = [row for row in self.final_rows_dict.values()]
+        # final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
+
+        # Create the final COUNTER 5 file for each target file
+        # file_path = self.create_c5_file(c5_report_header, final_report_rows)
+
+        return file_paths
 
     def c4_file_to_c4_model(self, file_path: str) -> Counter4ReportModel:
         file = open(file_path, 'r', encoding="utf-8")
@@ -152,6 +181,7 @@ class Counter4To5Converter:
 
     def c4_model_to_rows(self, report_model: Counter4ReportModel) -> list:
         short_c4_report_type = self.get_short_c4_report_type(report_model.report_header.report_type)
+        c4_major_report_type = self.get_c4_major_report_type(short_c4_report_type)
         report_rows_dict = {}  # {name, metric_type: report_row}
 
         for row_dict in report_model.row_dicts:
@@ -160,7 +190,7 @@ class Counter4To5Converter:
             if report_row.total_count == 0:  # Exclude rows with reporting total of 0
                 continue
 
-            if self.target_c5_major_report_type == MajorReportType.DATABASE:
+            if c4_major_report_type == MajorReportType.DATABASE:
                 if report_row.database.lower().startswith("total for all"):  # Exclude total rows
                     continue
 
@@ -175,7 +205,7 @@ class Counter4To5Converter:
                         if new_metric_type_total > existing_metric_type_total:
                             report_rows_dict[report_row.database, report_row.metric_type] = report_row
 
-            elif self.target_c5_major_report_type == MajorReportType.TITLE:
+            elif c4_major_report_type == MajorReportType.TITLE:
                 if report_row.title.lower().startswith("total for all"):  # Exclude total rows
                     continue
 
@@ -190,15 +220,16 @@ class Counter4To5Converter:
                         if new_metric_type_total > existing_metric_type_total:
                             report_rows_dict[report_row.title, report_row.metric_type] = report_row
 
-            elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
+            elif c4_major_report_type == MajorReportType.PLATFORM:
                 report_rows_dict[report_row.platform, report_row.metric_type] = report_row
 
         return list(report_rows_dict.values())
 
     def convert_c4_row_to_c5(self, c4_report_type: str, row_dict: dict) -> ReportRow:
         report_row = ReportRow(self.begin_date, self.end_date)
+        c4_major_report_type = self.get_c4_major_report_type(c4_report_type)
 
-        if self.target_c5_major_report_type == MajorReportType.DATABASE:
+        if c4_major_report_type == MajorReportType.DATABASE:
             if "Database" in row_dict:
                 report_row.database = row_dict["Database"]
             if "Publisher" in row_dict:
@@ -224,7 +255,7 @@ class Counter4To5Converter:
                     elif "not licenced" in adc or "not licensed" in adc:
                         report_row.metric_type = "No_License"
 
-        elif self.target_c5_major_report_type == MajorReportType.TITLE:
+        elif c4_major_report_type == MajorReportType.TITLE:
             if "" in row_dict:
                 report_row.title = row_dict[""]
             if "Title" in row_dict:
@@ -263,7 +294,7 @@ class Counter4To5Converter:
                     elif "not licenced" in adc or "not licensed" in adc:
                         report_row.metric_type = "No_License"
 
-        elif self.target_c5_major_report_type == MajorReportType.PLATFORM:
+        elif c4_major_report_type == MajorReportType.PLATFORM:
             if "Platform" in row_dict:
                 report_row.platform = row_dict["Platform"]
             if "Publisher" in row_dict:
@@ -321,7 +352,8 @@ class Counter4To5Converter:
                                  self.get_c5_header_created_by(c4_report_types))
 
     def create_c5_file(self, c5_report_header: ReportHeaderModel, report_rows: list) -> str:
-        file_path = self.save_dir + "temp_converted_c5_file.tsv"
+        c5_report_type = c5_report_header.report_id
+        file_path = self.save_dir + f"temp_converted_c5_file_{c5_report_type}.tsv"
 
         if not path.isdir(self.save_dir):
             makedirs(self.save_dir)
@@ -329,7 +361,7 @@ class Counter4To5Converter:
         file = open(file_path, 'w', encoding="utf-8", newline='')
 
         ReportWorker.add_report_header_to_file(c5_report_header, file, True)
-        ReportWorker.add_report_rows_to_file(self.target_c5_report_type, report_rows, self.begin_date, self.end_date,
+        ReportWorker.add_report_rows_to_file(c5_report_type, report_rows, self.begin_date, self.end_date,
                                              file, False)
 
         file.close()
@@ -433,3 +465,17 @@ class Counter4To5Converter:
     @staticmethod
     def get_c4_equivalent(counter5_report_type: str) -> str:
         return COUNTER_5_REPORT_EQUIVALENTS[counter5_report_type]
+
+    @staticmethod
+    def get_c4_major_report_type(c4_report_type: str) -> MajorReportType:
+        """Returns a major report type that a report type falls under"""
+
+        if c4_report_type == "DB1" or c4_report_type == "DB2":
+            return MajorReportType.DATABASE
+
+        elif c4_report_type == "BR1" or c4_report_type == "BR2" or c4_report_type == "BR3" \
+                or c4_report_type == "JR1" or c4_report_type == "JR2":
+            return MajorReportType.TITLE
+
+        elif c4_report_type == "PR1":
+            return MajorReportType.PLATFORM
