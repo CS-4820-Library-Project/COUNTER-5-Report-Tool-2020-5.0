@@ -384,7 +384,7 @@ class ImportReportController:
                     lambda event, file_path = process_result.file_path: GeneralUtils.open_file_or_dir(file_path)
 
                 report_result_ui.folder_button.clicked.connect(
-                    lambda file_dir=process_result.file_dir: GeneralUtils.open_file_or_dir(file_dir))
+                    lambda: GeneralUtils.open_file_or_dir(process_result.file_dir))
 
                 report_result_ui.success_label.setText("Successful!")
                 report_result_ui.retry_frame.hide()
