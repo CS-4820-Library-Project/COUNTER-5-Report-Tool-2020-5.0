@@ -612,16 +612,16 @@ EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
 
 # region Variable Constants for ImportFile
 COUNTER_4_REPORT_EQUIVALENTS = {
-    "BR1": "TR_B1",
-    "BR1, BR2": "TR_B1",
+    "BR1": "TR, TR_B1",
+    "BR1, BR2": "TR, TR_B1",
     "BR1, BR2, BR3, JR1, JR2": "TR, TR_B1, TR_B2, TR_J1, TR_J2",
-    "BR2": "TR_B1",
-    "BR3": "TR_B2",
-    "DB1": "DR_D1",
+    "BR2": "TR, TR_B1",
+    "BR3": "TR, TR_B2",
+    "DB1": "DR, DR_D1",
     "DB1, DB2": "DR, DR_D1, DR_D2",
-    "DB2": "DR_D2",
-    "JR1": "TR_J1",
-    "JR2": "TR_J2",
+    "DB2": "DR, DR_D2",
+    "JR1": "TR, TR_J1",
+    "JR2": "TR, TR_J2",
     "PR1": "PR, PR_P1"
 }
 
