@@ -256,6 +256,14 @@ class ImportReportController:
                 self.show_results([process_result])
                 return
 
+            if not c5_file_paths:  # If nothing was processed
+                process_result = ProcessResult(vendor, report_types)
+                process_result.completion_status = CompletionStatus.FAILED
+                process_result.message = "No COUNTER 5 report was created, make sure the COUNTER 4 input files are " \
+                                         "correct"
+                self.show_results([process_result])
+                return
+
             process_results = []
             for report_type in c5_file_paths:
                 file_path = c5_file_paths[report_type]

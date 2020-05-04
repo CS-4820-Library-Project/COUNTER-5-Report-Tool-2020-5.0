@@ -73,6 +73,9 @@ class Counter4To5Converter:
                     c5_report_type_rows += report_rows_dict[c4_report_type]
                     c4_report_types_used.append(c4_report_type)
 
+            if not c4_report_types_used:  # If no c4 file for this c5 report type is available
+                continue
+
             # Sort the rows
             c5_major_report_type = GeneralUtils.get_major_report_type(c5_report_type)
             c5_report_type_rows = ReportWorker.sort_rows(c5_report_type_rows, c5_major_report_type)
@@ -86,25 +89,6 @@ class Counter4To5Converter:
             # Create the c5 file
             file_path = self.create_c5_file(c5_report_header, c5_report_type_rows)
             file_paths[c5_report_type] = file_path
-
-
-
-
-
-        # Create a COUNTER 5 header
-        # c4_report_types_processed = sorted(c4_report_types_processed)
-        # c5_report_header = self.get_c5_report_header(self.target_c5_report_types,
-        #                                              ", ".join(c4_report_types_processed),
-        #                                              c4_customer,
-        #                                              c4_institution_id)
-
-
-        # Finalize and sort all rows
-        # final_report_rows = [row for row in self.final_rows_dict.values()]
-        # final_report_rows = ReportWorker.sort_rows(final_report_rows, self.target_c5_major_report_type)
-
-        # Create the final COUNTER 5 file for each target file
-        # file_path = self.create_c5_file(c5_report_header, final_report_rows)
 
         return file_paths
 
