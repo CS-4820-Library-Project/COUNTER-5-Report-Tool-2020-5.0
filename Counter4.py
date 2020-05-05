@@ -306,7 +306,7 @@ class Counter4To5Converter:
 
         if "Reporting Period Total" in row_dict:
             if row_dict["Reporting Period Total"]:
-                report_row.total_count = row_dict["Reporting Period Total"]
+                report_row.total_count = int(row_dict["Reporting Period Total"])
             else:
                 report_row.total_count = 0
 
