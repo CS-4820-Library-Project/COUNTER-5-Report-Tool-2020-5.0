@@ -275,8 +275,13 @@ class Counter4To5Converter:
             elif c4_report_type == "BR2" or c4_report_type == "JR1":
                 report_row.metric_type = "Total_Item_Requests"
             elif c4_report_type == "BR3" or c4_report_type == "JR2":
+                adc = None
                 if "Access Denied Category" in row_dict:
                     adc = row_dict["Access Denied Category"]
+                elif "Access denied category" in row_dict:
+                    adc = row_dict["Access denied category"]
+
+                if adc:
                     if "limit exceded" in adc or "limit exceeded" in adc:
                         report_row.metric_type = "Limit_Exceeded"
                     elif "not licenced" in adc or "not licensed" in adc:
