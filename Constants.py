@@ -621,6 +621,7 @@ COUNTER_4_REPORT_EQUIVALENTS = {
     "DB1, DB2": "DR, DR_D1, DR_D2",
     "DB2": "DR, DR_D2",
     "JR1": "TR, TR_J1",
+    "JR1, JR2": "TR, TR_J1, TR_J2",
     "JR2": "TR, TR_J2",
     "PR1": "PR, PR_P1"
 }

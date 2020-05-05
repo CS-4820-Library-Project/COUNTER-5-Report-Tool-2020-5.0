@@ -54,7 +54,6 @@ class Counter4To5Converter:
             c4_report_types_processed.append(short_c4_report_type)
             c4_customer = c4_report_header.customer
             c4_institution_id = c4_report_header.institution_id
-            c4_report_types_processed.append(short_c4_report_type)
             report_rows = self.c4_model_to_rows(report_model)
             report_rows_dict[short_c4_report_type] = report_rows
 
@@ -168,7 +167,12 @@ class Counter4To5Converter:
         c4_major_report_type = self.get_c4_major_report_type(short_c4_report_type)
         report_rows_dict = {}  # {name, metric_type: report_row}
 
+        count = 1
         for row_dict in report_model.row_dicts:
+            print(count)
+            if count == 593:
+                print()
+            count += 1
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
 
             if report_row.total_count == 0:  # Exclude rows with reporting total of 0
@@ -227,13 +231,18 @@ class Counter4To5Converter:
                     ua = row_dict["User Activity"]
                     if ua == "Regular Searches":
                         report_row.metric_type = "Searches_Regular"
-                    elif ua == "Searches-federated and automated":
+                    elif "federated and automated" in ua:  # Searches-federated and automated
                         report_row.metric_type = "Searches_Automated"
                     elif ua == "Result Clicks" or ua == "Record Views":
                         report_row.metric_type = "Total_Item_Investigations"
             elif c4_report_type == "DB2":
+                adc = None
                 if "Access Denied Category" in row_dict:
                     adc = row_dict["Access Denied Category"]
+                elif "Access denied category" in row_dict:
+                    adc = row_dict["Access denied category"]
+
+                if adc:
                     if "limit exceded" in adc or "limit exceeded" in adc:
                         report_row.metric_type = "Limit_Exceeded"
                     elif "not licenced" in adc or "not licensed" in adc:
@@ -296,7 +305,10 @@ class Counter4To5Converter:
                         report_row.metric_type = "Total_Item_Investigations"
 
         if "Reporting Period Total" in row_dict:
-            report_row.total_count = int(row_dict["Reporting Period Total"])
+            if row_dict["Reporting Period Total"]:
+                report_row.total_count = row_dict["Reporting Period Total"]
+            else:
+                report_row.total_count = 0
 
         # Month Columns
         year = int(self.begin_date.toString("yyyy"))
@@ -355,21 +367,21 @@ class Counter4To5Converter:
     @staticmethod
     def get_short_c4_report_type(long_c4_report_type: str) -> str:
         short_report_type = ""
-        if long_c4_report_type == "Book Report 1 (R4)":
+        if "Book Report 1 (R4)" in long_c4_report_type:
             short_report_type = "BR1"
-        elif long_c4_report_type == "Book Report 2 (R4)":
+        elif "Book Report 2 (R4)" in long_c4_report_type:
             short_report_type = "BR2"
-        elif long_c4_report_type == "Book Report 3 (R4)":
+        elif "Book Report 3 (R4)" in long_c4_report_type:
             short_report_type = "BR3"
-        elif long_c4_report_type == "Database Report 1 (R4)":
+        elif "Database Report 1 (R4)" in long_c4_report_type:
             short_report_type = "DB1"
-        elif long_c4_report_type == "Database Report 2 (R4)":
+        elif "Database Report 2 (R4)" in long_c4_report_type:
             short_report_type = "DB2"
-        elif long_c4_report_type == "Journal Report 1 (R4)":
+        elif "Journal Report 1 (R4)" in long_c4_report_type:
             short_report_type = "JR1"
-        elif long_c4_report_type == "Journal Report 2 (R4)":
+        elif "Journal Report 2 (R4)" in long_c4_report_type:
             short_report_type = "JR2"
-        elif long_c4_report_type == "Platform Report 1 (R4)":
+        elif "Platform Report 1 (R4)" in long_c4_report_type:
             short_report_type = "PR1"
 
         return short_report_type
