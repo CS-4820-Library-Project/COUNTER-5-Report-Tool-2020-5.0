@@ -269,7 +269,6 @@ class ImportReportController:
                 file_path = c5_file_paths[report_type]
                 process_result = self.import_report(vendor, report_type, file_path)
                 process_results.append(process_result)
-                print(process_result.file_path)
 
             self.show_results(process_results)
 

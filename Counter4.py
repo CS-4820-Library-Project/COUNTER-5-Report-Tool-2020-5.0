@@ -167,12 +167,7 @@ class Counter4To5Converter:
         c4_major_report_type = self.get_c4_major_report_type(short_c4_report_type)
         report_rows_dict = {}  # {name, metric_type: report_row}
 
-        count = 1
         for row_dict in report_model.row_dicts:
-            print(count)
-            if count == 593:
-                print()
-            count += 1
             report_row = self.convert_c4_row_to_c5(short_c4_report_type, row_dict)
 
             if report_row.total_count == 0:  # Exclude rows with reporting total of 0
