@@ -7,6 +7,7 @@ from typing import Sequence, Any
 from os import path, makedirs, system
 from PyQt5.QtWidgets import QWidget, QMessageBox, QFileDialog
 from PyQt5.QtCore import QDate
+from Constants import *
 
 main_window: QWidget = None
 
@@ -66,7 +67,7 @@ def open_file_or_dir(target_path: str):
 
 def choose_file(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.ExistingFile)
     dialog.setNameFilters(name_filters)
     if dialog.exec_():
@@ -75,9 +76,20 @@ def choose_file(name_filters) -> str:
     return file_path
 
 
+def choose_files(name_filters) -> list:
+    file_paths = []
+    dialog = QFileDialog(main_window)
+    dialog.setFileMode(QFileDialog.ExistingFiles)
+    dialog.setNameFilters([x for x in name_filters])
+    if dialog.exec_():
+        file_paths = dialog.selectedFiles()
+
+    return file_paths
+
+
 def choose_directory() -> str:
     dir_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.Directory)
     if dialog.exec_():
         dir_path = dialog.selectedFiles()[0] + "/"
@@ -87,7 +99,7 @@ def choose_directory() -> str:
 
 def choose_save(name_filters) -> str:
     file_path = ""
-    dialog = QFileDialog(main_window, directory=".")
+    dialog = QFileDialog(main_window)
     dialog.setFileMode(QFileDialog.AnyFile)
     dialog.setAcceptMode(QFileDialog.AcceptSave)
     dialog.setNameFilters(name_filters)
@@ -123,6 +135,23 @@ def get_other_file_dir(base_path: str, vendor_name: str) -> str:
 
 def get_other_file_name(vendor_name: str, report_type: str, begin_date: QDate, end_date: QDate) -> str:
     return f"{vendor_name}_{report_type}_{begin_date.toString('yyyy-MMM')}_{end_date.toString('yyyy-MMM')}.tsv"
+
+
+def get_major_report_type(report_type: str) -> MajorReportType:
+    """Returns a major report type that a report type falls under"""
+    if report_type == "PR" or report_type == "PR_P1":
+        return MajorReportType.PLATFORM
+
+    elif report_type == "DR" or report_type == "DR_D1" or report_type == "DR_D2":
+        return MajorReportType.DATABASE
+
+    elif report_type == "TR" or report_type == "TR_B1" or report_type == "TR_B2" \
+            or report_type == "TR_B3" or report_type == "TR_J1" or report_type == "TR_J2" \
+            or report_type == "TR_J3" or report_type == "TR_J4":
+        return MajorReportType.TITLE
+
+    elif report_type == "IR" or report_type == "IR_A1" or report_type == "IR_M1":
+        return MajorReportType.ITEM
 
 
 def save_data_as_tsv(file_name: str, data: Sequence[Any]):

@@ -105,9 +105,9 @@ def test_on_report_type_selected(controller_v):
 
     index_to_select = 3
     model_index = QStandardItemModel.createIndex(QStandardItemModel(), index_to_select, 0)
-    controller_v.on_report_type_selected(model_index)
+    controller_v.on_c5_report_type_selected(model_index)
 
-    assert controller_v.selected_report_type_index == index_to_select
+    assert controller_v.selected_c5_report_type_index == index_to_select
 
 
 def test_on_date_changed(controller_v):
@@ -119,38 +119,38 @@ def test_on_date_changed(controller_v):
 
 def test_on_import_clicked(controller_v):
     # No vendor selected
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
     controller_v.selected_vendor_index = 1
 
     # No report type selected
-    controller_v.on_import_clicked()
-    controller_v.selected_report_type_index = 1
+    controller_v.on_c5_import_clicked()
+    controller_v.selected_c5_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_c5_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
 
     # No file selected
-    controller_v.on_import_clicked()
+    controller_v.on_c5_import_clicked()
 
     # Invalid file selected
-    controller_v.selected_file_path = "./data/invalid_file"
-    controller_v.on_import_clicked()
+    controller_v.c5_selected_file_path = "./data/invalid_file"
+    controller_v.on_c5_import_clicked()
 
     # Valid file selected
-    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
-    controller_v.on_import_clicked()
+    controller_v.c5_selected_file_path = "./data/test_file_for_import.tsv"
+    controller_v.on_c5_import_clicked()
     assert path.isfile(file_path)
 
 
 def test_import_file(controller_v):
     controller_v.selected_vendor_index = 1
-    controller_v.selected_report_type_index = 1
+    controller_v.selected_c5_report_type_index = 1
 
     vendor = controller_v.vendors[controller_v.selected_vendor_index]
-    report_type = ALL_REPORTS[controller_v.selected_report_type_index]
+    report_type = ALL_REPORTS[controller_v.selected_c5_report_type_index]
     file_dir = f"{controller_v.settings.yearly_directory}{controller_v.date.toString('yyyy')}/{vendor.name}/"
     file_name = f"{controller_v.date.toString('yyyy')}_{vendor.name}_{report_type}.tsv"
     file_path = file_dir + file_name
@@ -159,11 +159,11 @@ def test_import_file(controller_v):
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Invalid file selected
-    controller_v.selected_file_path = "./data/invalid_file"
+    controller_v.c5_selected_file_path = "./data/invalid_file"
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.FAILED
 
     # Valid file selected
-    controller_v.selected_file_path = "./data/test_file_for_import.tsv"
+    controller_v.c5_selected_file_path = "./data/test_file_for_import.tsv"
     assert controller_v.import_report(vendor, report_type).completion_status == CompletionStatus.SUCCESSFUL
     assert path.isfile(file_path)
 

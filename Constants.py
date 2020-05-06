@@ -427,6 +427,7 @@ CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
 JSON_FILTER = ('JSON files (*.dat)',)
 TSV_FILTER = ('TSV files (*.tsv)',)
 CSV_FILTER = ('CSV files (*.csv)',)
+TSV_AND_CSV_FILTER = ('Report files (*.csv *.tsv)',)
 EXCEL_FILTER = ('Excel files (*.xlsx)',)
 # endregion
 
@@ -606,4 +607,37 @@ VENDORS_FILE_NAME = "vendors.dat"
 VENDORS_FILE_PATH = VENDORS_FILE_DIR + VENDORS_FILE_NAME
 
 EXPORT_VENDORS_FILE_NAME = "exported_vendor_data.tsv"
+# endregion
+
+
+# region Variable Constants for ImportFile
+COUNTER_4_REPORT_EQUIVALENTS = {
+    "BR1": "TR, TR_B1",
+    "BR1, BR2": "TR, TR_B1",
+    "BR1, BR2, BR3, JR1, JR2": "TR, TR_B1, TR_B2, TR_J1, TR_J2",
+    "BR2": "TR, TR_B1",
+    "BR3": "TR, TR_B2",
+    "DB1": "DR, DR_D1",
+    "DB1, DB2": "DR, DR_D1, DR_D2",
+    "DB2": "DR, DR_D2",
+    "JR1": "TR, TR_J1",
+    "JR1, JR2": "TR, TR_J1, TR_J2",
+    "JR2": "TR, TR_J2",
+    "PR1": "PR, PR_P1"
+}
+
+COUNTER_5_REPORT_EQUIVALENTS = {
+    "TR_B1": "BR1, BR2",
+    "TR_B2": "BR3",
+    "TR_J1": "JR1",
+    "TR_J2": "JR2",
+    "TR": "BR1, BR2, BR3, JR1, JR2",
+    "DR_D1": "DB1",
+    "DR_D2": "DB2",
+    "DR": "DB1, DB2",
+    "JR1": "TR_J1",
+    "JR2": "TR_J2",
+    "PR_P1": "PR1",
+    "PR": "PR1"
+}
 # endregion
