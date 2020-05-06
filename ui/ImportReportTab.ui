@@ -145,12 +145,6 @@
          </item>
          <item>
           <widget class="QFrame" name="frame_2">
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <property name="horizontalSpacing">
              <number>20</number>
@@ -299,12 +293,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <property name="leftMargin">
              <number>0</number>
@@ -320,12 +308,6 @@
             </property>
             <item>
              <widget class="QFrame" name="frame_4">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
               <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
                 <widget class="QLabel" name="label_20">
@@ -386,6 +368,12 @@
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
                 </spacer>
                </item>
               </layout>
@@ -398,12 +386,6 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
                <item>
@@ -446,6 +428,14 @@
                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                     </property>
                     <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                     <property name="geometry">
+                      <rect>
+                       <x>0</x>
+                       <y>0</y>
+                       <width>198</width>
+                       <height>18</height>
+                      </rect>
+                     </property>
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                        <horstretch>0</horstretch>
