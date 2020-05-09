@@ -1,0 +1,115 @@
+name	base_url	customer_id	requestor_id	api_key	platform	is_non_sushi	description	companies
+DeGruyter (Walter De Gruyter)	https:/ams.degruyter.com/rest/COUNTER/v5/reports	REQUIRED			REQUIRED	True	Manual COUNTER 5 import; service@degruyter.com	
+Edward Elgar Publishing	https:/ams.elgaronline.com/rest/COUNTER/v5/reports	REQUIRED			REQUIRED	True	Manual COUNTER 5 import;  info@e-elgar.co.uk	
+Academy of Management	https://journals.aom.org/reports	REQUIRED				False		
+American Chemical Society	https://pubs.acs.org/reports	REQUIRED				False		
+Adam Matthew Digital	https://www.counter.amdigital.co.uk/CounterSushi5Api/reports	REQUIRED		REQUIRED		False	Adam Matthews primary historical document collections	
+Akademiai Kiado	https://ams.akjournals.com/rest/COUNTER/v5/reports	REQUIRED		REQUIRED		False	Changed SUSHI R5 providers April 2020	Sheridan PubFactory
+Alexander Street Press	https://pqbi.prod.proquest.com/release/sushi/asp/sushi/reports	REQUIRED	REQUIRED			False		
+Allen Press HEPG Journals	https://hepgjournals.org/reports	REQUIRED	REQUIRED			False		Atypon
+Allen Press Pinnacle	https://pinnacle.allenpress.com/reports	REQUIRED				False		Atypon
+Allen Press Pinnacle (AAIDD)	https://www.aaiddjournals.org/reports	REQUIRED				False		Atypon
+American College of Physicians (ACP)	https://sitemaster.annals.org/sushi/reports	REQUIRED				False		
+American Economic Association (AEA)	https://pubs.aeaweb.org/reports	REQUIRED				False		
+American Heart Association	https://www.ahajournals.org/reports	REQUIRED				False		
+American Institute of Aeronautics & Astronautics	https://arc.aiaa.org/reports	REQUIRED				False		
+American Mathematical Society	https://counter.ams.org/counter/r5/reports	REQUIRED		REQUIRED		False		
+American Medical Association	https://sitemaster.jamanetwork.com/sushi/reports	REQUIRED				False		
+American Meteorological Society	https://journals.ametsoc.org/reports	REQUIRED				False		
+American Physical Society	https://inqwell.squidsolutions.com/release/aps/sushi/reports	REQUIRED				False		
+American Physiological Society	https://www.physiology.org/reports	REQUIRED	REQUIRED			False		Atypon
+American Psychiatric Publishing	https://www.psychiatryonline.org/reports	REQUIRED				False		
+American Public Health Association	https://ajph.aphapublications.org/reports	REQUIRED				False		
+American Roentgen Ray Society	https://www.ajronline.org/reports	REQUIRED	REQUIRED			False		Atypon
+American Society for Cell Biology	https://www.molbiolcell.org/reports	REQUIRED				False		
+American Society Of Civil Engineers (ASCE)	https://ascelibrary.org/reports	REQUIRED				False		
+American Society of Clinical Oncology (ASCO)	https://ascopubs.org/reports	REQUIRED				False		
+American Society of Mechanical Engineers (ASME)	https://sitemaster.asmedigitalcollection.asme.org/sushi/reports	REQUIRED	REQUIRED	REQUIRED		False		Silverchair
+American Speech-Language-Hearing Association	https://pubs.asha.org/reports	REQUIRED				False		
+American Thoracic Society	https://www.atsjournals.org/reports	REQUIRED				False		
+American Veterinary Medical Association	https://avmajournals.avma.org/reports	REQUIRED	REQUIRED			False		Atypon
+Annual Reviews	https://www.annualreviews.org/reports	REQUIRED	REQUIRED			False		
+AOTA (American Occupational Therapy Association)	https://sitemaster.ajot.aota.org/sushi/reports	REQUIRED				False		
+APS (American Physical Society)	https://inqwell.squidsolutions.com/release/aps/sushi/reports	REQUIRED	REQUIRED			False		
+Berghahn Journals	https://ams.berghahnjournals.com/rest/COUNTER/v5/reports	REQUIRED				False		
+BioOne	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+BIR (The British Institute of Radiology)	https://www.birpublications.org/reports	REQUIRED				False		
+Brepols Online	https://www.brepolsonline.net/reports	REQUIRED				False		
+Brill	https://ams.brill.com/rest/COUNTER/v5/reports	REQUIRED		REQUIRED		False		
+British Medical Journals (BMJ)	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+Cambridge Core	https://event-aggregation-api-prod-platform.prod.aop.cambridge.org/reports	REQUIRED	REQUIRED			False		
+Cambridge University Press	http:/counter5.cambridge.org/reports	REQUIRED				False		
+Chemical Society of Japan	https://www.journal.csj.jp/reports	REQUIRED				False		
+CREDO	https://search.credoreference.com/reports	REQUIRED	REQUIRED			False		
+CSIRO (Commonwealth Scientific and Industrial Research Organisation)	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+DesLibris	https://connect.liblynx.com/sushi/r5/reports	REQUIRED	REQUIRED	REQUIRED		False		LibLynx
+Duke University Press (Euclid)	https://sitemaster.read.dukeupress.edu/sushi/reports	REQUIRED	REQUIRED	REQUIRED		False		
+Duncker & Humblot	https://elibrary.duncker-humblot.com/sushi/reports	REQUIRED	REQUIRED	REQUIRED		False		
+EBSCOhost	https://sushi.ebscohost.com/R5/reports	REQUIRED	REQUIRED			False	Converted to COUNTER 5 back to Jan 2018	
+Edinburgh University Press	https://www.euppublishing.com/reports	REQUIRED				False		
+Elsevier Engineering Village	https://api.elsevier.com/sushi/reports	REQUIRED	REQUIRED		ev	False	Checks IP range must be on campus; also have to re-run every new report - always error on first try	
+Elsevier Scopus	https://api.elsevier.com/sushi/reports	REQUIRED	REQUIRED		sc	False	Checks IP range must be on campus; also have to re-run every new report - always error on first try	
+Elsevier ScienceDirect	https://api.elsevier.com/sushi/reports	REQUIRED	REQUIRED		sd	False	Checks IP range must be on campus; also have to re-run every new report - always error on first try	
+Emerald Insight	https://connect.liblynx.com/sushi/r5/reports	REQUIRED	REQUIRED	REQUIRED		False		Liblynx
+FASEB	https://www.fasebj.org/reports	REQUIRED				False		
+Future Medicine	https://www.futuremedicine.com/reports	REQUIRED				False		
+Gale	https://sushi5.galegroup.com/sushi/reports	REQUIRED	REQUIRED			False		
+GeoscienceWorld	https://sitemaster.geoscienceworld.org/sushi/reports	REQUIRED	REQUIRED	REQUIRED		False		Silverchair
+Guilford Press	https://guilfordjournals.com/reports	REQUIRED				False		
+Harvard Education Publishing Group	https://hepgjournals.org/reports	REQUIRED				False		Atypon
+Health Affairs	https://www.healthaffairs.org/reports	REQUIRED				False		
+HighWire Press	https://hwdpapi.highwire.org/sushi/reports	REQUIRED	REQUIRED	REQUIRED		False	"Requester ID, Customer ID and Api_Key are required. API key is the institution's primary e-mail address associated with the HighWire Portal account, followed by ""|"", and then the portal password. For example, 
+API key: user@highwire.org|Us3rPW
+Requester ID: user/email account registered with HighWire
+Customer ID: user/email account registered with HighWire"	
+ICE Virtual Library (Institution of Civil Engineers)	https://www.icevirtuallibrary.com/reports	REQUIRED				False		
+IEEE Xplore	https://c5sushi.mpsinsight.com/c5sushi/services/reports	REQUIRED		REQUIRED		False		MPS Insight
+IGI Global	https://sushi5.igi-global.com/reports	REQUIRED	REQUIRED			True	As of April 2020 SUSHI server not compliant, use manual download/import	
+Inderscience	https://inderscienceonline.com/reports	REQUIRED				False		
+INFORMS	https://pubsonline.informs.org/reports	REQUIRED				False		
+Ingentaconnect	https://www.ingentaconnect.com/sushiadmin/statistics/sushi/reports	REQUIRED	REQUIRED			False	Ingenta Connect hosts journals for various publishers	
+Journal of Neurosurgery (JNS)	https://ams.thejns.org/rest/COUNTER/v5/reports	REQUIRED				False		
+Journal of Orthopaedic & Sports Physical Therapy (JOSPT)	https://www.jospt.org/reports	REQUIRED				False		
+Journal of Studies on Alcohol and Drugs / Rutgers University Press (JSAD)	https://www.jsad.com/reports	REQUIRED				False		
+JSTOR	https://www.jstor.org/sushi/reports	REQUIRED	REQUIRED			False	Books and Journals	
+Karger	https://counter.karger.com/reports	REQUIRED				False		
+Liverpool University Press	https://online.liverpooluniversitypress.co.uk/reports	REQUIRED				False		
+Mark Allen Group	https://www.magonlinelibrary.com/reports	REQUIRED	REQUIRED			False		Atypon
+Mary Ann Liebert	https://www.liebertpub.com/reports	REQUIRED	REQUIRED			False		Atypon
+MathSciNet (American Mathematical Society)	https://mathscinet.ams.org/counter/r5/reports	REQUIRED		REQUIRED		False		
+McGraw-Hill	https://www.mhebooklibrary.com/reports	REQUIRED				False		
+MGG Online	https://www.mgg-online.com/mgg/sushi/reports	REQUIRED				False		
+Microbiology Society						True	C5 but not sushi yet as of March 2020	
+MIT Press	https://www.mitpressjournals.org/reports	REQUIRED	REQUIRED			False		Atypon
+Morgan and Claypook Publishers	https://www.morganclaypool.com/reports	REQUIRED				False		
+NEJM (New England Journal of Medicine)	https://www.nejm.org/reports	REQUIRED				False		
+Newsbank	https://stats.newsbank.com/sushi_r5/servlet/reports	REQUIRED				False		
+NRC Press	https://www.nrcresearchpress.com/reports	REQUIRED				False		
+OECD iLibrary	https://www.oecd-ilibrary.org/counter5/sushi/reports	REQUIRED				False		
+Ovid	https://stats.ovid.com/C5/sushi/reports	REQUIRED	REQUIRED			False		
+Oxford (Books)	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+Oxford (Journals)	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+Philosophy Documentation Centre	https://sushi5.scholarlyiq.com/counter/r5/reports	REQUIRED	REQUIRED			False		ScholarlyIQ
+Physical Society of Japan	https://journals.jps.jp/reports	REQUIRED				False		
+Project HOPE (Health Affairs)	https://hope.atyponinsights.com/counter5/reports	REQUIRED				False		Atypon
+Project MUSE	https://about.muse.jhu.edu/lib/counter5/sushi/reports	REQUIRED		REQUIRED		False		
+ProQuest	https://sushi.proquest.com/counter/r5/reports	REQUIRED		REQUIRED		False		
+ProQuest Ebook Central	https://pqbi.prod.proquest.com/release/sushi/ebooks/r5/reports	REQUIRED	REQUIRED			True	As of April 2020, SUSHI server not providing reliable data (reported to Project COUNTER) so consider this one non-SUSHI until reported fixed.	
+Royal Society	https://royalsocietypublishing.org/reports	REQUIRED				False		
+Royal Society of Chemistry	https://c5sushi.mpsinsight.com/c5sushi/services/reports	REQUIRED		REQUIRED		False		
+RSNA (Radiological Society of North America)	https://pubs.rsna.org/reports	REQUIRED				False		
+SAGE Ebooks (Sage SecureCenter)	https://securecenter.sagepub.com/SushiService/reports		REQUIRED			False		
+SAGE Journals	https://journals.sagepub.com/reports	REQUIRED	REQUIRED			False		
+Scitation - AIP (American Institute of Physics)	https://www.scitation.org/reports	REQUIRED				False		
+SIAM (Society for Industrial and Applied Mathematics)	https://epubs.siam.org/reports	REQUIRED				False		
+Society of Exploration Geophysicists	https://library.seg.org/reports	REQUIRED				False		
+Springer Nature	https://counter.public.springernature.app/reports	REQUIRED		REQUIRED		False		
+Taylor & Francis Ebooks (Books)	https://api.taylorandfrancis.com/v2/counterreports/reports	REQUIRED				False		
+Taylor & Francis Online (Journals)	https://www.tandfonline.com/reports	REQUIRED	REQUIRED			False		
+UCLA Journals	https://uclajournals.org/reports	REQUIRED				False		
+University of Chicago Press	https://www.journals.uchicago.edu/reports	REQUIRED	REQUIRED			False		
+University of Toronto Press	https://www.utpjournals.press/reports	REQUIRED	REQUIRED			False		
+Vandenhoeck & Ruprecht	https://www.vr-elibrary.de/reports	REQUIRED				False		
+Wiley Online Library	https://onlinelibrary.wiley.com/reports	REQUIRED	REQUIRED			False	Books and journals	Atypon
+World Bank	https://elibrary.worldbank.org/reports	REQUIRED				False		
+World Scientific	https://www.worldscientific.com/reports	REQUIRED				False		
