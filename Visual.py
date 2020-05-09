@@ -201,7 +201,7 @@ class VisualController:
                     self.names = [result[0] for result in names_results]
                 else:
                     self.names = []
-                if self.settings.show_debug_messages: print(names_results)
+                # if self.settings.show_debug_messages: print(names_results)
 
             costs_sql_text, costs_data = ManageDB.get_names_with_costs_sql_text(self.report_parameter.currentText(),
                                                                                 self.vendor_parameter,
@@ -212,7 +212,7 @@ class VisualController:
                 self.costs_names = [result[0] for result in costs_results]
             else:
                 self.costs_names = []
-            if self.settings.show_debug_messages: print(costs_results)
+            # if self.settings.show_debug_messages: print(costs_results)
 
             connection.close()
             model = QStandardItemModel()
@@ -267,15 +267,15 @@ class VisualController:
         if self.monthly_radio.isChecked() and message == "":
             # sql query to get search results
             sql_text, data = ManageDB.monthly_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
-            print(sql_text)  # testing
+            # print(sql_text)  # testing
             headers = tuple([field['name'] for field in ManageDB.get_monthly_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
-                print(self.results)
+                # print(self.results)
 
                 self.results.insert(0, headers)
-                print(self.results)
+                # print(self.results)
                 connection.close()
             else:
                 print('Error, no connection')
@@ -289,15 +289,15 @@ class VisualController:
         if self.yearly_radio.isChecked() and message == "":
             # sql query to get search results
             sql_text, data = ManageDB.yearly_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
-            print(sql_text)  # testing
+            # print(sql_text)  # testing
             headers = tuple([field['name'] for field in ManageDB.get_yearly_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
-                print(self.results)
+                # print(self.results)
 
                 self.results.insert(0, headers)
-                print(self.results)
+                # print(self.results)
                 connection.close()
             else:
                 print('Error, no connection')
@@ -311,15 +311,15 @@ class VisualController:
         if self.costRatio_radio.isChecked() and message == "":
             # sql query to get search results
             sql_text, data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
-            print(sql_text)  # testing
+            # print(sql_text)  # testing
             headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
-                print(self.results)
+                # print(self.results)
 
                 self.results.insert(0, headers)
-                print(self.results)
+                # print(self.results)
                 connection.close()
             else:
                 print('Error, no connection')
@@ -381,9 +381,9 @@ class VisualController:
                 data1.append(self.results[i][j])
             self.data.append(data1)
         # testing to make sure its working good
-        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
-        print(self.data[1])
-        print(len(self.data))
+        # print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
+        # print(self.data[1])
+        # print(len(self.data))
         self.chart_type()
 
     def process_yearly_data(self):
@@ -404,9 +404,9 @@ class VisualController:
         self.data.append(data2)
 
         # testing to make sure its working good
-        print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
-        print(self.data[1])
-        print(len(self.data))
+        # print(self.data[0])  # this is the first column in the excel file/vertical axis data in the chart
+        # print(self.data[1])
+        # print(len(self.data))
         self.chart_type()
 
     def process_cost_ratio_data(self):
@@ -471,8 +471,8 @@ class VisualController:
         self.legendEntry.append(self.metric.currentText())
 
         # testing to see data in array of array
-        print(self.data[0])  # first column in excel (year)
-        print(self.data[1]) # second column (cost per metric)
+        # print(self.data[0])  # first column in excel (year)
+        # print(self.data[1]) # second column (cost per metric)
         # print(self.data[2]) # third column (cost)
         # print(self.data[4]) # fourth column (total)
         # print(len(self.data)) #testing
@@ -481,8 +481,8 @@ class VisualController:
     def process_top_X_data(self):
         """Invoked when calculation type: top # is selected"""
         m = len(self.results)
-        #print(self.results)
-        print(m)
+        # print(self.results)
+        # print(m)
         self.temp_results = []
 
         self.legendEntry = []  # legend entry data
@@ -491,8 +491,8 @@ class VisualController:
         for i in range(1, m):
             self.temp_results.append(self.results[i])
         self.temp_results = sorted(self.temp_results, key=itemgetter(4))
-        print(len(self.temp_results))
-        print(self.temp_results)
+        # print(len(self.temp_results))
+        # print(self.temp_results)
         n = len(self.temp_results)
 
         # data is an array with the sorted usage figures
@@ -509,7 +509,7 @@ class VisualController:
             data = self.temp_results[i][0]
             data1.append(data)
         self.data.append(data1)
-        print(data1)
+        # print(data1)
 
         # get all reporting total
         metri = self.temp_results[0][3]
@@ -518,7 +518,7 @@ class VisualController:
             metri = self.temp_results[i][3]
             data2.append(metri)
         self.data.append(data2)
-        print(data2)
+        # print(data2)
 
         # get all ranking
         rank = self.temp_results[0][4]

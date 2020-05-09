@@ -246,7 +246,7 @@ class SearchController:
                 results = ManageDB.run_select_sql(connection, sql_text, data)
                 connection.close()
                 results.insert(0, headers)
-                if self.settings.show_debug_messages: print(results)
+                # if self.settings.show_debug_messages: print(results)
                 save_data_as_tsv(file_name, results)
                 if self.open_results_folder_checkbox.isChecked():
                     open_file_or_dir(os.path.dirname(file_name))
