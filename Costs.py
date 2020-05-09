@@ -148,7 +148,7 @@ class CostsController:
                     self.names = [result[0] for result in names_results]
                 else:
                     self.names = []
-                if self.settings.show_debug_messages: print(names_results)
+                # if self.settings.show_debug_messages: print(names_results)
 
             costs_sql_text, costs_data = ManageDB.get_names_with_costs_sql_text(self.report_parameter,
                                                                                 self.vendor_parameter,
