@@ -1,7 +1,7 @@
 from enum import Enum
 
 # Variable Constants for MainDriver.py
-HELP_SITE = "https://git.library.upei.ca/mbelvadi/COUNTER-5-Report-Tool/wiki"
+HELP_SITE = "https://github.com/CS-4820-Library-Project/COUNTER-5-Report-Tool/wiki"
 
 # region Variable Constants for ManageDB
 
