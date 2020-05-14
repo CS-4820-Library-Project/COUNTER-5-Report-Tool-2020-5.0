@@ -368,11 +368,12 @@ def replace_costs_sql_text(report_type: str, data: Sequence[Dict[str, Any]]) -> 
     return sql_text, tuple(values)
 
 
-def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Sequence[Any]]]:
+def delete_costs_sql_text(report_type: str, vendor: str, month: int, year: int, name: str) -> Tuple[str, Sequence[Sequence[Any]]]:
     """Makes the SQL statement to delete data from a cost table
 
     :param report_type: the type of the report (master report name)
     :param vendor: the vendor name of the cost
+    :param month: the month of the cost
     :param year: the year of the cost
     :param name: the name the cost is associated with (database/item/platform/title)
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to delete the costs row, and the values
@@ -383,6 +384,8 @@ def delete_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -
     sql_text += '\nWHERE '
     sql_text += '\n\t' + 'vendor' + ' = ?'
     values.append(vendor)
+    sql_text += '\n\tAND ' + 'month' + ' = ?'
+    values.append(month)
     sql_text += '\n\tAND ' + 'year' + ' = ?'
     values.append(year)
     sql_text += '\n\tAND ' + name_field + ' = ?;'
@@ -752,20 +755,20 @@ def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end
     return sql_text, data
 
 
-def get_costs_sql_text(report_type: str, vendor: str, year: int, name: str) -> Tuple[str, Sequence[Any]]:
+def get_costs_sql_text(report_type: str, vendor: str, name: str) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to get costs from the database
 
     :param report_type: the type of the report (master report name)
     :param vendor: the vendor name of the cost
+    :param month: the month of the cost
     :param year: the year of the cost
     :param name: the name the cost is associated with (database/item/platform/title)
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
     sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS], (report_type + COST_TABLE_SUFFIX,),
-                                        (('vendor' + ' = ?',), ('year' + ' = ?',), (name_field + ' = ?',)),
-                                        is_multiline=False) + ';'
-    values = (vendor, year, name)
+                                        (('vendor' + ' = ?',), (name_field + ' = ?',)), is_multiline=False) + ';'
+    values = (vendor, name)
     return sql_text, values
 
 

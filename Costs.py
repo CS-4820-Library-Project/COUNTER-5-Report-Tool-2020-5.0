@@ -61,6 +61,28 @@ class CostsController:
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_costs)
 
+
+
+
+        # NEw NEw
+        self.start_year_date_edit = costs_ui.start_year_date_edit
+        self.start_year_date_edit.dateChanged.connect(self.on_start_year_changed)
+        self.end_year_date_edit = costs_ui.end_year_date_edit
+        self.end_year_date_edit.dateChanged.connect(self.on_end_year_changed)
+
+        self.start_month_combo_box = costs_ui.start_month_combo_box
+        self.end_month_combo_box = costs_ui.end_month_combo_box
+
+        for month in MONTH_NAMES:
+            self.start_month_combo_box.addItem(month)
+            self.end_month_combo_box.addItem(month)
+
+        self.start_month_combo_box.currentIndexChanged.connect(self.on_start_month_changed)
+        self.end_month_combo_box.currentIndexChanged.connect(self.on_end_month_changed)
+
+
+
+
         vendors_json_string = read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
         self.vendor_parameter_combobox.clear()
@@ -202,51 +224,99 @@ class CostsController:
         """Invoked when the cost in local currency with tax parameter changes"""
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
+
+
+    def on_start_year_changed(self):
+        print()
+
+    def on_end_year_changed(self):
+        print()
+
+    def on_start_month_changed(self):
+        print()
+
+    def on_end_month_changed(self):
+        print()
+
+
+
     def save_costs(self):
         """Saves the cost data: if it is nonzero, add it to the database; if it is zero, delete it from the database"""
-        INSERT = 'insert'
-        DELETE = 'delete'
-        insert_or_delete = None
-        sql_text = None
-        data = None
-        if self.cost_in_original_currency > 0 and self.original_currency != '' \
-                and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0:
-            insert_or_delete = INSERT
-        elif self.cost_in_original_currency == 0 and self.original_currency == '' \
-                and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0:
-            insert_or_delete = DELETE
-        if insert_or_delete == INSERT:
+
+        # Get the number of months to be processed
+        begin_date = QDate(self.start_year_date_edit.date().year(), self.start_month_combo_box.currentIndex() + 1, 1)
+        end_date = QDate(self.end_year_date_edit.date().year(), self.end_month_combo_box.currentIndex() + 1, 1)
+
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        # Get the sql_text and data for each month's insertion
+        insertion_sql_data = []
+        for i in range(num_months):
+            curr_month = begin_date.addMonths(i).month()
             sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
                                                              ({NAME_FIELD_SWITCHER[self.report_parameter]:
                                                                    self.name_parameter,
                                                                'vendor': self.vendor_parameter,
                                                                'year': self.year_parameter,
+                                                               'month': curr_month,
                                                                'cost_in_original_currency':
                                                                    self.cost_in_original_currency,
                                                                'original_currency': self.original_currency,
                                                                'cost_in_local_currency': self.cost_in_local_currency,
                                                                'cost_in_local_currency_with_tax':
                                                                    self.cost_in_local_currency_with_tax},))
-        elif insert_or_delete == DELETE:
+            insertion_sql_data.append((sql_text, data))
+            print(begin_date.toString("MMM-yyyy"))
+
+
+
+        sql_text = None
+        data = None
+
+        is_inserting = self.cost_in_original_currency > 0 and self.original_currency != '' \
+                       and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0
+
+        is_deleting = self.cost_in_original_currency == 0 and self.original_currency == '' \
+                      and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0
+
+        if is_inserting:
+            sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
+                                                             ({NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                                   self.name_parameter,
+                                                               'vendor': self.vendor_parameter,
+                                                               'year': self.year_parameter,
+                                                               'month': 5,
+                                                               'cost_in_original_currency':
+                                                                   self.cost_in_original_currency,
+                                                               'original_currency': self.original_currency,
+                                                               'cost_in_local_currency': self.cost_in_local_currency,
+                                                               'cost_in_local_currency_with_tax':
+                                                                   self.cost_in_local_currency_with_tax},))
+        elif is_deleting:
             sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
                                                             self.year_parameter, self.name_parameter)
-        if insert_or_delete in (INSERT, DELETE):
+
+        if is_inserting or is_deleting:
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 ManageDB.run_sql(connection, sql_text, data)
                 connection.close()
                 ManageDB.backup_costs_data(self.report_parameter)
-                if insert_or_delete == INSERT:
+                if is_inserting:
                     show_message('Data inserted/replaced')
-                elif insert_or_delete == DELETE:
+                elif is_deleting:
                     show_message('Data removed')
         else:
             show_message('Invalid entry')
 
     def load_costs(self):
         """Fills the costs fields with data from the database"""
-        sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.year_parameter,
-                                                     self.name_parameter)
+        sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.name_parameter)
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:

@@ -404,7 +404,7 @@ FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
 FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
 FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_NOT_IN_CHARTS + ('year',)
 
-COSTS_KEY_FIELDS = ('vendor', 'year')
+COSTS_KEY_FIELDS = ('vendor', 'month', 'year')
 CHART_KEY_FIELDS = ('vendor', 'metric_type')
 
 DATABASE_FOLDER = r'./all_data/search/'
