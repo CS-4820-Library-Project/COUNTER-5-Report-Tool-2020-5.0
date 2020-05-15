@@ -134,7 +134,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="frame_3">
+       <widget class="QFrame" name="update_cost_frame">
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
@@ -264,7 +264,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QFrame" name="update_cost_frame">
+          <widget class="QFrame" name="frame_4">
            <property name="frameShape">
             <enum>QFrame::StyledPanel</enum>
            </property>

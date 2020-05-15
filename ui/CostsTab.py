@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -70,14 +68,14 @@ class Ui_costs_tab(object):
         self.costs_name_parameter_combobox.setObjectName("costs_name_parameter_combobox")
         self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.costs_name_parameter_combobox)
         self.verticalLayout_2.addWidget(self.costs_parameters_frame)
-        self.frame_3 = QtWidgets.QFrame(self.frame)
-        self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_3.setObjectName("frame_3")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame_3)
+        self.update_cost_frame = QtWidgets.QFrame(self.frame)
+        self.update_cost_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.update_cost_frame.setObjectName("update_cost_frame")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.update_cost_frame)
         self.verticalLayout.setObjectName("verticalLayout")
         spacerItem1 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
-        self.costs_values_frame = QtWidgets.QFrame(self.frame_3)
+        self.costs_values_frame = QtWidgets.QFrame(self.update_cost_frame)
         self.costs_values_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.costs_values_frame.setObjectName("costs_values_frame")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.costs_values_frame)
@@ -133,24 +131,24 @@ class Ui_costs_tab(object):
         self.start_month_combo_box.setObjectName("start_month_combo_box")
         self.gridLayout_2.addWidget(self.start_month_combo_box, 0, 2, 1, 1)
         self.verticalLayout.addWidget(self.costs_values_frame)
-        self.update_cost_frame = QtWidgets.QFrame(self.frame_3)
-        self.update_cost_frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.update_cost_frame.setObjectName("update_cost_frame")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.update_cost_frame)
+        self.frame_4 = QtWidgets.QFrame(self.update_cost_frame)
+        self.frame_4.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_4.setObjectName("frame_4")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.frame_4)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.costs_save_button = QtWidgets.QPushButton(self.update_cost_frame)
+        self.costs_save_button = QtWidgets.QPushButton(self.frame_4)
         self.costs_save_button.setObjectName("costs_save_button")
         self.horizontalLayout_3.addWidget(self.costs_save_button)
-        self.costs_load_button = QtWidgets.QPushButton(self.update_cost_frame)
+        self.costs_load_button = QtWidgets.QPushButton(self.frame_4)
         self.costs_load_button.setObjectName("costs_load_button")
         self.horizontalLayout_3.addWidget(self.costs_load_button)
-        self.costs_clear_button = QtWidgets.QPushButton(self.update_cost_frame)
+        self.costs_clear_button = QtWidgets.QPushButton(self.frame_4)
         self.costs_clear_button.setObjectName("costs_clear_button")
         self.horizontalLayout_3.addWidget(self.costs_clear_button)
-        self.verticalLayout.addWidget(self.update_cost_frame)
+        self.verticalLayout.addWidget(self.frame_4)
         spacerItem2 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem2)
-        self.verticalLayout_2.addWidget(self.frame_3)
+        self.verticalLayout_2.addWidget(self.update_cost_frame)
         self.frame_2 = QtWidgets.QFrame(self.frame)
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_2.setObjectName("frame_2")
@@ -204,4 +202,5 @@ class Ui_costs_tab(object):
         self.costs_clear_button.setText(_translate("costs_tab", "Clear Fields"))
         self.label_3.setText(_translate("costs_tab", "Available Costs"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs File"))
+
 import Resources_rc
