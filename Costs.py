@@ -1,6 +1,7 @@
 import json
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
+from PyQt5.QtCore import QModelIndex
 
 import ManageDB
 import ManageVendors
@@ -28,10 +29,6 @@ class CostsController:
         self.vendor_parameter_combobox = costs_ui.costs_vendor_parameter_combobox
         self.vendor_parameter = None
 
-        self.year_parameter_dateedit = costs_ui.costs_year_parameter_dateedit
-        self.year_parameter_dateedit.setDate(QDate.currentDate())
-        self.year_parameter = None
-
         self.name_label = costs_ui.costs_name_parameter_label
         self.name_parameter_combobox = costs_ui.costs_name_parameter_combobox
         self.name_parameter = None
@@ -56,19 +53,30 @@ class CostsController:
         self.save_costs_button.clicked.connect(self.save_costs)
 
         self.load_button = costs_ui.costs_load_button
-        self.load_button.clicked.connect(self.load_costs)
+        self.load_button.hide()
+        self.load_button.clicked.connect(self.populate_data)
 
         self.clear_button = costs_ui.costs_clear_button
-        self.clear_button.clicked.connect(self.clear_costs)
+        self.clear_button.clicked.connect(self.clear_cost_fields)
 
 
 
 
         # NEw NEw
+        self.list_view = costs_ui.list_view
+        self.list_view.clicked.connect(self.on_price_group_clicked)
+        self.list_model = QStandardItemModel(self.list_view)
+        self.list_view.setModel(self.list_model)
+        self.price_groups = []
+        self.curr_price_group_index = -1
+
+        self.update_cost_frame = costs_ui.update_cost_frame
+
+        current_date = QDate.currentDate()
         self.start_year_date_edit = costs_ui.start_year_date_edit
-        self.start_year_date_edit.dateChanged.connect(self.on_start_year_changed)
+        self.start_year_date_edit.setDate(current_date)
         self.end_year_date_edit = costs_ui.end_year_date_edit
-        self.end_year_date_edit.dateChanged.connect(self.on_end_year_changed)
+        self.end_year_date_edit.setDate(current_date)
 
         self.start_month_combo_box = costs_ui.start_month_combo_box
         self.end_month_combo_box = costs_ui.end_month_combo_box
@@ -77,8 +85,8 @@ class CostsController:
             self.start_month_combo_box.addItem(month)
             self.end_month_combo_box.addItem(month)
 
-        self.start_month_combo_box.currentIndexChanged.connect(self.on_start_month_changed)
-        self.end_month_combo_box.currentIndexChanged.connect(self.on_end_month_changed)
+        self.start_month_combo_box.setCurrentIndex(current_date.month() - 1)
+        self.end_month_combo_box.setCurrentIndex(current_date.month() - 1)
 
 
 
@@ -90,14 +98,12 @@ class CostsController:
 
         self.report_parameter_combobox.currentTextChanged.connect(self.on_report_parameter_changed)
         self.vendor_parameter_combobox.currentTextChanged.connect(self.on_vendor_parameter_changed)
-        self.year_parameter_dateedit.dateChanged.connect(self.on_year_parameter_changed)
         self.name_parameter_combobox.currentTextChanged.connect(self.on_name_parameter_changed)
 
         self.names = []
         self.costs_names = []
 
         self.on_report_parameter_changed()
-        self.year_parameter = int(self.year_parameter_dateedit.text())
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
         self.fill_names()
 
@@ -109,6 +115,8 @@ class CostsController:
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
+
+        self.populate_data()
 
     def update_settings(self, settings: SettingsModel):
         """Invoked when the settings are saved
@@ -145,17 +153,15 @@ class CostsController:
         if self.vendor_parameter:
             self.fill_names()
 
+        self.populate_data()
+
     def on_vendor_parameter_changed(self):
         """Invoked when the vendor parameter changes"""
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
         if self.report_parameter:
             self.fill_names()
 
-    def on_year_parameter_changed(self):
-        """Invoked when the year parameter changes"""
-        self.year_parameter = int(self.year_parameter_dateedit.text())
-        self.load_costs()
-        self.fill_names(True)
+        self.populate_data()
 
     def fill_names(self, only_get_costs_names: bool = False):
         """Fills the name field combobox"""
@@ -174,8 +180,8 @@ class CostsController:
 
             costs_sql_text, costs_data = ManageDB.get_names_with_costs_sql_text(self.report_parameter,
                                                                                 self.vendor_parameter,
-                                                                                self.year_parameter,
-                                                                                self.year_parameter)
+                                                                                self.start_year_date_edit.date().year(),
+                                                                                self.end_year_date_edit.date().year())
             costs_results = ManageDB.run_select_sql(connection, costs_sql_text, costs_data)
             connection.close()
 
@@ -193,6 +199,7 @@ class CostsController:
                     item.setFont(font)
                 model.appendRow(item)
             self.name_parameter_combobox.setModel(model)
+            self.name_parameter = self.name_parameter_combobox.currentText()
         else:
             print('Error, no connection')
 
@@ -202,11 +209,13 @@ class CostsController:
         enable = False
         if self.name_parameter:
             enable = True
-            self.load_costs()
+
         self.cost_in_original_currency_doublespinbox.setEnabled(enable)
         self.original_currency_combobox.setEnabled(enable)
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
         self.cost_in_local_currency_with_tax_doublespinbox.setEnabled(enable)
+
+        self.populate_data()
 
     def on_cost_in_original_currency_changed(self):
         """Invoked when the cost in original currency parameter changes"""
@@ -224,24 +233,98 @@ class CostsController:
         """Invoked when the cost in local currency with tax parameter changes"""
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
+    def on_price_group_clicked(self, model_index: QModelIndex):
+        self.curr_price_group_index = model_index.row()
+        self.populate_list_view()
+        self.populate_cost_fields()
 
+    def populate_data(self):
+        results = self.get_costs()
+        # Sort results by date
+        # results = sorted(results, key=lambda result: (result[4], result[5]))
+        curr_cost = 0
+        self.price_groups = []
+        for result in results:
+            if curr_cost != result[0] or not self.price_groups:
+                price_group = {"original_curr": result[0],  # Original cost
+                               "curr": result[1],  # Currency
+                               "local_curr": result[2],  # Local cost
+                               "local_tax_curr": result[3],  # Local cost with tax
+                               "start_year": result[4],
+                               "start_month": result[5],
+                               "end_year": result[4],
+                               "end_month": result[5]}
+                self.price_groups.append(price_group)
+            else:
+                price_group = self.price_groups[-1]
+                price_group["end_year"] = result[4]
+                price_group["end_month"] = result[5]
 
-    def on_start_year_changed(self):
-        print()
+            curr_cost = result[0]
 
-    def on_end_year_changed(self):
-        print()
+        self.curr_price_group_index = 0 if self.price_groups else -1
+        self.populate_list_view()
+        self.populate_cost_fields()
 
-    def on_start_month_changed(self):
-        print()
+    def populate_list_view(self):
+        self.list_model.clear()
 
-    def on_end_month_changed(self):
-        print()
+        if self.curr_price_group_index == -1:
+            return
 
+        for price_group in self.price_groups:
+            item = QStandardItem(f"Cost: {price_group['curr']} {price_group['original_curr']}, "
+                                 f"Start: {price_group['start_year']}-{price_group['start_month']}, "
+                                 f"End: {price_group['end_year']}-{price_group['end_month']}")
+            item.setCheckable(False)
+            item.setEditable(False)
+            self.list_model.appendRow(item)
 
+    def populate_cost_fields(self):
+
+        if self.curr_price_group_index >= 0:  # Reset fields
+            price_group = self.price_groups[self.curr_price_group_index]
+            self.start_year_date_edit.setDate(QDate(price_group['start_year'], 1, 1))
+            self.end_year_date_edit.setDate(QDate(price_group['end_year'], 1, 1))
+
+            self.start_month_combo_box.setCurrentIndex(int(price_group['start_month']) - 1)
+            self.end_month_combo_box.setCurrentIndex(int(price_group['end_month']) - 1)
+
+            self.cost_in_original_currency_doublespinbox.setValue(price_group['original_curr'])
+            self.original_currency_combobox.setCurrentText(price_group['curr'])
+            self.cost_in_local_currency_doublespinbox.setValue(price_group['local_curr'])
+            self.cost_in_local_currency_with_tax_doublespinbox.setValue(price_group['local_tax_curr'])
+            self.cost_in_original_currency_doublespinbox.repaint()
+
+        else:
+            self.clear_cost_fields()
+
+        self.update_cost_frame.setDisabled(not self.name_parameter)
+
+    def clear_cost_fields(self):
+        """Empties the costs fields"""
+
+        current_date = QDate.currentDate()
+        self.start_year_date_edit.setDate(current_date)
+        self.end_year_date_edit.setDate(current_date)
+
+        self.start_month_combo_box.setCurrentIndex(current_date.month() - 1)
+        self.end_month_combo_box.setCurrentIndex(current_date.month() - 1)
+
+        self.cost_in_original_currency_doublespinbox.setValue(0)
+        self.original_currency_combobox.setCurrentText("")
+        self.cost_in_local_currency_doublespinbox.setValue(0)
+        self.cost_in_local_currency_with_tax_doublespinbox.setValue(0)
+        self.cost_in_original_currency_doublespinbox.repaint()
 
     def save_costs(self):
         """Saves the cost data: if it is nonzero, add it to the database; if it is zero, delete it from the database"""
+
+        sql_data = []  # list(tuple(sql_test, data))
+        is_inserting = self.cost_in_original_currency > 0 and self.original_currency != '' \
+                       and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0
+        is_deleting = self.cost_in_original_currency == 0 and self.original_currency == '' \
+                      and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0
 
         # Get the number of months to be processed
         begin_date = QDate(self.start_year_date_edit.date().year(), self.start_month_combo_box.currentIndex() + 1, 1)
@@ -254,57 +337,36 @@ class CostsController:
             num_years = end_date.year() - begin_date.year()
             num_months += (num_years - 1) * 12
 
-        # Get the sql_text and data for each month's insertion
-        insertion_sql_data = []
+        # Get sql_text and data for every month in the range
         for i in range(num_months):
-            curr_month = begin_date.addMonths(i).month()
-            sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
-                                                             ({NAME_FIELD_SWITCHER[self.report_parameter]:
-                                                                   self.name_parameter,
-                                                               'vendor': self.vendor_parameter,
-                                                               'year': self.year_parameter,
-                                                               'month': curr_month,
-                                                               'cost_in_original_currency':
-                                                                   self.cost_in_original_currency,
-                                                               'original_currency': self.original_currency,
-                                                               'cost_in_local_currency': self.cost_in_local_currency,
-                                                               'cost_in_local_currency_with_tax':
-                                                                   self.cost_in_local_currency_with_tax},))
-            insertion_sql_data.append((sql_text, data))
-            print(begin_date.toString("MMM-yyyy"))
+            date = begin_date.addMonths(i)
+            curr_month = date.month()
+            curr_year = date.year()
+            if is_inserting:
+                sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
+                                                                 ({NAME_FIELD_SWITCHER[self.report_parameter]:
+                                                                       self.name_parameter,
+                                                                   'vendor': self.vendor_parameter,
+                                                                   'year': curr_year,
+                                                                   'month': curr_month,
+                                                                   'cost_in_original_currency':
+                                                                       self.cost_in_original_currency,
+                                                                   'original_currency': self.original_currency,
+                                                                   'cost_in_local_currency': self.cost_in_local_currency,
+                                                                   'cost_in_local_currency_with_tax':
+                                                                       self.cost_in_local_currency_with_tax},))
+                sql_data.append((sql_text, data))
 
-
-
-        sql_text = None
-        data = None
-
-        is_inserting = self.cost_in_original_currency > 0 and self.original_currency != '' \
-                       and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0
-
-        is_deleting = self.cost_in_original_currency == 0 and self.original_currency == '' \
-                      and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0
-
-        if is_inserting:
-            sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
-                                                             ({NAME_FIELD_SWITCHER[self.report_parameter]:
-                                                                   self.name_parameter,
-                                                               'vendor': self.vendor_parameter,
-                                                               'year': self.year_parameter,
-                                                               'month': 5,
-                                                               'cost_in_original_currency':
-                                                                   self.cost_in_original_currency,
-                                                               'original_currency': self.original_currency,
-                                                               'cost_in_local_currency': self.cost_in_local_currency,
-                                                               'cost_in_local_currency_with_tax':
-                                                                   self.cost_in_local_currency_with_tax},))
-        elif is_deleting:
-            sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
-                                                            self.year_parameter, self.name_parameter)
+            elif is_deleting:
+                sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
+                                                                curr_month, curr_year, self.name_parameter)
+                sql_data.append((sql_text, data))
 
         if is_inserting or is_deleting:
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
-                ManageDB.run_sql(connection, sql_text, data)
+                for sql_text, data in sql_data:
+                    ManageDB.run_sql(connection, sql_text, data)
                 connection.close()
                 ManageDB.backup_costs_data(self.report_parameter)
                 if is_inserting:
@@ -314,33 +376,49 @@ class CostsController:
         else:
             show_message('Invalid entry')
 
-    def load_costs(self):
+    def on_refresh_clicked(self):
+        self.populate_data()
+
+    def get_costs(self) -> list:
         """Fills the costs fields with data from the database"""
+
+        if not self.report_parameter:
+            print("Report parameter is empty")
+            return []
+        if not self.vendor_parameter:
+            print("Vendor parameter is empty")
+            return []
+        if not self.name_parameter:
+            print("Name parameter is empty")
+            return []
+
         sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.name_parameter)
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            if not results:
-                results.append((0.0, '', 0.0, 0.0))
+            # if not results:
+            #     results.append((0.0, '', 0.0, 0.0))
             connection.close()
-        values = {}
-        index = 0
-        for field in COST_FIELDS:
-            values[field[NAME_KEY]] = results[0][index]
-            index += 1
-        self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
-        self.original_currency_combobox.setCurrentText(values['original_currency'])
-        self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
-        self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
-        self.cost_in_original_currency_doublespinbox.repaint()
 
-    def clear_costs(self):
-        """Empties the costs fields"""
-        self.cost_in_original_currency_doublespinbox.setValue(0.0)
-        self.original_currency_combobox.setCurrentText('')
-        self.cost_in_local_currency_doublespinbox.setValue(0.0)
-        self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
+        return results
+        # values = {}
+        # index = 0
+        # for field in COST_FIELDS:
+        #     values[field[NAME_KEY]] = results[0][index]
+        #     index += 1
+        # self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
+        # self.original_currency_combobox.setCurrentText(values['original_currency'])
+        # self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
+        # self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
+        # self.cost_in_original_currency_doublespinbox.repaint()
+
+    # def clear_costs(self):
+    #     """Empties the costs fields"""
+    #     self.cost_in_original_currency_doublespinbox.setValue(0.0)
+    #     self.original_currency_combobox.setCurrentText('')
+    #     self.cost_in_local_currency_doublespinbox.setValue(0.0)
+    #     self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
 
     def import_costs(self):
         """Import a file with costs data in it into the database"""

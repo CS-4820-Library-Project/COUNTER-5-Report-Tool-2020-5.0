@@ -766,7 +766,8 @@ def get_costs_sql_text(report_type: str, vendor: str, name: str) -> Tuple[str, S
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report_type]
-    sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS], (report_type + COST_TABLE_SUFFIX,),
+    sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS] + ['year', 'month'],
+                                        (report_type + COST_TABLE_SUFFIX,),
                                         (('vendor' + ' = ?',), (name_field + ' = ?',)), is_multiline=False) + ';'
     values = (vendor, name)
     return sql_text, values
