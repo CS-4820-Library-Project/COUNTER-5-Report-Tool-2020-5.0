@@ -73,8 +73,8 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION,
                    SOURCE_KEY: 'joined'})  # year total column
     for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: MONTH_CALCULATION.format(key),
-                       SOURCE_KEY: 'joined'})
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER',
+                       CALCULATION_KEY: MONTH_CALCULATION.format(report, key), SOURCE_KEY: 'joined'})
     return tuple(fields)
 
 
