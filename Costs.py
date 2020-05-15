@@ -401,7 +401,7 @@ class CostsController:
             #     results.append((0.0, '', 0.0, 0.0))
             connection.close()
 
-        return results
+        return results if results else []
         # values = {}
         # index = 0
         # for field in COST_FIELDS:

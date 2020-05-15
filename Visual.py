@@ -120,7 +120,7 @@ class VisualController:
         self.data = []
         self.temp_results = []
         self.top_num = None
-        self.results = None
+        self.results = []
         self.names = []
         self.costs_names = []
 
@@ -318,6 +318,8 @@ class VisualController:
                 self.results = ManageDB.run_select_sql(connection, sql_text, data)
                 # print(self.results)
 
+                if not self.results:
+                    self.results = []
                 self.results.insert(0, headers)
                 # print(self.results)
                 connection.close()
