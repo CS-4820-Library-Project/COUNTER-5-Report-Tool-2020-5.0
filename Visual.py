@@ -479,7 +479,7 @@ class VisualController:
             for cost_result in cost_results:
                 if year == cost_result[4]:  # Same year
                     month = cost_result[5]
-                    month_name = MONTH_NAMES(month - 1)
+                    month_name = MONTH_NAMES[month - 1]
                     month_metric_index = search_headers.index(month_name)
                     month_metric = search_result[month_metric_index]
 
