@@ -67,9 +67,6 @@ def get_view_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
         if field[NAME_KEY] not in FIELDS_NOT_IN_VIEWS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
                            SOURCE_KEY: report})
-    for field in COST_FIELDS:  # cost table fields
-        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY],
-                       SOURCE_KEY: report[:2] + COST_TABLE_SUFFIX})
     fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER', CALCULATION_KEY: YEAR_TOTAL_CALCULATION,
                    SOURCE_KEY: 'joined'})  # year total column
     for key in sorted(MONTHS):  # month columns
@@ -215,23 +212,15 @@ def create_view_sql_texts(report: str) -> str:
     report_fields = get_view_report_fields_list(report)
     fields = []
     calcs = []
-    key_fields = []
     for field in report_fields:
         if CALCULATION_KEY not in field.keys():
             field_text = ''
-            if field[NAME_KEY] in COSTS_KEY_FIELDS or field[NAME_KEY] == name_field[NAME_KEY]:
-                key_fields.append(field[NAME_KEY])
-                field_text = report + '.'
             field_text += field[NAME_KEY]
             fields.append(field_text)
         else:
             calcs.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
     sql_text += '\n\t' + ', \n\t'.join(fields) + ', \n\t' + ', \n\t'.join(calcs)
-    sql_text += '\nFROM ' + report + ' LEFT JOIN ' + report[:2] + COST_TABLE_SUFFIX
-    join_clauses = []
-    for key_field in key_fields:
-        join_clauses.append(report + '.' + key_field + ' = ' + report[:2] + COST_TABLE_SUFFIX + '.' + key_field)
-    sql_text += ' ON ' + ' AND '.join(join_clauses)
+    sql_text += '\nFROM ' + report
     sql_text += '\nGROUP BY ' + ', '.join(fields) + ';'
     return sql_text
 
