@@ -123,6 +123,7 @@ class VisualController:
         self.results = []
         self.names = []
         self.costs_names = []
+        self.legend_entry = []
 
     def update_settings(self, settings: SettingsModel):
         """Called when the settings are saved
@@ -393,9 +394,9 @@ class VisualController:
     def process_default_data(self):
         """Invoked when calculation type: monthly is selected"""
         m = len(self.results)
-        self.legendEntry = []  # legend entry data
+        self.legend_entry = []  # legend entry data
         for i in range(1, m):
-            self.legendEntry.append(self.results[i][3])
+            self.legend_entry.append(self.results[i][3])
 
         # data is an array with the sorted usage figures
         self.data = []
@@ -414,8 +415,8 @@ class VisualController:
     def process_yearly_data(self):
         """Invoked when calculation type: yearly is selected"""
         m = len(self.results)
-        self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.metric.currentText())
+        self.legend_entry = []  # legend entry data
+        self.legend_entry.append(self.metric.currentText())
 
         # data is an array with the sorted usage figures
         self.data = []
@@ -437,10 +438,28 @@ class VisualController:
     def process_cost_ratio_data(self, cost_results: list, search_results: list, search_headers: tuple):
         """Invoked when calculation type: cost ratio is selected"""
 
-        self.results = search_results
-        search_results.insert(0, search_results)
-        m = len(self.results) #length of self.results
-        self.legendEntry = []  # legend entry data contains column names
+        is_original_currency = self.cost_parameter.currentText() == 'Cost in Original Currency'
+        is_local_currency = self.cost_parameter.currentText() == 'Cost in Local Currency'
+        is_local_currency_tax = self.cost_parameter.currentText() == 'Cost in Local Currency with Tax'
+
+        # self.results = search_results
+        # search_results.insert(0, search_results)
+        # m = len(self.results) #length of self.results
+        self.legend_entry = []  # legend entry data contains column names
+        if is_original_currency:
+            self.legend_entry.append('Cost in Original Currency Per Metric')
+            self.legend_entry.append('Cost in Original Currency')
+        elif is_local_currency:
+            self.legend_entry.append('Cost in Local Currency Per Metric')
+            self.legend_entry.append('Cost in Local Currency')
+        elif is_local_currency_tax:
+            self.legend_entry.append('Cost in Local Currency with Tax Per Metric')
+            self.legend_entry.append('Cost in Local Currency with Tax')
+        else:
+            print("Unknown cost ratio calculation option")
+
+        # add column header to legend entry
+        self.legend_entry.append(self.metric.currentText())
 
         # data is an array of array with year, cost per metric, total and cost in separate arrays
         self.data = []
@@ -448,11 +467,7 @@ class VisualController:
         years = []  # year
         cost_per_metric_list = []  # cost per metric
         year_metric_totals = []  # reporting_period_total
-        total_costs = []  # cost
-
-        is_original_currency = self.cost_parameter.currentText() == 'Cost in Original Currency'
-        is_local_currency = self.cost_parameter.currentText() == 'Cost in Local Currency'
-        is_local_currency_tax = self.cost_parameter.currentText() == 'Cost in Local Currency with Tax'
+        total_year_costs = []  # cost
 
         # Get years and metric totals
         for search_result in search_results:
@@ -460,7 +475,7 @@ class VisualController:
             years.append(year)
 
             total_year_cost = 0
-            total_year_paid_per_metric = 0  # Metric total for months that have cost data
+            total_year_paid_metric = 0  # Metric total for months that have cost data
             for cost_result in cost_results:
                 if year == cost_result[4]:  # Same year
                     month = cost_result[5]
@@ -468,13 +483,9 @@ class VisualController:
                     month_metric_index = search_headers.index(month_name)
                     month_metric = search_result[month_metric_index]
 
-                    if month_metric == 0:
-                        continue
-
+                    month_cost = 0
                     if is_original_currency:
                         month_cost = cost_result[0]
-                        total_year_cost += month_cost
-                        total_year_paid_per_metric
                     elif is_local_currency:
                         month_cost = cost_result[2]
                     elif is_local_currency_tax:
@@ -482,8 +493,22 @@ class VisualController:
                     else:
                         print("Unknown cost ratio calculation option")
 
+                    total_year_cost += month_cost
+                    total_year_paid_metric += month_metric
 
+            if total_year_paid_metric == 0:
+                year_cost_per_metric = total_year_cost
+            else:
+                year_cost_per_metric = total_year_cost / total_year_paid_metric
+
+            cost_per_metric_list.append(year_cost_per_metric)
+            total_year_costs.append(total_year_cost)
             year_metric_totals.append(search_result[4])
+
+        self.data.append(years)
+        self.data.append(cost_per_metric_list)
+        self.data.append(total_year_costs)
+        self.data.append(year_metric_totals)
 
         # for year in years:
         #     cost_per_metric_for_month = 0
@@ -503,52 +528,52 @@ class VisualController:
 
 
         # retrieve year and add it to array
-        for i in range(1, m):
-            years.append(self.results[i][3])
-        self.data.append(years)
+        # for i in range(1, m):
+        #     years.append(self.results[i][3])
+        # self.data.append(years)
 
         # retrieve cost and total and finding cost per metric and adding it to array
-        if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax':
-            self.legendEntry.append('Cost in Local Currency with Tax Per Metric')
-            self.legendEntry.append('Cost in Local Currency with Tax')
-            for i in range(1, m):
-                cost = self.results[i][7]
-                if self.results[i][7] is None:
-                    cost = 0
-                total_costs.append(cost)
-                cost_per_metric_list.append(cost / self.results[i][8])
-            self.data.append(cost_per_metric_list)
-            self.data.append(total_costs)
-        if self.cost_parameter.currentText() == 'Cost in Local Currency':
-            self.legendEntry.append('Cost in Local Currency Per Metric')
-            self.legendEntry.append('Cost in Local Currency')
-            for i in range(1, m):
-                cost = self.results[i][6]
-                if self.results[i][6] is None:
-                    cost = 0
-                total_costs.append(cost)
-                cost_per_metric_list.append(cost / self.results[i][8])
-            self.data.append(cost_per_metric_list)
-            self.data.append(total_costs)
-        if self.cost_parameter.currentText() == 'Cost in Original Currency':
-            self.legendEntry.append('Cost in Original Currency Per Metric')
-            self.legendEntry.append('Cost in Original Currency')
-            for i in range(1, m):
-                cost = self.results[i][4]
-                if self.results[i][4] is None:
-                    cost = 0
-                total_costs.append(cost)
-                cost_per_metric_list.append(cost / self.results[i][8])
-            self.data.append(cost_per_metric_list)
-            self.data.append(total_costs)
+        # if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax':
+        #     self.legend_entry.append('Cost in Local Currency with Tax Per Metric')
+        #     self.legend_entry.append('Cost in Local Currency with Tax')
+        #     for i in range(1, m):
+        #         cost = self.results[i][7]
+        #         if self.results[i][7] is None:
+        #             cost = 0
+        #         total_year_costs.append(cost)
+        #         cost_per_metric_list.append(cost / self.results[i][8])
+        #     self.data.append(cost_per_metric_list)
+        #     self.data.append(total_year_costs)
+        # if self.cost_parameter.currentText() == 'Cost in Local Currency':
+        #     self.legend_entry.append('Cost in Local Currency Per Metric')
+        #     self.legend_entry.append('Cost in Local Currency')
+        #     for i in range(1, m):
+        #         cost = self.results[i][6]
+        #         if self.results[i][6] is None:
+        #             cost = 0
+        #         total_year_costs.append(cost)
+        #         cost_per_metric_list.append(cost / self.results[i][8])
+        #     self.data.append(cost_per_metric_list)
+        #     self.data.append(total_year_costs)
+        # if self.cost_parameter.currentText() == 'Cost in Original Currency':
+        #     self.legend_entry.append('Cost in Original Currency Per Metric')
+        #     self.legend_entry.append('Cost in Original Currency')
+        #     for i in range(1, m):
+        #         cost = self.results[i][4]
+        #         if self.results[i][4] is None:
+        #             cost = 0
+        #         total_year_costs.append(cost)
+        #         cost_per_metric_list.append(cost / self.results[i][8])
+        #     self.data.append(cost_per_metric_list)
+        #     self.data.append(total_year_costs)
+        #
+        # # retrieve reporting_period_total and add it to array
+        # for i in range(1, m):
+        #     year_metric_totals.append(self.results[i][8])
+        # self.data.append(year_metric_totals)
 
-        # retrieve reporting_period_total and add it to array
-        for i in range(1, m):
-            year_metric_totals.append(self.results[i][8])
-        self.data.append(year_metric_totals)
-
-        # add column header to legend entry
-        self.legendEntry.append(self.metric.currentText())
+        # # add column header to legend entry
+        # self.legend_entry.append(self.metric.currentText())
 
         # testing to see data in array of array
         # print(self.data[0])  # first column in excel (year)
@@ -565,9 +590,9 @@ class VisualController:
         # print(m)
         self.temp_results = []
 
-        self.legendEntry = []  # legend entry data
-        self.legendEntry.append(self.results[0][3])
-        self.legendEntry.append(self.results[0][4])
+        self.legend_entry = []  # legend entry data
+        self.legend_entry.append(self.results[0][3])
+        self.legend_entry.append(self.results[0][4])
         for i in range(1, m):
             self.temp_results.append(self.results[i])
         self.temp_results = sorted(self.temp_results, key=itemgetter(4))
@@ -610,7 +635,7 @@ class VisualController:
 
         # will add vendor column to chart if the user do not enter anything in vendor
         if self.vendor.currentText() == "":
-            self.legendEntry.append(self.results[0][2])
+            self.legend_entry.append(self.results[0][2])
             for i in range(0, n):
                 rank = self.temp_results[i][2]
                 data4.append(rank)
@@ -682,8 +707,8 @@ class VisualController:
         bold = workbook.add_format({'bold': 1})
         #headings = [vertical_axis_title]
         headings = [""]
-        for i in range(0, len(self.legendEntry)):
-            headings.append(self.legendEntry[i])
+        for i in range(0, len(self.legend_entry)):
+            headings.append(self.legend_entry[i])
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', self.data[0])
         n = ord('A') + 1
