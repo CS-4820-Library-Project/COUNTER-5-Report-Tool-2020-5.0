@@ -121,10 +121,12 @@ def get_cost_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     for field in ALL_REPORT_FIELDS:  # fields in all reports
         if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
-    for field in COST_FIELDS:  # cost table fields
-        fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
+    # for field in COST_FIELDS:  # cost table fields
+    #     fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
     fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
                    CALCULATION_KEY: 'SUM(' + YEAR_TOTAL + ')'})  # year total column
+    for key in sorted(MONTHS):  # month columns
+        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER'})
     return tuple(fields)
 
 

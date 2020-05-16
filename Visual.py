@@ -309,29 +309,52 @@ class VisualController:
                 GeneralUtils.show_message(message4)
 
         if self.costRatio_radio.isChecked() and message == "":
-            # sql query to get search results
-            sql_text, data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
-            # print(sql_text)  # testing
-            headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report)])
+            search_headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report)])
+            # TODO add optional year parameter to ManageDB.get_costs_sql_text()
+            cost_sql_text, cost_data = ManageDB.get_costs_sql_text(report, vendor, name)
+            search_sql_text, search_data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name,
+                                                                               metric, vendor)
+            cost_results = []
+            search_results = []
+
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
-                self.results = ManageDB.run_select_sql(connection, sql_text, data)
-                # print(self.results)
-
-                if not self.results:
-                    self.results = []
-                self.results.insert(0, headers)
-                # print(self.results)
+                cost_results = ManageDB.run_select_sql(connection, cost_sql_text, cost_data)
+                search_results = ManageDB.run_select_sql(connection, search_sql_text, search_data)
                 connection.close()
-            else:
-                print('Error, no connection')
 
-            if len(self.results) > 1 and self.costRatio_radio.isChecked():
-                self.process_cost_ratio_data()
-                self.open_file_folder()
-            if name != "" and start_year <= end_year and len(self.results) <= 1:
-                message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
-                GeneralUtils.show_message(message4)
+            if not cost_results:
+                print("No cost result")
+                return
+            if not search_results:
+                print("No search result")
+                return
+
+            self.process_cost_ratio_data(cost_results, search_results, search_headers)
+
+            # # sql query to get search results
+            # sql_text, data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
+            # # print(sql_text)  # testing
+            # headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report)])
+            # connection = ManageDB.create_connection(DATABASE_LOCATION)
+            # if connection is not None:
+            #     self.results = ManageDB.run_select_sql(connection, sql_text, data)
+            #     # print(self.results)
+            #
+            #     if not self.results:
+            #         self.results = []
+            #     self.results.insert(0, headers)
+            #     # print(self.results)
+            #     connection.close()
+            # else:
+            #     print('Error, no connection')
+            #
+            # if len(self.results) > 1 and self.costRatio_radio.isChecked():
+            #     self.process_cost_ratio_data()
+            #     self.open_file_folder()
+            # if name != "" and start_year <= end_year and len(self.results) <= 1:
+            #     message4 = name + " of " + metric + " NOT FOUND in " + report + " for the chosen year range!"
+            #     GeneralUtils.show_message(message4)
 
         if self.topNum_radio.isChecked() and message == "":
             self.top_num = int(self.top_num_edit.text())
@@ -411,23 +434,78 @@ class VisualController:
         # print(len(self.data))
         self.chart_type()
 
-    def process_cost_ratio_data(self):
+    def process_cost_ratio_data(self, cost_results: list, search_results: list, search_headers: tuple):
         """Invoked when calculation type: cost ratio is selected"""
+
+        self.results = search_results
+        search_results.insert(0, search_results)
         m = len(self.results) #length of self.results
         self.legendEntry = []  # legend entry data contains column names
 
         # data is an array of array with year, cost per metric, total and cost in separate arrays
         self.data = []
 
-        data1 = []  # year
-        data2 = []  # cost per metric
-        data3 = []  # reporting_period_total
-        data4 = []  # cost
+        years = []  # year
+        cost_per_metric_list = []  # cost per metric
+        year_metric_totals = []  # reporting_period_total
+        total_costs = []  # cost
+
+        is_original_currency = self.cost_parameter.currentText() == 'Cost in Original Currency'
+        is_local_currency = self.cost_parameter.currentText() == 'Cost in Local Currency'
+        is_local_currency_tax = self.cost_parameter.currentText() == 'Cost in Local Currency with Tax'
+
+        # Get years and metric totals
+        for search_result in search_results:
+            year = search_result[3]
+            years.append(year)
+
+            total_year_cost = 0
+            total_year_paid_per_metric = 0  # Metric total for months that have cost data
+            for cost_result in cost_results:
+                if year == cost_result[4]:  # Same year
+                    month = cost_result[5]
+                    month_name = MONTH_NAMES(month - 1)
+                    month_metric_index = search_headers.index(month_name)
+                    month_metric = search_result[month_metric_index]
+
+                    if month_metric == 0:
+                        continue
+
+                    if is_original_currency:
+                        month_cost = cost_result[0]
+                        total_year_cost += month_cost
+                        total_year_paid_per_metric
+                    elif is_local_currency:
+                        month_cost = cost_result[2]
+                    elif is_local_currency_tax:
+                        month_cost = cost_result[3]
+                    else:
+                        print("Unknown cost ratio calculation option")
+
+
+            year_metric_totals.append(search_result[4])
+
+        # for year in years:
+        #     cost_per_metric_for_month = 0
+        #     for cost_result in cost_results:
+        #         if year == cost_result[4]:  # Same year
+        #             cost_month = cost_result[5]
+        #             month_name = MONTH_NAMES(cost_month - 1)
+        #             month_metric_index = search_headers.index(month_name)
+        #             month_met
+
+
+
+
+
+
+
+
 
         # retrieve year and add it to array
         for i in range(1, m):
-            data1.append(self.results[i][3])
-        self.data.append(data1)
+            years.append(self.results[i][3])
+        self.data.append(years)
 
         # retrieve cost and total and finding cost per metric and adding it to array
         if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax':
@@ -437,10 +515,10 @@ class VisualController:
                 cost = self.results[i][7]
                 if self.results[i][7] is None:
                     cost = 0
-                data4.append(cost)
-                data2.append(cost / self.results[i][8])
-            self.data.append(data2)
-            self.data.append(data4)
+                total_costs.append(cost)
+                cost_per_metric_list.append(cost / self.results[i][8])
+            self.data.append(cost_per_metric_list)
+            self.data.append(total_costs)
         if self.cost_parameter.currentText() == 'Cost in Local Currency':
             self.legendEntry.append('Cost in Local Currency Per Metric')
             self.legendEntry.append('Cost in Local Currency')
@@ -448,10 +526,10 @@ class VisualController:
                 cost = self.results[i][6]
                 if self.results[i][6] is None:
                     cost = 0
-                data4.append(cost)
-                data2.append(cost / self.results[i][8])
-            self.data.append(data2)
-            self.data.append(data4)
+                total_costs.append(cost)
+                cost_per_metric_list.append(cost / self.results[i][8])
+            self.data.append(cost_per_metric_list)
+            self.data.append(total_costs)
         if self.cost_parameter.currentText() == 'Cost in Original Currency':
             self.legendEntry.append('Cost in Original Currency Per Metric')
             self.legendEntry.append('Cost in Original Currency')
@@ -459,15 +537,15 @@ class VisualController:
                 cost = self.results[i][4]
                 if self.results[i][4] is None:
                     cost = 0
-                data4.append(cost)
-                data2.append(cost / self.results[i][8])
-            self.data.append(data2)
-            self.data.append(data4)
+                total_costs.append(cost)
+                cost_per_metric_list.append(cost / self.results[i][8])
+            self.data.append(cost_per_metric_list)
+            self.data.append(total_costs)
 
         # retrieve reporting_period_total and add it to array
         for i in range(1, m):
-            data3.append(self.results[i][8])
-        self.data.append(data3)
+            year_metric_totals.append(self.results[i][8])
+        self.data.append(year_metric_totals)
 
         # add column header to legend entry
         self.legendEntry.append(self.metric.currentText())
@@ -609,48 +687,53 @@ class VisualController:
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', self.data[0])
         n = ord('A') + 1
-        if self.costRatio_radio.isChecked() == False:
-            for i in range(1, len(self.data)):
-                worksheet.write_column(chr(n) + '2', self.data[i])
-                n = n + 1
-        if self.costRatio_radio.isChecked() == True:
+
+        if self.costRatio_radio.isChecked():
             # Add a number format for cells with money.
-            currency = self.process_currency()
-            money = workbook.add_format({'num_format': currency})
+            currency_format = self.process_currency()
+            money = workbook.add_format({'num_format': currency_format})
             for i in range(1, len(self.data)-1):
                 worksheet.write_column(chr(n) + '2', self.data[i], money)
                 n = n + 1
             worksheet.write_column(chr(n) + '2', self.data[len(self.data)-1])
+        else:
+            for i in range(1, len(self.data)):
+                worksheet.write_column(chr(n) + '2', self.data[i])
+                n = n + 1
 
     # process currency
     def process_currency(self):
         """Invoke to determine between local or original currency for cost"""
         if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax' or self.cost_parameter.currentText() == 'Cost in Local Currency':
             local_currency = self.settings.default_currency
-            currency = self.get_currency_code(local_currency)
-        if self.cost_parameter.currentText() == 'Cost in Original Currency':
+            currency_format = self.get_currency_code(local_currency)
+        elif self.cost_parameter.currentText() == 'Cost in Original Currency':
             original_currency = self.results[1][5]
-            currency = self.get_currency_code(original_currency)
-        return currency
+            currency_format = self.get_currency_code(original_currency)
+        else:
+            currency_format = self.get_currency_code(self.settings.default_currency)
+        return currency_format
 
     # return currency code for excel
-    def get_currency_code(self, local_currency):
+    def get_currency_code(self, currency):
         """Invoke to find currency being used"""
-        if local_currency == 'CAD':
-            currency = '[$CAD] #,###.#########################_)'
-        if local_currency == 'USD':
-            currency = '[$USD] #,###.#########################_)'
-        if local_currency == 'EUR':
-            currency = '[$EUR] #,###.#########################_)'
-        if local_currency == 'JPY':
-            currency = '[$JPY] #,###.#########################_)'
-        if local_currency == 'GBP':
-            currency = '[$GBP] #,###.#########################_)'
-        if local_currency == 'CHF':
-            currency = '[$CHF] #,###.#########################_)'
-        if local_currency == 'AUD':
-            currency = '[$AUD] #,###.#########################_)'
-        return currency
+        currency_format = '[$CAD] #,###.#########################_)'
+
+        if currency == 'CAD':
+            currency_format = '[$CAD] #,###.#########################_)'
+        elif currency == 'USD':
+            currency_format = '[$USD] #,###.#########################_)'
+        elif currency == 'EUR':
+            currency_format = '[$EUR] #,###.#########################_)'
+        elif currency == 'JPY':
+            currency_format = '[$JPY] #,###.#########################_)'
+        elif currency == 'GBP':
+            currency_format = '[$GBP] #,###.#########################_)'
+        elif currency == 'CHF':
+            currency_format = '[$CHF] #,###.#########################_)'
+        elif currency == 'AUD':
+            currency_format = '[$AUD] #,###.#########################_)'
+        return currency_format
     # create chart and add series to it
     def configureSeries(self, workbook, chart_type):
         """Invoked to create xlsx file
