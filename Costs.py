@@ -115,6 +115,7 @@ class CostsController:
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
+        self.import_costs_button.setEnabled(False)
 
         self.populate_data()
 
