@@ -250,15 +250,15 @@ class CostsController:
                                "curr": result[1],  # Currency
                                "local_curr": result[2],  # Local cost
                                "local_tax_curr": result[3],  # Local cost with tax
-                               "start_year": result[4],
-                               "start_month": result[5],
-                               "end_year": result[4],
-                               "end_month": result[5]}
+                               "start_year": result[7],
+                               "start_month": result[8],
+                               "end_year": result[7],
+                               "end_month": result[8]}
                 self.price_groups.append(price_group)
             else:
                 price_group = self.price_groups[-1]
-                price_group["end_year"] = result[4]
-                price_group["end_month"] = result[5]
+                price_group["end_year"] = result[7]
+                price_group["end_month"] = result[8]
 
             curr_cost = result[0]
 
@@ -305,11 +305,13 @@ class CostsController:
         """Empties the costs fields"""
 
         current_date = QDate.currentDate()
-        self.start_year_date_edit.setDate(current_date)
-        self.end_year_date_edit.setDate(current_date)
+        start_date = QDate(current_date.year(), 1, 1)
+        end_date = QDate(current_date.year(), 12, 1)
+        self.start_year_date_edit.setDate(start_date)
+        self.end_year_date_edit.setDate(end_date)
 
-        self.start_month_combo_box.setCurrentIndex(current_date.month() - 1)
-        self.end_month_combo_box.setCurrentIndex(current_date.month() - 1)
+        self.start_month_combo_box.setCurrentIndex(start_date.month() - 1)
+        self.end_month_combo_box.setCurrentIndex(end_date.month() - 1)
 
         self.cost_in_original_currency_doublespinbox.setValue(0)
         self.original_currency_combobox.setCurrentText("")
@@ -337,24 +339,29 @@ class CostsController:
             num_years = end_date.year() - begin_date.year()
             num_months += (num_years - 1) * 12
 
+        original_currency_cpm = self.cost_in_original_currency / num_months
+        local_currency_cpm = self.cost_in_local_currency / num_months
+        local_currency_tax_cpm = self.cost_in_local_currency_with_tax / num_months
+
         # Get sql_text and data for every month in the range
         for i in range(num_months):
             date = begin_date.addMonths(i)
             curr_month = date.month()
             curr_year = date.year()
             if is_inserting:
-                sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter,
-                                                                 ({NAME_FIELD_SWITCHER[self.report_parameter]:
-                                                                       self.name_parameter,
-                                                                   'vendor': self.vendor_parameter,
-                                                                   'year': curr_year,
-                                                                   'month': curr_month,
-                                                                   'cost_in_original_currency':
-                                                                       self.cost_in_original_currency,
-                                                                   'original_currency': self.original_currency,
-                                                                   'cost_in_local_currency': self.cost_in_local_currency,
-                                                                   'cost_in_local_currency_with_tax':
-                                                                       self.cost_in_local_currency_with_tax},))
+                sql_text, data = ManageDB.replace_costs_sql_text(
+                    self.report_parameter,
+                    ({NAME_FIELD_SWITCHER[self.report_parameter]: self.name_parameter,
+                      'vendor': self.vendor_parameter,
+                      'year': curr_year,
+                      'month': curr_month,
+                      'cost_in_original_currency': self.cost_in_original_currency,
+                      'original_currency': self.original_currency,
+                      'cost_in_local_currency': self.cost_in_local_currency,
+                      'cost_in_local_currency_with_tax': self.cost_in_local_currency_with_tax,
+                      'cost_in_original_currency_per_month': original_currency_cpm,
+                      'cost_in_local_currency_per_month': local_currency_cpm,
+                      'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
                 sql_data.append((sql_text, data))
 
             elif is_deleting:

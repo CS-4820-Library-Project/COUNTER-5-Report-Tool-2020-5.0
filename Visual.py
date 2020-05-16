@@ -332,6 +332,7 @@ class VisualController:
                 return
 
             self.process_cost_ratio_data(cost_results, search_results, search_headers)
+            self.open_file_folder()
 
             # # sql query to get search results
             # sql_text, data = ManageDB.cost_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
@@ -477,19 +478,19 @@ class VisualController:
             total_year_cost = 0
             total_year_paid_metric = 0  # Metric total for months that have cost data
             for cost_result in cost_results:
-                if year == cost_result[4]:  # Same year
-                    month = cost_result[5]
-                    month_name = MONTH_NAMES[month - 1]
+                if year == cost_result[7]:  # Same year
+                    month = cost_result[8]
+                    month_name = MONTH_NAMES[month - 1].lower()
                     month_metric_index = search_headers.index(month_name)
                     month_metric = search_result[month_metric_index]
 
                     month_cost = 0
                     if is_original_currency:
-                        month_cost = cost_result[0]
+                        month_cost = cost_result[4]
                     elif is_local_currency:
-                        month_cost = cost_result[2]
+                        month_cost = cost_result[5]
                     elif is_local_currency_tax:
-                        month_cost = cost_result[3]
+                        month_cost = cost_result[6]
                     else:
                         print("Unknown cost ratio calculation option")
 
