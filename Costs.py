@@ -53,7 +53,7 @@ class CostsController:
         self.save_costs_button.clicked.connect(self.save_costs)
 
         self.refresh_button = costs_ui.costs_load_button
-        self.refresh_button.clicked.connect(self.populate_cost_fields)
+        self.refresh_button.clicked.connect(self.on_refresh_clicked)
 
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_cost_fields)
@@ -62,12 +62,10 @@ class CostsController:
 
 
         # NEw NEw
-        self.list_view = costs_ui.list_view
-        self.list_view.clicked.connect(self.on_price_group_clicked)
-        self.list_model = QStandardItemModel(self.list_view)
-        self.list_view.setModel(self.list_model)
-        self.price_groups = []
-        self.curr_price_group_index = -1
+        self.available_costs_combo_box = costs_ui.available_costs_combo_box
+        self.available_costs_combo_box.currentIndexChanged.connect(self.on_available_cost_clicked)
+        self.available_costs = []
+        # self.curr_price_group_index = -1
 
         self.update_cost_frame = costs_ui.update_cost_frame
 
@@ -233,9 +231,7 @@ class CostsController:
         """Invoked when the cost in local currency with tax parameter changes"""
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
-    def on_price_group_clicked(self, model_index: QModelIndex):
-        self.curr_price_group_index = model_index.row()
-        self.populate_list_view()
+    def on_available_cost_clicked(self, index: int):
         self.populate_cost_fields()
 
     def populate_data(self):
@@ -243,10 +239,10 @@ class CostsController:
         # Sort results by date
         # results = sorted(results, key=lambda result: (result[4], result[5]))
         curr_cost = 0
-        self.price_groups = []
+        self.available_costs = []
         for result in results:
-            if curr_cost != result[0] or not self.price_groups:
-                price_group = {"original_curr": result[0],  # Original cost
+            if curr_cost != result[0] or not self.available_costs:
+                cost_group = {"original_curr": result[0],  # Original cost
                                "curr": result[1],  # Currency
                                "local_curr": result[2],  # Local cost
                                "local_tax_curr": result[3],  # Local cost with tax
@@ -254,36 +250,34 @@ class CostsController:
                                "start_month": result[8],
                                "end_year": result[7],
                                "end_month": result[8]}
-                self.price_groups.append(price_group)
+                self.available_costs.append(cost_group)
             else:
-                price_group = self.price_groups[-1]
-                price_group["end_year"] = result[7]
-                price_group["end_month"] = result[8]
+                cost_group = self.available_costs[-1]
+                cost_group["end_year"] = result[7]
+                cost_group["end_month"] = result[8]
 
             curr_cost = result[0]
 
-        self.curr_price_group_index = 0 if self.price_groups else -1
-        self.populate_list_view()
+        # self.curr_price_group_index = 0 if self.price_groups else -1
+        self.populate_available_costs()
         self.populate_cost_fields()
 
-    def populate_list_view(self):
-        self.list_model.clear()
+    def populate_available_costs(self):
+        self.available_costs_combo_box.clear()
 
-        if self.curr_price_group_index == -1:
-            return
+        # if self.curr_price_group_index == -1:
+        #     return
 
-        for price_group in self.price_groups:
-            item = QStandardItem(f"Cost: {price_group['curr']} {price_group['original_curr']}, "
-                                 f"Start: {price_group['start_year']}-{price_group['start_month']}, "
-                                 f"End: {price_group['end_year']}-{price_group['end_month']}")
-            item.setCheckable(False)
-            item.setEditable(False)
-            self.list_model.appendRow(item)
+        for price_group in self.available_costs:
+            self.available_costs_combo_box.addItem(
+                f"From {price_group['start_year']}-{price_group['start_month']:02d} "
+                f"to {price_group['end_year']}-{price_group['end_month']:02d}, "
+                f"Cost: {price_group['curr']} {price_group['original_curr']}")
 
     def populate_cost_fields(self):
-
-        if self.curr_price_group_index >= 0:  # Reset fields
-            price_group = self.price_groups[self.curr_price_group_index]
+        curr_cost_index = self.available_costs_combo_box.currentIndex()
+        if curr_cost_index >= 0:  # Reset fields
+            price_group = self.available_costs[curr_cost_index]
             self.start_year_date_edit.setDate(QDate(price_group['start_year'], 1, 1))
             self.end_year_date_edit.setDate(QDate(price_group['end_year'], 1, 1))
 
@@ -386,7 +380,7 @@ class CostsController:
         self.populate_data()
 
     def on_refresh_clicked(self):
-        self.populate_data()
+        self.populate_cost_fields()
 
     def get_costs(self) -> list:
         """Fills the costs fields with data from the database"""
