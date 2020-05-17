@@ -369,7 +369,7 @@ class CostsController:
         self.populate_cost_fields()
 
     @staticmethod
-    def get_costs(report_type, vendor_name, name) -> list:
+    def get_costs(report_type: str, vendor_name: str = None, name: str = None) -> list:
         """Fills the costs fields with data from the database"""
 
         sql_text, data = ManageDB.get_costs_sql_text(report_type, vendor_name, name)
@@ -377,8 +377,17 @@ class CostsController:
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
             results = ManageDB.run_select_sql(connection, sql_text, data)
-            # if not results:
-            #     results.append((0.0, '', 0.0, 0.0))
+            connection.close()
+
+        return results if results else []
+
+    @staticmethod
+    def get_names(report_type: str, vendor_name: str = None):
+        sql_text, data = ManageDB.get_names_sql_text(report_type, vendor_name)
+        results = []
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
             connection.close()
 
         return results if results else []
@@ -396,19 +405,42 @@ class CostsController:
         vendor_combo_box.addItems([all_vendors_text] + [self.vendor_parameter_combobox.itemText(i)
                                                         for i in range(self.vendor_parameter_combobox.count())])
 
+        fill_check_box = QCheckBox("Include items without cost data", export_dialog)
+
         def export_costs():
             report_type = report_type_combo_box.currentText()
             vendor_name = vendor_combo_box.currentText()
 
-            results = self.get_costs(report_type,
-                                     None if vendor_name == all_vendors_text else vendor_name,
-                                     None)
+            cost_results = self.get_costs(report_type, None if vendor_name == all_vendors_text else vendor_name)
 
             report_type_name = NAME_FIELD_SWITCHER[report_type]
-            cost_dicts = self.cost_results_to_dicts(results, report_type_name)
+            cost_dicts = self.cost_results_to_dicts(cost_results, report_type_name)
+
+            if fill_check_box.isChecked():
+                name_results = self.get_names(report_type, None if vendor_name == all_vendors_text else vendor_name)
+                names_with_cost_data = []
+                for cost_dict in cost_dicts:
+                    if (cost_dict[report_type_name], cost_dict["vendor"]) not in names_with_cost_data:
+                        names_with_cost_data.append((cost_dict[report_type_name], cost_dict["vendor"]))
+
+                for name in name_results:
+                    if (name[0], name[1]) not in names_with_cost_data:
+                        cost_dicts.append({report_type_name: name[0],
+                                           "vendor": name[1],
+                                           "cost_in_original_currency": None,
+                                           "original_currency": None,
+                                           "cost_in_local_currency": None,
+                                           "cost_in_local_currency_with_tax": None,
+                                           "start_year": None,
+                                           "start_month": None,
+                                           "end_year": None,
+                                           "end_month": None})
 
             try:
                 file_path = choose_save(TSV_FILTER)
+                if not file_path:
+                    return
+
                 file = open(file_path, 'w', encoding="utf-8", newline='')
                 column_names = [report_type_name,
                                 "vendor",
@@ -437,10 +469,9 @@ class CostsController:
 
         layout.addWidget(report_type_combo_box)
         layout.addWidget(vendor_combo_box)
+        layout.addWidget(fill_check_box)
         layout.addWidget(button_box)
         export_dialog.exec_()
-
-
 
     @staticmethod
     def cost_results_to_dicts(cost_results, report_type_name: str):
@@ -450,10 +481,10 @@ class CostsController:
             if curr_cost != result[2] or not cost_dicts:
                 cost_group = {report_type_name: result[0],
                               "vendor": result[1],
-                              "cost_in_original_currency": result[2],  # Original cost
-                              "original_currency": result[3],  # Currency
-                              "cost_in_local_currency": result[4],  # Local cost
-                              "cost_in_local_currency_with_tax": result[5],  # Local cost with tax
+                              "cost_in_original_currency": result[2],
+                              "original_currency": result[3],
+                              "cost_in_local_currency": result[4],
+                              "cost_in_local_currency_with_tax": result[5],
                               "start_year": result[9],
                               "start_month": result[10],
                               "end_year": result[9],
@@ -467,7 +498,6 @@ class CostsController:
             curr_cost = result[2]
 
         return cost_dicts
-
 
     def import_costs(self):
         """Import a file with costs data in it into the database"""

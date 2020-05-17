@@ -712,7 +712,7 @@ def top_number_chart_search_sql_text(report: str, start_year: int, end_year: int
     return sql_text, tuple(data)
 
 
-def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
+def get_names_sql_text(report: str, vendor: str = None) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to get all the unique name values for a report and vendor
 
     :param report: the kind of the report
@@ -720,11 +720,18 @@ def get_names_sql_text(report: str, vendor: str) -> Tuple[str, Sequence[Any]]:
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
-    sql_text = get_sql_select_statement((name_field,), (report,), ((name_field + ' <> \"\"',), ('vendor' + ' = ?',)),
+    where_args = [(name_field + ' <> \"\"',)]
+    values = []
+    if vendor:
+        where_args.append(('vendor' + ' = ?',))
+        values.append(vendor)
+
+    where_args = tuple(where_args)
+    values = tuple(values)
+    sql_text = get_sql_select_statement((name_field, 'vendor',), (report,), where_args,
                                         order_by_fields=(name_field + ' COLLATE NOCASE ASC',), distinct=True,
                                         is_multiline=False) + ';'
-    data = (vendor,)
-    return sql_text, data
+    return sql_text, values
 
 
 def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end_year: int) \
@@ -773,7 +780,6 @@ def get_costs_sql_text(report_type: str, vendor: str = None, name: str = None) -
     sql_text = get_sql_select_statement([name_field, 'vendor'] + [field[NAME_KEY] for field in COST_FIELDS] + ['year', 'month'],
                                         (report_type + COST_TABLE_SUFFIX,),
                                         where_args, order_by_fields=(name_field, 'vendor', 'year', 'month',), is_multiline=False) + ';'
-    # values = (vendor, name)
     return sql_text, values
 
 
