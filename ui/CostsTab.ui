@@ -272,7 +272,7 @@
             <item>
              <widget class="QPushButton" name="costs_save_button">
               <property name="text">
-               <string>Update Costs</string>
+               <string>Insert/Update Cost</string>
               </property>
              </widget>
             </item>

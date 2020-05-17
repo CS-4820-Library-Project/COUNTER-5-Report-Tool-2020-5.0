@@ -443,9 +443,6 @@ class VisualController:
         is_local_currency = self.cost_parameter.currentText() == 'Cost in Local Currency'
         is_local_currency_tax = self.cost_parameter.currentText() == 'Cost in Local Currency with Tax'
 
-        # self.results = search_results
-        # search_results.insert(0, search_results)
-        # m = len(self.results) #length of self.results
         self.legend_entry = []  # legend entry data contains column names
         if is_original_currency:
             self.legend_entry.append('Cost in Original Currency Per Metric')
@@ -465,18 +462,17 @@ class VisualController:
         # data is an array of array with year, cost per metric, total and cost in separate arrays
         self.data = []
 
-        years = []  # year
-        cost_per_metric_list = []  # cost per metric
-        year_metric_totals = []  # reporting_period_total
-        total_year_costs = []  # cost
-
-        # Get years and metric totals
+        year_data = {}
         for search_result in search_results:
             year = search_result[3]
-            years.append(year)
+            if year not in year_data:
+                year_data[year] = {"total_cost": 0,
+                                   "total_metric_with_cost": 0,  # Metric total for months that have cost data
+                                   "total_metric": 0,
+                                   "cost_per_metric": 0}
 
             total_year_cost = 0
-            total_year_paid_metric = 0  # Metric total for months that have cost data
+            total_year_paid_metric = year_data[year]["total_metric_with_cost"]
             for cost_result in cost_results:
                 if year == cost_result[7]:  # Same year
                     month = cost_result[8]
@@ -502,86 +498,21 @@ class VisualController:
             else:
                 year_cost_per_metric = total_year_cost / total_year_paid_metric
 
-            cost_per_metric_list.append(year_cost_per_metric)
-            total_year_costs.append(total_year_cost)
-            year_metric_totals.append(search_result[4])
+            year_data[year]["total_cost"] = total_year_cost
+            year_data[year]["total_metric_with_cost"] = total_year_paid_metric
+            year_data[year]["total_metric"] += search_result[4]
+            year_data[year]["cost_per_metric"] = year_cost_per_metric
+
+        years = [year for year in year_data]
+        total_year_costs = [year_data[year]["total_cost"] for year in year_data]
+        year_metric_totals = [year_data[year]["total_metric"] for year in year_data]
+        cost_per_metric_list = [year_data[year]["cost_per_metric"] for year in year_data]
 
         self.data.append(years)
         self.data.append(cost_per_metric_list)
         self.data.append(total_year_costs)
         self.data.append(year_metric_totals)
 
-        # for year in years:
-        #     cost_per_metric_for_month = 0
-        #     for cost_result in cost_results:
-        #         if year == cost_result[4]:  # Same year
-        #             cost_month = cost_result[5]
-        #             month_name = MONTH_NAMES(cost_month - 1)
-        #             month_metric_index = search_headers.index(month_name)
-        #             month_met
-
-
-
-
-
-
-
-
-
-        # retrieve year and add it to array
-        # for i in range(1, m):
-        #     years.append(self.results[i][3])
-        # self.data.append(years)
-
-        # retrieve cost and total and finding cost per metric and adding it to array
-        # if self.cost_parameter.currentText() == 'Cost in Local Currency with Tax':
-        #     self.legend_entry.append('Cost in Local Currency with Tax Per Metric')
-        #     self.legend_entry.append('Cost in Local Currency with Tax')
-        #     for i in range(1, m):
-        #         cost = self.results[i][7]
-        #         if self.results[i][7] is None:
-        #             cost = 0
-        #         total_year_costs.append(cost)
-        #         cost_per_metric_list.append(cost / self.results[i][8])
-        #     self.data.append(cost_per_metric_list)
-        #     self.data.append(total_year_costs)
-        # if self.cost_parameter.currentText() == 'Cost in Local Currency':
-        #     self.legend_entry.append('Cost in Local Currency Per Metric')
-        #     self.legend_entry.append('Cost in Local Currency')
-        #     for i in range(1, m):
-        #         cost = self.results[i][6]
-        #         if self.results[i][6] is None:
-        #             cost = 0
-        #         total_year_costs.append(cost)
-        #         cost_per_metric_list.append(cost / self.results[i][8])
-        #     self.data.append(cost_per_metric_list)
-        #     self.data.append(total_year_costs)
-        # if self.cost_parameter.currentText() == 'Cost in Original Currency':
-        #     self.legend_entry.append('Cost in Original Currency Per Metric')
-        #     self.legend_entry.append('Cost in Original Currency')
-        #     for i in range(1, m):
-        #         cost = self.results[i][4]
-        #         if self.results[i][4] is None:
-        #             cost = 0
-        #         total_year_costs.append(cost)
-        #         cost_per_metric_list.append(cost / self.results[i][8])
-        #     self.data.append(cost_per_metric_list)
-        #     self.data.append(total_year_costs)
-        #
-        # # retrieve reporting_period_total and add it to array
-        # for i in range(1, m):
-        #     year_metric_totals.append(self.results[i][8])
-        # self.data.append(year_metric_totals)
-
-        # # add column header to legend entry
-        # self.legend_entry.append(self.metric.currentText())
-
-        # testing to see data in array of array
-        # print(self.data[0])  # first column in excel (year)
-        # print(self.data[1]) # second column (cost per metric)
-        # print(self.data[2]) # third column (cost)
-        # print(self.data[4]) # fourth column (total)
-        # print(len(self.data)) #testing
         self.chart_type()
 
     def process_top_X_data(self):
