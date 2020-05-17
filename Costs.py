@@ -52,9 +52,8 @@ class CostsController:
         self.save_costs_button = costs_ui.costs_save_button
         self.save_costs_button.clicked.connect(self.save_costs)
 
-        self.load_button = costs_ui.costs_load_button
-        self.load_button.hide()
-        self.load_button.clicked.connect(self.populate_data)
+        self.refresh_button = costs_ui.costs_load_button
+        self.refresh_button.clicked.connect(self.populate_cost_fields)
 
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_cost_fields)
