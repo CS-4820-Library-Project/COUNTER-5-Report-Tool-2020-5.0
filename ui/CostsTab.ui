@@ -340,7 +340,7 @@
          <property name="leftMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignLeft">
+         <item>
           <widget class="QPushButton" name="costs_import_costs_button">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -352,6 +352,32 @@
             <string>Import Costs File</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="export_costs_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Export Costs</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>

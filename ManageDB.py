@@ -746,7 +746,7 @@ def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end
     return sql_text, data
 
 
-def get_costs_sql_text(report_type: str, vendor: str, name: str) -> Tuple[str, Sequence[Any]]:
+def get_costs_sql_text(report_type: str, vendor: str = None, name: str = None) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to get costs from the database
 
     :param report_type: the type of the report (master report name)
@@ -756,11 +756,24 @@ def get_costs_sql_text(report_type: str, vendor: str, name: str) -> Tuple[str, S
     :param name: the name the cost is associated with (database/item/platform/title)
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
+
     name_field = NAME_FIELD_SWITCHER[report_type]
+    where_args = []
+    values = []
+    if vendor:
+        where_args.append(('vendor' + ' = ?',))
+        values.append(vendor)
+    if name:
+        where_args.append((name_field + ' = ?',))
+        values.append(name)
+
+    where_args = tuple(where_args) if where_args else None
+    values = tuple(values)
+
     sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS] + ['year', 'month'],
                                         (report_type + COST_TABLE_SUFFIX,),
-                                        (('vendor' + ' = ?',), (name_field + ' = ?',)), is_multiline=False) + ';'
-    values = (vendor, name)
+                                        where_args, is_multiline=False) + ';'
+    # values = (vendor, name)
     return sql_text, values
 
 

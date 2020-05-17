@@ -1,5 +1,5 @@
 import json
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QCheckBox, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 from PyQt5.QtCore import QModelIndex
 
@@ -111,7 +111,9 @@ class CostsController:
 
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.import_costs)
-        self.import_costs_button.setEnabled(False)
+        self.export_costs_button = costs_ui.export_costs_button
+        self.export_costs_button.clicked.connect(self.on_export_clicked)
+        # self.import_costs_button.setEnabled(False)
 
         self.populate_data()
 
@@ -234,7 +236,17 @@ class CostsController:
         self.populate_cost_fields()
 
     def populate_data(self):
-        results = self.get_costs()
+        if not self.report_parameter:
+            print("Report parameter is empty")
+            return
+        if not self.vendor_parameter:
+            print("Vendor parameter is empty")
+            return
+        if not self.name_parameter:
+            print("Name parameter is empty")
+            return
+
+        results = self.get_costs(self.report_parameter, self.vendor_parameter, self.name_parameter)
         # Sort results by date
         # results = sorted(results, key=lambda result: (result[4], result[5]))
         curr_cost = 0
@@ -283,7 +295,6 @@ class CostsController:
             self.original_currency_combobox.setCurrentText(price_group['curr'])
             self.cost_in_local_currency_doublespinbox.setValue(price_group['local_curr'])
             self.cost_in_local_currency_with_tax_doublespinbox.setValue(price_group['local_tax_curr'])
-            self.cost_in_original_currency_doublespinbox.repaint()
 
         else:
             self.clear_cost_fields()
@@ -306,7 +317,6 @@ class CostsController:
         self.original_currency_combobox.setCurrentText("")
         self.cost_in_local_currency_doublespinbox.setValue(0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0)
-        self.cost_in_original_currency_doublespinbox.repaint()
 
     def save_costs(self):
         """Saves the cost data: if it is nonzero, add it to the database; if it is zero, delete it from the database"""
@@ -377,20 +387,11 @@ class CostsController:
     def on_refresh_clicked(self):
         self.populate_cost_fields()
 
-    def get_costs(self) -> list:
+    @staticmethod
+    def get_costs(report_type, vendor_name, name) -> list:
         """Fills the costs fields with data from the database"""
 
-        if not self.report_parameter:
-            print("Report parameter is empty")
-            return []
-        if not self.vendor_parameter:
-            print("Vendor parameter is empty")
-            return []
-        if not self.name_parameter:
-            print("Name parameter is empty")
-            return []
-
-        sql_text, data = ManageDB.get_costs_sql_text(self.report_parameter, self.vendor_parameter, self.name_parameter)
+        sql_text, data = ManageDB.get_costs_sql_text(report_type, vendor_name, name)
         results = []
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
@@ -400,23 +401,44 @@ class CostsController:
             connection.close()
 
         return results if results else []
-        # values = {}
-        # index = 0
-        # for field in COST_FIELDS:
-        #     values[field[NAME_KEY]] = results[0][index]
-        #     index += 1
-        # self.cost_in_original_currency_doublespinbox.setValue(values['cost_in_original_currency'])
-        # self.original_currency_combobox.setCurrentText(values['original_currency'])
-        # self.cost_in_local_currency_doublespinbox.setValue(values['cost_in_local_currency'])
-        # self.cost_in_local_currency_with_tax_doublespinbox.setValue(values['cost_in_local_currency_with_tax'])
-        # self.cost_in_original_currency_doublespinbox.repaint()
 
-    # def clear_costs(self):
-    #     """Empties the costs fields"""
-    #     self.cost_in_original_currency_doublespinbox.setValue(0.0)
-    #     self.original_currency_combobox.setCurrentText('')
-    #     self.cost_in_local_currency_doublespinbox.setValue(0.0)
-    #     self.cost_in_local_currency_with_tax_doublespinbox.setValue(0.0)
+    def on_export_clicked(self):
+        export_dialog = QDialog()
+        export_dialog.setWindowTitle("Export Costs")
+        layout = QVBoxLayout(export_dialog)
+        all_vendors_text = "All Vendors"
+
+        report_type_combo_box = QComboBox(export_dialog)
+        report_type_combo_box.addItems(REPORT_TYPE_SWITCHER.keys())
+
+        vendor_combo_box = QComboBox(export_dialog)
+        vendor_combo_box.addItems([all_vendors_text] + [self.vendor_parameter_combobox.itemText(i)
+                                                        for i in range(self.vendor_parameter_combobox.count())])
+
+        def export_costs():
+            print("Exporting...")
+            report_type = report_type_combo_box.currentText()
+            vendor_name = vendor_combo_box.currentText()
+            results = self.get_costs(report_type,
+                                     None if vendor_name == all_vendors_text else vendor_name,
+                                     None)
+            print()
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, export_dialog)
+        button_box.accepted.connect(export_costs)
+        button_box.rejected.connect(lambda: export_dialog.close())
+
+        layout.addWidget(report_type_combo_box)
+        layout.addWidget(vendor_combo_box)
+        layout.addWidget(button_box)
+        export_dialog.exec_()
+
+
+        # report_type_dialog = QDialog()
+        # report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()
+        # report_type_dialog_ui.setupUi(report_type_dialog)
+        # report_type_dialog_ui.report_type_combobox.addItems(REPORT_TYPE_SWITCHER.keys())
+        # self.get_costs()
 
     def import_costs(self):
         """Import a file with costs data in it into the database"""
