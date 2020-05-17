@@ -247,27 +247,8 @@ class CostsController:
             return
 
         results = self.get_costs(self.report_parameter, self.vendor_parameter, self.name_parameter)
-        # Sort results by date
-        # results = sorted(results, key=lambda result: (result[4], result[5]))
-        curr_cost = 0
-        self.available_costs = []
-        for result in results:
-            if curr_cost != result[0] or not self.available_costs:
-                cost_group = {"original_curr": result[0],  # Original cost
-                               "curr": result[1],  # Currency
-                               "local_curr": result[2],  # Local cost
-                               "local_tax_curr": result[3],  # Local cost with tax
-                               "start_year": result[7],
-                               "start_month": result[8],
-                               "end_year": result[7],
-                               "end_month": result[8]}
-                self.available_costs.append(cost_group)
-            else:
-                cost_group = self.available_costs[-1]
-                cost_group["end_year"] = result[7]
-                cost_group["end_month"] = result[8]
-
-            curr_cost = result[0]
+        report_type_name = NAME_FIELD_SWITCHER[self.report_parameter]
+        self.available_costs = self.cost_results_to_dicts(results, report_type_name)
 
         self.populate_available_costs()
         self.populate_cost_fields()
@@ -279,7 +260,7 @@ class CostsController:
             self.available_costs_combo_box.addItem(
                 f"From {price_group['start_year']}-{price_group['start_month']:02d} "
                 f"to {price_group['end_year']}-{price_group['end_month']:02d}, "
-                f"Cost: {price_group['curr']} {price_group['original_curr']}")
+                f"Cost: {price_group['original_currency']} {price_group['cost_in_original_currency']}")
 
     def populate_cost_fields(self):
         curr_cost_index = self.available_costs_combo_box.currentIndex()
@@ -291,10 +272,10 @@ class CostsController:
             self.start_month_combo_box.setCurrentIndex(int(price_group['start_month']) - 1)
             self.end_month_combo_box.setCurrentIndex(int(price_group['end_month']) - 1)
 
-            self.cost_in_original_currency_doublespinbox.setValue(price_group['original_curr'])
-            self.original_currency_combobox.setCurrentText(price_group['curr'])
-            self.cost_in_local_currency_doublespinbox.setValue(price_group['local_curr'])
-            self.cost_in_local_currency_with_tax_doublespinbox.setValue(price_group['local_tax_curr'])
+            self.cost_in_original_currency_doublespinbox.setValue(price_group['cost_in_original_currency'])
+            self.original_currency_combobox.setCurrentText(price_group['original_currency'])
+            self.cost_in_local_currency_doublespinbox.setValue(price_group['cost_in_local_currency'])
+            self.cost_in_local_currency_with_tax_doublespinbox.setValue(price_group['cost_in_local_currency_with_tax'])
 
         else:
             self.clear_cost_fields()
@@ -416,13 +397,39 @@ class CostsController:
                                                         for i in range(self.vendor_parameter_combobox.count())])
 
         def export_costs():
-            print("Exporting...")
             report_type = report_type_combo_box.currentText()
             vendor_name = vendor_combo_box.currentText()
+
             results = self.get_costs(report_type,
                                      None if vendor_name == all_vendors_text else vendor_name,
                                      None)
-            print()
+
+            report_type_name = NAME_FIELD_SWITCHER[report_type]
+            cost_dicts = self.cost_results_to_dicts(results, report_type_name)
+
+            try:
+                file_path = choose_save(TSV_FILTER)
+                file = open(file_path, 'w', encoding="utf-8", newline='')
+                column_names = [report_type_name,
+                                "vendor",
+                                "start_year",
+                                "start_month",
+                                "end_year",
+                                "end_month",
+                                "cost_in_original_currency",
+                                "original_currency",
+                                "cost_in_local_currency",
+                                "cost_in_local_currency_with_tax"]
+
+                tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
+                tsv_dict_writer.writeheader()
+                tsv_dict_writer.writerows(cost_dicts)
+
+                file.close()
+                show_message(f"Exported to {file_path}")
+                export_dialog.close()
+            except IOError as e:
+                show_message(f"File export failed: {e}")
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, export_dialog)
         button_box.accepted.connect(export_costs)
@@ -434,11 +441,33 @@ class CostsController:
         export_dialog.exec_()
 
 
-        # report_type_dialog = QDialog()
-        # report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()
-        # report_type_dialog_ui.setupUi(report_type_dialog)
-        # report_type_dialog_ui.report_type_combobox.addItems(REPORT_TYPE_SWITCHER.keys())
-        # self.get_costs()
+
+    @staticmethod
+    def cost_results_to_dicts(cost_results, report_type_name: str):
+        curr_cost = 0
+        cost_dicts = []
+        for result in cost_results:
+            if curr_cost != result[2] or not cost_dicts:
+                cost_group = {report_type_name: result[0],
+                              "vendor": result[1],
+                              "cost_in_original_currency": result[2],  # Original cost
+                              "original_currency": result[3],  # Currency
+                              "cost_in_local_currency": result[4],  # Local cost
+                              "cost_in_local_currency_with_tax": result[5],  # Local cost with tax
+                              "start_year": result[9],
+                              "start_month": result[10],
+                              "end_year": result[9],
+                              "end_month": result[10]}
+                cost_dicts.append(cost_group)
+            else:
+                cost_group = cost_dicts[-1]
+                cost_group["end_year"] = result[9]
+                cost_group["end_month"] = result[10]
+
+            curr_cost = result[2]
+
+        return cost_dicts
+
 
     def import_costs(self):
         """Import a file with costs data in it into the database"""

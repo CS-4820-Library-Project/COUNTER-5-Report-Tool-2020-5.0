@@ -770,9 +770,9 @@ def get_costs_sql_text(report_type: str, vendor: str = None, name: str = None) -
     where_args = tuple(where_args) if where_args else None
     values = tuple(values)
 
-    sql_text = get_sql_select_statement([field[NAME_KEY] for field in COST_FIELDS] + ['year', 'month'],
+    sql_text = get_sql_select_statement([name_field, 'vendor'] + [field[NAME_KEY] for field in COST_FIELDS] + ['year', 'month'],
                                         (report_type + COST_TABLE_SUFFIX,),
-                                        where_args, is_multiline=False) + ';'
+                                        where_args, order_by_fields=(name_field, 'vendor', 'year', 'month',), is_multiline=False) + ';'
     # values = (vendor, name)
     return sql_text, values
 
