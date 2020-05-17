@@ -374,7 +374,7 @@ class CostsController:
             connection = ManageDB.create_connection(DATABASE_LOCATION)
             if connection is not None:
                 for sql_text, data in sql_data:
-                    ManageDB.run_sql(connection, sql_text, data)
+                    ManageDB.run_sql(connection, sql_text, data, False)
                 connection.close()
                 ManageDB.backup_costs_data(self.report_parameter)
                 if is_inserting:
@@ -383,6 +383,8 @@ class CostsController:
                     show_message('Data removed')
         else:
             show_message('Invalid entry')
+
+        self.populate_data()
 
     def on_refresh_clicked(self):
         self.populate_data()
