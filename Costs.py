@@ -65,7 +65,6 @@ class CostsController:
         self.available_costs_combo_box = costs_ui.available_costs_combo_box
         self.available_costs_combo_box.currentIndexChanged.connect(self.on_available_cost_clicked)
         self.available_costs = []
-        # self.curr_price_group_index = -1
 
         self.update_cost_frame = costs_ui.update_cost_frame
 
@@ -258,15 +257,11 @@ class CostsController:
 
             curr_cost = result[0]
 
-        # self.curr_price_group_index = 0 if self.price_groups else -1
         self.populate_available_costs()
         self.populate_cost_fields()
 
     def populate_available_costs(self):
         self.available_costs_combo_box.clear()
-
-        # if self.curr_price_group_index == -1:
-        #     return
 
         for price_group in self.available_costs:
             self.available_costs_combo_box.addItem(

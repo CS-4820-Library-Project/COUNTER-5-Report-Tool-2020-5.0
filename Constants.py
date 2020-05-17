@@ -421,7 +421,7 @@ DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 # All yearly reports tsv and json are saved here in original condition as backup
 PROTECTED_DATABASE_FILE_DIR = "./all_data/.DO_NOT_MODIFY/"
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
-COSTS_SAVE_FOLDER = r'./all_data/costs/'
+COSTS_SAVE_FOLDER = PROTECTED_DATABASE_FILE_DIR + 'costs/'
 
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
