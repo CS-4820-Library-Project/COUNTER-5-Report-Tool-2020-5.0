@@ -474,19 +474,19 @@ class VisualController:
             total_year_cost = 0
             total_year_paid_metric = year_data[year]["total_metric_with_cost"]
             for cost_result in cost_results:
-                if year == cost_result[9]:  # Same year
-                    month = cost_result[10]
+                if year == cost_result[7]:  # Same year
+                    month = cost_result[8]
                     month_name = MONTH_NAMES[month - 1].lower()
                     month_metric_index = search_headers.index(month_name)
                     month_metric = search_result[month_metric_index]
 
                     month_cost = 0
                     if is_original_currency:
-                        month_cost = cost_result[6]
+                        month_cost = cost_result[2] / cost_result[6]
                     elif is_local_currency:
-                        month_cost = cost_result[7]
+                        month_cost = cost_result[4] / cost_result[6]
                     elif is_local_currency_tax:
-                        month_cost = cost_result[8]
+                        month_cost = cost_result[5] / cost_result[6]
                     else:
                         print("Unknown cost ratio calculation option")
 

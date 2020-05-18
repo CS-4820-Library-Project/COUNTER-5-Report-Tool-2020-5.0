@@ -50,7 +50,7 @@ class CostsController:
 
         # set up buttons
         self.save_costs_button = costs_ui.costs_save_button
-        self.save_costs_button.clicked.connect(self.insert_costs)
+        self.save_costs_button.clicked.connect(self.insert_cost)
 
         self.refresh_button = costs_ui.costs_load_button
         self.refresh_button.clicked.connect(self.on_refresh_clicked)
@@ -107,7 +107,7 @@ class CostsController:
         self.export_costs_button.clicked.connect(self.on_export_clicked)
         # self.import_costs_button.setEnabled(False)
 
-        self.populate_costs()
+        self.update_costs()
 
     def update_settings(self, settings: SettingsModel):
         """Invoked when the settings are saved
@@ -144,7 +144,7 @@ class CostsController:
         if self.vendor_parameter:
             self.fill_names()
 
-        self.populate_costs()
+        self.update_costs()
 
     def on_vendor_parameter_changed(self):
         """Invoked when the vendor parameter changes"""
@@ -152,7 +152,7 @@ class CostsController:
         if self.report_parameter:
             self.fill_names()
 
-        self.populate_costs()
+        self.update_costs()
 
     def fill_names(self, only_get_costs_names: bool = False):
         """Fills the name field combobox"""
@@ -206,7 +206,7 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
         self.cost_in_local_currency_with_tax_doublespinbox.setEnabled(enable)
 
-        self.populate_costs()
+        self.update_costs()
 
     def on_cost_in_original_currency_changed(self):
         """Invoked when the cost in original currency parameter changes"""
@@ -227,20 +227,20 @@ class CostsController:
     def on_available_cost_clicked(self, index: int):
         self.populate_cost_fields()
 
-    def populate_costs(self):
-        update_costs = True
+    def update_costs(self):
+        valid_parameters = True
         self.available_costs = []
         if not self.report_parameter:
             print("Report parameter is empty")
-            update_costs = False
+            valid_parameters = False
         if not self.vendor_parameter:
             print("Vendor parameter is empty")
-            update_costs = False
+            valid_parameters = False
         if not self.name_parameter:
             print("Name parameter is empty")
-            update_costs = False
+            valid_parameters = False
 
-        if update_costs:
+        if valid_parameters:
             results = self.get_costs(self.report_parameter, self.vendor_parameter, self.name_parameter)
             report_type_name = NAME_FIELD_SWITCHER[self.report_parameter]
             self.available_costs = self.cost_results_to_dicts(results, report_type_name)
@@ -294,7 +294,7 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setValue(0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0)
 
-    def insert_costs(self):
+    def insert_cost(self):
         """Inserts cost data"""
 
         if self.cost_in_original_currency <= 0 or \
@@ -322,7 +322,7 @@ class CostsController:
                 ManageDB.run_sql(connection, sql_text, data, False)
             connection.close()
             ManageDB.backup_costs_data(self.report_parameter)
-            self.populate_costs()
+            self.update_costs()
             show_message('Cost data inserted/updated')
 
     def delete_current_cost(self):
@@ -343,7 +343,7 @@ class CostsController:
                 ManageDB.run_sql(connection, sql_text, data, False)
             connection.close()
             ManageDB.backup_costs_data(self.report_parameter)
-            self.populate_costs()
+            self.update_costs()
             show_message('Cost data deleted')
 
     def on_refresh_clicked(self):
@@ -386,10 +386,6 @@ class CostsController:
             num_years = end_date.year() - begin_date.year()
             num_months += (num_years - 1) * 12
 
-        original_currency_cpm = cost_in_original_currency / num_months
-        local_currency_cpm = cost_in_local_currency / num_months
-        local_currency_tax_cpm = cost_in_local_currency_with_tax / num_months
-
         # Get sql_text and data for every month in the range
         for i in range(num_months):
             date = begin_date.addMonths(i)
@@ -406,9 +402,7 @@ class CostsController:
                   'original_currency': original_currency,
                   'cost_in_local_currency': cost_in_local_currency,
                   'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax,
-                  'cost_in_original_currency_per_month': original_currency_cpm,
-                  'cost_in_local_currency_per_month': local_currency_cpm,
-                  'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
+                  'num_months': num_months},))
             sql_data.append((sql_text, data))
 
         return sql_data
@@ -465,7 +459,6 @@ class CostsController:
 
                 connection = ManageDB.create_connection(DATABASE_LOCATION)
                 if connection is not None:
-
                     for row in dict_reader:
                         if not row[report_type_name]: continue
                         name = row[report_type_name]
@@ -521,7 +514,7 @@ class CostsController:
                 connection.close()
                 file.close()
                 ManageDB.backup_costs_data(report_type)
-                self.populate_costs()
+                self.update_costs()
                 show_message('Import successful')
                 dialog.close()
 
@@ -630,15 +623,15 @@ class CostsController:
                               "original_currency": result[3],
                               "cost_in_local_currency": result[4],
                               "cost_in_local_currency_with_tax": result[5],
-                              "start_year": result[9],
-                              "start_month": result[10],
-                              "end_year": result[9],
-                              "end_month": result[10]}
+                              "start_year": result[7],
+                              "start_month": result[8],
+                              "end_year": result[7],
+                              "end_month": result[8]}
                 cost_dicts.append(cost_group)
             else:
                 cost_group = cost_dicts[-1]
-                cost_group["end_year"] = result[9]
-                cost_group["end_month"] = result[10]
+                cost_group["end_year"] = result[7]
+                cost_group["end_month"] = result[8]
 
             curr_cost = result[2]
 
