@@ -1290,7 +1290,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date = self.fetch_all_begin_date
         self.end_date = self.fetch_all_end_date
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.is_yearly_fetch = True
@@ -1329,7 +1329,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.selected_data = []
@@ -1716,7 +1716,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             return
 
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.selected_data = []

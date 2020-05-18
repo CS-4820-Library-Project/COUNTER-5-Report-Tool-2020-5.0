@@ -428,7 +428,8 @@ DELIMITERS = {'.tsv': '\t', '.csv': ','}
 COMPARISON_OPERATORS = ('LIKE', 'NOT LIKE', '=', '<=', '<', '>=', '>', '<>')
 NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
-CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
+CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CAD', 'AUD')
+CURRENCY_SIGNS = ('$', '€', '¥', '£')
 
 # endregion
 

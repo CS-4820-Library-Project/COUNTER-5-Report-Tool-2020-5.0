@@ -50,7 +50,7 @@ class CostsController:
 
         # set up buttons
         self.save_costs_button = costs_ui.costs_save_button
-        self.save_costs_button.clicked.connect(self.save_costs)
+        self.save_costs_button.clicked.connect(self.insert_costs)
 
         self.refresh_button = costs_ui.costs_load_button
         self.refresh_button.clicked.connect(self.on_refresh_clicked)
@@ -110,12 +110,12 @@ class CostsController:
             self.on_cost_in_local_currency_with_tax_changed)
 
         self.import_costs_button = costs_ui.costs_import_costs_button
-        self.import_costs_button.clicked.connect(self.import_costs)
+        self.import_costs_button.clicked.connect(self.on_import_clicked)
         self.export_costs_button = costs_ui.export_costs_button
         self.export_costs_button.clicked.connect(self.on_export_clicked)
         # self.import_costs_button.setEnabled(False)
 
-        self.populate_data()
+        self.populate_costs()
 
     def update_settings(self, settings: SettingsModel):
         """Invoked when the settings are saved
@@ -152,7 +152,7 @@ class CostsController:
         if self.vendor_parameter:
             self.fill_names()
 
-        self.populate_data()
+        self.populate_costs()
 
     def on_vendor_parameter_changed(self):
         """Invoked when the vendor parameter changes"""
@@ -160,7 +160,7 @@ class CostsController:
         if self.report_parameter:
             self.fill_names()
 
-        self.populate_data()
+        self.populate_costs()
 
     def fill_names(self, only_get_costs_names: bool = False):
         """Fills the name field combobox"""
@@ -214,7 +214,7 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setEnabled(enable)
         self.cost_in_local_currency_with_tax_doublespinbox.setEnabled(enable)
 
-        self.populate_data()
+        self.populate_costs()
 
     def on_cost_in_original_currency_changed(self):
         """Invoked when the cost in original currency parameter changes"""
@@ -235,20 +235,23 @@ class CostsController:
     def on_available_cost_clicked(self, index: int):
         self.populate_cost_fields()
 
-    def populate_data(self):
+    def populate_costs(self):
+        update_costs = True
+        self.available_costs = []
         if not self.report_parameter:
             print("Report parameter is empty")
-            return
+            update_costs = False
         if not self.vendor_parameter:
             print("Vendor parameter is empty")
-            return
+            update_costs = False
         if not self.name_parameter:
             print("Name parameter is empty")
-            return
+            update_costs = False
 
-        results = self.get_costs(self.report_parameter, self.vendor_parameter, self.name_parameter)
-        report_type_name = NAME_FIELD_SWITCHER[self.report_parameter]
-        self.available_costs = self.cost_results_to_dicts(results, report_type_name)
+        if update_costs:
+            results = self.get_costs(self.report_parameter, self.vendor_parameter, self.name_parameter)
+            report_type_name = NAME_FIELD_SWITCHER[self.report_parameter]
+            self.available_costs = self.cost_results_to_dicts(results, report_type_name)
 
         self.populate_available_costs()
         self.populate_cost_fields()
@@ -299,71 +302,73 @@ class CostsController:
         self.cost_in_local_currency_doublespinbox.setValue(0)
         self.cost_in_local_currency_with_tax_doublespinbox.setValue(0)
 
-    def save_costs(self):
-        """Saves the cost data: if it is nonzero, add it to the database; if it is zero, delete it from the database"""
+    def insert_costs(self):
+        """Inserts cost data"""
 
-        sql_data = []  # list(tuple(sql_test, data))
-        is_inserting = self.cost_in_original_currency > 0 and self.original_currency != '' \
-                       and self.cost_in_local_currency > 0 and self.cost_in_local_currency_with_tax > 0
-        is_deleting = self.cost_in_original_currency == 0 and self.original_currency == '' \
-                      and self.cost_in_local_currency == 0 and self.cost_in_local_currency_with_tax == 0
+        if self.cost_in_original_currency <= 0 or \
+                self.original_currency == '' or \
+                self.cost_in_local_currency <= 0 or \
+                self.cost_in_local_currency_with_tax <= 0:
+            show_message("Fields can't be empty or 0")
+            return
 
-        # Get the number of months to be processed
         begin_date = QDate(self.start_year_date_edit.date().year(), self.start_month_combo_box.currentIndex() + 1, 1)
         end_date = QDate(self.end_year_date_edit.date().year(), self.end_month_combo_box.currentIndex() + 1, 1)
 
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
+        if begin_date > end_date:
+            show_message('Start Date is higher than End Date')
 
-        original_currency_cpm = self.cost_in_original_currency / num_months
-        local_currency_cpm = self.cost_in_local_currency / num_months
-        local_currency_tax_cpm = self.cost_in_local_currency_with_tax / num_months
+        sql_data = self.get_insert_delete_sql_data(
+            True, begin_date, end_date, self.report_parameter, self.name_parameter, self.vendor_parameter,
+            self.cost_in_original_currency, self.original_currency, self.cost_in_local_currency,
+            self.cost_in_local_currency_with_tax)
 
-        # Get sql_text and data for every month in the range
-        for i in range(num_months):
-            date = begin_date.addMonths(i)
-            curr_month = date.month()
-            curr_year = date.year()
-            if is_inserting:
-                sql_text, data = ManageDB.replace_costs_sql_text(
-                    self.report_parameter,
-                    ({NAME_FIELD_SWITCHER[self.report_parameter]: self.name_parameter,
-                      'vendor': self.vendor_parameter,
-                      'year': curr_year,
-                      'month': curr_month,
-                      'cost_in_original_currency': self.cost_in_original_currency,
-                      'original_currency': self.original_currency,
-                      'cost_in_local_currency': self.cost_in_local_currency,
-                      'cost_in_local_currency_with_tax': self.cost_in_local_currency_with_tax,
-                      'cost_in_original_currency_per_month': original_currency_cpm,
-                      'cost_in_local_currency_per_month': local_currency_cpm,
-                      'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
-                sql_data.append((sql_text, data))
+        # if begin_date.year() == end_date.year():
+        #     num_months = (end_date.month() - begin_date.month()) + 1
+        # else:
+        #     num_months = (12 - begin_date.month() + end_date.month()) + 1
+        #     num_years = end_date.year() - begin_date.year()
+        #     num_months += (num_years - 1) * 12
+        #
+        # original_currency_cpm = self.cost_in_original_currency / num_months
+        # local_currency_cpm = self.cost_in_local_currency / num_months
+        # local_currency_tax_cpm = self.cost_in_local_currency_with_tax / num_months
+        #
+        # # Get sql_text and data for every month in the range
+        # for i in range(num_months):
+        #     date = begin_date.addMonths(i)
+        #     curr_month = date.month()
+        #     curr_year = date.year()
+        #     if is_inserting:
+        #         sql_text, data = ManageDB.replace_costs_sql_text(
+        #             self.report_parameter,
+        #             ({NAME_FIELD_SWITCHER[self.report_parameter]: self.name_parameter,
+        #               'vendor': self.vendor_parameter,
+        #               'year': curr_year,
+        #               'month': curr_month,
+        #               'cost_in_original_currency': self.cost_in_original_currency,
+        #               'original_currency': self.original_currency,
+        #               'cost_in_local_currency': self.cost_in_local_currency,
+        #               'cost_in_local_currency_with_tax': self.cost_in_local_currency_with_tax,
+        #               'cost_in_original_currency_per_month': original_currency_cpm,
+        #               'cost_in_local_currency_per_month': local_currency_cpm,
+        #               'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
+        #         sql_data.append((sql_text, data))
+        #
+        #     elif is_deleting:
+        #         sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
+        #                                                         curr_month, curr_year, self.name_parameter)
+        #         sql_data.append((sql_text, data))
 
-            elif is_deleting:
-                sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
-                                                                curr_month, curr_year, self.name_parameter)
-                sql_data.append((sql_text, data))
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            for sql_text, data in sql_data:
+                ManageDB.run_sql(connection, sql_text, data, False)
+            connection.close()
+            ManageDB.backup_costs_data(self.report_parameter)
+            show_message('Data inserted/updated')
 
-        if is_inserting or is_deleting:
-            connection = ManageDB.create_connection(DATABASE_LOCATION)
-            if connection is not None:
-                for sql_text, data in sql_data:
-                    ManageDB.run_sql(connection, sql_text, data, False)
-                connection.close()
-                ManageDB.backup_costs_data(self.report_parameter)
-                if is_inserting:
-                    show_message('Data inserted/replaced')
-                elif is_deleting:
-                    show_message('Data removed')
-        else:
-            show_message('Invalid entry')
-
-        self.populate_data()
+        self.populate_costs()
 
     def on_refresh_clicked(self):
         self.populate_cost_fields()
@@ -392,20 +397,168 @@ class CostsController:
 
         return results if results else []
 
-    def on_export_clicked(self):
-        export_dialog = QDialog()
-        export_dialog.setWindowTitle("Export Costs")
-        layout = QVBoxLayout(export_dialog)
-        all_vendors_text = "All Vendors"
+    @staticmethod
+    def get_insert_delete_sql_data(is_inserting: bool, begin_date: QDate,
+                                   end_date: QDate, report_type: str, name: str, vendor: str, cost_in_original_currency: float,
+                                   original_currency: str, cost_in_local_currency: float,
+                                   cost_in_local_currency_with_tax: float) -> list:
 
-        report_type_combo_box = QComboBox(export_dialog)
+        sql_data = []  # list(tuple(sql_text, data))
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        original_currency_cpm = cost_in_original_currency / num_months
+        local_currency_cpm = cost_in_local_currency / num_months
+        local_currency_tax_cpm = cost_in_local_currency_with_tax / num_months
+
+        # Get sql_text and data for every month in the range
+        for i in range(num_months):
+            date = begin_date.addMonths(i)
+            curr_month = date.month()
+            curr_year = date.year()
+            if is_inserting:
+                sql_text, data = ManageDB.replace_costs_sql_text(
+                    report_type,
+                    ({NAME_FIELD_SWITCHER[report_type]: name,
+                      'vendor': vendor,
+                      'year': curr_year,
+                      'month': curr_month,
+                      'cost_in_original_currency': cost_in_original_currency,
+                      'original_currency': original_currency,
+                      'cost_in_local_currency': cost_in_local_currency,
+                      'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax,
+                      'cost_in_original_currency_per_month': original_currency_cpm,
+                      'cost_in_local_currency_per_month': local_currency_cpm,
+                      'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
+                sql_data.append((sql_text, data))
+
+            else:
+                sql_text, data = ManageDB.delete_costs_sql_text(report_type, vendor,
+                                                                curr_month, curr_year, name)
+                sql_data.append((sql_text, data))
+
+        return sql_data
+
+    def on_import_clicked(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Import Costs")
+        layout = QVBoxLayout(dialog)
+
+        report_type_combo_box = QComboBox(dialog)
         report_type_combo_box.addItems(REPORT_TYPE_SWITCHER.keys())
 
-        vendor_combo_box = QComboBox(export_dialog)
+        def import_costs():
+            def wash_money(cost):
+                cost = str(cost)
+                cost = cost.replace(",", "")
+                for sign in CURRENCY_SIGNS:
+                    cost = cost.replace(sign, "")
+
+                return float(cost)
+
+            try:
+                file_path = choose_file(TSV_FILTER)
+                if not file_path:
+                    return
+
+                file = open(file_path, 'r', encoding="utf-8", newline='')
+                dict_reader = csv.DictReader(file, delimiter='\t')
+
+                report_type = report_type_combo_box.currentText()
+                report_type_name = NAME_FIELD_SWITCHER[report_type]
+
+                connection = ManageDB.create_connection(DATABASE_LOCATION)
+                if connection is not None:
+
+                    for row in dict_reader:
+                        if not row[report_type_name]: continue
+                        name = row[report_type_name]
+
+                        if not row["vendor"]: continue
+                        vendor = row["vendor"]
+
+                        if not row["start_year"]: continue
+                        start_year = int(row["start_year"])
+
+                        if not row["start_month"]: continue
+                        start_month = int(row["start_month"])
+
+                        if not row["end_year"]: continue
+                        end_year = int(row["end_year"])
+
+                        if not row["end_month"]: continue
+                        end_month = int(row["end_month"])
+
+                        if not row["original_currency"]: continue
+                        original_currency = str(row["original_currency"])
+
+                        if original_currency == "USD" or original_currency == "CAD" or original_currency == "AUD":
+                            currency_sign = "$"
+                        elif original_currency == "EUR":
+                            currency_sign = "€"
+                        elif original_currency == "JPY":
+                            currency_sign = "¥"
+                        elif original_currency == "GBP":
+                            currency_sign = "£"
+
+                        if not row["cost_in_original_currency"]: continue
+                        cost_in_original_currency = wash_money(row["cost_in_original_currency"])
+
+                        if not row["cost_in_local_currency"]: continue
+                        cost_in_local_currency = wash_money(row["cost_in_local_currency"])
+
+                        if not row["cost_in_local_currency_with_tax"]: continue
+                        cost_in_local_currency_with_tax = wash_money(row["cost_in_local_currency_with_tax"])
+
+                        begin_date = QDate(start_year, start_month, 1)
+                        end_date = QDate(end_year, end_month, 1)
+                        if begin_date > end_date:
+                            continue
+
+                        sql_data = self.get_insert_delete_sql_data(
+                            True, begin_date, end_date, report_type, name, vendor, cost_in_original_currency,
+                            original_currency, cost_in_local_currency, cost_in_local_currency_with_tax)
+
+                        for sql_text, data in sql_data:
+                            ManageDB.run_sql(connection, sql_text, data, False)
+
+                connection.close()
+                file.close()
+                ManageDB.backup_costs_data(report_type)
+                self.populate_costs()
+                show_message('Import successful')
+                dialog.close()
+
+            except Exception as e:
+                show_message(f"File import failed: {e}")
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
+        button_box.accepted.connect(import_costs)
+        button_box.rejected.connect(lambda: dialog.close())
+
+        layout.addWidget(report_type_combo_box)
+        layout.addWidget(button_box)
+
+        dialog.exec_()
+
+    def on_export_clicked(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Export Costs")
+        layout = QVBoxLayout(dialog)
+        all_vendors_text = "All Vendors"
+
+        report_type_combo_box = QComboBox(dialog)
+        report_type_combo_box.addItems(REPORT_TYPE_SWITCHER.keys())
+
+        vendor_combo_box = QComboBox(dialog)
         vendor_combo_box.addItems([all_vendors_text] + [self.vendor_parameter_combobox.itemText(i)
                                                         for i in range(self.vendor_parameter_combobox.count())])
 
-        fill_check_box = QCheckBox("Include items without cost data", export_dialog)
+        fill_check_box = QCheckBox("Include items without cost data", dialog)
 
         def export_costs():
             report_type = report_type_combo_box.currentText()
@@ -453,25 +606,25 @@ class CostsController:
                                 "cost_in_local_currency",
                                 "cost_in_local_currency_with_tax"]
 
-                tsv_dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
-                tsv_dict_writer.writeheader()
-                tsv_dict_writer.writerows(cost_dicts)
+                dict_writer = csv.DictWriter(file, column_names, delimiter='\t')
+                dict_writer.writeheader()
+                dict_writer.writerows(cost_dicts)
 
                 file.close()
                 show_message(f"Exported to {file_path}")
-                export_dialog.close()
-            except IOError as e:
+                dialog.close()
+            except Exception as e:
                 show_message(f"File export failed: {e}")
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, export_dialog)
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, dialog)
         button_box.accepted.connect(export_costs)
-        button_box.rejected.connect(lambda: export_dialog.close())
+        button_box.rejected.connect(lambda: dialog.close())
 
         layout.addWidget(report_type_combo_box)
         layout.addWidget(vendor_combo_box)
         layout.addWidget(fill_check_box)
         layout.addWidget(button_box)
-        export_dialog.exec_()
+        dialog.exec_()
 
     @staticmethod
     def cost_results_to_dicts(cost_results, report_type_name: str):

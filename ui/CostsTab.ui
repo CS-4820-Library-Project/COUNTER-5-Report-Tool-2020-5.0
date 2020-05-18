@@ -349,7 +349,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Import Costs File</string>
+            <string>Import Costs</string>
            </property>
           </widget>
          </item>

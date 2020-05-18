@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -215,7 +217,6 @@ class Ui_costs_tab(object):
         self.costs_save_button.setText(_translate("costs_tab", "Insert/Update Cost"))
         self.costs_load_button.setText(_translate("costs_tab", "Refresh"))
         self.costs_clear_button.setText(_translate("costs_tab", "Clear Fields"))
-        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs File"))
+        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
         self.export_costs_button.setText(_translate("costs_tab", "Export Costs"))
-
 import Resources_rc
