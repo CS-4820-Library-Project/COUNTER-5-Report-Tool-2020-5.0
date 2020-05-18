@@ -155,6 +155,19 @@
          <item>
           <widget class="QComboBox" name="available_costs_combo_box"/>
          </item>
+         <item>
+          <widget class="QPushButton" name="delete_cost_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Delete</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>

@@ -58,14 +58,12 @@ class CostsController:
         self.clear_button = costs_ui.costs_clear_button
         self.clear_button.clicked.connect(self.clear_cost_fields)
 
-
-
-
-        # NEw NEw
         self.available_costs_combo_box = costs_ui.available_costs_combo_box
         self.available_costs_combo_box.currentIndexChanged.connect(self.on_available_cost_clicked)
         self.available_costs = []
 
+        self.delete_cost_button = costs_ui.delete_cost_button
+        self.delete_cost_button.clicked.connect(self.delete_current_cost)
         self.update_cost_frame = costs_ui.update_cost_frame
 
         current_date = QDate.currentDate()
@@ -80,12 +78,6 @@ class CostsController:
         for month in MONTH_NAMES:
             self.start_month_combo_box.addItem(month)
             self.end_month_combo_box.addItem(month)
-
-        self.start_month_combo_box.setCurrentIndex(current_date.month() - 1)
-        self.end_month_combo_box.setCurrentIndex(current_date.month() - 1)
-
-
-
 
         vendors_json_string = read_json_file(ManageVendors.VENDORS_FILE_PATH)
         vendor_dicts = json.loads(vendors_json_string)
@@ -317,48 +309,12 @@ class CostsController:
 
         if begin_date > end_date:
             show_message('Start Date is higher than End Date')
+            return
 
-        sql_data = self.get_insert_delete_sql_data(
-            True, begin_date, end_date, self.report_parameter, self.name_parameter, self.vendor_parameter,
+        sql_data = self.get_insert_sql_data(
+            begin_date, end_date, self.report_parameter, self.name_parameter, self.vendor_parameter,
             self.cost_in_original_currency, self.original_currency, self.cost_in_local_currency,
             self.cost_in_local_currency_with_tax)
-
-        # if begin_date.year() == end_date.year():
-        #     num_months = (end_date.month() - begin_date.month()) + 1
-        # else:
-        #     num_months = (12 - begin_date.month() + end_date.month()) + 1
-        #     num_years = end_date.year() - begin_date.year()
-        #     num_months += (num_years - 1) * 12
-        #
-        # original_currency_cpm = self.cost_in_original_currency / num_months
-        # local_currency_cpm = self.cost_in_local_currency / num_months
-        # local_currency_tax_cpm = self.cost_in_local_currency_with_tax / num_months
-        #
-        # # Get sql_text and data for every month in the range
-        # for i in range(num_months):
-        #     date = begin_date.addMonths(i)
-        #     curr_month = date.month()
-        #     curr_year = date.year()
-        #     if is_inserting:
-        #         sql_text, data = ManageDB.replace_costs_sql_text(
-        #             self.report_parameter,
-        #             ({NAME_FIELD_SWITCHER[self.report_parameter]: self.name_parameter,
-        #               'vendor': self.vendor_parameter,
-        #               'year': curr_year,
-        #               'month': curr_month,
-        #               'cost_in_original_currency': self.cost_in_original_currency,
-        #               'original_currency': self.original_currency,
-        #               'cost_in_local_currency': self.cost_in_local_currency,
-        #               'cost_in_local_currency_with_tax': self.cost_in_local_currency_with_tax,
-        #               'cost_in_original_currency_per_month': original_currency_cpm,
-        #               'cost_in_local_currency_per_month': local_currency_cpm,
-        #               'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
-        #         sql_data.append((sql_text, data))
-        #
-        #     elif is_deleting:
-        #         sql_text, data = ManageDB.delete_costs_sql_text(self.report_parameter, self.vendor_parameter,
-        #                                                         curr_month, curr_year, self.name_parameter)
-        #         sql_data.append((sql_text, data))
 
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
@@ -366,9 +322,29 @@ class CostsController:
                 ManageDB.run_sql(connection, sql_text, data, False)
             connection.close()
             ManageDB.backup_costs_data(self.report_parameter)
-            show_message('Data inserted/updated')
+            self.populate_costs()
+            show_message('Cost data inserted/updated')
 
-        self.populate_costs()
+    def delete_current_cost(self):
+        curr_cost_index = self.available_costs_combo_box.currentIndex()
+        if curr_cost_index < 0:
+            return
+
+        curr_cost = self.available_costs[curr_cost_index]
+        begin_date = QDate(curr_cost["start_year"], curr_cost["start_month"], 1)
+        end_date = QDate(curr_cost["end_year"], curr_cost["end_month"], 1)
+
+        sql_data = self.get_delete_sql_data(
+            begin_date, end_date, self.report_parameter, self.name_parameter, self.vendor_parameter)
+
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            for sql_text, data in sql_data:
+                ManageDB.run_sql(connection, sql_text, data, False)
+            connection.close()
+            ManageDB.backup_costs_data(self.report_parameter)
+            self.populate_costs()
+            show_message('Cost data deleted')
 
     def on_refresh_clicked(self):
         self.populate_cost_fields()
@@ -398,10 +374,9 @@ class CostsController:
         return results if results else []
 
     @staticmethod
-    def get_insert_delete_sql_data(is_inserting: bool, begin_date: QDate,
-                                   end_date: QDate, report_type: str, name: str, vendor: str, cost_in_original_currency: float,
-                                   original_currency: str, cost_in_local_currency: float,
-                                   cost_in_local_currency_with_tax: float) -> list:
+    def get_insert_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str,
+                            cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
+                            cost_in_local_currency_with_tax: float) -> list:
 
         sql_data = []  # list(tuple(sql_text, data))
         if begin_date.year() == end_date.year():
@@ -420,26 +395,43 @@ class CostsController:
             date = begin_date.addMonths(i)
             curr_month = date.month()
             curr_year = date.year()
-            if is_inserting:
-                sql_text, data = ManageDB.replace_costs_sql_text(
-                    report_type,
-                    ({NAME_FIELD_SWITCHER[report_type]: name,
-                      'vendor': vendor,
-                      'year': curr_year,
-                      'month': curr_month,
-                      'cost_in_original_currency': cost_in_original_currency,
-                      'original_currency': original_currency,
-                      'cost_in_local_currency': cost_in_local_currency,
-                      'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax,
-                      'cost_in_original_currency_per_month': original_currency_cpm,
-                      'cost_in_local_currency_per_month': local_currency_cpm,
-                      'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
-                sql_data.append((sql_text, data))
 
-            else:
-                sql_text, data = ManageDB.delete_costs_sql_text(report_type, vendor,
-                                                                curr_month, curr_year, name)
-                sql_data.append((sql_text, data))
+            sql_text, data = ManageDB.replace_costs_sql_text(
+                report_type,
+                ({NAME_FIELD_SWITCHER[report_type]: name,
+                  'vendor': vendor,
+                  'year': curr_year,
+                  'month': curr_month,
+                  'cost_in_original_currency': cost_in_original_currency,
+                  'original_currency': original_currency,
+                  'cost_in_local_currency': cost_in_local_currency,
+                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax,
+                  'cost_in_original_currency_per_month': original_currency_cpm,
+                  'cost_in_local_currency_per_month': local_currency_cpm,
+                  'cost_in_local_currency_with_tax_per_month': local_currency_tax_cpm},))
+            sql_data.append((sql_text, data))
+
+        return sql_data
+
+    @staticmethod
+    def get_delete_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str) -> list:
+        sql_data = []  # list(tuple(sql_text, data))
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        # Get sql_text and data for every month in the range
+        for i in range(num_months):
+            date = begin_date.addMonths(i)
+            curr_month = date.month()
+            curr_year = date.year()
+
+            sql_text, data = ManageDB.delete_costs_sql_text(report_type, vendor,
+                                                            curr_month, curr_year, name)
+            sql_data.append((sql_text, data))
 
         return sql_data
 
@@ -519,8 +511,8 @@ class CostsController:
                         if begin_date > end_date:
                             continue
 
-                        sql_data = self.get_insert_delete_sql_data(
-                            True, begin_date, end_date, report_type, name, vendor, cost_in_original_currency,
+                        sql_data = self.get_insert_sql_data(
+                            begin_date, end_date, report_type, name, vendor, cost_in_original_currency,
                             original_currency, cost_in_local_currency, cost_in_local_currency_with_tax)
 
                         for sql_text, data in sql_data:
