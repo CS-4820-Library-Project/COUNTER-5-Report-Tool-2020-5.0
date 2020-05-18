@@ -374,10 +374,7 @@ COST_FIELDS = ({NAME_KEY: 'cost_in_original_currency',
                 OPTIONS_KEY: ('NOT NULL', 'CHECK(cost_in_local_currency >= 0)')},
                {NAME_KEY: 'cost_in_local_currency_with_tax',
                 TYPE_KEY: 'REAL',
-                OPTIONS_KEY: ('NOT NULL', 'CHECK(cost_in_local_currency_with_tax >= 0)')},
-               {NAME_KEY: 'num_months',
-                TYPE_KEY: 'INTEGER',
-                OPTIONS_KEY: ('NOT NULL', 'CHECK(num_months >= 0)')})
+                OPTIONS_KEY: ('NOT NULL', 'CHECK(cost_in_local_currency_with_tax >= 0)')})
 # endregion
 # endregion
 

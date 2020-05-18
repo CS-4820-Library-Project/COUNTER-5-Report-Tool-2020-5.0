@@ -255,7 +255,7 @@ class CostsController:
             self.available_costs_combo_box.addItem(
                 f"From {price_group['start_year']}-{price_group['start_month']:02d} "
                 f"to {price_group['end_year']}-{price_group['end_month']:02d}, "
-                f"Cost: {price_group['original_currency']} {price_group['cost_in_original_currency']}")
+                f"Cost: {price_group['original_currency']} {price_group['cost_in_original_currency']:.2f}")
 
     def populate_cost_fields(self):
         curr_cost_index = self.available_costs_combo_box.currentIndex()
@@ -398,11 +398,10 @@ class CostsController:
                   'vendor': vendor,
                   'year': curr_year,
                   'month': curr_month,
-                  'cost_in_original_currency': cost_in_original_currency,
+                  'cost_in_original_currency': cost_in_original_currency / num_months,
                   'original_currency': original_currency,
-                  'cost_in_local_currency': cost_in_local_currency,
-                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax,
-                  'num_months': num_months},))
+                  'cost_in_local_currency': cost_in_local_currency / num_months,
+                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax / num_months},))
             sql_data.append((sql_text, data))
 
         return sql_data
@@ -623,15 +622,18 @@ class CostsController:
                               "original_currency": result[3],
                               "cost_in_local_currency": result[4],
                               "cost_in_local_currency_with_tax": result[5],
-                              "start_year": result[7],
-                              "start_month": result[8],
-                              "end_year": result[7],
-                              "end_month": result[8]}
+                              "start_year": result[6],
+                              "start_month": result[7],
+                              "end_year": result[6],
+                              "end_month": result[7]}
                 cost_dicts.append(cost_group)
             else:
                 cost_group = cost_dicts[-1]
-                cost_group["end_year"] = result[7]
-                cost_group["end_month"] = result[8]
+                cost_group["cost_in_original_currency"] += result[2]
+                cost_group["cost_in_local_currency"] += result[4]
+                cost_group["cost_in_local_currency_with_tax"] += result[5]
+                cost_group["end_year"] = result[6]
+                cost_group["end_month"] = result[7]
 
             curr_cost = result[2]
 
