@@ -196,15 +196,6 @@ class CostsController:
     def on_name_parameter_changed(self):
         """Invoked when the name field parameter changes"""
         self.name_parameter = self.name_parameter_combobox.currentText()
-        enable = False
-        if self.name_parameter:
-            enable = True
-
-        self.cost_in_original_currency_doublespinbox.setEnabled(enable)
-        self.original_currency_combobox.setEnabled(enable)
-        self.cost_in_local_currency_doublespinbox.setEnabled(enable)
-        self.cost_in_local_currency_with_tax_doublespinbox.setEnabled(enable)
-
         self.update_costs()
 
     def on_cost_in_original_currency_changed(self):
@@ -347,85 +338,6 @@ class CostsController:
 
     def on_refresh_clicked(self):
         self.populate_cost_fields()
-
-    @staticmethod
-    def get_costs(report_type: str, vendor_name: str = None, name: str = None) -> list:
-        """Fills the costs fields with data from the database"""
-
-        sql_text, data = ManageDB.get_costs_sql_text(report_type, vendor_name, name)
-        results = []
-        connection = ManageDB.create_connection(DATABASE_LOCATION)
-        if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text, data)
-            connection.close()
-
-        return results if results else []
-
-    @staticmethod
-    def get_names(report_type: str, vendor_name: str = None):
-        sql_text, data = ManageDB.get_names_sql_text(report_type, vendor_name)
-        results = []
-        connection = ManageDB.create_connection(DATABASE_LOCATION)
-        if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text, data)
-            connection.close()
-
-        return results if results else []
-
-    @staticmethod
-    def get_insert_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str,
-                            cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
-                            cost_in_local_currency_with_tax: float) -> list:
-
-        sql_data = []  # list(tuple(sql_text, data))
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
-
-        # Get sql_text and data for every month in the range
-        for i in range(num_months):
-            date = begin_date.addMonths(i)
-            curr_month = date.month()
-            curr_year = date.year()
-
-            sql_text, data = ManageDB.replace_costs_sql_text(
-                report_type,
-                ({NAME_FIELD_SWITCHER[report_type]: name,
-                  'vendor': vendor,
-                  'year': curr_year,
-                  'month': curr_month,
-                  'cost_in_original_currency': cost_in_original_currency / num_months,
-                  'original_currency': original_currency,
-                  'cost_in_local_currency': cost_in_local_currency / num_months,
-                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax / num_months},))
-            sql_data.append((sql_text, data))
-
-        return sql_data
-
-    @staticmethod
-    def get_delete_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str) -> list:
-        sql_data = []  # list(tuple(sql_text, data))
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
-
-        # Get sql_text and data for every month in the range
-        for i in range(num_months):
-            date = begin_date.addMonths(i)
-            curr_month = date.month()
-            curr_year = date.year()
-
-            sql_text, data = ManageDB.delete_costs_sql_text(report_type, vendor,
-                                                            curr_month, curr_year, name)
-            sql_data.append((sql_text, data))
-
-        return sql_data
 
     def on_import_clicked(self):
         dialog = QDialog()
@@ -616,6 +528,85 @@ class CostsController:
         dialog.exec_()
 
     @staticmethod
+    def get_costs(report_type: str, vendor_name: str = None, name: str = None) -> list:
+        """Fills the costs fields with data from the database"""
+
+        sql_text, data = ManageDB.get_costs_sql_text(report_type, vendor_name, name)
+        results = []
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
+            connection.close()
+
+        return results if results else []
+
+    @staticmethod
+    def get_names(report_type: str, vendor_name: str = None):
+        sql_text, data = ManageDB.get_names_sql_text(report_type, vendor_name)
+        results = []
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
+            connection.close()
+
+        return results if results else []
+
+    @staticmethod
+    def get_insert_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str,
+                            cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
+                            cost_in_local_currency_with_tax: float) -> list:
+
+        sql_data = []  # list(tuple(sql_text, data))
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        # Get sql_text and data for every month in the range
+        for i in range(num_months):
+            date = begin_date.addMonths(i)
+            curr_month = date.month()
+            curr_year = date.year()
+
+            sql_text, data = ManageDB.replace_costs_sql_text(
+                report_type,
+                ({NAME_FIELD_SWITCHER[report_type]: name,
+                  'vendor': vendor,
+                  'year': curr_year,
+                  'month': curr_month,
+                  'cost_in_original_currency': cost_in_original_currency / num_months,
+                  'original_currency': original_currency,
+                  'cost_in_local_currency': cost_in_local_currency / num_months,
+                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax / num_months},))
+            sql_data.append((sql_text, data))
+
+        return sql_data
+
+    @staticmethod
+    def get_delete_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str) -> list:
+        sql_data = []  # list(tuple(sql_text, data))
+        if begin_date.year() == end_date.year():
+            num_months = (end_date.month() - begin_date.month()) + 1
+        else:
+            num_months = (12 - begin_date.month() + end_date.month()) + 1
+            num_years = end_date.year() - begin_date.year()
+            num_months += (num_years - 1) * 12
+
+        # Get sql_text and data for every month in the range
+        for i in range(num_months):
+            date = begin_date.addMonths(i)
+            curr_month = date.month()
+            curr_year = date.year()
+
+            sql_text, data = ManageDB.delete_costs_sql_text(report_type, vendor,
+                                                            curr_month, curr_year, name)
+            sql_data.append((sql_text, data))
+
+        return sql_data
+
+    @staticmethod
     def cost_results_to_dicts(cost_results, report_type_name: str):
         curr_cost = 0
         cost_dicts = []
@@ -643,23 +634,3 @@ class CostsController:
             curr_cost = result[2]
 
         return cost_dicts
-
-    def import_costs(self):
-        """Import a file with costs data in it into the database"""
-        report_type_dialog = QDialog()
-        report_type_dialog_ui = ReportTypeDialog.Ui_report_type_dialog()
-        report_type_dialog_ui.setupUi(report_type_dialog)
-        report_type_dialog_ui.report_type_combobox.addItems(REPORT_TYPE_SWITCHER.keys())
-        report_type_dialog.show()
-        if report_type_dialog.exec_():
-            report_type = report_type_dialog_ui.report_type_combobox.currentText()
-            if report_type != '':
-                file_name = choose_file(TSV_FILTER + CSV_FILTER)
-                if file_name != '':
-                    ManageDB.insert_single_cost_file(report_type, file_name)
-                    ManageDB.backup_costs_data(report_type)
-                    show_message('File ' + file_name + ' imported')
-                else:
-                    print('Error, no file location selected')
-            else:
-                print('Error, no report type selected')

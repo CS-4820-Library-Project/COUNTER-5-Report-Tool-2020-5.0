@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -129,22 +127,18 @@ class Ui_costs_tab(object):
         self.costs_cost_in_local_currency_label.setObjectName("costs_cost_in_local_currency_label")
         self.gridLayout_2.addWidget(self.costs_cost_in_local_currency_label, 5, 0, 1, 1)
         self.costs_cost_in_local_currency_with_tax_doublespinbox = QtWidgets.QDoubleSpinBox(self.costs_values_frame)
-        self.costs_cost_in_local_currency_with_tax_doublespinbox.setEnabled(False)
         self.costs_cost_in_local_currency_with_tax_doublespinbox.setMaximum(999999999.99)
         self.costs_cost_in_local_currency_with_tax_doublespinbox.setObjectName("costs_cost_in_local_currency_with_tax_doublespinbox")
         self.gridLayout_2.addWidget(self.costs_cost_in_local_currency_with_tax_doublespinbox, 6, 1, 1, 1)
         self.costs_original_currency_value_combobox = QtWidgets.QComboBox(self.costs_values_frame)
-        self.costs_original_currency_value_combobox.setEnabled(False)
         self.costs_original_currency_value_combobox.setEditable(True)
         self.costs_original_currency_value_combobox.setObjectName("costs_original_currency_value_combobox")
         self.gridLayout_2.addWidget(self.costs_original_currency_value_combobox, 4, 1, 1, 1)
         self.costs_cost_in_original_currency_doublespinbox = QtWidgets.QDoubleSpinBox(self.costs_values_frame)
-        self.costs_cost_in_original_currency_doublespinbox.setEnabled(False)
         self.costs_cost_in_original_currency_doublespinbox.setMaximum(999999999.99)
         self.costs_cost_in_original_currency_doublespinbox.setObjectName("costs_cost_in_original_currency_doublespinbox")
         self.gridLayout_2.addWidget(self.costs_cost_in_original_currency_doublespinbox, 3, 1, 1, 1)
         self.costs_cost_in_local_currency_doublespinbox = QtWidgets.QDoubleSpinBox(self.costs_values_frame)
-        self.costs_cost_in_local_currency_doublespinbox.setEnabled(False)
         self.costs_cost_in_local_currency_doublespinbox.setMaximum(999999999.99)
         self.costs_cost_in_local_currency_doublespinbox.setObjectName("costs_cost_in_local_currency_doublespinbox")
         self.gridLayout_2.addWidget(self.costs_cost_in_local_currency_doublespinbox, 5, 1, 1, 1)
@@ -228,4 +222,5 @@ class Ui_costs_tab(object):
         self.costs_clear_button.setText(_translate("costs_tab", "Clear Fields"))
         self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
         self.export_costs_button.setText(_translate("costs_tab", "Export Costs"))
+
 import Resources_rc

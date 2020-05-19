@@ -247,9 +247,6 @@
             </item>
             <item row="6" column="1">
              <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_with_tax_doublespinbox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="maximum">
                <double>999999999.990000009536743</double>
               </property>
@@ -257,9 +254,6 @@
             </item>
             <item row="4" column="1">
              <widget class="QComboBox" name="costs_original_currency_value_combobox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="editable">
                <bool>true</bool>
               </property>
@@ -267,9 +261,6 @@
             </item>
             <item row="3" column="1">
              <widget class="QDoubleSpinBox" name="costs_cost_in_original_currency_doublespinbox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="maximum">
                <double>999999999.990000009536743</double>
               </property>
@@ -277,9 +268,6 @@
             </item>
             <item row="5" column="1">
              <widget class="QDoubleSpinBox" name="costs_cost_in_local_currency_doublespinbox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="maximum">
                <double>999999999.990000009536743</double>
               </property>
