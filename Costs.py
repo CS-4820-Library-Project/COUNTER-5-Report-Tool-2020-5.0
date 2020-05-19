@@ -472,10 +472,9 @@ class CostsController:
 
             if fill_check_box.isChecked():
                 name_results = self.get_names(report_type, None if vendor_name == all_vendors_text else vendor_name)
-                names_with_cost_data = []
+                names_with_cost_data = set()
                 for cost_dict in cost_dicts:
-                    if (cost_dict[report_type_name], cost_dict["vendor"]) not in names_with_cost_data:
-                        names_with_cost_data.append((cost_dict[report_type_name], cost_dict["vendor"]))
+                    names_with_cost_data.add((cost_dict[report_type_name], cost_dict["vendor"]))
 
                 for name in name_results:
                     if (name[0], name[1]) not in names_with_cost_data:
