@@ -2176,8 +2176,10 @@ class ReportWorker(QObject):
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         for item_id in report_item.item_ids:
                             if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
@@ -2196,8 +2198,10 @@ class ReportWorker(QObject):
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         item_id: TypeValueModel
                         for item_id in report_item.item_ids:
@@ -2231,8 +2235,10 @@ class ReportWorker(QObject):
                         # Publisher ID
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         # Authors
                         authors_str = ""
