@@ -105,7 +105,6 @@ class CostsController:
         self.import_costs_button.clicked.connect(self.on_import_clicked)
         self.export_costs_button = costs_ui.export_costs_button
         self.export_costs_button.clicked.connect(self.on_export_clicked)
-        # self.import_costs_button.setEnabled(False)
 
         self.update_costs()
 

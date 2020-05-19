@@ -1,3 +1,4 @@
+import locale
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
@@ -34,6 +35,8 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
     app = QApplication(sys.argv)
     app.setStyleSheet("QWidget {font-family: Segoe UI; font-size: 12pt;}")
 
