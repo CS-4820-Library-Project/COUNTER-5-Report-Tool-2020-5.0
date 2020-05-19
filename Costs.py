@@ -552,6 +552,12 @@ class CostsController:
             report_type_name = NAME_FIELD_SWITCHER[report_type]
             cost_dicts = self.cost_results_to_dicts(cost_results, report_type_name)
 
+            # Format currency columns
+            for cost_dict in cost_dicts:
+                cost_dict["cost_in_original_currency"] = f"{cost_dict['cost_in_original_currency']:.2f}"
+                cost_dict["cost_in_local_currency"] = f"{cost_dict['cost_in_local_currency']:.2f}"
+                cost_dict["cost_in_local_currency_with_tax"] = f"{cost_dict['cost_in_local_currency_with_tax']:.2f}"
+
             if fill_check_box.isChecked():
                 name_results = self.get_names(report_type, None if vendor_name == all_vendors_text else vendor_name)
                 names_with_cost_data = []
