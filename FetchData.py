@@ -2469,10 +2469,10 @@ class ReportWorker(QObject):
 
         file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
-        if self.is_yearly and self.is_master:
-            self.add_report_header_to_file(report_header, file, False)
-        else:
+        if self.is_special:
             self.add_report_header_to_file(report_header, file, True)
+        else:
+            self.add_report_header_to_file(report_header, file, False)
 
         if not self.add_report_rows_to_file(report_type, report_rows, self.begin_date, self.end_date, file, False,
                                             self.is_special, self.special_options):
