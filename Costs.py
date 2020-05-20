@@ -6,8 +6,7 @@ from PyQt5.QtCore import QModelIndex
 import ManageDB
 import ManageVendors
 from Settings import SettingsModel
-from ui import CostsTab, ReportTypeDialog
-from Constants import *
+from ui import CostsTab
 from GeneralUtils import *
 
 
@@ -179,7 +178,7 @@ class CostsController:
                 self.costs_names = [result[0] for result in costs_results]
             else:
                 self.costs_names = []
-            if self.settings.show_debug_messages: print(costs_results)
+            # if self.settings.show_debug_messages: print(costs_results)
             model = QStandardItemModel()
             for name in self.names:
                 item = QStandardItem(name)
@@ -221,13 +220,13 @@ class CostsController:
         valid_parameters = True
         self.available_costs = []
         if not self.report_parameter:
-            print("Report parameter is empty")
+            # print("Report parameter is empty")
             valid_parameters = False
         if not self.vendor_parameter:
-            print("Vendor parameter is empty")
+            # print("Vendor parameter is empty")
             valid_parameters = False
         if not self.name_parameter:
-            print("Name parameter is empty")
+            # print("Name parameter is empty")
             valid_parameters = False
 
         if valid_parameters:
@@ -301,15 +300,15 @@ class CostsController:
             show_message('Start Date is higher than End Date')
             return
 
-        sql_data = self.get_insert_sql_data(
+        values = self.get_insert_sql_values(
             begin_date, end_date, self.report_parameter, self.name_parameter, self.vendor_parameter,
             self.cost_in_original_currency, self.original_currency, self.cost_in_local_currency,
             self.cost_in_local_currency_with_tax)
 
+        sql_text, data = ManageDB.replace_costs_sql_text(self.report_parameter, tuple(values))
         connection = ManageDB.create_connection(DATABASE_LOCATION)
         if connection is not None:
-            for sql_text, data in sql_data:
-                ManageDB.run_sql(connection, sql_text, data, False)
+            ManageDB.run_sql(connection, sql_text, data, False)
             connection.close()
             ManageDB.backup_costs_data(self.report_parameter)
             self.update_costs()
@@ -369,6 +368,7 @@ class CostsController:
 
                 connection = ManageDB.create_connection(DATABASE_LOCATION)
                 if connection is not None:
+                    all_values = []
                     for row in dict_reader:
                         if not row[report_type_name]: continue
                         name = row[report_type_name]
@@ -391,15 +391,6 @@ class CostsController:
                         if not row["original_currency"]: continue
                         original_currency = str(row["original_currency"])
 
-                        if original_currency == "USD" or original_currency == "CAD" or original_currency == "AUD":
-                            currency_sign = "$"
-                        elif original_currency == "EUR":
-                            currency_sign = "€"
-                        elif original_currency == "JPY":
-                            currency_sign = "¥"
-                        elif original_currency == "GBP":
-                            currency_sign = "£"
-
                         if not row["cost_in_original_currency"]: continue
                         cost_in_original_currency = wash_money(row["cost_in_original_currency"])
 
@@ -414,12 +405,13 @@ class CostsController:
                         if begin_date > end_date:
                             continue
 
-                        sql_data = self.get_insert_sql_data(
+                        values = self.get_insert_sql_values(
                             begin_date, end_date, report_type, name, vendor, cost_in_original_currency,
                             original_currency, cost_in_local_currency, cost_in_local_currency_with_tax)
+                        all_values += values
 
-                        for sql_text, data in sql_data:
-                            ManageDB.run_sql(connection, sql_text, data, False)
+                    sql_text, data = ManageDB.replace_costs_sql_text(report_type, tuple(all_values))
+                    ManageDB.run_sql(connection, sql_text, data, False)
 
                 connection.close()
                 file.close()
@@ -551,9 +543,9 @@ class CostsController:
         return results if results else []
 
     @staticmethod
-    def get_insert_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str,
-                            cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
-                            cost_in_local_currency_with_tax: float) -> list:
+    def get_insert_sql_values(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str,
+                              cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
+                              cost_in_local_currency_with_tax: float) -> list:
 
         sql_data = []  # list(tuple(sql_text, data))
         if begin_date.year() == end_date.year():
@@ -563,25 +555,26 @@ class CostsController:
             num_years = end_date.year() - begin_date.year()
             num_months += (num_years - 1) * 12
 
-        # Get sql_text and data for every month in the range
+        # Get sql values for every month in the range
+        values = []
         for i in range(num_months):
             date = begin_date.addMonths(i)
             curr_month = date.month()
             curr_year = date.year()
 
-            sql_text, data = ManageDB.replace_costs_sql_text(
-                report_type,
-                ({NAME_FIELD_SWITCHER[report_type]: name,
-                  'vendor': vendor,
-                  'year': curr_year,
-                  'month': curr_month,
-                  'cost_in_original_currency': cost_in_original_currency / num_months,
-                  'original_currency': original_currency,
-                  'cost_in_local_currency': cost_in_local_currency / num_months,
-                  'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax / num_months},))
-            sql_data.append((sql_text, data))
+            values.append({NAME_FIELD_SWITCHER[report_type]: name,
+                           'vendor': vendor,
+                           'year': curr_year,
+                           'month': curr_month,
+                           'cost_in_original_currency': cost_in_original_currency / num_months,
+                           'original_currency': original_currency,
+                           'cost_in_local_currency': cost_in_local_currency / num_months,
+                           'cost_in_local_currency_with_tax': cost_in_local_currency_with_tax / num_months})
 
-        return sql_data
+        # sql_text, data = ManageDB.replace_costs_sql_text(report_type, tuple(values))
+        # sql_data.append((sql_text, data))
+
+        return values
 
     @staticmethod
     def get_delete_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str) -> list:
