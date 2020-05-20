@@ -325,10 +325,12 @@ class VisualController:
                 connection.close()
 
             if not cost_results:
-                print("No cost result")
+                # print("No cost result")
+                show_message("No cost data found for this query")
                 return
             if not search_results:
-                print("No search result")
+                # print("No search result")
+                show_message("No search data found for this query")
                 return
 
             self.process_cost_ratio_data(cost_results, search_results, search_headers)
