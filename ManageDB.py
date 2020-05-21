@@ -570,30 +570,43 @@ def monthly_chart_search_sql_text(report: str, vendor: str, name: str, metric_ty
     :param vendor: the vendor name you want to search for
     :returns: (sql_text, values) a Tuple with the parameterized SQL statement to search the database, and the values
         for it"""
-    chart_fields = get_monthly_chart_report_fields_list(report)
-    fields = []
-    key_fields = []
-    for field in chart_fields:
-        if CALCULATION_KEY not in field.keys():
-            key_fields.append(field[NAME_KEY])
-            fields.append(field[NAME_KEY])
-        else:
-            fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
-    clauses = [{FIELD_KEY: 'month', COMPARISON_KEY: '>=', VALUE_KEY: start_month},
-               {FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
-               {FIELD_KEY: 'month', COMPARISON_KEY: '<=', VALUE_KEY: end_month},
-               {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
-               {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
-               {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},
-               {FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor}]
-    clauses_texts = []
-    data = []
-    for clause in clauses:
-        clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
-        data.append(clause[VALUE_KEY])
-    sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
-                                        group_by_fields=tuple(key_fields)) + ';'
-    return sql_text, tuple(data)
+    # chart_fields = get_monthly_chart_report_fields_list(report)
+    # fields = []
+    # key_fields = []
+    # for field in chart_fields:
+    #     if CALCULATION_KEY not in field.keys():
+    #         key_fields.append(field[NAME_KEY])
+    #         fields.append(field[NAME_KEY])
+    #     else:
+    #         fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
+
+    name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
+    sql_text = f"SELECT {name_field[NAME_KEY]}, month, year, metric " \
+               f"FROM {report} " \
+               f"WHERE " \
+               f"((year == {start_year} AND month >= {start_month}) OR " \
+               f"(year > {start_year} AND year < {end_year}) OR " \
+               f"(year == {end_year} AND month <= {end_month})) " \
+               f"AND " \
+               f"{name_field[NAME_KEY]} LIKE '{name}' AND " \
+               f"metric_type LIKE '{metric_type}' AND " \
+               f"vendor LIKE '{vendor}'"
+
+    # clauses = [{FIELD_KEY: 'month', COMPARISON_KEY: '>=', VALUE_KEY: start_month},
+    #            {FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+    #            {FIELD_KEY: 'month', COMPARISON_KEY: '<=', VALUE_KEY: end_month},
+    #            {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
+    #            {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
+    #            {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},
+    #            {FIELD_KEY: 'vendor', COMPARISON_KEY: 'LIKE', VALUE_KEY: vendor}]
+    # clauses_texts = []
+    # data = []
+    # for clause in clauses:
+    #     clauses_texts.append((clause[FIELD_KEY] + ' ' + clause[COMPARISON_KEY] + ' ?',))
+    #     data.append(clause[VALUE_KEY])
+    # sql_text = get_sql_select_statement(tuple(fields), (report,), tuple(clauses_texts),
+    #                                     group_by_fields=tuple(key_fields)) + ';'
+    return sql_text, tuple()
 
 
 def yearly_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,

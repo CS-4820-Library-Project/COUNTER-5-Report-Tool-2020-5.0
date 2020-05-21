@@ -396,6 +396,7 @@ RANKING = 'ranking'
 RANKING_CALCULATION = 'RANK() OVER(ORDER BY ' + 'SUM(' + 'metric' + ')' + ' DESC)'
 
 VIEW_SUFFIX = '_view'
+VISUAL_VIEW_SUFFIX = '_visual_view'
 COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
