@@ -1,4 +1,4 @@
-import xlsxwriter
+from xlsxwriter.workbook import Workbook, Worksheet, Format
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QWidget, QButtonGroup
 
@@ -183,9 +183,9 @@ class VisualController:
         if curr_option == "Monthly":
             data = self.do_monthly_calculation(report_type, vendor_name)
         elif curr_option == "Yearly":
-            print("Not yet supported")
+            data = self.do_yearly_calculation(report_type, vendor_name)
         elif curr_option == "Top #":
-            print("Not yet supported")
+            data = self.do_top_num_calculation(report_type, vendor_name)
         elif curr_option == "Cost Ratio":
             print("Not yet supported")
         else:
@@ -194,28 +194,34 @@ class VisualController:
 
         if not data:
             print("Unable to generate chart")
+            return
+
+        file_path = GeneralUtils.choose_save(EXCEL_FILTER)
+        if not file_path:
+            return
+        if not file_path.lower().endswith(".xlsx"):
+            file_path += ".xlsx"
 
         curr_chart_type = self.chart_button_group.checkedButton().text()
         if curr_chart_type == "Vertical Bar":
-            self.create_vertical_bar_chart(data)
-
+            self.create_chart("column", data, file_path)
         elif curr_chart_type == "Horizontal Bar":
-            print("Not yet supported")
+            self.create_chart("bar", data, file_path)
         elif curr_chart_type == "Line":
-            print("Not yet supported")
+            self.create_chart("line", data, file_path)
         else:
             GeneralUtils.show_message("Select a calculation option")
             return
 
-    def do_monthly_calculation(self, report_type: str, vendor_name: str):
+    def do_monthly_calculation(self, report_type: str, vendor_name: str) -> dict:
         name = self.name_combo_box.currentText()
         if not name:
             GeneralUtils.show_message(f"Select a {self.name_label.text()}")
-            return
+            return {}
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
-            return
+            return {}
 
         start_year = self.start_year_date_edit.date().year()
         start_month = self.start_month_combo_box.currentIndex() + 1
@@ -234,7 +240,7 @@ class VisualController:
 
         if not results:
             GeneralUtils.show_message("No data found for this query")
-            return
+            return {}
 
         year_data = {}
         for result in results:
@@ -249,21 +255,169 @@ class VisualController:
 
         return year_data
 
-    def create_vertical_bar_chart(self, data: dict):
-        chart_title = self.chart_title_line_edit.text()
-        horizontal_axis_title = self.horizontal_axis_line_edit.text()
-        vertical_axis_title = self.vertical_axis_line_edit.text()
+    def do_yearly_calculation(self, report_type: str, vendor_name: str) -> dict:
+        name = self.name_combo_box.currentText()
+        if not name:
+            GeneralUtils.show_message(f"Select a {self.name_label.text()}")
+            return {}
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return {}
 
-        file_path = GeneralUtils.choose_save(EXCEL_FILTER)
-        if not file_path:
-            return
-        if not file_path.lower().endswith(".xlsx"):
-            file_path += ".xlsx"
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
 
-        workbook = xlsxwriter.Workbook(file_path)
+        if start_month != 1 or end_month != 12:
+            if not GeneralUtils.ask_confirmation("Yearly type with non-calendar-year date range may produce odd "
+                                                 "results - Continue anyway? "):
+                return {}
+
+        sql_text, data = ManageDB.yearly_chart_search_sql_text(report_type, vendor_name, name, metric_type,
+                                                               start_month, start_year, end_month, end_year)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        results = None
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
+            connection.close()
+        else:
+            print('Error, no connection')
+
+        if not results:
+            GeneralUtils.show_message("No data found for this query")
+            return {}
+
+        year_data = {}
+        for result in results:
+            year = result[1]
+            metric = result[2]
+
+            year_data[year] = metric
+
+        return year_data
+
+    def do_top_num_calculation(self, report_type: str, vendor_name: str) -> dict:
+        top_num = self.top_spin_box.value() if self.top_spin_box.value() else None
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return {}
+
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
+
+        sql_text, data = ManageDB.top_number_chart_search_sql_text(report_type, vendor_name, metric_type, top_num,
+                                                                   start_month, start_year, end_month, end_year)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        results = None
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
+            connection.close()
+        else:
+            print('Error, no connection')
+
+        if not results:
+            GeneralUtils.show_message("No data found for this query")
+            return {}
+
+        data = {}
+        for result in results:
+            name = result[0]
+            metric = result[1]
+
+            data[name] = metric
+
+        return data
+
+    def do_cost_ratio_calculation(self, report_type: str, vendor_name: str) -> dict:
+        cost_ratio_option = self.cost_ratio_combo_box.currentText()
+        if not cost_ratio_option:
+            GeneralUtils.show_message(f"Select a cost ratio option")
+            return {}
+        name = self.name_combo_box.currentText()
+        if not name:
+            GeneralUtils.show_message(f"Select a {self.name_label.text()}")
+            return {}
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return {}
+
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
+
+        if start_month != 1 or end_month != 12:
+            if not GeneralUtils.ask_confirmation("Yearly type with non-calendar-year date range may produce odd "
+                                                 "results - Continue anyway? "):
+                return {}
+
+        sql_text, data = ManageDB.yearly_chart_search_sql_text(report_type, vendor_name, name, metric_type,
+                                                               start_month, start_year, end_month, end_year)
+        connection = ManageDB.create_connection(DATABASE_LOCATION)
+        results = None
+        if connection is not None:
+            results = ManageDB.run_select_sql(connection, sql_text, data)
+            connection.close()
+        else:
+            print('Error, no connection')
+
+        if not results:
+            GeneralUtils.show_message("No data found for this query")
+            return {}
+
+        year_data = {}
+        for result in results:
+            year = result[1]
+            metric = result[2]
+
+            year_data[year] = metric
+
+        return year_data
+
+    def create_chart(self, chart_type: str, data: dict, file_path: str):
+        workbook = Workbook(file_path)
         worksheet = workbook.add_worksheet()
+        chart = workbook.add_chart({"type": chart_type})
+        bold_format = workbook.add_format({"bold": True})
 
-        bold = workbook.add_format({'bold': True})
+        num_categories = 0
+        num_value_columns = 0
+
+        curr_option = self.calculation_button_group.checkedButton().text()
+        if curr_option == "Monthly":
+            num_categories, num_value_columns = self.populate_monthly_chart(data, worksheet, bold_format)
+        elif curr_option == "Yearly":
+            num_categories, num_value_columns = self.populate_yearly_chart(data, worksheet, bold_format)
+        elif curr_option == "Top #":
+            num_categories, num_value_columns = self.populate_top_num_chart(data, worksheet, bold_format)
+        elif curr_option == "Cost Ratio":
+            print("Not yet supported")
+        else:
+            GeneralUtils.show_message("Select a calculation option")
+            return
+
+        for i in range(num_value_columns):
+            # [sheet_name, first_row, first_col, last_row, last_col]
+            chart.add_series({
+                "categories": ["Sheet1", 1, 0, num_categories, 0],
+                "values": ["Sheet1", 1, i + 1, num_categories, i + 1],
+            })
+
+        self.customize_chart(chart)
+        worksheet.insert_chart(1, num_value_columns + 3, chart)
+
+        workbook.close()
+        GeneralUtils.open_file_or_dir(file_path)
+
+    def populate_monthly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+        num_categories = len(MONTHS)
+        num_value_columns = 0
 
         # Fill with month names
         row = 1
@@ -275,24 +429,70 @@ class VisualController:
         # Fill with data
         column = 1
         for year in data:
-            worksheet.write(0, column, year, bold)
+            num_value_columns += 1
+            worksheet.write(0, column, year, bold_format)
 
             row = 1
             months = data[year]
             for month in MONTHS:
                 if month in months:
-                    worksheet.write(row, column, months[month])
+                    metric = months[month]
                 else:
-                    worksheet.write(row, column, 0)
+                    metric = 0
+
+                worksheet.write(row, column, metric)
                 row += 1
 
             column += 1
 
-        chart_type = "column"
-        chart = workbook.add_chart({'type': chart_type})
+        return num_categories, num_value_columns
 
-        workbook.close()
-        GeneralUtils.open_file_or_dir(file_path)
+    def populate_yearly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return
+
+        num_categories = len(data.keys())
+        num_value_columns = 1
+
+        worksheet.write(0, 1, metric_type, bold_format)
+        row = 1
+        for year in data:
+            worksheet.write(row, 0, year)
+            worksheet.write(row, 1, data[year])
+            row += 1
+
+        return num_categories, num_value_columns
+
+    def populate_top_num_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return
+
+        num_categories = len(data.keys())
+        num_value_columns = 1
+
+        worksheet.write(0, 1, metric_type, bold_format)
+        row = 1
+        for name in data:
+            worksheet.write(row, 0, name)
+            worksheet.write(row, 1, data[name])
+            row += 1
+
+        return num_categories, num_value_columns
+
+    def customize_chart(self, chart):
+        chart_title = self.chart_title_line_edit.text()
+        horizontal_axis_title = self.horizontal_axis_line_edit.text()
+        vertical_axis_title = self.vertical_axis_line_edit.text()
+
+        chart.set_title({'name': chart_title})
+        chart.set_x_axis({'name': horizontal_axis_title})
+        chart.set_y_axis({'name': vertical_axis_title})
+
+        chart.set_style(11)
 
     @staticmethod
     def get_names(report_type: str, vendor_name: str) -> list:
