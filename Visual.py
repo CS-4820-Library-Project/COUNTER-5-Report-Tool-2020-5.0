@@ -187,7 +187,7 @@ class VisualController:
         elif curr_option == "Top #":
             data = self.do_top_num_calculation(report_type, vendor_name)
         elif curr_option == "Cost Ratio":
-            print("Not yet supported")
+            data = self.do_cost_ratio_calculation(report_type, vendor_name)
         else:
             GeneralUtils.show_message("Select a calculation option")
             return
@@ -352,31 +352,68 @@ class VisualController:
         end_year = self.end_year_date_edit.date().year()
         end_month = self.end_month_combo_box.currentIndex() + 1
 
-        if start_month != 1 or end_month != 12:
-            if not GeneralUtils.ask_confirmation("Yearly type with non-calendar-year date range may produce odd "
-                                                 "results - Continue anyway? "):
-                return {}
+        search_headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report_type)])
+        # TODO add optional year parameter to ManageDB.get_costs_sql_text()
+        cost_sql_text, cost_data = ManageDB.cost_chart_search_sql_text(
+            report_type, vendor_name, name, metric_type, start_month, start_year, end_month, end_year)
+        search_sql_text, search_data = ManageDB.monthly_chart_search_sql_text(
+            report_type, vendor_name, name, metric_type, start_month, start_year, end_month, end_year)
+        cost_results = []
+        search_results = []
 
-        sql_text, data = ManageDB.yearly_chart_search_sql_text(report_type, vendor_name, name, metric_type,
-                                                               start_month, start_year, end_month, end_year)
         connection = ManageDB.create_connection(DATABASE_LOCATION)
-        results = None
         if connection is not None:
-            results = ManageDB.run_select_sql(connection, sql_text, data)
+            cost_results = ManageDB.run_select_sql(connection, cost_sql_text, cost_data)
+            search_results = ManageDB.run_select_sql(connection, search_sql_text, search_data)
             connection.close()
         else:
             print('Error, no connection')
 
-        if not results:
-            GeneralUtils.show_message("No data found for this query")
+        if not cost_results:
+            # print("No cost result")
+            GeneralUtils.show_message("No cost data found for this query")
+            return {}
+        if not search_results:
+            # print("No search result")
+            GeneralUtils.show_message("No search data found for this query")
             return {}
 
-        year_data = {}
-        for result in results:
-            year = result[1]
-            metric = result[2]
+        is_original_currency = self.cost_ratio_combo_box.currentText() == 'Cost in Original Currency'
+        is_local_currency = self.cost_ratio_combo_box.currentText() == 'Cost in Local Currency'
+        is_local_currency_tax = self.cost_ratio_combo_box.currentText() == 'Cost in Local Currency with Tax'
 
-            year_data[year] = metric
+        search_dict = {}
+        for result in search_results:
+            search_dict[(result[1], result[2])] = result
+
+        costs_dict = {}
+        for result in cost_results:
+            costs_dict[(result[5], result[6])] = result
+
+        year_data = {}
+        for year, month in search_dict:
+            if year not in year_data:
+                year_data[year] = [0, 0, 0]
+
+            metric = search_dict[year, month][3]
+            if metric == 0:
+                continue
+
+            if (year, month) in costs_dict:
+                cost_in_original_currency = costs_dict[year, month][1]
+                # original_currency = costs_dict[year, month][2]
+                cost_in_local_currency = costs_dict[year, month][3]
+                cost_in_local_currency_with_tax = costs_dict[year, month][4]
+
+                if is_original_currency:
+                    year_data[year][1] += cost_in_original_currency
+                    year_data[year][1] += cost_in_original_currency
+                elif is_local_currency:
+                    year_data[year][1] += cost_in_local_currency
+                elif is_local_currency_tax:
+                    year_data[year][1] += cost_in_local_currency_with_tax
+
+                year_data[year][0] = year_data[year][1] / metric
 
         return year_data
 
