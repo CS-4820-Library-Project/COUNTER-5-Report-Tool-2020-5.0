@@ -1278,7 +1278,7 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_all_basic_data(self):
         """Fetches all reports for the selected year"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
@@ -1317,7 +1317,7 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_advanced_data(self):
         """Fetches reports based on the selected options in the advanced view of the UI"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
@@ -1706,7 +1706,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
     def fetch_special_data(self):
         """Fetches reports based on the selected options in the UI"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return

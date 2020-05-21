@@ -85,10 +85,8 @@ def get_monthly_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]
     fields.append(
         {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+        if field[NAME_KEY] in FIELDS_IN_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
-    for key in sorted(MONTHS):  # month columns
-        fields.append({NAME_KEY: MONTHS[key], TYPE_KEY: 'INTEGER', CALCULATION_KEY: MONTH_CALCULATION.format(key)})
     return tuple(fields)
 
 
@@ -102,7 +100,7 @@ def get_yearly_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]
     fields.append(
         {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+        if field[NAME_KEY] not in FIELDS_IN_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
     fields.append({NAME_KEY: YEAR_TOTAL, TYPE_KEY: 'INTEGER',
                    CALCULATION_KEY: YEAR_TOTAL_CALCULATION})  # year total column
@@ -119,7 +117,7 @@ def get_cost_chart_report_fields_list(report: str) -> Sequence[Dict[str, Any]]:
     fields.append(
         {NAME_KEY: name_field[NAME_KEY], TYPE_KEY: name_field[TYPE_KEY]})
     for field in ALL_REPORT_FIELDS:  # fields in all reports
-        if field[NAME_KEY] not in FIELDS_NOT_IN_CHARTS:
+        if field[NAME_KEY] not in FIELDS_IN_CHARTS:
             fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
     # for field in COST_FIELDS:  # cost table fields
     #     fields.append({NAME_KEY: field[NAME_KEY], TYPE_KEY: field[TYPE_KEY]})
@@ -560,8 +558,8 @@ def search_sql_text(report: str, start_year: int, end_year: int,
     return sql_text, tuple(data)
 
 
-def monthly_chart_search_sql_text(report: str, start_year: int, end_year: int, name: str, metric_type: str,
-                                  vendor: str) -> Tuple[str, Sequence[Any]]:
+def monthly_chart_search_sql_text(report: str, vendor: str, name: str, metric_type: str, start_month: int,
+                                  start_year: int, end_month: int, end_year: int) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to search the database for monthly chart data
 
     :param report: the kind of the report
@@ -581,7 +579,9 @@ def monthly_chart_search_sql_text(report: str, start_year: int, end_year: int, n
             fields.append(field[NAME_KEY])
         else:
             fields.append(field[CALCULATION_KEY] + ' AS ' + field[NAME_KEY])
-    clauses = [{FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+    clauses = [{FIELD_KEY: 'month', COMPARISON_KEY: '>=', VALUE_KEY: start_month},
+               {FIELD_KEY: 'year', COMPARISON_KEY: '>=', VALUE_KEY: start_year},
+               {FIELD_KEY: 'month', COMPARISON_KEY: '<=', VALUE_KEY: end_month},
                {FIELD_KEY: 'year', COMPARISON_KEY: '<=', VALUE_KEY: end_year},
                {FIELD_KEY: chart_fields[0][NAME_KEY], COMPARISON_KEY: 'LIKE', VALUE_KEY: name},
                {FIELD_KEY: 'metric_type', COMPARISON_KEY: 'LIKE', VALUE_KEY: metric_type},

@@ -267,7 +267,7 @@ class VisualController2:
 
         if self.monthly_radio.isChecked() and message == "":
             # sql query to get search results
-            sql_text, data = ManageDB.monthly_chart_search_sql_text(report, start_year, end_year, name, metric, vendor)
+            sql_text, data = ManageDB.monthly_chart_search_sql_text(report, vendor, name,, end_year, metric,
             # print(sql_text)  # testing
             headers = tuple([field['name'] for field in ManageDB.get_monthly_chart_report_fields_list(report)])
             connection = ManageDB.create_connection(DATABASE_LOCATION)

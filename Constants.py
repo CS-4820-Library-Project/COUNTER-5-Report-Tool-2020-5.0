@@ -401,8 +401,8 @@ COST_TABLE_SUFFIX = '_costs'
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
-FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
-FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_NOT_IN_CHARTS + ('year',)
+FIELDS_IN_CHARTS = ('month', 'year', 'metric',)
+FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_IN_CHARTS + ('year',)
 
 COSTS_KEY_FIELDS = ('vendor', 'month', 'year')
 CHART_KEY_FIELDS = ('vendor', 'metric_type')
@@ -642,3 +642,25 @@ COUNTER_5_REPORT_EQUIVALENTS = {
     "PR": "PR1"
 }
 # endregion
+
+VISUAL_FIELDS = ({NAME_KEY: 'metric_type',
+                      TYPE_KEY: 'TEXT',
+                      OPTIONS_KEY: ('NOT NULL', 'CHECK(metric_type <> \"\")')},
+                     {NAME_KEY: 'vendor',
+                      TYPE_KEY: 'TEXT',
+                      OPTIONS_KEY: ('NOT NULL', 'CHECK(vendor <> \"\")')},
+                     {NAME_KEY: 'year',
+                      TYPE_KEY: 'INTEGER',
+                      OPTIONS_KEY: ('NOT NULL', 'CHECK(LENGTH(year) = 4)')},
+                     {NAME_KEY: 'month',
+                      TYPE_KEY: 'INTEGER',
+                      OPTIONS_KEY: ('NOT NULL', 'CHECK(month BETWEEN 1 AND 12)')},
+                     {NAME_KEY: 'metric',
+                      TYPE_KEY: 'INTEGER',
+                      OPTIONS_KEY: ('NOT NULL', 'CHECK(metric > 0)')},
+                     {NAME_KEY: 'updated_on',
+                      TYPE_KEY: 'TEXT',
+                      OPTIONS_KEY: ('NOT NULL',)},
+                     {NAME_KEY: 'file',
+                      TYPE_KEY: 'TEXT',
+                      OPTIONS_KEY: ('NOT NULL',)})
