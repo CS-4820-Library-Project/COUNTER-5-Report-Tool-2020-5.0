@@ -2,6 +2,7 @@ from xlsxwriter.exceptions import FileCreateError
 from xlsxwriter.workbook import Workbook, Worksheet, Format
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QWidget, QButtonGroup
+from PyQt5.QtGui import QStandardItem, QFont, QStandardItemModel
 
 import ManageDB
 import GeneralUtils
@@ -196,13 +197,26 @@ class VisualController:
     def update_name_combo_box(self):
         report_type = self.report_combo_box.currentText()
         vendor_name = self.vendor_combo_box.currentText()
+        start_year = self.start_year_date_edit.date().year()
+        end_year = self.end_year_date_edit.date().year()
 
         if not (report_type and vendor_name):
             return
 
         names = self.get_names(report_type, vendor_name)
+        costs_names = self.get_names_with_cost(report_type, vendor_name, start_year, end_year)
         self.name_combo_box.clear()
-        self.name_combo_box.addItems(names)
+
+        cost_font = QFont()
+        cost_font.setBold(True)
+        model = QStandardItemModel()
+        for name in names:
+            item = QStandardItem(name)
+            if name in costs_names:
+                item.setFont(cost_font)
+
+            model.appendRow(item)
+        self.name_combo_box.setModel(model)
 
     def update_option_views(self):
         curr_option = self.calculation_button_group.checkedButton().text()
