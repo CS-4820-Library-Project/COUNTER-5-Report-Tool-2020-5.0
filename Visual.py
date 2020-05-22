@@ -1,3 +1,4 @@
+from xlsxwriter.exceptions import FileCreateError
 from xlsxwriter.workbook import Workbook, Worksheet, Format
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QWidget, QButtonGroup
@@ -68,9 +69,9 @@ class VisualController:
         self.top_spin_box = visual_ui.top_spin_box
         self.cost_ratio_label = visual_ui.cost_ratio_label
         self.cost_ratio_combo_box = visual_ui.cost_ratio_combo_box
-        self.cost_ratio_combo_box.addItems(["Cost in Local Currency with Tax",
-                                            "Cost in Local Currency",
-                                            "Cost in Original Currency"])
+        self.cost_ratio_combo_box.addItems(["Cost In Original Currency",
+                                            "Cost In Local Currency With Tax",
+                                            "Cost In Local Currency"])
 
         self.option_views = {"metric_type": [self.metric_type_label, self.metric_type_combo_box],
                              "name": [self.name_label, self.name_combo_box],
@@ -129,14 +130,8 @@ class VisualController:
             self.metric_type_combo_box.addItems(TITLE_REPORTS_METRIC)
 
     def update_name_label(self, report_type):
-        if report_type in DATABASE_REPORTS:
-            self.name_label.setText('Database')
-        elif report_type in ITEM_REPORTS:
-            self.name_label.setText('Item')
-        elif report_type in PLATFORM_REPORTS:
-            self.name_label.setText('Platform')
-        elif report_type in TITLE_REPORTS:
-            self.name_label.setText('Title')
+        name_field = NAME_FIELD_SWITCHER[report_type[:2]].capitalize()
+        self.name_label.setText(name_field)
 
     def update_name_combo_box(self):
         report_type = self.report_combo_box.currentText()
@@ -196,22 +191,38 @@ class VisualController:
             print("Unable to generate chart")
             return
 
-        file_path = GeneralUtils.choose_save(EXCEL_FILTER)
-        if not file_path:
-            return
-        if not file_path.lower().endswith(".xlsx"):
-            file_path += ".xlsx"
+        try:
+            file_path = GeneralUtils.choose_save(EXCEL_FILTER)
+            if not file_path:
+                return
+            if not file_path.lower().endswith(".xlsx"):
+                file_path += ".xlsx"
 
-        curr_chart_type = self.chart_button_group.checkedButton().text()
-        if curr_chart_type == "Vertical Bar":
-            self.create_chart("column", data, file_path)
-        elif curr_chart_type == "Horizontal Bar":
-            self.create_chart("bar", data, file_path)
-        elif curr_chart_type == "Line":
-            self.create_chart("line", data, file_path)
-        else:
-            GeneralUtils.show_message("Select a calculation option")
-            return
+            curr_chart_type = self.chart_button_group.checkedButton().text()
+            if curr_chart_type == "Vertical Bar":
+                self.create_chart("column", data, file_path)
+            elif curr_chart_type == "Horizontal Bar":
+                self.create_chart("bar", data, file_path)
+            elif curr_chart_type == "Line":
+                self.create_chart("line", data, file_path)
+            else:
+                GeneralUtils.show_message("Select a calculation option")
+                return
+
+            if self.open_file_check_box.isChecked():
+                GeneralUtils.open_file_or_dir(file_path)
+
+            dir_path = "/".join(file_path.split("/")[:-1])
+            if self.open_folder_check_box.isChecked():
+                GeneralUtils.open_file_or_dir(dir_path)
+
+        except FileCreateError as e:
+            GeneralUtils.show_message("Unable to write to the selected file.\n"
+                                      "Please close the file if it is open in Excel")
+
+        except Exception as e:
+            GeneralUtils.show_message("Unable to write to the selected file.\n"
+                                      "Exception: " + str(e))
 
     def do_monthly_calculation(self, report_type: str, vendor_name: str) -> dict:
         name = self.name_combo_box.currentText()
@@ -299,7 +310,7 @@ class VisualController:
         return year_data
 
     def do_top_num_calculation(self, report_type: str, vendor_name: str) -> dict:
-        top_num = self.top_spin_box.value() if self.top_spin_box.value() else None
+        top_num = self.top_spin_box.value()
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -378,9 +389,9 @@ class VisualController:
             GeneralUtils.show_message("No search data found for this query")
             return {}
 
-        is_original_currency = self.cost_ratio_combo_box.currentText() == 'Cost in Original Currency'
-        is_local_currency = self.cost_ratio_combo_box.currentText() == 'Cost in Local Currency'
-        is_local_currency_tax = self.cost_ratio_combo_box.currentText() == 'Cost in Local Currency with Tax'
+        is_original_currency = self.cost_ratio_combo_box.currentText() == 'Cost In Original Currency'
+        is_local_currency = self.cost_ratio_combo_box.currentText() == 'Cost In Local Currency'
+        is_local_currency_tax = self.cost_ratio_combo_box.currentText() == 'Cost In Local Currency With Tax'
 
         search_dict = {}
         for result in search_results:
@@ -393,11 +404,13 @@ class VisualController:
         year_data = {}
         for year, month in search_dict:
             if year not in year_data:
-                year_data[year] = [0, 0, 0]
+                year_data[year] = [0.0, 0.0, 0.0]
 
             metric = search_dict[year, month][3]
             if metric == 0:
                 continue
+
+            year_data[year][2] += metric
 
             if (year, month) in costs_dict:
                 cost_in_original_currency = costs_dict[year, month][1]
@@ -407,13 +420,12 @@ class VisualController:
 
                 if is_original_currency:
                     year_data[year][1] += cost_in_original_currency
-                    year_data[year][1] += cost_in_original_currency
                 elif is_local_currency:
                     year_data[year][1] += cost_in_local_currency
                 elif is_local_currency_tax:
                     year_data[year][1] += cost_in_local_currency_with_tax
 
-                year_data[year][0] = year_data[year][1] / metric
+                year_data[year][0] = year_data[year][1] / year_data[year][2]
 
         return year_data
 
@@ -423,38 +435,41 @@ class VisualController:
         chart = workbook.add_chart({"type": chart_type})
         bold_format = workbook.add_format({"bold": True})
 
-        num_categories = 0
-        num_value_columns = 0
-
         curr_option = self.calculation_button_group.checkedButton().text()
         if curr_option == "Monthly":
-            num_categories, num_value_columns = self.populate_monthly_chart(data, worksheet, bold_format)
+            num_categories, num_value_columns, chart_start_column = \
+                self.populate_monthly_chart(data, worksheet, bold_format)
         elif curr_option == "Yearly":
-            num_categories, num_value_columns = self.populate_yearly_chart(data, worksheet, bold_format)
+            num_categories, num_value_columns, chart_start_column = \
+                self.populate_yearly_chart(data, worksheet, bold_format)
         elif curr_option == "Top #":
-            num_categories, num_value_columns = self.populate_top_num_chart(data, worksheet, bold_format)
+            num_categories, num_value_columns, chart_start_column = \
+                self.populate_top_num_chart(data, worksheet, bold_format)
         elif curr_option == "Cost Ratio":
-            print("Not yet supported")
+            num_categories, num_value_columns, chart_start_column = \
+                self.populate_cost_ratio_chart(data, worksheet, bold_format)
         else:
             GeneralUtils.show_message("Select a calculation option")
             return
 
-        for i in range(num_value_columns):
+        for i in range(1, num_value_columns + 1):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
+                'name': ['Sheet1', 0, i],
                 "categories": ["Sheet1", 1, 0, num_categories, 0],
-                "values": ["Sheet1", 1, i + 1, num_categories, i + 1],
+                "values": ["Sheet1", 1, i, num_categories, i],
             })
 
         self.customize_chart(chart)
-        worksheet.insert_chart(1, num_value_columns + 3, chart)
+        chart_options = {'x_scale': 2, 'y_scale': 2}
+        worksheet.insert_chart(1, chart_start_column, chart, chart_options)
 
         workbook.close()
-        GeneralUtils.open_file_or_dir(file_path)
 
-    def populate_monthly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+    def populate_monthly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
         num_categories = len(MONTHS)
         num_value_columns = 0
+        chart_start_column = 2
 
         # Fill with month names
         row = 1
@@ -467,6 +482,7 @@ class VisualController:
         column = 1
         for year in data:
             num_value_columns += 1
+            chart_start_column += 1
             worksheet.write(0, column, year, bold_format)
 
             row = 1
@@ -482,9 +498,9 @@ class VisualController:
 
             column += 1
 
-        return num_categories, num_value_columns
+        return num_categories, num_value_columns, chart_start_column
 
-    def populate_yearly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+    def populate_yearly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -492,6 +508,7 @@ class VisualController:
 
         num_categories = len(data.keys())
         num_value_columns = 1
+        chart_start_column = 3
 
         worksheet.write(0, 1, metric_type, bold_format)
         row = 1
@@ -500,9 +517,9 @@ class VisualController:
             worksheet.write(row, 1, data[year])
             row += 1
 
-        return num_categories, num_value_columns
+        return num_categories, num_value_columns, chart_start_column
 
-    def populate_top_num_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int):
+    def populate_top_num_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -510,6 +527,7 @@ class VisualController:
 
         num_categories = len(data.keys())
         num_value_columns = 1
+        chart_start_column = 3
 
         worksheet.write(0, 1, metric_type, bold_format)
         row = 1
@@ -518,16 +536,69 @@ class VisualController:
             worksheet.write(row, 1, data[name])
             row += 1
 
-        return num_categories, num_value_columns
+        return num_categories, num_value_columns, chart_start_column
+
+    def populate_cost_ratio_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
+        metric_type = self.metric_type_combo_box.currentText()
+        if not metric_type:
+            GeneralUtils.show_message(f"Select a metric type")
+            return
+
+        num_categories = len(data)
+        num_value_columns = 1
+        chart_start_column = 5
+
+        cost_ratio_option = self.cost_ratio_combo_box.currentText()
+
+        worksheet.write(0, 1, cost_ratio_option + " Per Metric", bold_format)
+        worksheet.write(0, 2, cost_ratio_option, bold_format)
+        worksheet.write(0, 3, metric_type, bold_format)
+
+        row = 1
+        for year in data:
+            worksheet.write(row, 0, year)
+            worksheet.write(row, 1, data[year][0])
+            worksheet.write(row, 2, data[year][1])
+            worksheet.write(row, 3, data[year][2])
+            row += 1
+
+        return num_categories, num_value_columns, chart_start_column
 
     def customize_chart(self, chart):
-        chart_title = self.chart_title_line_edit.text()
-        horizontal_axis_title = self.horizontal_axis_line_edit.text()
-        vertical_axis_title = self.vertical_axis_line_edit.text()
+        title = self.chart_title_line_edit.text()
+        hor_axis_title = self.horizontal_axis_line_edit.text()
+        ver_axis_title = self.vertical_axis_line_edit.text()
 
-        chart.set_title({'name': chart_title})
-        chart.set_x_axis({'name': horizontal_axis_title})
-        chart.set_y_axis({'name': vertical_axis_title})
+        vendor_name = self.vendor_combo_box.currentText()
+
+        curr_option = self.calculation_button_group.checkedButton().text()
+        if curr_option == "Monthly":
+            hor_axis_title = hor_axis_title if hor_axis_title else "Month"
+            title = title if title else self.name_combo_box.currentText() + f" - {vendor_name}"
+        elif curr_option == "Yearly":
+            hor_axis_title = hor_axis_title if hor_axis_title else "Year"
+            title = title if title else self.name_combo_box.currentText() + f" - {vendor_name}"
+        elif curr_option == "Top #":
+            hor_axis_title = hor_axis_title if hor_axis_title else self.name_label.text()
+            top_num = self.top_spin_box.value()
+            if top_num > 0:
+                title = title if title else f"Top {top_num} {self.metric_type_combo_box.currentText()} - {vendor_name}"
+            else:
+                title = title if title else f"Top {self.metric_type_combo_box.currentText()} - {vendor_name}"
+
+        elif curr_option == "Cost Ratio":
+            hor_axis_title = hor_axis_title if hor_axis_title else "Year"
+            title = title if title else f"{self.cost_ratio_combo_box.currentText()} Per Metric For " \
+                                        f"{self.metric_type_combo_box.currentText()} - {vendor_name}"
+        else:
+            GeneralUtils.show_message("Select a calculation option")
+            return
+
+        ver_axis_title = ver_axis_title if ver_axis_title else self.metric_type_combo_box.currentText()
+
+        chart.set_title({'name': title})
+        chart.set_x_axis({'name': hor_axis_title})
+        chart.set_y_axis({'name': ver_axis_title})
 
         chart.set_style(11)
 

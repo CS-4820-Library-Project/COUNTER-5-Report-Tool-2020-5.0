@@ -643,25 +643,3 @@ COUNTER_5_REPORT_EQUIVALENTS = {
     "PR": "PR1"
 }
 # endregion
-
-VISUAL_FIELDS = ({NAME_KEY: 'metric_type',
-                      TYPE_KEY: 'TEXT',
-                      OPTIONS_KEY: ('NOT NULL', 'CHECK(metric_type <> \"\")')},
-                     {NAME_KEY: 'vendor',
-                      TYPE_KEY: 'TEXT',
-                      OPTIONS_KEY: ('NOT NULL', 'CHECK(vendor <> \"\")')},
-                     {NAME_KEY: 'year',
-                      TYPE_KEY: 'INTEGER',
-                      OPTIONS_KEY: ('NOT NULL', 'CHECK(LENGTH(year) = 4)')},
-                     {NAME_KEY: 'month',
-                      TYPE_KEY: 'INTEGER',
-                      OPTIONS_KEY: ('NOT NULL', 'CHECK(month BETWEEN 1 AND 12)')},
-                     {NAME_KEY: 'metric',
-                      TYPE_KEY: 'INTEGER',
-                      OPTIONS_KEY: ('NOT NULL', 'CHECK(metric > 0)')},
-                     {NAME_KEY: 'updated_on',
-                      TYPE_KEY: 'TEXT',
-                      OPTIONS_KEY: ('NOT NULL',)},
-                     {NAME_KEY: 'file',
-                      TYPE_KEY: 'TEXT',
-                      OPTIONS_KEY: ('NOT NULL',)})
