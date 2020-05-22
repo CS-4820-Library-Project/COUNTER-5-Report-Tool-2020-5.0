@@ -118,6 +118,66 @@ class VisualController:
     def on_calculation_button_clicked(self):
         self.update_option_views()
 
+    def on_create_chart_clicked(self):
+        report_type = self.report_combo_box.currentText()
+        if not report_type:
+            GeneralUtils.show_message("Select a report type")
+            return
+        vendor_name = self.vendor_combo_box.currentText()
+        if not report_type:
+            GeneralUtils.show_message("Select a vendor")
+            return
+
+        curr_option = self.calculation_button_group.checkedButton().text()
+        if curr_option == "Monthly":
+            data = self.do_monthly_calculation(report_type, vendor_name)
+        elif curr_option == "Yearly":
+            data = self.do_yearly_calculation(report_type, vendor_name)
+        elif curr_option == "Top #":
+            data = self.do_top_num_calculation(report_type, vendor_name)
+        elif curr_option == "Cost Ratio":
+            data = self.do_cost_ratio_calculation(report_type, vendor_name)
+        else:
+            GeneralUtils.show_message("Select a calculation option")
+            return
+
+        if not data:
+            print("Unable to generate data for chart")
+            return
+
+        try:
+            file_path = GeneralUtils.choose_save(EXCEL_FILTER)
+            if not file_path:
+                return
+            if not file_path.lower().endswith(".xlsx"):
+                file_path += ".xlsx"
+
+            curr_chart_type = self.chart_button_group.checkedButton().text()
+            if curr_chart_type == "Vertical Bar":
+                self.create_chart("column", data, file_path)
+            elif curr_chart_type == "Horizontal Bar":
+                self.create_chart("bar", data, file_path)
+            elif curr_chart_type == "Line":
+                self.create_chart("line", data, file_path)
+            else:
+                GeneralUtils.show_message("Select a calculation option")
+                return
+
+            if self.open_file_check_box.isChecked():
+                GeneralUtils.open_file_or_dir(file_path)
+
+            dir_path = "/".join(file_path.split("/")[:-1])
+            if self.open_folder_check_box.isChecked():
+                GeneralUtils.open_file_or_dir(dir_path)
+
+        except FileCreateError as e:
+            GeneralUtils.show_message("Unable to write to the selected file.\n"
+                                      "Please close the file if it is open in Excel")
+
+        except Exception as e:
+            GeneralUtils.show_message("Unable to write to the selected file.\n"
+                                      "Exception: " + str(e))
+
     def update_metric_type_combo_box(self, report_type: str):
         self.metric_type_combo_box.clear()
         if report_type in DATABASE_REPORTS:
@@ -162,67 +222,6 @@ class VisualController:
             update_views(self.top_option_views)
         elif curr_option == "Cost Ratio":
             update_views(self.cost_ratio_option_views)
-
-    def on_create_chart_clicked(self):
-        report_type = self.report_combo_box.currentText()
-        if not report_type:
-            GeneralUtils.show_message("Select a report type")
-            return
-        vendor_name = self.vendor_combo_box.currentText()
-        if not report_type:
-            GeneralUtils.show_message("Select a vendor")
-            return
-
-        curr_option = self.calculation_button_group.checkedButton().text()
-        data = None
-        if curr_option == "Monthly":
-            data = self.do_monthly_calculation(report_type, vendor_name)
-        elif curr_option == "Yearly":
-            data = self.do_yearly_calculation(report_type, vendor_name)
-        elif curr_option == "Top #":
-            data = self.do_top_num_calculation(report_type, vendor_name)
-        elif curr_option == "Cost Ratio":
-            data = self.do_cost_ratio_calculation(report_type, vendor_name)
-        else:
-            GeneralUtils.show_message("Select a calculation option")
-            return
-
-        if not data:
-            print("Unable to generate chart")
-            return
-
-        try:
-            file_path = GeneralUtils.choose_save(EXCEL_FILTER)
-            if not file_path:
-                return
-            if not file_path.lower().endswith(".xlsx"):
-                file_path += ".xlsx"
-
-            curr_chart_type = self.chart_button_group.checkedButton().text()
-            if curr_chart_type == "Vertical Bar":
-                self.create_chart("column", data, file_path)
-            elif curr_chart_type == "Horizontal Bar":
-                self.create_chart("bar", data, file_path)
-            elif curr_chart_type == "Line":
-                self.create_chart("line", data, file_path)
-            else:
-                GeneralUtils.show_message("Select a calculation option")
-                return
-
-            if self.open_file_check_box.isChecked():
-                GeneralUtils.open_file_or_dir(file_path)
-
-            dir_path = "/".join(file_path.split("/")[:-1])
-            if self.open_folder_check_box.isChecked():
-                GeneralUtils.open_file_or_dir(dir_path)
-
-        except FileCreateError as e:
-            GeneralUtils.show_message("Unable to write to the selected file.\n"
-                                      "Please close the file if it is open in Excel")
-
-        except Exception as e:
-            GeneralUtils.show_message("Unable to write to the selected file.\n"
-                                      "Exception: " + str(e))
 
     def do_monthly_calculation(self, report_type: str, vendor_name: str) -> dict:
         name = self.name_combo_box.currentText()
