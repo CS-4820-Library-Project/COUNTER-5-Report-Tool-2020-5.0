@@ -1,5 +1,6 @@
 from xlsxwriter.exceptions import FileCreateError
 from xlsxwriter.workbook import Workbook, Worksheet, Format
+from vincent.colors import brews
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QWidget, QButtonGroup
 from PyQt5.QtGui import QStandardItem, QFont, QStandardItemModel
@@ -269,6 +270,11 @@ class VisualController:
         num_months = (end_year - start_year) * 12 + \
                      (end_month - start_month) + 1
 
+        begin_date = QDate(start_year, start_month, 1)
+        for i in range(num_months):
+            curr_date = begin_date.addMonths(i)
+            print(curr_date.toString())
+
         is_year_month_chart = num_months <= 12
 
         year_data = {}
@@ -476,9 +482,10 @@ class VisualController:
         for i in range(1, num_value_columns + 1):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
-                'name': ['Sheet1', 2, i],
+                "name": ["Sheet1", 2, i],
                 "categories": ["Sheet1", 3, 0, num_categories, 0],
                 "values": ["Sheet1", 3, i, num_categories, i],
+                "fill": {"color": brews[CHART_COLOR_SET][i]}
             })
 
         self.customize_chart(chart)

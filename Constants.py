@@ -643,3 +643,8 @@ COUNTER_5_REPORT_EQUIVALENTS = {
     "PR": "PR1"
 }
 # endregion
+
+
+# region Variable Constants for Visual
+CHART_COLOR_SET = "Set1"
+# endregion
