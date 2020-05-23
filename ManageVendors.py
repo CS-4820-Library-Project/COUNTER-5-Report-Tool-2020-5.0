@@ -4,7 +4,7 @@ import csv
 import os
 import json
 import validators
-from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget
+from PyQt5.QtWidgets import QDialog, QLabel, QDialogButtonBox, QWidget, QCheckBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QObject, QModelIndex, pyqtSignal
 from ui import ManageVendorsTab, AddVendorDialog, RemoveVendorDialog
@@ -155,7 +155,7 @@ class ManageVendorsController(QObject):
             validation_label.show()
             validation_label.setText(message)
 
-    def on_url_text_changed(self, url: str, validation_label: QLabel, validate: bool = True):
+    def on_url_text_changed(self, url: str, validation_label: QLabel, validate: bool, non_sushi_check_box: QCheckBox):
         """Handles the signal emitted when a vendor's URL is changed
 
         :param url: The URL entered in the text field
@@ -163,6 +163,10 @@ class ManageVendorsController(QObject):
         :param validate: This indicates whether the url should be validated
         """
         if not validate:
+            validation_label.hide()
+            return
+
+        if non_sushi_check_box.isChecked():
             validation_label.hide()
             return
 
@@ -437,7 +441,7 @@ class ManageVendorsController(QObject):
         name_edit.textChanged.connect(
             lambda new_name: self.on_name_text_changed(new_name, "", name_validation_label))
         base_url_edit.textChanged.connect(
-            lambda url: self.on_url_text_changed(url, url_validation_label))
+            lambda url: self.on_url_text_changed(url, url_validation_label, True, non_sushi_check_box))
 
         def attempt_add_vendor():
             vendor = Vendor(name_edit.text(), base_url_edit.text(), customer_id_edit.text(), requestor_id_edit.text(),
@@ -494,7 +498,7 @@ class ManageVendorsController(QObject):
             self.name_line_edit.setText(selected_vendor.name)
 
             self.base_url_line_edit.textChanged.connect(
-                lambda url: self.on_url_text_changed(url, self.url_validation_label))
+                lambda url: self.on_url_text_changed(url, self.url_validation_label, True, self.non_Sushi_check_box))
             self.base_url_line_edit.setText(selected_vendor.base_url)
 
             self.customer_id_line_edit.setText(selected_vendor.customer_id)
@@ -513,7 +517,7 @@ class ManageVendorsController(QObject):
             self.name_line_edit.textChanged.emit("")  # Hide validation_label if showing
 
             self.base_url_line_edit.textChanged.connect(
-                lambda url: self.on_url_text_changed(url, self.url_validation_label, False))
+                lambda url: self.on_url_text_changed(url, self.url_validation_label, False, self.non_Sushi_check_box))
             self.base_url_line_edit.setText("")
             self.base_url_line_edit.textChanged.emit("")
 
