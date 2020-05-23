@@ -547,13 +547,8 @@ class CostsController:
                               cost_in_original_currency: float, original_currency: str, cost_in_local_currency: float,
                               cost_in_local_currency_with_tax: float) -> list:
 
-        sql_data = []  # list(tuple(sql_text, data))
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
+        num_months = (end_date.year() - begin_date.year()) * 12 + \
+                     (end_date.month() - begin_date.month()) + 1
 
         # Get sql values for every month in the range
         values = []
@@ -579,12 +574,8 @@ class CostsController:
     @staticmethod
     def get_delete_sql_data(begin_date: QDate, end_date: QDate, report_type: str, name: str, vendor: str) -> list:
         sql_data = []  # list(tuple(sql_text, data))
-        if begin_date.year() == end_date.year():
-            num_months = (end_date.month() - begin_date.month()) + 1
-        else:
-            num_months = (12 - begin_date.month() + end_date.month()) + 1
-            num_years = end_date.year() - begin_date.year()
-            num_months += (num_years - 1) * 12
+        num_months = (end_date.year() - begin_date.year()) * 12 + \
+                     (end_date.month() - begin_date.month()) + 1
 
         # Get sql_text and data for every month in the range
         for i in range(num_months):

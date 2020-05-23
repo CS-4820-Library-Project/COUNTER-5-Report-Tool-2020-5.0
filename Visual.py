@@ -266,16 +266,24 @@ class VisualController:
             GeneralUtils.show_message("No data found for this query")
             return {}
 
+        num_months = (end_year - start_year) * 12 + \
+                     (end_month - start_month) + 1
+
+        is_year_month_chart = num_months <= 12
+
         year_data = {}
         for result in results:
             year = result[1]
             month = result[2]
             metric = result[3]
 
-            if year not in year_data:
-                year_data[year] = {month: metric}
+            if is_year_month_chart:
+                year_data[QDate(year, month, 1).toString("yyyy-MM")] = metric
             else:
-                year_data[year][month] = metric
+                if year not in year_data:
+                    year_data[year] = {month: metric}
+                else:
+                    year_data[year][month] = metric
 
         return year_data
 
@@ -468,48 +476,78 @@ class VisualController:
         for i in range(1, num_value_columns + 1):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
-                'name': ['Sheet1', 0, i],
-                "categories": ["Sheet1", 1, 0, num_categories, 0],
-                "values": ["Sheet1", 1, i, num_categories, i],
+                'name': ['Sheet1', 2, i],
+                "categories": ["Sheet1", 3, 0, num_categories, 0],
+                "values": ["Sheet1", 3, i, num_categories, i],
             })
 
         self.customize_chart(chart)
+
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
+        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool using data from {QDate(start_year, start_month, 1).toString('yyyy-MM')} to {QDate(end_year, end_month, 1).toString('yyyy-MM')}")
         chart_options = {'x_scale': 2, 'y_scale': 2}
-        worksheet.insert_chart(1, chart_start_column, chart, chart_options)
+        worksheet.insert_chart(3, chart_start_column, chart, chart_options)
 
         workbook.close()
 
     def populate_monthly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
-        num_categories = len(MONTHS)
-        num_value_columns = 0
-        chart_start_column = 2
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
 
-        # Fill with month names
-        row = 1
-        for month in MONTHS:
-            month_name = MONTHS[month].capitalize()
-            worksheet.write(row, 0, month_name)
-            row += 1
+        num_months = (end_year - start_year) * 12 + \
+                     (end_month - start_month) + 1
 
-        # Fill with data
-        column = 1
-        for year in data:
-            num_value_columns += 1
-            chart_start_column += 1
-            worksheet.write(0, column, year, bold_format)
+        is_year_month_chart = num_months <= 12
 
-            row = 1
-            months = data[year]
-            for month in MONTHS:
-                if month in months:
-                    metric = months[month]
-                else:
-                    metric = 0
+        if is_year_month_chart:
+            num_categories = len(data.keys())
+            num_value_columns = 1
+            chart_start_column = 3
 
-                worksheet.write(row, column, metric)
+            metric_type = self.metric_type_combo_box.currentText()
+            worksheet.write(2, 1, metric_type, bold_format)
+            row = 3
+            for year_month in data:
+                worksheet.write(row, 0, year_month)
+                worksheet.write(row, 1, data[year_month])
                 row += 1
 
-            column += 1
+        else:
+            num_categories = len(MONTHS)
+            num_value_columns = 0
+            chart_start_column = 2
+
+            # Fill with month names
+            row = 3
+            for month in MONTHS:
+                month_name = MONTHS[month].capitalize()
+                worksheet.write(row, 0, month_name)
+                row += 1
+
+            # Fill with data
+            column = 1
+            for year in data:
+                num_value_columns += 1
+                chart_start_column += 1
+                worksheet.write(2, column, year, bold_format)
+
+                row = 3
+                months = data[year]
+                for month in MONTHS:
+                    if month in months:
+                        metric = months[month]
+                    else:
+                        metric = 0
+
+                    worksheet.write(row, column, metric)
+                    row += 1
+
+                column += 1
 
         return num_categories, num_value_columns, chart_start_column
 
@@ -523,8 +561,8 @@ class VisualController:
         num_value_columns = 1
         chart_start_column = 3
 
-        worksheet.write(0, 1, metric_type, bold_format)
-        row = 1
+        worksheet.write(2, 1, metric_type, bold_format)
+        row = 3
         for year in data:
             worksheet.write(row, 0, year)
             worksheet.write(row, 1, data[year])
@@ -542,8 +580,8 @@ class VisualController:
         num_value_columns = 1
         chart_start_column = 3
 
-        worksheet.write(0, 1, metric_type, bold_format)
-        row = 1
+        worksheet.write(2, 1, metric_type, bold_format)
+        row = 3
         for name in data:
             worksheet.write(row, 0, name)
             worksheet.write(row, 1, data[name])
@@ -563,11 +601,11 @@ class VisualController:
 
         cost_ratio_option = self.cost_ratio_combo_box.currentText()
 
-        worksheet.write(0, 1, cost_ratio_option + " Per Metric", bold_format)
-        worksheet.write(0, 2, cost_ratio_option, bold_format)
-        worksheet.write(0, 3, metric_type, bold_format)
+        worksheet.write(2, 1, cost_ratio_option + " Per Metric", bold_format)
+        worksheet.write(2, 2, cost_ratio_option, bold_format)
+        worksheet.write(2, 3, metric_type, bold_format)
 
-        row = 1
+        row = 3
         for year in data:
             worksheet.write(row, 0, year)
             worksheet.write(row, 1, data[year][0])
@@ -598,7 +636,6 @@ class VisualController:
                 title = title if title else f"Top {top_num} {self.metric_type_combo_box.currentText()} - {vendor_name}"
             else:
                 title = title if title else f"Top {self.metric_type_combo_box.currentText()} - {vendor_name}"
-
         elif curr_option == "Cost Ratio":
             hor_axis_title = hor_axis_title if hor_axis_title else "Year"
             title = title if title else f"{self.cost_ratio_combo_box.currentText()} Per Metric For " \
