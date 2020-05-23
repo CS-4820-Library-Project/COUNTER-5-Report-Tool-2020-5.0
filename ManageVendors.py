@@ -161,6 +161,7 @@ class ManageVendorsController(QObject):
         :param url: The URL entered in the text field
         :param validation_label: The label to show validation messages
         :param validate: This indicates whether the url should be validated
+        :param non_sushi_check_box: The non_sushi checkbox indicator. If checked, the URL is not validated
         """
         if not validate:
             validation_label.hide()
