@@ -1,3 +1,5 @@
+import math
+
 from xlsxwriter.exceptions import FileCreateError
 from xlsxwriter.workbook import Workbook, Worksheet, Format
 from vincent.colors import brews
@@ -130,6 +132,16 @@ class VisualController:
             GeneralUtils.show_message("Select a vendor")
             return
 
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
+        start_date = QDate(start_year, start_month, 1)
+        end_date = QDate(end_year, end_month, 1)
+        if start_date > end_date:
+            GeneralUtils.show_message("Start Date is higher than End Date")
+            return
+
         curr_option = self.calculation_button_group.checkedButton().text()
         if curr_option == "Monthly":
             data = self.do_monthly_calculation(report_type, vendor_name)
@@ -175,7 +187,6 @@ class VisualController:
         except FileCreateError as e:
             GeneralUtils.show_message("Unable to write to the selected file.\n"
                                       "Please close the file if it is open in Excel")
-
         except Exception as e:
             GeneralUtils.show_message("Unable to write to the selected file.\n"
                                       "Exception: " + str(e))
@@ -466,7 +477,7 @@ class VisualController:
 
         start_category_index = 3
         end_category_index = num_categories + start_category_index - 1
-        for i in range(1, num_value_columns):
+        for i in range(1, num_value_columns + 1):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
                 "name": ["Sheet1", 2, i],
@@ -491,14 +502,14 @@ class VisualController:
         num_months = (end_year - start_year) * 12 + \
                      (end_month - start_month) + 1
 
-        num_categories = 12
-        num_value_columns = int(num_months / 12) + 1
+        num_categories = min(num_months, 12)
+        num_value_columns = math.ceil(num_months / 12)
         chart_start_column = num_value_columns + 2
 
         # Fill with month names
         begin_date = QDate(start_year, start_month, 1)
         row = 3
-        for i in range(12):
+        for i in range(num_categories):
             curr_date = begin_date.addMonths(i)
             worksheet.write(row, 0, curr_date.toString("MMMM"))
             row += 1
@@ -514,7 +525,7 @@ class VisualController:
 
             year_index = int(i / 12)
             col_start_date = begin_date.addYears(year_index)
-            col_end_date = begin_date.addYears(year_index + 1).addMonths(-1)
+            col_end_date = begin_date.addYears(year_index + 1).addMonths(num_categories - 13)
 
             worksheet.write(2, chart_year_index,
                             f"{col_start_date.toString('MMMM yyyy')}-{col_end_date.toString('MMMM yyyy')}",

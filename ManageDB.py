@@ -572,12 +572,16 @@ def monthly_chart_search_sql_text(report: str, vendor: str, name: str, metric_ty
         for it"""
 
     name_field = get_field_attributes(report, NAME_FIELD_SWITCHER[report[:2]])
-    sql_text = f"SELECT {name_field[NAME_KEY]}, year, month, SUM(metric) " \
+    sql_text = f"WITH constants AS " \
+               f"(SELECT {start_year} AS start_year, {start_month} AS start_month, " \
+               f"{end_year} AS end_year, {end_month} AS end_month)" \
+               f"SELECT {name_field[NAME_KEY]}, year, month, SUM(metric) " \
                f"FROM {report} " \
                f"WHERE " \
-               f"((year == {start_year} AND month >= {start_month}) OR " \
-               f"(year > {start_year} AND year < {end_year}) OR " \
-               f"(year == {end_year} AND month <= {end_month})) " \
+               f"((year, month, 1) " \
+               f"BETWEEN " \
+               f"((SELECT start_year from constants), (SELECT start_month from constants), 1) AND " \
+               f"((SELECT end_year from constants), (SELECT end_month from constants), 1))" \
                f"AND " \
                f"{name_field[NAME_KEY]} LIKE '{name}' AND " \
                f"metric_type LIKE '{metric_type}' AND " \
