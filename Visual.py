@@ -267,29 +267,16 @@ class VisualController:
             GeneralUtils.show_message("No data found for this query")
             return {}
 
-        num_months = (end_year - start_year) * 12 + \
-                     (end_month - start_month) + 1
-
-        begin_date = QDate(start_year, start_month, 1)
-        for i in range(num_months):
-            curr_date = begin_date.addMonths(i)
-            print(curr_date.toString())
-
-        is_year_month_chart = num_months <= 12
-
         year_data = {}
         for result in results:
             year = result[1]
             month = result[2]
             metric = result[3]
 
-            if is_year_month_chart:
-                year_data[QDate(year, month, 1).toString("yyyy-MM")] = metric
+            if year not in year_data:
+                year_data[year] = {month: metric}
             else:
-                if year not in year_data:
-                    year_data[year] = {month: metric}
-                else:
-                    year_data[year][month] = metric
+                year_data[year][month] = metric
 
         return year_data
 
@@ -390,8 +377,6 @@ class VisualController:
         end_year = self.end_year_date_edit.date().year()
         end_month = self.end_month_combo_box.currentIndex() + 1
 
-        search_headers = tuple([field['name'] for field in ManageDB.get_cost_chart_report_fields_list(report_type)])
-        # TODO add optional year parameter to ManageDB.get_costs_sql_text()
         cost_sql_text, cost_data = ManageDB.cost_chart_search_sql_text(
             report_type, vendor_name, name, metric_type, start_month, start_year, end_month, end_year)
         search_sql_text, search_data = ManageDB.monthly_chart_search_sql_text(
@@ -479,22 +464,19 @@ class VisualController:
             GeneralUtils.show_message("Select a calculation option")
             return
 
-        for i in range(1, num_value_columns + 1):
+        start_category_index = 3
+        end_category_index = num_categories + start_category_index - 1
+        for i in range(1, num_value_columns):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
                 "name": ["Sheet1", 2, i],
-                "categories": ["Sheet1", 3, 0, num_categories, 0],
-                "values": ["Sheet1", 3, i, num_categories, i],
+                "categories": ["Sheet1", start_category_index, 0, end_category_index, 0],
+                "values": ["Sheet1", start_category_index, i, end_category_index, i],
                 "fill": {"color": brews[CHART_COLOR_SET][i]}
             })
 
         self.customize_chart(chart)
-
-        start_year = self.start_year_date_edit.date().year()
-        start_month = self.start_month_combo_box.currentIndex() + 1
-        end_year = self.end_year_date_edit.date().year()
-        end_month = self.end_month_combo_box.currentIndex() + 1
-        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool using data from {QDate(start_year, start_month, 1).toString('yyyy-MM')} to {QDate(end_year, end_month, 1).toString('yyyy-MM')}")
+        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool on {QDate.currentDate().toString('yyyy-MM-dd')}")
         chart_options = {'x_scale': 2, 'y_scale': 2}
         worksheet.insert_chart(3, chart_start_column, chart, chart_options)
 
@@ -509,52 +491,70 @@ class VisualController:
         num_months = (end_year - start_year) * 12 + \
                      (end_month - start_month) + 1
 
-        is_year_month_chart = num_months <= 12
+        num_categories = 12
+        num_value_columns = int(num_months / 12) + 1
+        chart_start_column = num_value_columns + 2
 
-        if is_year_month_chart:
-            num_categories = len(data.keys())
-            num_value_columns = 1
-            chart_start_column = 3
+        # Fill with month names
+        begin_date = QDate(start_year, start_month, 1)
+        row = 3
+        for i in range(12):
+            curr_date = begin_date.addMonths(i)
+            worksheet.write(row, 0, curr_date.toString("MMMM"))
+            row += 1
 
-            metric_type = self.metric_type_combo_box.currentText()
-            worksheet.write(2, 1, metric_type, bold_format)
-            row = 3
-            for year_month in data:
-                worksheet.write(row, 0, year_month)
-                worksheet.write(row, 1, data[year_month])
-                row += 1
+        # Fill with data
+        start_row = 3
+        start_column = 1
+        for i in range(num_months):
+            curr_date = begin_date.addMonths(i)
 
-        else:
-            num_categories = len(MONTHS)
-            num_value_columns = 0
-            chart_start_column = 2
+            chart_month_index = (i % 12) + start_row
+            chart_year_index = int(i / 12) + start_column
 
-            # Fill with month names
-            row = 3
-            for month in MONTHS:
-                month_name = MONTHS[month].capitalize()
-                worksheet.write(row, 0, month_name)
-                row += 1
+            year_index = int(i / 12)
+            col_start_date = begin_date.addYears(year_index)
+            col_end_date = begin_date.addYears(year_index + 1).addMonths(-1)
 
-            # Fill with data
-            column = 1
-            for year in data:
-                num_value_columns += 1
-                chart_start_column += 1
-                worksheet.write(2, column, year, bold_format)
+            worksheet.write(2, chart_year_index,
+                            f"{col_start_date.toString('MMMM yyyy')}-{col_end_date.toString('MMMM yyyy')}",
+                            bold_format)
 
-                row = 3
-                months = data[year]
-                for month in MONTHS:
-                    if month in months:
-                        metric = months[month]
-                    else:
-                        metric = 0
+            if curr_date.year() in data:
+                if curr_date.month() in data[curr_date.year()]:
+                    metric = data[curr_date.year()][curr_date.month()]
+                else:
+                    metric = 0
 
-                    worksheet.write(row, column, metric)
-                    row += 1
+            else:
+                metric = 0
 
-                column += 1
+            worksheet.write(chart_month_index, chart_year_index, metric)
+
+        # # Fill with month names
+        # for month in MONTHS:
+        #     month_name = MONTHS[month].capitalize()
+        #     worksheet.write(row, 0, month_name)
+        #     row += 1
+        #
+        # column = 1
+        # for year in data:
+        #     num_value_columns += 1
+        #     chart_start_column += 1
+        #     worksheet.write(2, column, year, bold_format)
+        #
+        #     row = 3
+        #     months = data[year]
+        #     for month in MONTHS:
+        #         if month in months:
+        #             metric = months[month]
+        #         else:
+        #             metric = 0
+        #
+        #         worksheet.write(row, column, metric)
+        #         row += 1
+        #
+        #     column += 1
 
         return num_categories, num_value_columns, chart_start_column
 
