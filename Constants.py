@@ -1,6 +1,8 @@
 from enum import Enum
 
 # Variable Constants for MainDriver.py
+from PyQt5.QtCore import QLocale
+
 HELP_SITE = "https://github.com/CS-4820-Library-Project/COUNTER-5-Report-Tool/wiki"
 
 # region Variable Constants for ManageDB
@@ -421,7 +423,7 @@ COMPARISON_OPERATORS = ('LIKE', 'NOT LIKE', '=', '<=', '<', '>=', '>', '<>')
 NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CAD', 'AUD')
-CURRENCY_SIGNS = ('$', '€', '¥', '£')
+CURRENCY_SIGNS = ('$', '€', '¥', '£', '$', '$')
 
 # endregion
 
