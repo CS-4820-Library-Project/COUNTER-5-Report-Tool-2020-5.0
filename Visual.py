@@ -500,10 +500,6 @@ class VisualController:
             category_cost = data[key][1]
             category_metric = data[key][2]
 
-            if (year, month) in search_dict:
-                metric = search_dict[year, month][3]
-                category_metric += metric
-
             if (year, month) in costs_dict:
                 cost_in_original_currency = costs_dict[year, month][1]
                 # original_currency = costs_dict[year, month][2]
@@ -519,8 +515,17 @@ class VisualController:
                     cost = cost_in_local_currency_with_tax
 
                 category_cost += cost
+            else:
+                continue
 
-            category_cost_per_metric = category_cost / category_metric
+            if (year, month) in search_dict:
+                metric = search_dict[year, month][3]
+                category_metric += metric
+
+            if category_metric > 0:
+                category_cost_per_metric = category_cost / category_metric
+            else:
+                category_cost_per_metric = "Not Used"
 
             data[key][0] = category_cost_per_metric
             data[key][1] = category_cost
@@ -535,6 +540,8 @@ class VisualController:
         bold_format = workbook.add_format({"bold": True})
         currency_format = workbook.add_format({'num_format': '#,##0.00'})
         ratio_format = workbook.add_format({'num_format': '0.00'})
+        text_wrap_format = workbook.add_format()
+        text_wrap_format.set_text_wrap()
 
         curr_option = self.calculation_button_group.checkedButton().text()
         if curr_option == "Monthly":
@@ -565,7 +572,8 @@ class VisualController:
             })
 
         self.customize_chart(chart)
-        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool on {QDate.currentDate().toString('yyyy-MM-dd')}")
+        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool on {QDate.currentDate().toString('yyyy-MM-dd')}",
+                        text_wrap_format)
 
         start_year = self.start_year_date_edit.date().year()
         start_month = self.start_month_combo_box.currentIndex() + 1
@@ -573,7 +581,8 @@ class VisualController:
         end_month = self.end_month_combo_box.currentIndex() + 1
         begin_date = QDate(start_year, start_month, 1)
         end_date = QDate(end_year, end_month, 1)
-        worksheet.write(0, 0, f"Using data from {begin_date.toString('MMMM yyyy')} to {end_date.toString('MMMM yyyy')}")
+        worksheet.write(1, 0, f"Using data from {begin_date.toString('MMMM yyyy')} to {end_date.toString('MMMM yyyy')}",
+                        text_wrap_format)
 
         chart_options = {'x_scale': 2, 'y_scale': 2}
         worksheet.insert_chart(3, chart_start_column, chart, chart_options)
