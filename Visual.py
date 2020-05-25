@@ -575,6 +575,29 @@ class VisualController:
             GeneralUtils.show_message(f"Select a metric type")
             return
 
+        start_year = self.start_year_date_edit.date().year()
+        start_month = self.start_month_combo_box.currentIndex() + 1
+        end_year = self.end_year_date_edit.date().year()
+        end_month = self.end_month_combo_box.currentIndex() + 1
+
+        num_months = (end_year - start_year) * 12 + \
+                     (end_month - start_month) + 1
+
+        num_categories = math.ceil(num_months / 12)
+        num_value_columns = 1
+        chart_start_column = 3
+
+        # Fill with category names
+        begin_date = QDate(start_year, start_month, 1)
+        row = 3
+        for i in range(num_categories):
+            curr_date = begin_date.addYears(i)
+            row_start_date = curr_date
+            row_end_date = curr_date.addYears(1).addMonths(-1)
+
+            worksheet.write(row, 0, f"{row_start_date.toString('MMM yyyy')} - {row_end_date.toString('MMM yyyy')}")
+            row += 1
+
         num_categories = len(data.keys())
         num_value_columns = 1
         chart_start_column = 3
@@ -582,7 +605,7 @@ class VisualController:
         worksheet.write(2, 1, metric_type, bold_format)
         row = 3
         for year in data:
-            worksheet.write(row, 0, year)
+            # worksheet.write(row, 0, year)
             worksheet.write(row, 1, data[year])
             row += 1
 

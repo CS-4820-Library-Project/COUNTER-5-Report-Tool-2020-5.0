@@ -1,7 +1,7 @@
 import json
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QCheckBox, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
-from PyQt5.QtCore import QModelIndex
+from PyQt5.QtCore import QModelIndex, QLocale
 
 import ManageDB
 import ManageVendors

@@ -1,7 +1,6 @@
 from enum import Enum
 
 # Variable Constants for MainDriver.py
-from PyQt5.QtCore import QLocale
 
 HELP_SITE = "https://github.com/CS-4820-Library-Project/COUNTER-5-Report-Tool/wiki"
 
