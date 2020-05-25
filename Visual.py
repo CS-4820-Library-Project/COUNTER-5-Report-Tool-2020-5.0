@@ -540,8 +540,6 @@ class VisualController:
         bold_format = workbook.add_format({"bold": True})
         currency_format = workbook.add_format({'num_format': '#,##0.00'})
         ratio_format = workbook.add_format({'num_format': '0.00'})
-        text_wrap_format = workbook.add_format()
-        text_wrap_format.set_text_wrap()
 
         curr_option = self.calculation_button_group.checkedButton().text()
         if curr_option == "Monthly":
@@ -572,8 +570,7 @@ class VisualController:
             })
 
         self.customize_chart(chart)
-        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool on {QDate.currentDate().toString('yyyy-MM-dd')}",
-                        text_wrap_format)
+        worksheet.write(0, 0, f"Created by COUNTER 5 Report Tool on {QDate.currentDate().toString('yyyy-MM-dd')}")
 
         start_year = self.start_year_date_edit.date().year()
         start_month = self.start_month_combo_box.currentIndex() + 1
@@ -581,8 +578,7 @@ class VisualController:
         end_month = self.end_month_combo_box.currentIndex() + 1
         begin_date = QDate(start_year, start_month, 1)
         end_date = QDate(end_year, end_month, 1)
-        worksheet.write(1, 0, f"Using data from {begin_date.toString('MMMM yyyy')} to {end_date.toString('MMMM yyyy')}",
-                        text_wrap_format)
+        worksheet.write(1, 0, f"Using data from {begin_date.toString('MMMM yyyy')} to {end_date.toString('MMMM yyyy')}")
 
         chart_options = {'x_scale': 2, 'y_scale': 2}
         worksheet.insert_chart(3, chart_start_column, chart, chart_options)
