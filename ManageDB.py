@@ -564,7 +564,9 @@ def monthly_chart_search_sql_text(report: str, vendor: str, name: str, metric_ty
 
     :param report: the kind of the report
     :param start_year: the starting year of the search
+    :param start_month: the starting month of the search
     :param end_year: the ending year of the search
+    :param end_month: the ending month of the search
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
     :param vendor: the vendor name you want to search for
@@ -595,7 +597,9 @@ def yearly_chart_search_sql_text(report: str, vendor: str, name: str, metric_typ
     """Makes the SQL statement to search the database for yearly chart data
 
     :param report: the kind of the report
+    :param start_month: the starting month of the search
     :param start_year: the starting year of the search
+    :param end_month: the ending month of the search
     :param end_year: the ending year of the search
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
@@ -626,7 +630,9 @@ def cost_chart_search_sql_text(report: str, vendor: str, name: str, metric_type:
     """Makes the SQL statement to search the database for cost chart data
 
     :param report: the kind of the report
+    :param start_month: the starting month of the search
     :param start_year: the starting year of the search
+    :param end_month: the ending month of the search
     :param end_year: the ending year of the search
     :param name: the name field (database/item/platform/title) value
     :param metric_type: the metric type value
@@ -652,11 +658,13 @@ def cost_chart_search_sql_text(report: str, vendor: str, name: str, metric_type:
 
 
 def top_number_chart_search_sql_text(report: str, vendor: str, metric_type: str, number: int, start_month: int,
-                                  start_year: int, end_month: int, end_year: int) -> Tuple[str, Sequence[Any]]:
+                                     start_year: int, end_month: int, end_year: int) -> Tuple[str, Sequence[Any]]:
     """Makes the SQL statement to search the database for ranking chart data
 
     :param report: the kind of the report
+    :param start_month: the starting month of the search
     :param start_year: the starting year of the search
+    :param end_month: the ending month of the search
     :param end_year: the ending year of the search
     :param metric_type: the metric type value
     :param vendor: the vendor name you want to search for

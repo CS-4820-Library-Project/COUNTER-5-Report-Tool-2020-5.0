@@ -127,7 +127,7 @@ if __name__ == "__main__":
     main_window_ui.tab_widget.addTab(visual_tab, visual_tab.windowIcon(), "Visual")
     main_window_ui.tab_widget.addTab(settings_tab, settings_tab.windowIcon(), "Settings")
 
-    main_window_ui.tab_widget.setCurrentIndex(6)
+    main_window_ui.tab_widget.setCurrentIndex(1)
     # endregion
 
     # region Status Bar

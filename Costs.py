@@ -1,7 +1,6 @@
 import json
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QCheckBox, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
-from PyQt5.QtCore import QModelIndex, QLocale
 
 import ManageDB
 import ManageVendors
@@ -45,14 +44,6 @@ class CostsController:
         self.cost_in_local_currency_with_tax_doublespinbox = \
             costs_ui.costs_cost_in_local_currency_with_tax_doublespinbox
         self.cost_in_local_currency_with_tax = 0.0
-
-        self.cost_in_original_currency_doublespinbox.valueChanged.connect(self.on_cost_in_original_currency_changed)
-        self.original_currency_combobox.currentTextChanged.connect(self.on_original_currency_changed)
-        self.cost_in_local_currency_doublespinbox.valueChanged.connect(self.on_cost_in_local_currency_changed)
-        self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
-            self.on_cost_in_local_currency_with_tax_changed)
-
-        self.update_currencies()
 
         # set up buttons
         self.save_costs_button = costs_ui.costs_save_button
@@ -101,6 +92,12 @@ class CostsController:
         self.vendor_parameter = self.vendor_parameter_combobox.currentText()
         self.fill_names()
 
+        self.cost_in_original_currency_doublespinbox.valueChanged.connect(self.on_cost_in_original_currency_changed)
+        self.original_currency_combobox.currentTextChanged.connect(self.on_original_currency_changed)
+        self.cost_in_local_currency_doublespinbox.valueChanged.connect(self.on_cost_in_local_currency_changed)
+        self.cost_in_local_currency_with_tax_doublespinbox.valueChanged.connect(
+            self.on_cost_in_local_currency_with_tax_changed)
+
         self.import_costs_button = costs_ui.costs_import_costs_button
         self.import_costs_button.clicked.connect(self.on_import_clicked)
         self.export_costs_button = costs_ui.export_costs_button
@@ -113,7 +110,7 @@ class CostsController:
 
         :param settings: the new settings"""
         self.settings = settings
-        self.update_currencies()
+        self.load_currency_list()
 
     def database_updated(self, code: int):
         """Invoked when the database is updated
@@ -128,19 +125,13 @@ class CostsController:
         self.vendor_parameter_combobox.clear()
         self.vendor_parameter_combobox.addItems([vendor.name for vendor in vendors])
 
-    def update_currencies(self):
+    def load_currency_list(self):
         """Updates the original currency combobox"""
         self.original_currency_combobox.clear()
-        self.original_currency_combobox.addItems([currency for currency in CURRENCY_LIST])
-
-        original_index = CURRENCY_LIST.index(self.original_currency)
-        self.original_currency_combobox.setCurrentIndex(original_index)
-        self.cost_in_original_currency_doublespinbox.setPrefix(f"{CURRENCY_SIGNS[original_index]} ")
-
-        default_index = CURRENCY_LIST.index(self.settings.default_currency)
-        currency_sign_prefix = f"{CURRENCY_SIGNS[default_index]} "
-        self.cost_in_local_currency_with_tax_doublespinbox.setPrefix(currency_sign_prefix)
-        self.cost_in_local_currency_doublespinbox.setPrefix(currency_sign_prefix)
+        self.original_currency_combobox.addItem(self.settings.default_currency)
+        self.original_currency_combobox.addItems([currency for currency in CURRENCY_LIST if currency !=
+                                                  self.settings.default_currency])
+        self.original_currency_combobox.setCurrentText('')
 
     def on_report_parameter_changed(self):
         """Invoked when the report parameter changes"""
@@ -212,10 +203,6 @@ class CostsController:
         """Invoked when the original currency parameter changes"""
         self.original_currency = self.original_currency_combobox.currentText()
 
-        index = CURRENCY_LIST.index(self.original_currency)
-        currency_sign_prefix = f"{CURRENCY_SIGNS[index]} "
-        self.cost_in_original_currency_doublespinbox.setPrefix(currency_sign_prefix)
-
     def on_cost_in_local_currency_changed(self):
         """Invoked when the cost in local currency parameter changes"""
         self.cost_in_local_currency = self.cost_in_local_currency_doublespinbox.value()
@@ -225,9 +212,11 @@ class CostsController:
         self.cost_in_local_currency_with_tax = self.cost_in_local_currency_with_tax_doublespinbox.value()
 
     def on_available_cost_clicked(self, index: int):
+        """Invoked when a cost is selected"""
         self.populate_cost_fields()
 
     def update_costs(self):
+        """Updates the class with latest cost data"""
         valid_parameters = True
         self.available_costs = []
         if not self.report_parameter:
@@ -249,6 +238,7 @@ class CostsController:
         self.populate_cost_fields()
 
     def populate_available_costs(self):
+        """Shows available costs for the current selection"""
         self.available_costs_combo_box.clear()
 
         for price_group in self.available_costs:
@@ -258,6 +248,7 @@ class CostsController:
                 f"Cost: {price_group['original_currency']} {price_group['cost_in_original_currency']:.2f}")
 
     def populate_cost_fields(self):
+        """Populates the cost edit fields with selected cost data"""
         curr_cost_index = self.available_costs_combo_box.currentIndex()
         if curr_cost_index >= 0:  # Reset fields
             price_group = self.available_costs[curr_cost_index]
@@ -271,10 +262,6 @@ class CostsController:
             self.original_currency_combobox.setCurrentText(price_group['original_currency'])
             self.cost_in_local_currency_doublespinbox.setValue(price_group['cost_in_local_currency'])
             self.cost_in_local_currency_with_tax_doublespinbox.setValue(price_group['cost_in_local_currency_with_tax'])
-
-            index = CURRENCY_LIST.index(price_group['original_currency'])
-            currency_sign_prefix = f"{CURRENCY_SIGNS[index]} "
-            self.cost_in_original_currency_doublespinbox.setPrefix(currency_sign_prefix)
 
         else:
             self.clear_cost_fields()
@@ -330,6 +317,7 @@ class CostsController:
             show_message('Cost data inserted/updated')
 
     def delete_current_cost(self):
+        """Deletes the selected cost data"""
         curr_cost_index = self.available_costs_combo_box.currentIndex()
         if curr_cost_index < 0:
             return
@@ -351,9 +339,11 @@ class CostsController:
             show_message('Cost data deleted')
 
     def on_refresh_clicked(self):
+        """Invoked when the refresh button is clicked"""
         self.populate_cost_fields()
 
     def on_import_clicked(self):
+        """Invoked when the import button is clicked, imports cost data"""
         dialog = QDialog()
         dialog.setWindowTitle("Import Costs")
         layout = QVBoxLayout(dialog)
@@ -448,6 +438,7 @@ class CostsController:
         dialog.exec_()
 
     def on_export_clicked(self):
+        """Invoked when the export button is clicked, exports cost data"""
         dialog = QDialog()
         dialog.setWindowTitle("Export Costs")
         layout = QVBoxLayout(dialog)
@@ -472,23 +463,10 @@ class CostsController:
             cost_dicts = self.cost_results_to_dicts(cost_results, report_type_name)
 
             # Format currency columns
-            locale = QLocale(QLocale.English)
-            index = CURRENCY_LIST.index(self.settings.default_currency)
-            default_sign = CURRENCY_SIGNS[index]
             for cost_dict in cost_dicts:
-                index = CURRENCY_LIST.index(cost_dict['original_currency'])
-                original_sign: QLocale = CURRENCY_SIGNS[index]
-
-                # cost_dict["cost_in_original_currency"] = f"{cost_dict['cost_in_original_currency']:.2f}"
-                # cost_dict["cost_in_local_currency"] = f"{cost_dict['cost_in_local_currency']:.2f}"
-                # cost_dict["cost_in_local_currency_with_tax"] = f"{cost_dict['cost_in_local_currency_with_tax']:.2f}"
-
-                cost_dict["cost_in_original_currency"] = \
-                    locale.toCurrencyString(cost_dict["cost_in_original_currency"], original_sign)
-                cost_dict["cost_in_local_currency"] = \
-                    locale.toCurrencyString(cost_dict["cost_in_local_currency"], default_sign)
-                cost_dict["cost_in_local_currency_with_tax"] = \
-                    locale.toCurrencyString(cost_dict["cost_in_local_currency_with_tax"], default_sign)
+                cost_dict["cost_in_original_currency"] = f"{cost_dict['cost_in_original_currency']:,}"
+                cost_dict["cost_in_local_currency"] = f"{cost_dict['cost_in_local_currency']:,}"
+                cost_dict["cost_in_local_currency_with_tax"] = f"{cost_dict['cost_in_local_currency_with_tax']:,}"
 
             if fill_check_box.isChecked():
                 name_results = self.get_names(report_type, None if vendor_name == all_vendors_text else vendor_name)

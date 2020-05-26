@@ -1,8 +1,7 @@
-import math
+from math import floor
 
 from xlsxwriter.exceptions import FileCreateError
 from xlsxwriter.workbook import Workbook, Worksheet, Format
-from vincent.colors import brews
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QWidget, QButtonGroup
 from PyQt5.QtGui import QStandardItem, QFont, QStandardItemModel
@@ -120,9 +119,11 @@ class VisualController:
         self.update_name_combo_box()
 
     def on_calculation_button_clicked(self):
+        """Invoked when a calculation option is selected"""
         self.update_option_views()
 
     def on_create_chart_clicked(self):
+        """Invoked when the create chart button is clicked"""
         report_type = self.report_combo_box.currentText()
         if not report_type:
             GeneralUtils.show_message("Select a report type")
@@ -192,6 +193,7 @@ class VisualController:
                                       "Exception: " + str(e))
 
     def update_metric_type_combo_box(self, report_type: str):
+        """Updates the available metric types for the selected report type"""
         self.metric_type_combo_box.clear()
         if report_type in DATABASE_REPORTS:
             self.metric_type_combo_box.addItems(DATABASE_REPORTS_METRIC)
@@ -203,10 +205,12 @@ class VisualController:
             self.metric_type_combo_box.addItems(TITLE_REPORTS_METRIC)
 
     def update_name_label(self, report_type):
+        """Updates the name label to match the report type"""
         name_field = NAME_FIELD_SWITCHER[report_type[:2]].capitalize()
         self.name_label.setText(name_field)
 
     def update_name_combo_box(self):
+        """Updates the name combo box with available names for the selected report type and vendor"""
         report_type = self.report_combo_box.currentText()
         vendor_name = self.vendor_combo_box.currentText()
         start_year = self.start_year_date_edit.date().year()
@@ -231,6 +235,7 @@ class VisualController:
         self.name_combo_box.setModel(model)
 
     def update_option_views(self):
+        """Updates the available option selectors for the active calculation type"""
         curr_option = self.calculation_button_group.checkedButton().text()
 
         def update_views(option_names: list):
@@ -250,6 +255,7 @@ class VisualController:
             update_views(self.cost_ratio_option_views)
 
     def do_monthly_calculation(self, report_type: str, vendor_name: str) -> dict:
+        """Calculates and returns data to be used for monthly charts"""
         name = self.name_combo_box.currentText()
         if not name:
             GeneralUtils.show_message(f"Select a {self.name_label.text()}")
@@ -312,6 +318,7 @@ class VisualController:
         return data
 
     def do_yearly_calculation(self, report_type: str, vendor_name: str) -> dict:
+        """Calculates and returns data to be used for yearly charts"""
         name = self.name_combo_box.currentText()
         if not name:
             GeneralUtils.show_message(f"Select a {self.name_label.text()}")
@@ -363,7 +370,7 @@ class VisualController:
         end_date = QDate(end_year, end_month, 1)
         data = {}
         for i in range(num_months):
-            curr_year_index = math.floor(i / 12)
+            curr_year_index = floor(i / 12)
             category_start_date = begin_date.addYears(curr_year_index)
 
             if category_start_date.addMonths(11) <= end_date:
@@ -384,6 +391,7 @@ class VisualController:
         return data
 
     def do_top_num_calculation(self, report_type: str, vendor_name: str) -> dict:
+        """Calculates and returns data to be used for top number charts"""
         top_num = self.top_spin_box.value()
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
@@ -419,6 +427,7 @@ class VisualController:
         return data
 
     def do_cost_ratio_calculation(self, report_type: str, vendor_name: str) -> dict:
+        """Calculates and returns data to be used for cost ratio charts"""
         cost_ratio_option = self.cost_ratio_combo_box.currentText()
         if not cost_ratio_option:
             GeneralUtils.show_message(f"Select a cost ratio option")
@@ -480,7 +489,7 @@ class VisualController:
         end_date = QDate(end_year, end_month, 1)
         data = {}
         for i in range(num_months):
-            curr_year_index = math.floor(i / 12)
+            curr_year_index = floor(i / 12)
             category_start_date = begin_date.addYears(curr_year_index)
 
             if category_start_date.addMonths(11) <= end_date:
@@ -550,6 +559,7 @@ class VisualController:
         return data
 
     def create_chart(self, chart_type: str, data: dict, file_path: str):
+        """Creates a chart using calculated data and saves the file to the passed file path"""
         workbook = Workbook(file_path)
         worksheet = workbook.add_worksheet()
         chart = workbook.add_chart({"type": chart_type})
@@ -576,13 +586,21 @@ class VisualController:
 
         start_category_index = 3
         end_category_index = num_categories + start_category_index - 1
+
+        # The origin specs were created by Cynthia Brewer: http://colorbrewer.org/
+        colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999",
+                  "#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3", "#8dd3c7",
+                  "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd",
+                  "#ccebc5", "#ffed6f"]
+
         for i in range(1, num_value_columns + 1):
             # [sheet_name, first_row, first_col, last_row, last_col]
             chart.add_series({
                 "name": ["Sheet1", 2, i],
                 "categories": ["Sheet1", start_category_index, 0, end_category_index, 0],
                 "values": ["Sheet1", start_category_index, i, end_category_index, i],
-                "fill": {"color": brews[CHART_COLOR_SET][i]}
+                "fill": {"color": colors[i % len(colors)]},
+                "line": {"color": colors[i % len(colors)]}
             })
 
         self.customize_chart(chart)
@@ -602,6 +620,7 @@ class VisualController:
         workbook.close()
 
     def populate_monthly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
+        """Populates a worksheet with monthly data"""
         start_year = self.start_year_date_edit.date().year()
         start_month = self.start_month_combo_box.currentIndex() + 1
         end_year = self.end_year_date_edit.date().year()
@@ -647,6 +666,7 @@ class VisualController:
         return num_categories, num_value_columns, chart_start_column
 
     def populate_yearly_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
+        """Populates a worksheet with yearly data"""
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -671,6 +691,7 @@ class VisualController:
         return num_categories, num_value_columns, chart_start_column
 
     def populate_top_num_chart(self, data: dict, worksheet: Worksheet, bold_format: Format) -> (int, int, int):
+        """Populates a worksheet with top number data"""
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -691,6 +712,7 @@ class VisualController:
 
     def populate_cost_ratio_chart(self, data: dict, worksheet: Worksheet, bold_format: Format, currency_format: Format,
                                   ratio_format: Format) -> (int, int, int):
+        """Populates a worksheet with cost ratio data"""
         metric_type = self.metric_type_combo_box.currentText()
         if not metric_type:
             GeneralUtils.show_message(f"Select a metric type")
@@ -717,6 +739,7 @@ class VisualController:
         return num_categories, num_value_columns, chart_start_column
 
     def customize_chart(self, chart):
+        """Customizes a chart using query parameters or user specified entries"""
         title = self.chart_title_line_edit.text()
         hor_axis_title = self.horizontal_axis_line_edit.text()
         ver_axis_title = self.vertical_axis_line_edit.text()
@@ -760,6 +783,7 @@ class VisualController:
 
     @staticmethod
     def get_names(report_type: str, vendor_name: str) -> list:
+        """Returns all available names for a report type and vendor"""
         sql_text, data = ManageDB.get_names_sql_text(report_type, vendor_name)
         results = None
         connection = ManageDB.create_connection(DATABASE_LOCATION)
@@ -770,6 +794,7 @@ class VisualController:
 
     @staticmethod
     def get_names_with_cost(report_type: str, vendor_name: str, start_year: int, end_year: int):
+        """Returns all available names with cost for a report type and vendor"""
         sql_text, data = ManageDB.get_names_with_costs_sql_text(report_type, vendor_name, start_year, end_year)
         results = None
         connection = ManageDB.create_connection(DATABASE_LOCATION)
