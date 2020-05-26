@@ -525,7 +525,23 @@ class VisualController:
             if category_metric > 0:
                 category_cost_per_metric = category_cost / category_metric
             else:
-                category_cost_per_metric = "Not Used"
+                category_cost_per_metric = 0
+
+            data[key][0] = category_cost_per_metric
+            data[key][1] = category_cost
+            data[key][2] = category_metric
+
+        for key in data:
+            category_cost_per_metric = data[key][0]
+            category_cost = data[key][1]
+            category_metric = data[key][2]
+
+            if category_cost == 0:
+                category_cost = "NO COST DATA"
+                category_cost_per_metric = "NO RATIO"
+
+            if category_metric == 0:
+                category_metric = "NO USAGE"
 
             data[key][0] = category_cost_per_metric
             data[key][1] = category_cost
