@@ -1,6 +1,7 @@
 from enum import Enum
 
 # Variable Constants for MainDriver.py
+
 HELP_SITE = "https://github.com/CS-4820-Library-Project/COUNTER-5-Report-Tool/wiki"
 
 # region Variable Constants for ManageDB
@@ -387,7 +388,7 @@ NAME_FIELD_SWITCHER = {'DR': 'database', 'IR': 'item', 'PR': 'platform', 'TR': '
 
 MONTHS = {1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
           7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november', 12: 'december'}
-MONTH_CALCULATION = 'COALESCE(SUM(CASE ' + 'month' + ' WHEN {} THEN ' + 'metric' + ' END), 0)'
+MONTH_CALCULATION = 'COALESCE(SUM(CASE month' + ' WHEN {} THEN ' + 'metric' + ' END), 0)'
 
 YEAR_TOTAL = 'reporting_period_total'
 YEAR_TOTAL_CALCULATION = 'SUM(' + 'metric' + ')'
@@ -396,15 +397,16 @@ RANKING = 'ranking'
 RANKING_CALCULATION = 'RANK() OVER(ORDER BY ' + 'SUM(' + 'metric' + ')' + ' DESC)'
 
 VIEW_SUFFIX = '_view'
+VISUAL_VIEW_SUFFIX = '_visual_view'
 COST_TABLE_SUFFIX = '_costs'
 
 FIELDS_NOT_IN_VIEWS = ('month', 'metric', 'updated_on')
 FIELDS_NOT_IN_KEYS = ('metric', 'updated_on')
 FIELDS_NOT_IN_SEARCH_DROPDOWN = ('year',)
-FIELDS_NOT_IN_CHARTS = FIELDS_NOT_IN_VIEWS + ('file',)
-FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_NOT_IN_CHARTS + ('year',)
+FIELDS_IN_CHARTS = ('month', 'year', 'metric',)
+FIELDS_NOT_IN_TOP_NUMBER_CHARTS = FIELDS_IN_CHARTS + ('year',)
 
-COSTS_KEY_FIELDS = ('vendor', 'year')
+COSTS_KEY_FIELDS = ('vendor', 'month', 'year')
 CHART_KEY_FIELDS = ('vendor', 'metric_type')
 
 DATABASE_FOLDER = r'./all_data/search/'
@@ -412,14 +414,15 @@ DATABASE_LOCATION = DATABASE_FOLDER + r'search.db'
 # All yearly reports tsv and json are saved here in original condition as backup
 PROTECTED_DATABASE_FILE_DIR = "./all_data/.DO_NOT_MODIFY/"
 FILE_SUBDIRECTORY_ORDER = ('year', 'vendor')
-COSTS_SAVE_FOLDER = r'./all_data/costs/'
+COSTS_SAVE_FOLDER = PROTECTED_DATABASE_FILE_DIR + 'costs/'
 
 DELIMITERS = {'.tsv': '\t', '.csv': ','}
 
 COMPARISON_OPERATORS = ('LIKE', 'NOT LIKE', '=', '<=', '<', '>=', '>', '<>')
 NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
-CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CHF', 'CAD', 'AUD')
+CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CAD', 'AUD')
+CURRENCY_SIGNS = ('US$', '€', '¥', '£', 'CAD$', 'A$')
 
 # endregion
 
@@ -640,4 +643,9 @@ COUNTER_5_REPORT_EQUIVALENTS = {
     "PR_P1": "PR1",
     "PR": "PR1"
 }
+# endregion
+
+
+# region Variable Constants for Visual
+CHART_COLOR_SET = "Set1"
 # endregion

@@ -512,12 +512,8 @@ def get_models(model_key: str, model_type, json_dict: dict) -> list:
 def get_month_years(begin_date: QDate, end_date: QDate) -> list:
     """Returns a list of month-year (MMM-yyyy) strings within a date range"""
     month_years = []
-    if begin_date.year() == end_date.year():
-        num_months = (end_date.month() - begin_date.month()) + 1
-    else:
-        num_months = (12 - begin_date.month() + end_date.month()) + 1
-        num_years = end_date.year() - begin_date.year()
-        num_months += (num_years - 1) * 12
+    num_months = (end_date.year() - begin_date.year()) * 12 + \
+                 (end_date.month() - begin_date.month()) + 1
 
     for i in range(num_months):
         month_years.append(begin_date.addMonths(i).toString("MMM-yyyy"))
@@ -1278,7 +1274,7 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_all_basic_data(self):
         """Fetches all reports for the selected year"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
@@ -1290,7 +1286,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date = self.fetch_all_begin_date
         self.end_date = self.fetch_all_end_date
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.is_yearly_fetch = True
@@ -1317,7 +1313,7 @@ class FetchReportsController(FetchReportsAbstract):
 
     def fetch_advanced_data(self):
         """Fetches reports based on the selected options in the advanced view of the UI"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
@@ -1329,7 +1325,7 @@ class FetchReportsController(FetchReportsAbstract):
         self.begin_date = self.adv_begin_date
         self.end_date = self.adv_end_date
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.selected_data = []
@@ -1706,7 +1702,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
 
     def fetch_special_data(self):
         """Fetches reports based on the selected options in the UI"""
-        if self.total_processes > 0:
+        if self.total_processes > 0 or self.is_updating_database:
             GeneralUtils.show_message(f"Waiting for pending processes to complete...")
             if self.settings.show_debug_messages: print(f"Waiting for pending processes to complete...")
             return
@@ -1716,7 +1712,7 @@ class FetchSpecialReportsController(FetchReportsAbstract):
             return
 
         if self.begin_date > self.end_date:
-            GeneralUtils.show_message("\'Begin Date\' is earlier than \'End Date\'")
+            GeneralUtils.show_message("\'Begin Date\' is higher than \'End Date\'")
             return
 
         self.selected_data = []
@@ -2176,8 +2172,10 @@ class ReportWorker(QObject):
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         for item_id in report_item.item_ids:
                             if item_id.item_type == "Proprietary" or item_id.item_type == "Proprietary_ID":
@@ -2196,8 +2194,10 @@ class ReportWorker(QObject):
 
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         item_id: TypeValueModel
                         for item_id in report_item.item_ids:
@@ -2231,8 +2231,10 @@ class ReportWorker(QObject):
                         # Publisher ID
                         pub_id_str = ""
                         for pub_id in report_item.publisher_ids:
+                            if pub_id.item_type == "Proprietary":
+                                continue
                             pub_id_str += f"{pub_id.item_type}:{pub_id.value}; "
-                        if pub_id_str: metric_row.publisher_id = pub_id_str
+                        if pub_id_str: metric_row.publisher_id = pub_id_str.rstrip("; ")
 
                         # Authors
                         authors_str = ""
@@ -2463,10 +2465,10 @@ class ReportWorker(QObject):
 
         file_path = f"{file_dir}{file_name}"
         file = open(file_path, 'w', encoding="utf-8", newline='')
-        if self.is_yearly and self.is_master:
-            self.add_report_header_to_file(report_header, file, False)
-        else:
+        if self.is_special:
             self.add_report_header_to_file(report_header, file, True)
+        else:
+            self.add_report_header_to_file(report_header, file, False)
 
         if not self.add_report_rows_to_file(report_type, report_rows, self.begin_date, self.end_date, file, False,
                                             self.is_special, self.special_options):

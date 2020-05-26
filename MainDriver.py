@@ -1,7 +1,9 @@
+import locale
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QIcon, QPixmap
+
 from ui import MainWindow, ManageVendorsTab, SettingsTab, FetchReportsTab, FetchSpecialReportsTab, ImportReportTab,\
     SearchTab, VisualTab, CostsTab
 from ManageVendors import ManageVendorsController
@@ -11,6 +13,7 @@ from Costs import CostsController
 from Search import SearchController
 from Settings import SettingsController, SettingsModel
 from Visual import VisualController
+# from Visual2 import VisualController
 import GeneralUtils
 import ManageDB
 from Constants import *
@@ -34,6 +37,8 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
     app = QApplication(sys.argv)
     app.setStyleSheet("QWidget {font-family: Segoe UI; font-size: 12pt;}")
 
@@ -90,7 +95,8 @@ if __name__ == "__main__":
     visual_tab = QWidget(main_window)
     visual_ui = VisualTab.Ui_visual_tab()
     visual_ui.setupUi(visual_tab)
-    visual_controller = VisualController(visual_ui, settings_controller.settings)
+    visual_controller = VisualController(manage_vendors_controller.vendors, settings_controller.settings, visual_tab,
+                                         visual_ui)
 
     # # endregion
 
@@ -99,15 +105,15 @@ if __name__ == "__main__":
     manage_vendors_controller.vendors_changed_signal.connect(fetch_special_reports_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(import_report_controller.on_vendors_changed)
     manage_vendors_controller.vendors_changed_signal.connect(costs_controller.load_vendor_list)
-    manage_vendors_controller.vendors_changed_signal.connect(visual_controller.load_vendor_list)
+    manage_vendors_controller.vendors_changed_signal.connect(visual_controller.on_vendors_changed)
 
     settings_controller.settings_changed_signal.connect(ManageDB.update_settings)
     settings_controller.settings_changed_signal.connect(search_controller.update_settings)
     settings_controller.settings_changed_signal.connect(costs_controller.update_settings)
-    settings_controller.settings_changed_signal.connect(visual_controller.update_settings)
+    # settings_controller.settings_changed_signal.connect(visual_controller.update_settings)
 
     ManageDB.managedb_signal_handler.database_changed_signal.connect(costs_controller.database_updated)
-    ManageDB.managedb_signal_handler.database_changed_signal.connect(visual_controller.database_updated)
+    ManageDB.managedb_signal_handler.database_changed_signal.connect(visual_controller.on_database_updated)
     # endregion
 
     # region Add tabs to main window

@@ -159,7 +159,7 @@ def save_data_as_tsv(file_name: str, data: Sequence[Any]):
 
     :param file_name: the name and location to save the results at
     :param data: the data to save in the file"""
-    file = open(file_name, 'w', newline="", encoding='utf-8-sig')
+    file = open(file_name, 'w', newline="", encoding='utf-8')
     if file.mode == 'w':
         output = csv.writer(file, delimiter='\t', quotechar='\"')
         for row in data:
