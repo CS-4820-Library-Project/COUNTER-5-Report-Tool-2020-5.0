@@ -1,4 +1,6 @@
 import json
+import re
+
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QCheckBox, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 
@@ -353,10 +355,7 @@ class CostsController:
 
         def import_costs():
             def wash_money(cost):
-                cost = str(cost)
-                cost = cost.replace(",", "")
-                for sign in CURRENCY_SIGNS:
-                    cost = cost.replace(sign, "")
+                cost = re.sub(r'[^\d.]+', '', str(cost))
 
                 return float(cost)
 
