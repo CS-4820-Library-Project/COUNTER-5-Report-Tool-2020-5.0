@@ -422,7 +422,7 @@ COMPARISON_OPERATORS = ('LIKE', 'NOT LIKE', '=', '<=', '<', '>=', '>', '<>')
 NON_COMPARISONS = ('IS NULL', 'IS NOT NULL')
 
 CURRENCY_LIST = ('USD', 'EUR', 'JPY', 'GBP', 'CAD', 'AUD')
-CURRENCY_SIGNS = ('US$', '€', '¥', '£', 'CAD$', 'A$')
+CURRENCY_SIGNS = ('$', '€', '¥', '£', '$', '$')
 
 # endregion
 

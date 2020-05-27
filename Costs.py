@@ -464,9 +464,9 @@ class CostsController:
 
             # Format currency columns
             for cost_dict in cost_dicts:
-                cost_dict["cost_in_original_currency"] = f"{cost_dict['cost_in_original_currency']:,}"
-                cost_dict["cost_in_local_currency"] = f"{cost_dict['cost_in_local_currency']:,}"
-                cost_dict["cost_in_local_currency_with_tax"] = f"{cost_dict['cost_in_local_currency_with_tax']:,}"
+                cost_dict["cost_in_original_currency"] = f"{cost_dict['cost_in_original_currency']:,.2f}"
+                cost_dict["cost_in_local_currency"] = f"{cost_dict['cost_in_local_currency']:,.2f}"
+                cost_dict["cost_in_local_currency_with_tax"] = f"{cost_dict['cost_in_local_currency_with_tax']:,.2f}"
 
             if fill_check_box.isChecked():
                 name_results = self.get_names(report_type, None if vendor_name == all_vendors_text else vendor_name)
