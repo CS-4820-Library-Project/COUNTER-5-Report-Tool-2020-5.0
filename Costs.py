@@ -105,6 +105,11 @@ class CostsController:
         self.export_costs_button = costs_ui.export_costs_button
         self.export_costs_button.clicked.connect(self.on_export_clicked)
 
+        costs_ui.import_help_button.clicked.connect(
+            lambda: show_message("If vendor and item names do not exactly match those labels in the search database, "
+                                 "your cost data will silently be lost. Avoid this by using only vendor and item names "
+                                 "provided in an Export Costs file with 'include items without cost data' selected."))
+
         self.update_costs()
 
     def update_settings(self, settings: SettingsModel):
