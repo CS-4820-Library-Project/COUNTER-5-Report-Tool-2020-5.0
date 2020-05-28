@@ -377,7 +377,7 @@ def delete_costs_sql_text(report_type: str, vendor: str, month: int, year: int, 
     values.append(month)
     sql_text += '\n\tAND ' + 'year' + ' = ?'
     values.append(year)
-    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    sql_text += '\n\tAND ' + name_field + ' LIKE ?;'
     values.append(name)
     return sql_text, (values,)
 
