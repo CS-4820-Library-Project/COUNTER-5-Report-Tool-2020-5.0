@@ -3,7 +3,7 @@ import sip
 import json
 from typing import Tuple, Dict
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel, QListView
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel
 
 import ManageDB
 from Settings import SettingsModel
