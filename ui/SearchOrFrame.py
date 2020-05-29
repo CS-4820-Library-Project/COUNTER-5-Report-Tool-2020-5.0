@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'SearchOrFrame.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_search_or_clause_parameter_frame(object):
     def setupUi(self, search_or_clause_parameter_frame):
@@ -38,6 +40,10 @@ class Ui_search_or_clause_parameter_frame(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.search_field_parameter_combobox.sizePolicy().hasHeightForWidth())
         self.search_field_parameter_combobox.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(12)
+        self.search_field_parameter_combobox.setFont(font)
         self.search_field_parameter_combobox.setObjectName("search_field_parameter_combobox")
         self.horizontalLayout.addWidget(self.search_field_parameter_combobox)
         self.search_comparison_parameter_combobox = QtWidgets.QComboBox(search_or_clause_parameter_frame)
@@ -46,6 +52,10 @@ class Ui_search_or_clause_parameter_frame(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.search_comparison_parameter_combobox.sizePolicy().hasHeightForWidth())
         self.search_comparison_parameter_combobox.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(12)
+        self.search_comparison_parameter_combobox.setFont(font)
         self.search_comparison_parameter_combobox.setObjectName("search_comparison_parameter_combobox")
         self.horizontalLayout.addWidget(self.search_comparison_parameter_combobox)
         self.search_type_label = QtWidgets.QLabel(search_or_clause_parameter_frame)
@@ -77,14 +87,3 @@ class Ui_search_or_clause_parameter_frame(object):
         self.search_or_label.setText(_translate("search_or_clause_parameter_frame", "OR"))
         self.search_type_label.setText(_translate("search_or_clause_parameter_frame", "Type"))
         self.search_remove_or_clause_button.setText(_translate("search_or_clause_parameter_frame", "Remove \"Or\""))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    search_or_clause_parameter_frame = QtWidgets.QFrame()
-    ui = Ui_search_or_clause_parameter_frame()
-    ui.setupUi(search_or_clause_parameter_frame)
-    search_or_clause_parameter_frame.show()
-    sys.exit(app.exec_())
-

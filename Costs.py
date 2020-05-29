@@ -1,6 +1,7 @@
 import json
 import re
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QCheckBox, QDialogButtonBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont
 
@@ -17,9 +18,10 @@ class CostsController:
     :param costs_ui: the UI for the costs_widget
     :param settings: the user's settings"""
 
-    def __init__(self, costs_ui: CostsTab.Ui_costs_tab, settings: SettingsModel):
+    def __init__(self, tab_widget: QWidget, costs_ui: CostsTab.Ui_costs_tab, settings: SettingsModel):
         self.costs_ui = costs_ui
         self.settings = settings
+        self.tab_widget = tab_widget
 
         # set parameters
         self.report_parameter_combobox = costs_ui.costs_report_parameter_combobox
@@ -351,7 +353,7 @@ class CostsController:
 
     def on_import_clicked(self):
         """Invoked when the import button is clicked, imports cost data"""
-        dialog = QDialog()
+        dialog = QDialog(self.tab_widget, Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         dialog.setWindowTitle("Import Costs")
         layout = QVBoxLayout(dialog)
 
@@ -443,7 +445,7 @@ class CostsController:
 
     def on_export_clicked(self):
         """Invoked when the export button is clicked, exports cost data"""
-        dialog = QDialog()
+        dialog = QDialog(self.tab_widget, Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         dialog.setWindowTitle("Export Costs")
         layout = QVBoxLayout(dialog)
         all_vendors_text = "All Vendors"

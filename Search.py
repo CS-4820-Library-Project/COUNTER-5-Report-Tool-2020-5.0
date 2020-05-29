@@ -3,7 +3,7 @@ import sip
 import json
 from typing import Tuple, Dict
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QComboBox, QLineEdit, QSpacerItem, QSizePolicy, QLabel, QListView
 
 import ManageDB
 from Settings import SettingsModel
@@ -157,6 +157,7 @@ class SearchController:
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
+        comparison_combobox.clear()
         comparison_combobox.addItems(COMPARISON_OPERATORS)
         comparison_combobox.addItems(NON_COMPARISONS)
 
