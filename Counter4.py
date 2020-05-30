@@ -335,6 +335,9 @@ class Counter4To5Converter:
 
             if month_value:
                 report_row.month_counts[standard_month_year] = int(month_value)
+            else:
+                message = f"Column header {standard_month_year} is not valid COUNTER 4"
+                raise Exception(message)
 
         return report_row
 
