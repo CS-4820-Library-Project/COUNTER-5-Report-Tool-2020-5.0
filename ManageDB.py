@@ -371,13 +371,13 @@ def delete_costs_sql_text(report_type: str, vendor: str, month: int, year: int, 
     values = []
     sql_text = 'DELETE FROM ' + report_type + COST_TABLE_SUFFIX
     sql_text += '\nWHERE '
-    sql_text += '\n\t' + 'vendor' + ' = ?'
+    sql_text += '\n\t' + 'vendor' + ' LIKE ?'
     values.append(vendor)
     sql_text += '\n\tAND ' + 'month' + ' = ?'
     values.append(month)
     sql_text += '\n\tAND ' + 'year' + ' = ?'
     values.append(year)
-    sql_text += '\n\tAND ' + name_field + ' = ?;'
+    sql_text += '\n\tAND ' + name_field + ' LIKE ?;'
     values.append(name)
     return sql_text, (values,)
 
@@ -704,7 +704,7 @@ def get_names_sql_text(report: str, vendor: str = None) -> Tuple[str, Sequence[A
     where_args = [(name_field + ' <> \"\"',)]
     values = []
     if vendor:
-        where_args.append(('vendor' + ' = ?',))
+        where_args.append(('vendor' + ' LIKE ?',))
         values.append(vendor)
 
     where_args = tuple(where_args)
@@ -727,7 +727,7 @@ def get_names_with_costs_sql_text(report: str, vendor: str, start_year: int, end
         for it"""
     name_field = NAME_FIELD_SWITCHER[report[:2]]
     sql_text = get_sql_select_statement((name_field,), (report[:2] + COST_TABLE_SUFFIX,),
-                                        ((name_field + ' <> \"\"',), ('vendor' + ' = ?',), ('year' + ' >= ?',),
+                                        ((name_field + ' <> \"\"',), ('vendor' + ' LIKE ?',), ('year' + ' >= ?',),
                                          ('year' + ' <= ?',)), order_by_fields=(name_field + ' COLLATE NOCASE ASC',),
                                         distinct=True, is_multiline=False) + ';'
     data = (vendor, start_year, end_year)
@@ -749,10 +749,10 @@ def get_costs_sql_text(report_type: str, vendor: str = None, name: str = None) -
     where_args = []
     values = []
     if vendor:
-        where_args.append(('vendor' + ' = ?',))
+        where_args.append(('vendor' + ' LIKE ?',))
         values.append(vendor)
     if name:
-        where_args.append((name_field + ' = ?',))
+        where_args.append((name_field + ' LIKE ?',))
         values.append(name)
 
     where_args = tuple(where_args) if where_args else None

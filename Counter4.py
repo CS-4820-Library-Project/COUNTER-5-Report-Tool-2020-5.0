@@ -315,22 +315,29 @@ class Counter4To5Converter:
         year2 = int(self.begin_date.toString("yy"))
         for i in range(0, 12):
             month = QDate(year, i + 1, 1).toString("MMM")
-            month_year = f"{month}-{year}"
-            month_year2 = f"{month}-{year2}"
-            year_month = f"{year}-{month}"
-            year_month2 = f"{year2}-{month}"
+            month2 = QDate(year, i + 1, 1).toString("M")
+
+            supported_dates = [
+                f"{month}-{year}",
+                f"{month}-{year2}",
+                f"{year}-{month}",
+                f"{year2}-{month}",
+                f"{month2}/1/{year}",
+                f"{month2}/1/{year2}"
+            ]
+            standard_month_year = f"{month}-{year}"
             month_value = ""
-            if month_year in row_dict:
-                month_value = row_dict[month_year]
-            elif month_year2 in row_dict:
-                month_value = row_dict[month_year2]
-            elif year_month in row_dict:
-                month_value = row_dict[year_month]
-            elif year_month2 in row_dict:
-                month_value = row_dict[year_month2]
+
+            for date in supported_dates:
+                if date in row_dict:
+                    month_value = row_dict[date]
+                    break
 
             if month_value:
-                report_row.month_counts[month_year] = int(month_value)
+                report_row.month_counts[standard_month_year] = int(month_value)
+            else:
+                message = f"Column header {standard_month_year} not found"
+                raise Exception(message)
 
         return report_row
 

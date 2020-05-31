@@ -79,7 +79,7 @@ if __name__ == "__main__":
     costs_tab = QWidget(main_window)
     costs_tab_ui = CostsTab.Ui_costs_tab()
     costs_tab_ui.setupUi(costs_tab)
-    costs_controller = CostsController(costs_tab_ui, settings_controller.settings)
+    costs_controller = CostsController(costs_tab, costs_tab_ui, settings_controller.settings)
 
     import_report_tab = QWidget(main_window)
     import_report_ui = ImportReportTab.Ui_import_report_tab()

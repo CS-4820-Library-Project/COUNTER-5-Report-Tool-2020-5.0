@@ -157,6 +157,7 @@ class SearchController:
 
         # fill comparison operator combobox
         comparison_combobox = or_clause_ui.search_comparison_parameter_combobox
+        comparison_combobox.clear()
         comparison_combobox.addItems(COMPARISON_OPERATORS)
         comparison_combobox.addItems(NON_COMPARISONS)
 

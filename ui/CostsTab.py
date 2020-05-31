@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'CostsTab.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_costs_tab(object):
     def setupUi(self, costs_tab):
@@ -176,16 +178,7 @@ class Ui_costs_tab(object):
         self.frame_6 = QtWidgets.QFrame(self.frame)
         self.frame_6.setObjectName("frame_6")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.frame_6)
-        self.horizontalLayout_4.setContentsMargins(0, -1, -1, -1)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.costs_import_costs_button = QtWidgets.QPushButton(self.frame_6)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.costs_import_costs_button.sizePolicy().hasHeightForWidth())
-        self.costs_import_costs_button.setSizePolicy(sizePolicy)
-        self.costs_import_costs_button.setObjectName("costs_import_costs_button")
-        self.horizontalLayout_4.addWidget(self.costs_import_costs_button)
         self.export_costs_button = QtWidgets.QPushButton(self.frame_6)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -196,10 +189,38 @@ class Ui_costs_tab(object):
         self.horizontalLayout_4.addWidget(self.export_costs_button)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem3)
+        self.label_4 = QtWidgets.QLabel(self.frame_6)
+        self.label_4.setObjectName("label_4")
+        self.horizontalLayout_4.addWidget(self.label_4)
+        self.import_help_button = QtWidgets.QPushButton(self.frame_6)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.import_help_button.sizePolicy().hasHeightForWidth())
+        self.import_help_button.setSizePolicy(sizePolicy)
+        self.import_help_button.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/ui/resources/help_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.import_help_button.setIcon(icon1)
+        self.import_help_button.setObjectName("import_help_button")
+        self.horizontalLayout_4.addWidget(self.import_help_button)
+        self.label_5 = QtWidgets.QLabel(self.frame_6)
+        self.label_5.setObjectName("label_5")
+        self.horizontalLayout_4.addWidget(self.label_5)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem4)
+        self.costs_import_costs_button = QtWidgets.QPushButton(self.frame_6)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.costs_import_costs_button.sizePolicy().hasHeightForWidth())
+        self.costs_import_costs_button.setSizePolicy(sizePolicy)
+        self.costs_import_costs_button.setObjectName("costs_import_costs_button")
+        self.horizontalLayout_4.addWidget(self.costs_import_costs_button)
         self.verticalLayout_2.addWidget(self.frame_6)
         self.horizontalLayout.addWidget(self.frame)
-        spacerItem4 = QtWidgets.QSpacerItem(120, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem4)
+        spacerItem5 = QtWidgets.QSpacerItem(120, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem5)
 
         self.retranslateUi(costs_tab)
         QtCore.QMetaObject.connectSlotsByName(costs_tab)
@@ -223,7 +244,8 @@ class Ui_costs_tab(object):
         self.costs_save_button.setText(_translate("costs_tab", "Insert/Update Cost"))
         self.costs_load_button.setText(_translate("costs_tab", "Refresh"))
         self.costs_clear_button.setText(_translate("costs_tab", "Clear Fields"))
-        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
         self.export_costs_button.setText(_translate("costs_tab", "Export Costs"))
-
+        self.label_4.setText(_translate("costs_tab", "To Import Costs, always Export first. See"))
+        self.label_5.setText(_translate("costs_tab", "for more info"))
+        self.costs_import_costs_button.setText(_translate("costs_tab", "Import Costs"))
 import Resources_rc
