@@ -3,6 +3,9 @@
 This project uses the SUSHI API to request usage reports from library vendors. The JSON data received is used to generate TSV reports that follow the COUNTER 5 standards.
 The project is written with Python 3.7. The PyQt GUI framework is used to create a user friendly (hopefully) GUI.
 
+## License
+ It is released with permission of all students involved under the MIT License for open source software. https://opensource.org/licenses/MIT
+
 ## Features
 - Manage library vendor credentials
 - Fetch reports that strictly adhere to the COUNTER 5 standards
