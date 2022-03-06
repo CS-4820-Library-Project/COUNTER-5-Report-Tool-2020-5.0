@@ -3,6 +3,9 @@
 This project uses the SUSHI API to request usage reports from library vendors. The JSON data received is used to generate TSV reports that follow the COUNTER 5 standards.
 The project is written with Python 3.7. The PyQt GUI framework is used to create a user friendly (hopefully) GUI.
 
+March 2022 Note: This code is still supported by librarian Melissa Belvadi at UPEI, mbelvadi@upei.ca. 
+However, the executables may not be updated to match code changes that have taken place - check the last modified dates on them versus the code. I'm looking for volunteers to help me update those executables. In particular, I don't have access to a Mac to rebuild that one. Please contact me if you can help with that.
+
 ## License
  It is released with permission of all students involved under the MIT License for open source software. https://opensource.org/licenses/MIT
 
@@ -10,17 +13,20 @@ The project is written with Python 3.7. The PyQt GUI framework is used to create
 - Manage library vendor credentials
 - Fetch reports that strictly adhere to the COUNTER 5 standards
 - Fetch customized reports using the available parameters in the SUSHI API
-- Import COUNTER 5 reports into the local directories and database
-- Specify the costs of subscribed items
+- Import COUNTER 5 reports into the local directories and database and some COUNTER 4 reports into the database
+- Specify the costs of subscribed items (user can input)
 - Search the sqlite database of fetched and imported reports
 - Generate charts using the data in the database
 
-## Developer Contact Info
+## Developer Contact Info - original developers
 - Adam McGuigan apmcguigan@upei.ca
 - Chandler Acorn cjacorn@upei.ca
 - Samuel Esan sesan@upei.ca
 - Urvesh Boodhun uboodhun@upei.ca
 - Ziheng Huang Zihhuang@upei.ca
+
+## Future developer contact info
+- Melissa Belvadi, mbelvadi@upei.ca
 
 ## Download Project 
 https://github.com/CS-4820-Library-Project/COUNTER-5-Report-Tool/releases
