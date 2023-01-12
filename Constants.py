@@ -564,7 +564,8 @@ SPECIAL_REPORT_OPTIONS = {
 DEFAULT_SPECIAL_OPTION_VALUE = "all"
 
 # If these codes are received with a Report_Header, files will be created and saved
-ACCEPTABLE_CODES = [3030,
+ACCEPTABLE_CODES = [0,
+                    3030,
                     3031,
                     3032,
                     3040,
