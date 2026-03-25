@@ -1,0 +1,9 @@
+certifi>=2024.12.14
+requests>=2.31.0
+urllib3>=2.2.0
+validators>=0.22.0
+XlsxWriter>=3.2.0
+PyQt5>=5.15.10
+PyQt5-sip>=12.13.0
+sphinx>=7.2.0
+sphinx-autodoc-typehints>=1.25.0
